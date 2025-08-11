@@ -1,19 +1,7 @@
-# Dependencies
 node_modules/
-
-# Build output / tooling
 dist/
 .vite/
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-pnpm-debug.log*
-
-# Env
 .env
 .env.*
 !.env.example
-
-# OS cruft
 .DS_Store

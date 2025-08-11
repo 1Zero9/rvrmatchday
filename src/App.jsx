@@ -1,17 +1,35 @@
-export default function App() {
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+
+function App() {
+  const [count, setCount] = useState(0)
+
   return (
-    <div className="min-h-screen">
-      <header className="border-b bg-white">
-        <div className="mx-auto max-w-5xl px-4 py-4">
-          <h1 className="text-2xl font-semibold tracking-tight">RVR Matchday</h1>
-          <p className="text-sm text-slate-600">If you can read this, React is mounted.</p>
-        </div>
-      </header>
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <div className="rounded-2xl border bg-white p-4 shadow-sm">
-          <p className="text-slate-700">Tailwind classes will style this box if Tailwind is active.</p>
-        </div>
-      </main>
-    </div>
-  );
+    <>
+      <div>
+        <a href="https://vite.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/App.jsx</code> and save to test HMR
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
+    </>
+  )
 }
+
+export default App
