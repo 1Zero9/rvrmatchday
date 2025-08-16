@@ -10,10 +10,10 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Grid,
   Stack,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import Link from "next/link";
 import { Match } from "@/types/match";
 
