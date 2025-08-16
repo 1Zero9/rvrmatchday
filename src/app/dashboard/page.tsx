@@ -1,29 +1,29 @@
 "use client";
 
-import { Paper, Typography, Button, Stack } from "@mui/material";
-import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Button, Typography } from "@mui/material";
 
 export default function DashboardPage() {
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
 
-  async function signOut() {
-    await supabase.auth.signOut();
-    router.replace("/");
-  }
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login");
+    }
+  }, [user, loading, router]);
+
+  if (loading) return <p>Loading…</p>;
+  if (!user) return null; // redirecting
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Typography variant="h5" sx={{ fontFamily: "Raleway, sans-serif" }}>
-          Dashboard
-        </Typography>
-        <Button variant="outlined" onClick={signOut}>Sign out</Button>
-      </Stack>
-
-      <Typography color="text.secondary" mt={1}>
-        You are signed in. Next we’ll add the Record Match screen.
-      </Typography>
-    </Paper>
+    <main style={{ padding: 20 }}>
+      <Typography variant="h4">Welcome, {user.email}</Typography>
+      <Button onClick={logout} sx={{ mt: 2 }} variant="contained" color="secondary">
+        Logout
+      </Button>
+    </main>
   );
 }

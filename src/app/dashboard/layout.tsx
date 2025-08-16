@@ -1,6 +1,14 @@
-import AuthGate from "@/components/AuthGate";
-import { ReactNode } from "react";
+import "./globals.css";
+import { AuthProvider } from "@/components/AuthProvider";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  return <AuthGate>{children}</AuthGate>;
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
+    </html>
+  );
 }
