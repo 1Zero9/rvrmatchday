@@ -1,10 +1,7 @@
 import { Player } from "@/types/match";
 
-export const HOME_TEAM_ID = "home-team-uuid";
-export const AWAY_TEAM_ID = "away-team-uuid";
-
 export const mockPlayers: Player[] = [
-  { id: "1", name: "Alice Smith", shirt: 7, position: "Forward" },
-  { id: "2", name: "Bob Jones", shirt: 10, position: "Midfielder" },
-  { id: "3", name: "Charlie Brown", shirt: 1, position: "Goalkeeper" },
+  { id: "1", team_id: "mock-team", name: "Alice Smith", number: 7, position: "Forward" },
+  { id: "2", team_id: "mock-team", name: "Bob Jones", number: 10, position: "Midfielder" },
+  { id: "3", team_id: "mock-team", name: "Charlie Brown", number: 1, position: "Goalkeeper" },
 ];
