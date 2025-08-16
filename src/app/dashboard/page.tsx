@@ -7,7 +7,7 @@ import {
   Typography,
   Button,
 } from "@mui/material";
-import Grid from "@mui/material/Grid2"; // ✅ Correct Grid2 import
+import Grid from "@mui/material/Unstable_Grid2"; // ✅ works with your version
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { Match } from "@/types/match";
