@@ -13,7 +13,6 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Grid from "@mui/material/Grid"; // ✅ classic Grid
 import Link from "next/link";
 import { Match } from "@/types/match";
 
@@ -103,111 +102,115 @@ export default function DashboardPage() {
       </Stack>
 
       {/* Navigation Cards */}
-      <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardHeader title="Matches" />
-            <CardContent>
-              <Stack spacing={2}>
-                <Button component={Link} href="/matches" variant="contained">
-                  View Matches
-                </Button>
-                <Button component={Link} href="/matches/new" variant="outlined">
-                  New Match
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardHeader title="Players" />
-            <CardContent>
-              <Button component={Link} href="/players" variant="contained">
-                Manage Players
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
+          gap: 3,
+          mb: 3,
+        }}
+      >
+        <Card>
+          <CardHeader title="Matches" />
+          <CardContent>
+            <Stack spacing={2}>
+              <Button component={Link} href="/matches" variant="contained">
+                View Matches
               </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+              <Button component={Link} href="/matches/new" variant="outlined">
+                New Match
+              </Button>
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader title="Players" />
+          <CardContent>
+            <Button component={Link} href="/players" variant="contained">
+              Manage Players
+            </Button>
+          </CardContent>
+        </Card>
+      </Box>
 
       {/* Last & Next Matches */}
-      <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader title="Last Match" />
-            <CardContent>
-              {lastMatch ? (
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+          gap: 3,
+        }}
+      >
+        <Card>
+          <CardHeader title="Last Match" />
+          <CardContent>
+            {lastMatch ? (
+              <Button
+                component={Link}
+                href={`/matches/${lastMatch.id}`}
+                variant="outlined"
+                fullWidth
+                sx={{ justifyContent: "flex-start", textAlign: "left" }}
+              >
+                <Stack>
+                  <Typography>
+                    {lastMatch.date
+                      ? new Date(lastMatch.date).toLocaleDateString()
+                      : "Unknown date"}
+                  </Typography>
+                  <Typography>
+                    vs {lastMatch.opponents?.name || "Unknown Opponent"}
+                  </Typography>
+                  <Typography variant="h6">
+                    {lastMatch.our_score} - {lastMatch.their_score}
+                  </Typography>
+                </Stack>
+              </Button>
+            ) : (
+              <Typography>No matches played yet</Typography>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader title="Next Match" />
+          <CardContent>
+            {nextMatch ? (
+              <Stack spacing={2}>
                 <Button
                   component={Link}
-                  href={`/matches/${lastMatch.id}`}
+                  href={`/matches/${nextMatch.id}`}
                   variant="outlined"
                   fullWidth
                   sx={{ justifyContent: "flex-start", textAlign: "left" }}
                 >
                   <Stack>
                     <Typography>
-                      {lastMatch.date
-                        ? new Date(lastMatch.date).toLocaleDateString()
+                      {nextMatch.date
+                        ? new Date(nextMatch.date).toLocaleDateString()
                         : "Unknown date"}
                     </Typography>
                     <Typography>
-                      vs {lastMatch.opponents?.name || "Unknown Opponent"}
-                    </Typography>
-                    <Typography variant="h6">
-                      {lastMatch.our_score} - {lastMatch.their_score}
+                      vs {nextMatch.opponents?.name || "Unknown Opponent"}
                     </Typography>
                   </Stack>
                 </Button>
-              ) : (
-                <Typography>No matches played yet</Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader title="Next Match" />
-            <CardContent>
-              {nextMatch ? (
-                <Stack spacing={2}>
-                  <Button
-                    component={Link}
-                    href={`/matches/${nextMatch.id}`}
-                    variant="outlined"
-                    fullWidth
-                    sx={{ justifyContent: "flex-start", textAlign: "left" }}
-                  >
-                    <Stack>
-                      <Typography>
-                        {nextMatch.date
-                          ? new Date(nextMatch.date).toLocaleDateString()
-                          : "Unknown date"}
-                      </Typography>
-                      <Typography>
-                        vs {nextMatch.opponents?.name || "Unknown Opponent"}
-                      </Typography>
-                    </Stack>
-                  </Button>
-                  {/* Quick Record Match button */}
-                  <Button
-                    component={Link}
-                    href={`/matches/${nextMatch.id}/record`}
-                    variant="contained"
-                    color="primary"
-                  >
-                    Record Match
-                  </Button>
-                </Stack>
-              ) : (
-                <Typography>No upcoming matches scheduled</Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                <Button
+                  component={Link}
+                  href={`/matches/${nextMatch.id}/record`}
+                  variant="contained"
+                  color="primary"
+                >
+                  Record Match
+                </Button>
+              </Stack>
+            ) : (
+              <Typography>No upcoming matches scheduled</Typography>
+            )}
+          </CardContent>
+        </Card>
+      </Box>
     </Box>
   );
 }
