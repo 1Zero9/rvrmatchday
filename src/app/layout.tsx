@@ -4,7 +4,9 @@ import { Open_Sans, Raleway } from "next/font/google";
 import NavBar from "@/components/NavBar";
 import Providers from "@/components/Providers";
 import { Container } from "@mui/material";
-import { AuthProvider } from "@/components/AuthProvider"; // 👈 important
+import { AuthProvider } from "@/contexts/AuthContext";
+
+
 
 const openSans = Open_Sans({ subsets: ["latin"], variable: "--font-body" });
 const raleway = Raleway({ subsets: ["latin"], variable: "--font-heading" });
