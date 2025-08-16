@@ -13,7 +13,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Grid from "@mui/material/Grid"; // ✅ use classic Grid
+import Grid from "@mui/material/Grid"; // ✅ classic Grid
 import Link from "next/link";
 import { Match } from "@/types/match";
 
@@ -104,7 +104,7 @@ export default function DashboardPage() {
 
       {/* Navigation Cards */}
       <Grid container spacing={3} mb={3}>
-        <Grid xs={12} md={4}>
+        <Grid item xs={12} md={4}>
           <Card>
             <CardHeader title="Matches" />
             <CardContent>
@@ -120,7 +120,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid xs={12} md={4}>
+        <Grid item xs={12} md={4}>
           <Card>
             <CardHeader title="Players" />
             <CardContent>
@@ -134,7 +134,7 @@ export default function DashboardPage() {
 
       {/* Last & Next Matches */}
       <Grid container spacing={3} mb={3}>
-        <Grid xs={12} md={6}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardHeader title="Last Match" />
             <CardContent>
@@ -167,7 +167,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid xs={12} md={6}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardHeader title="Next Match" />
             <CardContent>
