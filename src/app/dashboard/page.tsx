@@ -13,7 +13,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Unstable_Grid2"; // ✅ v6 Grid2
 import Link from "next/link";
 import { Match } from "@/types/match";
 
@@ -41,7 +41,6 @@ export default function DashboardPage() {
     const fetchData = async () => {
       if (!user) return;
 
-      // get user profile to find team
       const { data: profile } = await supabase
         .from("profiles")
         .select("team_id")
@@ -50,7 +49,6 @@ export default function DashboardPage() {
 
       if (!profile) return;
 
-      // fetch team
       const { data: teamData } = await supabase
         .from("teams")
         .select("*")
@@ -59,7 +57,6 @@ export default function DashboardPage() {
 
       setTeam(teamData);
 
-      // fetch last match
       const { data: last } = await supabase
         .from("matches")
         .select("*, opponents(name)")
@@ -71,7 +68,6 @@ export default function DashboardPage() {
 
       setLastMatch(last);
 
-      // fetch next match
       const { data: next } = await supabase
         .from("matches")
         .select("*, opponents(name)")
@@ -108,7 +104,7 @@ export default function DashboardPage() {
 
       {/* Navigation Cards */}
       <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Card>
             <CardHeader title="Matches" />
             <CardContent>
@@ -124,7 +120,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Card>
             <CardHeader title="Players" />
             <CardContent>
@@ -138,7 +134,7 @@ export default function DashboardPage() {
 
       {/* Last & Next Matches */}
       <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardHeader title="Last Match" />
             <CardContent>
@@ -171,7 +167,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardHeader title="Next Match" />
             <CardContent>
