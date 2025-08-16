@@ -24,7 +24,9 @@ export default function LoginPage() {
   }, [router, nextPath]);
 
   async function sendLink() {
-    setErr(null); setMsg(null); setSending(true);
+    setErr(null);
+    setMsg(null);
+    setSending(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
@@ -32,15 +34,25 @@ export default function LoginPage() {
       });
       if (error) throw error;
       setMsg("Check your email for the login link.");
-    } catch (e: any) {
-      setErr(e?.message || "Failed to send link");
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setErr(e.message);
+      } else {
+        setErr("Failed to send link");
+      }
     } finally {
       setSending(false);
     }
   }
 
   return (
-    <main style={{ display: "grid", placeItems: "center", minHeight: "calc(100vh - 64px)" }}>
+    <main
+      style={{
+        display: "grid",
+        placeItems: "center",
+        minHeight: "calc(100vh - 64px)",
+      }}
+    >
       <Paper sx={{ p: 3, minWidth: 360 }}>
         <Typography variant="h5" sx={{ fontFamily: "Raleway, sans-serif" }}>
           Coach Login
@@ -65,7 +77,9 @@ export default function LoginPage() {
           {msg && <Alert severity="success">{msg}</Alert>}
           {err && <Alert severity="error">{err}</Alert>}
 
-          <Button variant="text" onClick={() => router.push("/")}>Back</Button>
+          <Button variant="text" onClick={() => router.push("/")}>
+            Back
+          </Button>
         </Stack>
       </Paper>
     </main>
