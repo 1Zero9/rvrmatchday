@@ -1,3 +1,4 @@
+import "./globals.css"; // <-- this was missing
 import type { Metadata } from "next";
 import { Open_Sans, Raleway } from "next/font/google";
 import NavBar from "@/components/NavBar";
