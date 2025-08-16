@@ -13,7 +13,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Grid from "@mui/material/Grid"; // ✅ classic Grid import
+import Grid from "@mui/material/Grid2"; // ✅ Grid v2 entrypoint
 import Link from "next/link";
 import { Match } from "@/types/match";
 
@@ -104,7 +104,7 @@ export default function DashboardPage() {
 
       {/* Navigation Cards */}
       <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Card>
             <CardHeader title="Matches" />
             <CardContent>
@@ -120,7 +120,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Card>
             <CardHeader title="Players" />
             <CardContent>
@@ -134,7 +134,7 @@ export default function DashboardPage() {
 
       {/* Last & Next Matches */}
       <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardHeader title="Last Match" />
             <CardContent>
@@ -167,29 +167,40 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardHeader title="Next Match" />
             <CardContent>
               {nextMatch ? (
-                <Button
-                  component={Link}
-                  href={`/matches/${nextMatch.id}`}
-                  variant="outlined"
-                  fullWidth
-                  sx={{ justifyContent: "flex-start", textAlign: "left" }}
-                >
-                  <Stack>
-                    <Typography>
-                      {nextMatch.date
-                        ? new Date(nextMatch.date).toLocaleDateString()
-                        : "Unknown date"}
-                    </Typography>
-                    <Typography>
-                      vs {nextMatch.opponents?.name || "Unknown Opponent"}
-                    </Typography>
-                  </Stack>
-                </Button>
+                <Stack spacing={2}>
+                  <Button
+                    component={Link}
+                    href={`/matches/${nextMatch.id}`}
+                    variant="outlined"
+                    fullWidth
+                    sx={{ justifyContent: "flex-start", textAlign: "left" }}
+                  >
+                    <Stack>
+                      <Typography>
+                        {nextMatch.date
+                          ? new Date(nextMatch.date).toLocaleDateString()
+                          : "Unknown date"}
+                      </Typography>
+                      <Typography>
+                        vs {nextMatch.opponents?.name || "Unknown Opponent"}
+                      </Typography>
+                    </Stack>
+                  </Button>
+                  {/* Quick Record Match button */}
+                  <Button
+                    component={Link}
+                    href={`/matches/${nextMatch.id}/record`}
+                    variant="contained"
+                    color="primary"
+                  >
+                    Record Match
+                  </Button>
+                </Stack>
               ) : (
                 <Typography>No upcoming matches scheduled</Typography>
               )}
