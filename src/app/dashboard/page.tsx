@@ -1,36 +1,186 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { Button, Typography, Stack } from "@mui/material";
+import { createClient } from "@/utils/supabase/client";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Grid,
+  Stack,
+  Typography,
+} from "@mui/material";
+import Link from "next/link";
+import { Match, Team } from "@/types/match";
 
 export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const supabase = createClient();
+
+  const [team, setTeam] = useState<Team | null>(null);
+  const [lastMatch, setLastMatch] = useState<Match | null>(null);
+  const [nextMatch, setNextMatch] = useState<Match | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
-      // if no user and not loading, redirect to login
       router.replace("/login");
     }
   }, [loading, user, router]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+
+      // get user profile to find team
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("team_id")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile) return;
+
+      // fetch team
+      const { data: teamData } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("id", profile.team_id)
+        .single();
+
+      setTeam(teamData);
+
+      // fetch last match
+      const { data: last } = await supabase
+        .from("matches")
+        .select("*, opponents(name)")
+        .eq("team_id", profile.team_id)
+        .lt("date", new Date().toISOString())
+        .order("date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      setLastMatch(last);
+
+      // fetch next match
+      const { data: next } = await supabase
+        .from("matches")
+        .select("*, opponents(name)")
+        .eq("team_id", profile.team_id)
+        .gte("date", new Date().toISOString())
+        .order("date", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      setNextMatch(next);
+    };
+
+    fetchData();
+  }, [supabase, user]);
+
   if (loading) {
-    return <Typography>Loading...</Typography>;
+    return <Typography>Loading…</Typography>;
   }
 
   if (!user) {
-    // we’ll redirect, but return placeholder for SSR safety
     return <Typography>Redirecting to login…</Typography>;
   }
 
   return (
-    <Stack spacing={2}>
-      <Typography variant="h4">Welcome, {user.email}</Typography>
-      <Button variant="contained" onClick={logout}>
-        Log out
-      </Button>
-    </Stack>
+    <Box sx={{ p: 4 }}>
+      <Stack direction="row" justifyContent="space-between" mb={3}>
+        <Typography variant="h4">
+          {team ? `${team.name} Dashboard` : "Dashboard"}
+        </Typography>
+        <Button variant="outlined" onClick={logout}>
+          Log out
+        </Button>
+      </Stack>
+
+      {/* Navigation Cards */}
+      <Grid container spacing={3} mb={3}>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardHeader title="Matches" />
+            <CardContent>
+              <Stack spacing={2}>
+                <Button component={Link} href="/matches" variant="contained">
+                  View Matches
+                </Button>
+                <Button component={Link} href="/matches/new" variant="outlined">
+                  New Match
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardHeader title="Players" />
+            <CardContent>
+              <Button component={Link} href="/players" variant="contained">
+                Manage Players
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Last Match */}
+      <Grid container spacing={3} mb={3}>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardHeader title="Last Match" />
+            <CardContent>
+              {lastMatch ? (
+                <>
+                  <Typography variant="body1">
+                    {lastMatch.date
+                      ? new Date(lastMatch.date).toLocaleDateString()
+                      : "Unknown date"}
+                  </Typography>
+                  <Typography variant="body1">
+                    vs {lastMatch.opponents?.name || "Unknown Opponent"}
+                  </Typography>
+                  <Typography variant="h6">
+                    {lastMatch.our_score} - {lastMatch.their_score}
+                  </Typography>
+                </>
+              ) : (
+                <Typography>No matches played yet</Typography>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Next Match */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardHeader title="Next Match" />
+            <CardContent>
+              {nextMatch ? (
+                <>
+                  <Typography variant="body1">
+                    {nextMatch.date
+                      ? new Date(nextMatch.date).toLocaleDateString()
+                      : "Unknown date"}
+                  </Typography>
+                  <Typography variant="body1">
+                    vs {nextMatch.opponents?.name || "Unknown Opponent"}
+                  </Typography>
+                </>
+              ) : (
+                <Typography>No upcoming matches scheduled</Typography>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
