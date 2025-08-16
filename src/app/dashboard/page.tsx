@@ -1,9 +1,9 @@
 "use client";
 
-import { useAuth } from "@/components/AuthProvider";
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Button, Typography } from "@mui/material";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/AuthProvider";
+import { Button, Typography, Stack } from "@mui/material";
 
 export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
@@ -11,19 +11,26 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!loading && !user) {
+      // if no user and not loading, redirect to login
       router.replace("/login");
     }
-  }, [user, loading, router]);
+  }, [loading, user, router]);
 
-  if (loading) return <p>Loading…</p>;
-  if (!user) return null; // redirecting
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  if (!user) {
+    // we’ll redirect, but return placeholder for SSR safety
+    return <Typography>Redirecting to login…</Typography>;
+  }
 
   return (
-    <main style={{ padding: 20 }}>
+    <Stack spacing={2}>
       <Typography variant="h4">Welcome, {user.email}</Typography>
-      <Button onClick={logout} sx={{ mt: 2 }} variant="contained" color="secondary">
-        Logout
+      <Button variant="contained" onClick={logout}>
+        Log out
       </Button>
-    </main>
+    </Stack>
   );
 }
