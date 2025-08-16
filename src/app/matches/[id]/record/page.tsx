@@ -171,11 +171,11 @@ export default function RecordMatchPage() {
               : "none",
         }}
       >
-        <Typography variant="h5">
-          {match.home_away === "Home"
-            ? `Us ${score.us} - ${score.them} ${match.opponents?.name}`
-            : `${match.opponents?.name} ${score.them} - ${score.us} Us`}
-        </Typography>
+<Typography variant="h5">
+  {match.home_away === "Home"
+    ? `Us ${score.us} - ${score.them} ${match.opponents?.[0]?.name || "Opponent"}`
+    : `${match.opponents?.[0]?.name || "Opponent"} ${score.them} - ${score.us} Us`}
+</Typography>
       </Paper>
 
       {/* Goal/Assist Input Panel */}
