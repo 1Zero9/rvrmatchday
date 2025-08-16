@@ -12,6 +12,7 @@ import {
   ListItemText,
   Typography,
   CircularProgress,
+  ListItemButton, // ✅ needed for clickable list items
 } from "@mui/material";
 
 interface MatchRow {
@@ -20,7 +21,7 @@ interface MatchRow {
   home_away: "Home" | "Away";
   our_score: number;
   their_score: number;
-  opponents: { name: string }[]; // array because Supabase returns arrays
+  opponents: { name: string }[]; // Supabase returns arrays
 }
 
 export default function MatchesPage() {
@@ -99,14 +100,15 @@ export default function MatchesPage() {
           {matches.map((match) => (
             <ListItem
               key={match.id}
-              button
-              onClick={() => router.push(`/app/matches/${match.id}`)}
+              disablePadding
               sx={{ borderBottom: "1px solid #eee" }}
             >
-              <ListItemText
-                primary={`${match.date} vs ${match.opponents?.[0]?.name || "Unknown"} (${match.home_away})`}
-                secondary={`Score: ${match.our_score} - ${match.their_score}`}
-              />
+              <ListItemButton onClick={() => router.push(`/app/matches/${match.id}`)}>
+                <ListItemText
+                  primary={`${match.date} vs ${match.opponents?.[0]?.name || "Unknown"} (${match.home_away})`}
+                  secondary={`Score: ${match.our_score} - ${match.their_score}`}
+                />
+              </ListItemButton>
             </ListItem>
           ))}
         </List>
