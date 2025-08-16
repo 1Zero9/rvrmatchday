@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation"; // ✅ added useRouter
 import { supabase } from "@/lib/supabaseClient";
 import { Match, GoalEvent, Player } from "@/types/match";
 import GoalsAssistsPanel from "@/components/GoalsAssistsPanel";
@@ -13,6 +13,7 @@ import {
   ListItem,
   ListItemText,
   Slide,
+  Button, // ✅ added
 } from "@mui/material";
 import { keyframes } from "@emotion/react";
 
@@ -31,6 +32,7 @@ const flashRed = keyframes`
 
 export default function RecordMatchPage() {
   const params = useParams();
+  const router = useRouter(); // ✅
   const matchId = params?.id as string;
 
   const [match, setMatch] = useState<Match | null>(null);
@@ -171,11 +173,11 @@ export default function RecordMatchPage() {
               : "none",
         }}
       >
-<Typography variant="h5">
-  {match.home_away === "Home"
-    ? `Us ${score.us} - ${score.them} ${match.opponents?.[0]?.name || "Opponent"}`
-    : `${match.opponents?.[0]?.name || "Opponent"} ${score.them} - ${score.us} Us`}
-</Typography>
+        <Typography variant="h5">
+          {match.home_away === "Home"
+            ? `Us ${score.us} - ${score.them} ${match.opponents?.[0]?.name}`
+            : `${match.opponents?.[0]?.name} ${score.them} - ${score.us} Us`}
+        </Typography>
       </Paper>
 
       {/* Goal/Assist Input Panel */}
@@ -198,6 +200,14 @@ export default function RecordMatchPage() {
           <div ref={eventsEndRef} />
         </List>
       </Paper>
+
+      {/* ✅ Back button */}
+      <Button
+        variant="outlined"
+        onClick={() => router.push(`/matches/${matchId}`)}
+      >
+        Back to Match
+      </Button>
     </Stack>
   );
 }
