@@ -1,39 +1,48 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
+import Grid from "@mui/material/Grid";
 import {
   Card,
   CardContent,
   CardHeader,
   Typography,
-  Grid,
+  CircularProgress,
 } from "@mui/material";
 
-// Define a type for a Match
-type Match = {
+interface Match {
   id: string;
   date: string;
+  home_away: string;
   our_score: number;
   their_score: number;
   opponents: { name: string }[];
-};
+}
 
 export default function DashboardPage() {
   const [lastMatch, setLastMatch] = useState<Match | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLastMatch = async () => {
-      const { data, error } = await supabase
-        .from("matches")
-        .select("id, date, our_score, their_score, opponents(name)")
-        .order("date", { ascending: false })
-        .limit(1);
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("matches")
+          .select("id, date, home_away, our_score, their_score, opponents(name)")
+          .order("date", { ascending: false })
+          .limit(1);
 
-      if (error) {
-        console.error(error);
-      } else {
-        setLastMatch(data?.[0] || null);
+        if (error) {
+          console.error("Error fetching last match:", error);
+        } else if (data && data.length > 0) {
+          setLastMatch(data[0]);
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -41,7 +50,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div>
       <Typography variant="h4" gutterBottom>
         Dashboard
       </Typography>
@@ -52,7 +61,26 @@ export default function DashboardPage() {
           <Card>
             <CardHeader title="Matches" />
             <CardContent>
-              <Typography>View and manage matches</Typography>
+              {loading ? (
+                <CircularProgress />
+              ) : lastMatch ? (
+                <>
+                  <Typography variant="h6">
+                    Last Match – {new Date(lastMatch.date).toLocaleDateString()}
+                  </Typography>
+                  <Typography>
+                    vs{" "}
+                    {lastMatch.opponents && lastMatch.opponents.length > 0
+                      ? lastMatch.opponents[0].name
+                      : "Unknown Opponent"}
+                  </Typography>
+                  <Typography variant="h6">
+                    {lastMatch.our_score} - {lastMatch.their_score}
+                  </Typography>
+                </>
+              ) : (
+                <Typography>No matches found.</Typography>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -61,7 +89,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader title="Players" />
             <CardContent>
-              <Typography>Manage player roster</Typography>
+              <Typography>Player stats will go here.</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -70,31 +98,11 @@ export default function DashboardPage() {
           <Card>
             <CardHeader title="Venues" />
             <CardContent>
-              <Typography>Manage match venues</Typography>
+              <Typography>Venue info will go here.</Typography>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
-
-      {/* Last Match Summary */}
-      <Card>
-        <CardHeader title="Last Match" />
-        <CardContent>
-          {lastMatch ? (
-            <>
-              <Typography variant="h6">{lastMatch.date}</Typography>
-              <Typography>
-                vs {lastMatch.opponents?.[0]?.name ?? "Unknown Opponent"}
-              </Typography>
-              <Typography variant="h6">
-                {lastMatch.our_score} - {lastMatch.their_score}
-              </Typography>
-            </>
-          ) : (
-            <Typography>No matches found.</Typography>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }
