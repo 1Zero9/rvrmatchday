@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import {
-  Grid,
   Card,
   CardContent,
   CardHeader,
   Typography,
   Button,
+  Unstable_Grid2 as Grid, // 👈 use Grid2 API
 } from "@mui/material";
 import Link from "next/link";
 
@@ -45,7 +45,7 @@ export default function DashboardPage() {
   return (
     <Grid container spacing={3} sx={{ p: 3 }}>
       {/* Matches Card */}
-      <Grid item xs={12} md={4}>
+      <Grid xs={12} md={4}>
         <Card>
           <CardHeader title="Matches" />
           <CardContent>
@@ -77,7 +77,7 @@ export default function DashboardPage() {
       </Grid>
 
       {/* Players Card */}
-      <Grid item xs={12} md={4}>
+      <Grid xs={12} md={4}>
         <Card>
           <CardHeader title="Players" />
           <CardContent>
@@ -95,7 +95,7 @@ export default function DashboardPage() {
       </Grid>
 
       {/* Venues Card */}
-      <Grid item xs={12} md={4}>
+      <Grid xs={12} md={4}>
         <Card>
           <CardHeader title="Venues" />
           <CardContent>
