@@ -20,7 +20,6 @@ import { Match, Team } from "@/types/match";
 export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
-  const supabase = createClient();
 
   const [team, setTeam] = useState<Team | null>(null);
   const [lastMatch, setLastMatch] = useState<Match | null>(null);
@@ -80,7 +79,7 @@ export default function DashboardPage() {
     };
 
     fetchData();
-  }, [supabase, user]);
+  }, [user]);
 
   if (loading) {
     return <Typography>Loading…</Typography>;
@@ -131,7 +130,7 @@ export default function DashboardPage() {
         </Grid>
       </Grid>
 
-      {/* Last Match */}
+      {/* Last & Next Matches */}
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} md={6}>
           <Card>
@@ -139,12 +138,12 @@ export default function DashboardPage() {
             <CardContent>
               {lastMatch ? (
                 <>
-                  <Typography variant="body1">
+                  <Typography>
                     {lastMatch.date
                       ? new Date(lastMatch.date).toLocaleDateString()
                       : "Unknown date"}
                   </Typography>
-                  <Typography variant="body1">
+                  <Typography>
                     vs {lastMatch.opponents?.name || "Unknown Opponent"}
                   </Typography>
                   <Typography variant="h6">
@@ -158,19 +157,18 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        {/* Next Match */}
         <Grid item xs={12} md={6}>
           <Card>
             <CardHeader title="Next Match" />
             <CardContent>
               {nextMatch ? (
                 <>
-                  <Typography variant="body1">
+                  <Typography>
                     {nextMatch.date
                       ? new Date(nextMatch.date).toLocaleDateString()
                       : "Unknown date"}
                   </Typography>
-                  <Typography variant="body1">
+                  <Typography>
                     vs {nextMatch.opponents?.name || "Unknown Opponent"}
                   </Typography>
                 </>
