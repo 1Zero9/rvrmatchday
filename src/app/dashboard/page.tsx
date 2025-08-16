@@ -7,7 +7,7 @@ import {
   Typography,
   Button,
 } from "@mui/material";
-import Grid from "@mui/material/Grid"; // ✅ use Grid (not Grid2)
+import Grid from "@mui/material/Grid";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { Match } from "@/types/match";
@@ -31,20 +31,22 @@ export default function DashboardPage() {
   const matches: Match[] = [
     {
       id: "1",
+      team_id: "our-team",
       date: "2025-08-10",
-      homeTeamId: "home1",
-      awayTeamId: "away1",
-      ourScore: 2,
-      theirScore: 1,
+      opponent_id: "blue-united",
+      home_away: "Home",
+      our_score: 2,
+      their_score: 1,
       opponents: [{ name: "Blue United" }],
     },
     {
       id: "2",
+      team_id: "our-team",
       date: "2025-08-15",
-      homeTeamId: "home2",
-      awayTeamId: "away2",
-      ourScore: 3,
-      theirScore: 3,
+      opponent_id: "red-rovers",
+      home_away: "Away",
+      our_score: 3,
+      their_score: 3,
       opponents: [{ name: "Red Rovers" }],
     },
   ];
@@ -58,8 +60,8 @@ export default function DashboardPage() {
           <CardContent>
             {matches.map((match) => (
               <Typography key={match.id} sx={{ mb: 1 }}>
-                {match.date}: {match.opponents[0].name} — {match.ourScore} :{" "}
-                {match.theirScore}
+                {match.date}: {match.opponents?.[0]?.name ?? "Unknown"} —{" "}
+                {match.our_score} : {match.their_score}
               </Typography>
             ))}
             <Button
