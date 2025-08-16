@@ -2,19 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-
-import Grid2 from "@mui/material/Unstable_Grid2"; // ✅ Grid2 import
+import Grid from "@mui/material/Grid";
 import {
   Card,
   CardContent,
   CardHeader,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
+  Button,
 } from "@mui/material";
+import Link from "next/link";
 
-interface MatchRow {
+interface Match {
   id: string;
   date: string;
   home_away: string;
@@ -24,48 +22,95 @@ interface MatchRow {
 }
 
 export default function DashboardPage() {
-  const [matches, setMatches] = useState<MatchRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [lastMatch, setLastMatch] = useState<Match | null>(null);
 
   useEffect(() => {
-    const fetchMatches = async () => {
+    const fetchLastMatch = async () => {
       const { data, error } = await supabase
         .from("matches")
         .select("id, date, home_away, our_score, their_score, opponents(name)")
         .order("date", { ascending: false })
-        .limit(5);
+        .limit(1);
 
       if (error) {
-        console.error(error);
-      } else {
-        setMatches(data || []);
+        console.error("Error fetching last match:", error);
+      } else if (data && data.length > 0) {
+        setLastMatch(data[0]);
       }
-      setLoading(false);
     };
 
-    fetchMatches();
+    fetchLastMatch();
   }, []);
 
-  const lastMatch = matches[0];
-
   return (
-    <Grid2 container spacing={3} mb={3}>
+    <Grid container spacing={3} sx={{ p: 3 }}>
       {/* Matches Card */}
-      <Grid2 xs={12} md={4}>
+      <Grid item xs={12} md={4}>
         <Card>
           <CardHeader title="Matches" />
           <CardContent>
-            {loading && <Typography>Loading...</Typography>}
-            {!loading && lastMatch ? (
+            {lastMatch ? (
               <>
-                <Typography variant="h6">
-                  Last Match: {new Date(lastMatch.date).toLocaleDateString()}
+                <Typography variant="body1">
+                  Last Match: {lastMatch.date}
                 </Typography>
-                <Typography>
-                  vs{" "}
-                  {lastMatch.opponents && lastMatch.opponents.length > 0
-                    ? lastMatch.opponents[0].name
-                    : "Unknown Opponent"}
+                <Typography variant="body2">
+                  Opponent: {lastMatch.opponents?.[0]?.name ?? "Unknown"}
                 </Typography>
                 <Typography variant="h6">
-                  {lastMatch.our_score} - {lastMatch.their_s
+                  {lastMatch.our_score} - {lastMatch.their_score}
+                </Typography>
+              </>
+            ) : (
+              <Typography variant="body2">No match data available.</Typography>
+            )}
+            <Button
+              component={Link}
+              href="/matches"
+              variant="contained"
+              sx={{ mt: 2 }}
+            >
+              View All Matches
+            </Button>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Players Card */}
+      <Grid item xs={12} md={4}>
+        <Card>
+          <CardHeader title="Players" />
+          <CardContent>
+            <Typography variant="body2">Manage team players.</Typography>
+            <Button
+              component={Link}
+              href="/players"
+              variant="contained"
+              sx={{ mt: 2 }}
+            >
+              View Players
+            </Button>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Venues Card */}
+      <Grid item xs={12} md={4}>
+        <Card>
+          <CardHeader title="Venues" />
+          <CardContent>
+            <Typography variant="body2">See where matches are played.</Typography>
+            <Button
+              component={Link}
+              href="/venues"
+              variant="contained"
+              sx={{ mt: 2 }}
+            >
+              View Venues
+            </Button>
+          </CardContent>
+        </Card>
+      </Grid>
+    </Grid>
+  );
+}
