@@ -1,216 +1,152 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 import {
-  Box,
-  Button,
   Card,
   CardContent,
   CardHeader,
-  Stack,
-  Typography,
+  CardTitle,
 } from "@mui/material";
-import Link from "next/link";
-import { Match } from "@/types/match";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import Button from "@mui/material/Button";
 
-// Minimal Team type for dashboard
-type Team = {
+const supabase = createClient();
+
+interface Match {
   id: string;
-  name: string;
-};
+  date: string;
+  home_away: string;
+  our_score: number;
+  their_score: number;
+  opponents: { name: string }[];
+}
 
 export default function DashboardPage() {
-  const { user, loading, logout } = useAuth();
-  const router = useRouter();
-
-  const [team, setTeam] = useState<Team | null>(null);
   const [lastMatch, setLastMatch] = useState<Match | null>(null);
   const [nextMatch, setNextMatch] = useState<Match | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/login");
-    }
-  }, [loading, user, router]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("team_id")
-        .eq("id", user.id)
-        .single();
-
-      if (!profile) return;
-
-      const { data: teamData } = await supabase
-        .from("teams")
-        .select("*")
-        .eq("id", profile.team_id)
-        .single();
-
-      setTeam(teamData);
-
-      const { data: last } = await supabase
+    const fetchMatches = async () => {
+      const { data, error } = await supabase
         .from("matches")
-        .select("*, opponents(name)")
-        .eq("team_id", profile.team_id)
-        .lt("date", new Date().toISOString())
-        .order("date", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .select(
+          `
+          id,
+          date,
+          home_away,
+          our_score,
+          their_score,
+          opponents ( name )
+        `
+        )
+        .order("date", { ascending: false });
 
-      setLastMatch(last);
+      if (error) {
+        console.error("Error fetching matches:", error);
+        return;
+      }
 
-      const { data: next } = await supabase
-        .from("matches")
-        .select("*, opponents(name)")
-        .eq("team_id", profile.team_id)
-        .gte("date", new Date().toISOString())
-        .order("date", { ascending: true })
-        .limit(1)
-        .maybeSingle();
+      if (data && data.length > 0) {
+        setLastMatch(data[0]);
 
-      setNextMatch(next);
+        if (data.length > 1) {
+          setNextMatch(data[1]);
+        }
+      }
     };
 
-    fetchData();
-  }, [user]);
-
-  if (loading) {
-    return <Typography>Loading…</Typography>;
-  }
-
-  if (!user) {
-    return <Typography>Redirecting to login…</Typography>;
-  }
+    fetchMatches();
+  }, []);
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Stack direction="row" justifyContent="space-between" mb={3}>
-        <Typography variant="h4">
-          {team ? `${team.name} Dashboard` : "Dashboard"}
-        </Typography>
-        <Button variant="outlined" onClick={logout}>
-          Log out
-        </Button>
-      </Stack>
+    <div style={{ padding: "2rem" }}>
+      <Typography variant="h4" gutterBottom>
+        Dashboard
+      </Typography>
+
+      {/* Match Summary */}
+      <Grid container spacing={3} mb={3}>
+        {/* Last Match */}
+        {lastMatch && (
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardHeader title="Last Match" />
+              <CardContent>
+                <Typography variant="h6">
+                  {new Date(lastMatch.date).toLocaleDateString()}
+                </Typography>
+                <Typography>
+                  vs{" "}
+                  {lastMatch.opponents && lastMatch.opponents.length > 0
+                    ? lastMatch.opponents.map((o) => o.name).join(", ")
+                    : "Unknown Opponent"}
+                </Typography>
+                <Typography variant="h6">
+                  {lastMatch.our_score} - {lastMatch.their_score}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+
+        {/* Next Match */}
+        {nextMatch && (
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardHeader title="Next Match" />
+              <CardContent>
+                <Typography variant="h6">
+                  {new Date(nextMatch.date).toLocaleDateString()}
+                </Typography>
+                <Typography>
+                  vs{" "}
+                  {nextMatch.opponents && nextMatch.opponents.length > 0
+                    ? nextMatch.opponents.map((o) => o.name).join(", ")
+                    : "Unknown Opponent"}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+      </Grid>
 
       {/* Navigation Cards */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-          gap: 3,
-          mb: 3,
-        }}
-      >
-        <Card>
-          <CardHeader title="Matches" />
-          <CardContent>
-            <Stack spacing={2}>
-              <Button component={Link} href="/matches" variant="contained">
+      <Grid container spacing={3} mb={3}>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardHeader title="Matches" />
+            <CardContent>
+              <Button href="/matches" variant="contained">
                 View Matches
               </Button>
-              <Button component={Link} href="/matches/new" variant="outlined">
-                New Match
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardHeader title="Players" />
+            <CardContent>
+              <Button href="/players" variant="contained">
+                View Players
               </Button>
-            </Stack>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <Card>
-          <CardHeader title="Players" />
-          <CardContent>
-            <Button component={Link} href="/players" variant="contained">
-              Manage Players
-            </Button>
-          </CardContent>
-        </Card>
-      </Box>
-
-      {/* Last & Next Matches */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-          gap: 3,
-        }}
-      >
-        <Card>
-          <CardHeader title="Last Match" />
-          <CardContent>
-            {lastMatch ? (
-              <Button
-                component={Link}
-                href={`/matches/${lastMatch.id}`}
-                variant="outlined"
-                fullWidth
-                sx={{ justifyContent: "flex-start", textAlign: "left" }}
-              >
-                <Stack>
-                  <Typography>
-                    {lastMatch.date
-                      ? new Date(lastMatch.date).toLocaleDateString()
-                      : "Unknown date"}
-                  </Typography>
-                  <Typography>
-                    vs {lastMatch.opponents?.name || "Unknown Opponent"}
-                  </Typography>
-                  <Typography variant="h6">
-                    {lastMatch.our_score} - {lastMatch.their_score}
-                  </Typography>
-                </Stack>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardHeader title="Record Match" />
+            <CardContent>
+              <Button href="/record-match" variant="contained">
+                Record Match
               </Button>
-            ) : (
-              <Typography>No matches played yet</Typography>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader title="Next Match" />
-          <CardContent>
-            {nextMatch ? (
-              <Stack spacing={2}>
-                <Button
-                  component={Link}
-                  href={`/matches/${nextMatch.id}`}
-                  variant="outlined"
-                  fullWidth
-                  sx={{ justifyContent: "flex-start", textAlign: "left" }}
-                >
-                  <Stack>
-                    <Typography>
-                      {nextMatch.date
-                        ? new Date(nextMatch.date).toLocaleDateString()
-                        : "Unknown date"}
-                    </Typography>
-                    <Typography>
-                      vs {nextMatch.opponents?.name || "Unknown Opponent"}
-                    </Typography>
-                  </Stack>
-                </Button>
-                <Button
-                  component={Link}
-                  href={`/matches/${nextMatch.id}/record`}
-                  variant="contained"
-                  color="primary"
-                >
-                  Record Match
-                </Button>
-              </Stack>
-            ) : (
-              <Typography>No upcoming matches scheduled</Typography>
-            )}
-          </CardContent>
-        </Card>
-      </Box>
-    </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </div>
   );
 }
