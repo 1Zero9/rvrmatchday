@@ -1,4 +1,4 @@
-import "./globals.css";
+import "../globals.css"; // if globals.css is in src/app
 import { AuthProvider } from "@/components/AuthProvider";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
