@@ -15,7 +15,13 @@ import {
   Typography,
 } from "@mui/material";
 import Link from "next/link";
-import { Match, Team } from "@/types/match";
+import { Match } from "@/types/match";
+
+// Minimal Team type for dashboard
+type Team = {
+  id: string;
+  name: string;
+};
 
 export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
@@ -137,19 +143,27 @@ export default function DashboardPage() {
             <CardHeader title="Last Match" />
             <CardContent>
               {lastMatch ? (
-                <>
-                  <Typography>
-                    {lastMatch.date
-                      ? new Date(lastMatch.date).toLocaleDateString()
-                      : "Unknown date"}
-                  </Typography>
-                  <Typography>
-                    vs {lastMatch.opponents?.name || "Unknown Opponent"}
-                  </Typography>
-                  <Typography variant="h6">
-                    {lastMatch.our_score} - {lastMatch.their_score}
-                  </Typography>
-                </>
+                <Button
+                  component={Link}
+                  href={`/matches/${lastMatch.id}`}
+                  variant="outlined"
+                  fullWidth
+                  sx={{ justifyContent: "flex-start", textAlign: "left" }}
+                >
+                  <Stack>
+                    <Typography>
+                      {lastMatch.date
+                        ? new Date(lastMatch.date).toLocaleDateString()
+                        : "Unknown date"}
+                    </Typography>
+                    <Typography>
+                      vs {lastMatch.opponents?.name || "Unknown Opponent"}
+                    </Typography>
+                    <Typography variant="h6">
+                      {lastMatch.our_score} - {lastMatch.their_score}
+                    </Typography>
+                  </Stack>
+                </Button>
               ) : (
                 <Typography>No matches played yet</Typography>
               )}
@@ -162,16 +176,24 @@ export default function DashboardPage() {
             <CardHeader title="Next Match" />
             <CardContent>
               {nextMatch ? (
-                <>
-                  <Typography>
-                    {nextMatch.date
-                      ? new Date(nextMatch.date).toLocaleDateString()
-                      : "Unknown date"}
-                  </Typography>
-                  <Typography>
-                    vs {nextMatch.opponents?.name || "Unknown Opponent"}
-                  </Typography>
-                </>
+                <Button
+                  component={Link}
+                  href={`/matches/${nextMatch.id}`}
+                  variant="outlined"
+                  fullWidth
+                  sx={{ justifyContent: "flex-start", textAlign: "left" }}
+                >
+                  <Stack>
+                    <Typography>
+                      {nextMatch.date
+                        ? new Date(nextMatch.date).toLocaleDateString()
+                        : "Unknown date"}
+                    </Typography>
+                    <Typography>
+                      vs {nextMatch.opponents?.name || "Unknown Opponent"}
+                    </Typography>
+                  </Stack>
+                </Button>
               ) : (
                 <Typography>No upcoming matches scheduled</Typography>
               )}
