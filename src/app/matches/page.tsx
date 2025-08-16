@@ -20,16 +20,15 @@ interface MatchRow {
   home_away: "Home" | "Away";
   our_score: number;
   their_score: number;
-  opponents: { name: string } | null;
+  opponents: { name: string }[]; // array because Supabase returns arrays
 }
 
 export default function MatchesPage() {
   const router = useRouter();
   const [matches, setMatches] = useState<MatchRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [teamId, setTeamId] = useState<string | null>(null);
 
-  // Fetch logged-in user's team_id
+  // Fetch logged-in user's team_id and matches
   useEffect(() => {
     const fetchTeamAndMatches = async () => {
       setLoading(true);
@@ -56,8 +55,6 @@ export default function MatchesPage() {
         setLoading(false);
         return;
       }
-
-      setTeamId(profile.team_id);
 
       // Get matches for this team
       const { data, error } = await supabase
@@ -107,7 +104,7 @@ export default function MatchesPage() {
               sx={{ borderBottom: "1px solid #eee" }}
             >
               <ListItemText
-                primary={`${match.date} vs ${match.opponents?.name || "Unknown"} (${match.home_away})`}
+                primary={`${match.date} vs ${match.opponents?.[0]?.name || "Unknown"} (${match.home_away})`}
                 secondary={`Score: ${match.our_score} - ${match.their_score}`}
               />
             </ListItem>
