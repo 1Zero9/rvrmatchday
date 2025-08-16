@@ -7,7 +7,7 @@ import {
   Typography,
   Button,
 } from "@mui/material";
-import Grid from "@mui/material/Grid2";  // ✅ modern Grid2
+import Grid from "@mui/material/Unstable_Grid2"; // ✅ correct import
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { Match } from "@/types/match";
@@ -28,13 +28,12 @@ export default function DashboardPage() {
     );
   }
 
-  // ✅ matches shaped like your Match interface
   const matches: Match[] = [
     {
       id: "1",
-      team_id: "home1",
+      team_id: "home1", // ✅ adjusted to match type
       date: "2025-08-10",
-      opponent_id: "away1",
+      opponent_id: "opp1",
       home_away: "Home",
       our_score: 2,
       their_score: 1,
@@ -44,7 +43,7 @@ export default function DashboardPage() {
       id: "2",
       team_id: "home2",
       date: "2025-08-15",
-      opponent_id: "away2",
+      opponent_id: "opp2",
       home_away: "Away",
       our_score: 3,
       their_score: 3,
@@ -55,7 +54,7 @@ export default function DashboardPage() {
   return (
     <Grid container spacing={3} sx={{ p: 3 }}>
       {/* Matches Card */}
-      <Grid item xs={12} md={4}>
+      <Grid xs={12} md={4}>
         <Card>
           <CardHeader title="Matches" />
           <CardContent>
@@ -78,7 +77,7 @@ export default function DashboardPage() {
       </Grid>
 
       {/* Account Card */}
-      <Grid item xs={12} md={4}>
+      <Grid xs={12} md={4}>
         <Card>
           <CardHeader title="Account" />
           <CardContent>
