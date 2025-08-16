@@ -4,79 +4,99 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Player } from "@/types/match";
 import {
-  Paper,
-  Typography,
-  Stack,
-  TextField,
-  MenuItem,
+  Box,
   Button,
+  MenuItem,
+  TextField,
+  Typography,
 } from "@mui/material";
 
-type Props = {
+interface Props {
   matchId: string;
   players: Player[];
-};
+}
 
 export default function GoalsAssistsPanel({ matchId, players }: Props) {
-  const [minute, setMinute] = useState<number>(0);
-  const [scorerId, setScorerId] = useState<string>("");
-  const [assistId, setAssistId] = useState<string>("");
+  const [scorerId, setScorerId] = useState("");
+  const [assistId, setAssistId] = useState("");
+  const [minute, setMinute] = useState("");
 
-  const handleSubmit = async () => {
-    if (!scorerId) return;
-    const { error } = await supabase.from("goals").insert({
-      match_id: matchId,
-      minute,
-      scorer_id: scorerId,
-      assist_id: assistId || null,
-    });
-    if (error) console.error("Error saving goal:", error.message);
-    setMinute(0);
-    setScorerId("");
-    setAssistId("");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const { error } = await supabase.from("goals").insert([
+      {
+        match_id: matchId,
+        player_id: scorerId,
+        assist_id: assistId || null,
+        minute: Number(minute),
+        team_id: players.find((p) => p.id === scorerId)?.team_id, // ✅ set automatically
+      },
+    ]);
+
+    if (error) {
+      console.error("Error inserting goal:", error);
+    } else {
+      setScorerId("");
+      setAssistId("");
+      setMinute("");
+    }
   };
 
   return (
-    <Paper sx={{ p: 2 }}>
+    <Box component="form" onSubmit={handleSubmit} sx={{ p: 2 }}>
       <Typography variant="h6" gutterBottom>
         Record Goal
       </Typography>
-      <Stack spacing={2}>
-        <TextField
-          label="Minute"
-          type="number"
-          value={minute}
-          onChange={(e) => setMinute(parseInt(e.target.value))}
-        />
-        <TextField
-          select
-          label="Scorer"
-          value={scorerId}
-          onChange={(e) => setScorerId(e.target.value)}
-        >
-          {players.map((p) => (
-            <MenuItem key={p.id} value={p.id}>
-              #{p.shirt} {p.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          label="Assist (optional)"
-          value={assistId}
-          onChange={(e) => setAssistId(e.target.value)}
-        >
-          <MenuItem value="">None</MenuItem>
-          {players.map((p) => (
-            <MenuItem key={p.id} value={p.id}>
-              #{p.shirt} {p.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <Button variant="contained" onClick={handleSubmit}>
-          Save Goal
-        </Button>
-      </Stack>
-    </Paper>
+
+      {/* Scorer */}
+      <TextField
+        select
+        label="Scorer"
+        value={scorerId}
+        onChange={(e) => setScorerId(e.target.value)}
+        fullWidth
+        required
+        margin="normal"
+      >
+        {players.map((p) => (
+          <MenuItem key={p.id} value={p.id}>
+            {p.number ? `#${p.number} ` : ""}{p.name}
+          </MenuItem>
+        ))}
+      </TextField>
+
+      {/* Assist */}
+      <TextField
+        select
+        label="Assist (optional)"
+        value={assistId}
+        onChange={(e) => setAssistId(e.target.value)}
+        fullWidth
+        margin="normal"
+      >
+        <MenuItem value="">None</MenuItem>
+        {players.map((p) => (
+          <MenuItem key={p.id} value={p.id}>
+            {p.number ? `#${p.number} ` : ""}{p.name}
+          </MenuItem>
+        ))}
+      </TextField>
+
+      {/* Minute */}
+      <TextField
+        label="Minute"
+        type="number"
+        value={minute}
+        onChange={(e) => setMinute(e.target.value)}
+        fullWidth
+        required
+        margin="normal"
+      />
+
+      <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+        Add Goal
+      </Button>
+    </Box>
   );
 }
