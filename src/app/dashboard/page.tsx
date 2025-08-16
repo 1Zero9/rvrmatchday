@@ -7,7 +7,7 @@ import {
   Typography,
   Button,
 } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid2";  // ✅ modern Grid2
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { Match } from "@/types/match";
@@ -28,12 +28,13 @@ export default function DashboardPage() {
     );
   }
 
+  // ✅ matches shaped like your Match interface
   const matches: Match[] = [
     {
       id: "1",
-      team_id: "our-team",
+      team_id: "home1",
       date: "2025-08-10",
-      opponent_id: "blue-united",
+      opponent_id: "away1",
       home_away: "Home",
       our_score: 2,
       their_score: 1,
@@ -41,9 +42,9 @@ export default function DashboardPage() {
     },
     {
       id: "2",
-      team_id: "our-team",
+      team_id: "home2",
       date: "2025-08-15",
-      opponent_id: "red-rovers",
+      opponent_id: "away2",
       home_away: "Away",
       our_score: 3,
       their_score: 3,

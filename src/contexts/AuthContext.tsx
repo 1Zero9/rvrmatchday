@@ -10,12 +10,14 @@ export interface AuthContextType {
   logout: () => Promise<void>;
 }
 
+// default context
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+// custom hook
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error("useAuth must be used inside an AuthProvider");
   }
-  return context;
+  return ctx;
 }
