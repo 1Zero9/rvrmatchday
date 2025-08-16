@@ -2,115 +2,128 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { Match } from "@/types/match";
+
 import {
   Card,
   CardContent,
   CardHeader,
   Typography,
   Button,
-  Unstable_Grid2 as Grid, // 👈 use Grid2 API
 } from "@mui/material";
+import Grid2 from "@mui/material/Grid2"; // ✅ Stable Grid2 API in MUI v7
 import Link from "next/link";
 
-interface Match {
-  id: string;
-  date: string;
-  home_away: string;
-  our_score: number;
-  their_score: number;
-  opponents: { name: string }[];
-}
-
 export default function DashboardPage() {
-  const [lastMatch, setLastMatch] = useState<Match | null>(null);
+  const { user, loading, logout } = useAuth();
+  const [matches, setMatches] = useState<Match[]>([]);
 
   useEffect(() => {
-    const fetchLastMatch = async () => {
+    const fetchMatches = async () => {
       const { data, error } = await supabase
         .from("matches")
-        .select("id, date, home_away, our_score, their_score, opponents(name)")
+        .select("*")
         .order("date", { ascending: false })
-        .limit(1);
+        .limit(5);
 
       if (error) {
-        console.error("Error fetching last match:", error);
-      } else if (data && data.length > 0) {
-        setLastMatch(data[0]);
+        console.error("Error fetching matches:", error);
+      } else {
+        setMatches(data || []);
       }
     };
 
-    fetchLastMatch();
-  }, []);
+    if (user) {
+      fetchMatches();
+    }
+  }, [user]);
+
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  if (!user) {
+    return (
+      <Typography>
+        You are not logged in. Please{" "}
+        <Link href="/login" style={{ color: "blue" }}>
+          login
+        </Link>
+        .
+      </Typography>
+    );
+  }
+
+  const lastMatch = matches.length > 0 ? matches[0] : null;
 
   return (
-    <Grid container spacing={3} sx={{ p: 3 }}>
+    <Grid2 container spacing={3} sx={{ p: 3 }}>
       {/* Matches Card */}
-      <Grid xs={12} md={4}>
+      <Grid2 xs={12} md={4}>
         <Card>
           <CardHeader title="Matches" />
           <CardContent>
             {lastMatch ? (
               <>
-                <Typography variant="body1">
-                  Last Match: {lastMatch.date}
-                </Typography>
-                <Typography variant="body2">
-                  Opponent: {lastMatch.opponents?.[0]?.name ?? "Unknown"}
+                <Typography variant="h6">{lastMatch.opponent}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {new Date(lastMatch.date).toLocaleDateString()}
                 </Typography>
                 <Typography variant="h6">
                   {lastMatch.our_score} - {lastMatch.their_score}
                 </Typography>
               </>
             ) : (
-              <Typography variant="body2">No match data available.</Typography>
+              <Typography>No matches found.</Typography>
             )}
+          </CardContent>
+        </Card>
+      </Grid2>
+
+      {/* User Info Card */}
+      <Grid2 xs={12} md={4}>
+        <Card>
+          <CardHeader title="User Info" />
+          <CardContent>
+            <Typography>Email: {user.email}</Typography>
             <Button
-              component={Link}
-              href="/matches"
               variant="contained"
+              color="secondary"
               sx={{ mt: 2 }}
+              onClick={logout}
             >
-              View All Matches
+              Logout
             </Button>
           </CardContent>
         </Card>
-      </Grid>
+      </Grid2>
 
-      {/* Players Card */}
-      <Grid xs={12} md={4}>
+      {/* Quick Links Card */}
+      <Grid2 xs={12} md={4}>
         <Card>
-          <CardHeader title="Players" />
+          <CardHeader title="Quick Links" />
           <CardContent>
-            <Typography variant="body2">Manage team players.</Typography>
             <Button
+              variant="contained"
+              component={Link}
+              href="/record-match"
+              sx={{ mb: 1 }}
+              fullWidth
+            >
+              Record Match
+            </Button>
+            <Button
+              variant="outlined"
               component={Link}
               href="/players"
-              variant="contained"
-              sx={{ mt: 2 }}
+              fullWidth
             >
-              View Players
+              Manage Players
             </Button>
           </CardContent>
         </Card>
-      </Grid>
-
-      {/* Venues Card */}
-      <Grid xs={12} md={4}>
-        <Card>
-          <CardHeader title="Venues" />
-          <CardContent>
-            <Typography variant="body2">See where matches are played.</Typography>
-            <Button
-              component={Link}
-              href="/venues"
-              variant="contained"
-              sx={{ mt: 2 }}
-            >
-              View Venues
-            </Button>
-          </CardContent>
-        </Card>
-      </Grid>
-    </Grid>
+      </Grid2>
+    </Grid2>
   );
 }
