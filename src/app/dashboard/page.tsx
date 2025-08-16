@@ -13,7 +13,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Grid from "@mui/material/Grid2"; // ✅ Grid v2 entrypoint
+import Grid from "@mui/material/Grid"; // ✅ use classic Grid
 import Link from "next/link";
 import { Match } from "@/types/match";
 
