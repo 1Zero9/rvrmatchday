@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient"; // ✅ FIXED
 import Grid from "@mui/material/Grid";
 import {
   Card,
   CardContent,
   CardHeader,
   Typography,
-  CircularProgress,
+  Button,
 } from "@mui/material";
 
 interface Match {
@@ -21,88 +21,104 @@ interface Match {
 }
 
 export default function DashboardPage() {
-  const [lastMatch, setLastMatch] = useState<Match | null>(null);
+  const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchLastMatch = async () => {
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from("matches")
-          .select("id, date, home_away, our_score, their_score, opponents(name)")
-          .order("date", { ascending: false })
-          .limit(1);
+    const fetchMatches = async () => {
+      const { data, error } = await supabase
+        .from("matches")
+        .select("id, date, home_away, our_score, their_score, opponents(name)")
+        .order("date", { ascending: false })
+        .limit(5);
 
-        if (error) {
-          console.error("Error fetching last match:", error);
-        } else if (data && data.length > 0) {
-          setLastMatch(data[0]);
-        }
-      } catch (err) {
-        console.error("Unexpected error:", err);
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.error("Error fetching matches:", error);
+      } else {
+        setMatches(data || []);
       }
+      setLoading(false);
     };
 
-    fetchLastMatch();
+    fetchMatches();
   }, []);
 
+  const lastMatch = matches[0];
+
   return (
-    <div>
-      <Typography variant="h4" gutterBottom>
-        Dashboard
-      </Typography>
-
-      {/* Navigation Cards */}
-      <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardHeader title="Matches" />
-            <CardContent>
-              {loading ? (
-                <CircularProgress />
-              ) : lastMatch ? (
-                <>
-                  <Typography variant="h6">
-                    Last Match – {new Date(lastMatch.date).toLocaleDateString()}
-                  </Typography>
-                  <Typography>
-                    vs{" "}
-                    {lastMatch.opponents && lastMatch.opponents.length > 0
-                      ? lastMatch.opponents[0].name
-                      : "Unknown Opponent"}
-                  </Typography>
-                  <Typography variant="h6">
-                    {lastMatch.our_score} - {lastMatch.their_score}
-                  </Typography>
-                </>
-              ) : (
-                <Typography>No matches found.</Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardHeader title="Players" />
-            <CardContent>
-              <Typography>Player stats will go here.</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardHeader title="Venues" />
-            <CardContent>
-              <Typography>Venue info will go here.</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+    <Grid container spacing={3} mb={3}>
+      {/* Matches Card */}
+      <Grid item xs={12} md={4}>
+        <Card>
+          <CardHeader title="Matches" />
+          <CardContent>
+            {loading ? (
+              <Typography>Loading...</Typography>
+            ) : matches.length === 0 ? (
+              <Typography>No matches found</Typography>
+            ) : (
+              <>
+                <Typography variant="h6">
+                  Last Match: {lastMatch?.date}
+                </Typography>
+                <Typography>
+                  vs{" "}
+                  {lastMatch?.opponents && lastMatch.opponents.length > 0
+                    ? lastMatch.opponents[0].name
+                    : "Unknown Opponent"}
+                </Typography>
+                <Typography variant="h6">
+                  {lastMatch?.our_score} - {lastMatch?.their_score}
+                </Typography>
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{ mt: 2 }}
+                  href="/matches"
+                >
+                  View All Matches
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </Grid>
-    </div>
+
+      {/* Players Card */}
+      <Grid item xs={12} md={4}>
+        <Card>
+          <CardHeader title="Players" />
+          <CardContent>
+            <Typography variant="h6">Coming soon…</Typography>
+            <Button
+              variant="contained"
+              size="small"
+              sx={{ mt: 2 }}
+              href="/players"
+            >
+              View Players
+            </Button>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Training Card */}
+      <Grid item xs={12} md={4}>
+        <Card>
+          <CardHeader title="Training" />
+          <CardContent>
+            <Typography variant="h6">Coming soon…</Typography>
+            <Button
+              variant="contained"
+              size="small"
+              sx={{ mt: 2 }}
+              href="/training"
+            >
+              View Training
+            </Button>
+          </CardContent>
+        </Card>
+      </Grid>
+    </Grid>
   );
 }
