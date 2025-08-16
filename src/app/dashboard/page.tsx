@@ -1,62 +1,56 @@
+// src/app/dashboard/page.tsx
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Grid,
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-} from "@mui/material";
+import { Card, CardContent, CardHeader, Typography, List, ListItem, ListItemText } from "@mui/material";
 
 export default function DashboardPage() {
   return (
-    <Grid container spacing={3} sx={{ p: 3 }}>
-      {/* Matches Card */}
-      <Grid item xs={12} md={4}>
+    <div className="p-6 space-y-6">
+      <Typography variant="h4" component="h1">
+        Dashboard
+      </Typography>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Matches Card */}
         <Card>
           <CardHeader title="Matches" />
           <CardContent>
             <List>
               <ListItem>
-                <ListItemText
-                  primary="⚽ 15' Alice Smith"
-                  secondary="Assist: Bob Jones"
-                />
+                <ListItemText primary="RVR 2 - 1 Opponents" secondary="12 Aug 2025" />
               </ListItem>
               <ListItem>
-                <ListItemText primary="⚽ 33' Charlie Doe" />
+                <ListItemText primary="RVR 0 - 0 City Juniors" secondary="5 Aug 2025" />
               </ListItem>
             </List>
           </CardContent>
         </Card>
-      </Grid>
 
-      {/* Players Card */}
-      <Grid item xs={12} md={4}>
+        {/* Players Card */}
         <Card>
           <CardHeader title="Players" />
           <CardContent>
-            <Typography variant="body2">
-              Placeholder for players list
-            </Typography>
+            <List>
+              <ListItem>
+                <ListItemText primary="Alice Smith" secondary="Forward" />
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Bob Johnson" secondary="Midfield" />
+              </ListItem>
+            </List>
           </CardContent>
         </Card>
-      </Grid>
 
-      {/* Stats Card */}
-      <Grid item xs={12} md={4}>
+        {/* Stats Card */}
         <Card>
           <CardHeader title="Stats" />
           <CardContent>
-            <Typography variant="body2">
-              Placeholder for stats
-            </Typography>
+            <Typography>Goals: 12</Typography>
+            <Typography>Assists: 7</Typography>
+            <Typography>Clean Sheets: 3</Typography>
           </CardContent>
         </Card>
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 }
