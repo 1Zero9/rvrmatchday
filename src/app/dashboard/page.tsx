@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import Grid from "@mui/material/Grid";
 import {
+  Grid,
   Card,
   CardContent,
   CardHeader,
