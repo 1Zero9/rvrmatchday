@@ -6,7 +6,6 @@ import { Match, GoalEvent, Player } from "@/types/match";
 import GoalsAssistsPanel from "@/components/GoalsAssistsPanel";
 import { Paper, Typography, Stack, List, ListItem, ListItemText, Slide } from "@mui/material";
 import { keyframes } from "@emotion/react";
-import GoalsAssistsPanel from "@/components/GoalsAssistsPanel";
 import { mockPlayers } from "@/lib/mockData";
 
 // --- Animations ---
