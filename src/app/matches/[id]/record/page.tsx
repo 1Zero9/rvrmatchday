@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Match, GoalEvent, Player } from "@/types/match";
@@ -39,6 +39,22 @@ export default function RecordMatchPage() {
   const [score, setScore] = useState({ us: 0, them: 0 });
   const [flash, setFlash] = useState<"green" | "red" | null>(null);
   const eventsEndRef = useRef<HTMLDivElement>(null);
+
+  // --- Update score helper
+  const updateScore = useCallback(
+    (goals: GoalEvent[]) => {
+      let us = 0;
+      let them = 0;
+
+      goals.forEach((g) => {
+        if (g.team_id === match?.team_id) us += 1;
+        else them += 1;
+      });
+
+      setScore({ us, them });
+    },
+    [match?.team_id]
+  );
 
   // Fetch match, players, and goals
   useEffect(() => {
@@ -86,7 +102,7 @@ export default function RecordMatchPage() {
     };
 
     fetchData();
-  }, [matchId]);
+  }, [matchId, updateScore]);
 
   // Subscribe to realtime goals
   useEffect(() => {
@@ -96,11 +112,19 @@ export default function RecordMatchPage() {
       .channel("goals-channel")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "goals", filter: `match_id=eq.${matchId}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "goals",
+          filter: `match_id=eq.${matchId}`,
+        },
         (payload) => {
           const newGoal = payload.new as GoalEvent;
-          setEvents((prev) => [...prev, newGoal]);
-          updateScore([...events, newGoal]);
+          setEvents((prev) => {
+            const updated = [...prev, newGoal];
+            updateScore(updated);
+            return updated;
+          });
           triggerFlash(newGoal.team_id === match?.team_id ? "green" : "red");
         }
       )
@@ -109,20 +133,7 @@ export default function RecordMatchPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [matchId, events, match]);
-
-  // Update score
-  const updateScore = (goals: GoalEvent[]) => {
-    let us = 0;
-    let them = 0;
-
-    goals.forEach((g) => {
-      if (g.team_id === match?.team_id) us += 1;
-      else them += 1;
-    });
-
-    setScore({ us, them });
-  };
+  }, [matchId, match?.team_id, updateScore]);
 
   // Trigger flash animation
   const triggerFlash = (color: "green" | "red") => {
