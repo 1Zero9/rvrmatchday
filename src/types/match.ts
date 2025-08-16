@@ -7,10 +7,15 @@ export type Player = {
 
 export type GoalEvent = {
   id: string;
+  match_id: string;
   minute: number;
-  scorerId: string;
-  assistId?: string;
+  scorerId: string | null;
+  assistId?: string | null;
+  // optional joined fields
+  scorer?: { name: string } | null;
+  assist?: { name: string } | null;
 };
+
 
 export type Match = {
   id: string;
