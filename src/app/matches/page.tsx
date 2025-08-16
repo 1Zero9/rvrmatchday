@@ -12,7 +12,7 @@ import {
   ListItemText,
   Typography,
   CircularProgress,
-  ListItemButton, // ✅ needed for clickable list items
+  ListItemButton,
 } from "@mui/material";
 
 interface MatchRow {
@@ -88,7 +88,8 @@ export default function MatchesPage() {
     <Container maxWidth="sm" sx={{ mt: 4 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h4">Matches</Typography>
-        <Button variant="contained" onClick={() => router.push("/app/matches/new")}>
+        {/* ✅ Fixed path */}
+        <Button variant="contained" onClick={() => router.push("/matches/new")}>
           New Match
         </Button>
       </Box>
@@ -103,7 +104,8 @@ export default function MatchesPage() {
               disablePadding
               sx={{ borderBottom: "1px solid #eee" }}
             >
-              <ListItemButton onClick={() => router.push(`/app/matches/${match.id}`)}>
+              {/* ✅ Fixed path */}
+              <ListItemButton onClick={() => router.push(`/matches/${match.id}`)}>
                 <ListItemText
                   primary={`${match.date} vs ${match.opponents?.[0]?.name || "Unknown"} (${match.home_away})`}
                   secondary={`Score: ${match.our_score} - ${match.their_score}`}
