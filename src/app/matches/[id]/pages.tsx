@@ -19,9 +19,9 @@ interface MatchDetail {
   our_score: number;
   their_score: number;
   notes: string | null;
-  opponents: { name: string } | null;
-  leagues?: { name: string } | null;
-  venues?: { name: string } | null;
+  opponents: { name: string }[];   // now arrays
+  leagues?: { name: string }[];
+  venues?: { name: string }[];
 }
 
 export default function MatchDetailPage() {
@@ -86,7 +86,7 @@ export default function MatchDetailPage() {
     <Container maxWidth="sm" sx={{ mt: 4 }}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h4" gutterBottom>
-          {match.opponents?.name || "Unknown Opponent"}
+          {match.opponents?.[0]?.name || "Unknown Opponent"}
         </Typography>
 
         <Typography variant="body1">
@@ -94,11 +94,12 @@ export default function MatchDetailPage() {
         </Typography>
 
         <Typography variant="body1">
-          Location: {match.home_away} {match.venues?.name ? `at ${match.venues.name}` : ""}
+          Location: {match.home_away}{" "}
+          {match.venues?.[0]?.name ? `at ${match.venues[0].name}` : ""}
         </Typography>
 
-        {match.leagues?.name && (
-          <Typography variant="body1">League: {match.leagues.name}</Typography>
+        {match.leagues?.[0]?.name && (
+          <Typography variant="body1">League: {match.leagues[0].name}</Typography>
         )}
 
         <Box sx={{ my: 2 }}>
