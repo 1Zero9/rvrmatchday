@@ -10,14 +10,23 @@ import {
   Grid,
 } from "@mui/material";
 
+// Define a type for a Match
+type Match = {
+  id: string;
+  date: string;
+  our_score: number;
+  their_score: number;
+  opponents: { name: string }[];
+};
+
 export default function DashboardPage() {
-  const [lastMatch, setLastMatch] = useState<any>(null);
+  const [lastMatch, setLastMatch] = useState<Match | null>(null);
 
   useEffect(() => {
     const fetchLastMatch = async () => {
       const { data, error } = await supabase
         .from("matches")
-        .select("*, opponents(name)")
+        .select("id, date, our_score, their_score, opponents(name)")
         .order("date", { ascending: false })
         .limit(1);
 
@@ -75,8 +84,7 @@ export default function DashboardPage() {
             <>
               <Typography variant="h6">{lastMatch.date}</Typography>
               <Typography>
-                vs{" "}
-                {lastMatch.opponents?.[0]?.name ?? "Unknown Opponent"}
+                vs {lastMatch.opponents?.[0]?.name ?? "Unknown Opponent"}
               </Typography>
               <Typography variant="h6">
                 {lastMatch.our_score} - {lastMatch.their_score}
