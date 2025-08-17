@@ -69,7 +69,13 @@ export default function DashboardPage() {
 
       setMatches(matchesData ?? []);
       setPlayers(playersData ?? []);
-      setGoals(goalsData ?? []);
+setGoals(
+  (goalsData ?? []).map((g: any) => ({
+    ...g,
+    scorer: g.scorer?.[0] ?? null,
+    assist: g.assist?.[0] ?? null,
+  }))
+);
       setLoading(false);
     };
 
