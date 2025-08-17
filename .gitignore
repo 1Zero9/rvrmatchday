@@ -1,5 +1,10 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# old/broken backups
+src_old/
+src_broken/
+
+
 # dependencies
 /node_modules
 /.pnp
@@ -39,4 +44,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.vercel
