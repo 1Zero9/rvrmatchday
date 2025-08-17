@@ -15,7 +15,7 @@ interface Match {
 interface Player {
   id: string;
   name: string;
-  position?: string; // position may not always come back in joined selects
+  position?: string; // optional, because joined selects may not always include it
 }
 
 interface Goal {
@@ -25,6 +25,15 @@ interface Goal {
   scorer: Player | null;
   assist: Player | null;
 }
+
+// Raw Supabase response: scorer/assist come back as arrays
+type RawGoal = {
+  id: string;
+  match_id: string;
+  minute: number;
+  scorer?: Player[];
+  assist?: Player[];
+};
 
 export default function DashboardPage() {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -51,7 +60,7 @@ export default function DashboardPage() {
 
       if (playersError) console.error("Error fetching players:", playersError);
 
-      // 3. Goals with scorer + assist as single objects
+      // 3. Goals with scorer + assist (arrays -> normalised below)
       const { data: goalsData, error: goalsError } = await supabase
         .from("goals")
         .select(
@@ -69,13 +78,16 @@ export default function DashboardPage() {
 
       setMatches(matchesData ?? []);
       setPlayers(playersData ?? []);
-setGoals(
-  (goalsData ?? []).map((g: any) => ({
-    ...g,
-    scorer: g.scorer?.[0] ?? null,
-    assist: g.assist?.[0] ?? null,
-  }))
-);
+
+      // normalise scorer/assist arrays into single objects
+      setGoals(
+        ((goalsData ?? []) as RawGoal[]).map((g) => ({
+          ...g,
+          scorer: g.scorer?.[0] ?? null,
+          assist: g.assist?.[0] ?? null,
+        }))
+      );
+
       setLoading(false);
     };
 
