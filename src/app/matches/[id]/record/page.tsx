@@ -141,9 +141,9 @@ export default function RecordMatchPage() {
         <ul className="space-y-2">
           {events.map((event, idx) => (
             <li key={idx} className="border-b pb-1">
-              <span className="font-medium">
-                {event.minute}' Goal: {event.scorer?.name}
-              </span>
+<span className="font-medium">
+  {`${event.minute}' Goal: ${event.scorer?.name}`}
+</span>
               {event.assist && (
                 <span className="text-sm text-gray-500 ml-2">
                   (Assist: {event.assist.name})
