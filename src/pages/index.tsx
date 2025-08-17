@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -24,12 +26,12 @@ export default function Dashboard() {
       )}
 
       <div className="mt-6 grid gap-4">
-        <a href="/matches" className="p-4 bg-blue-100 rounded-lg shadow">
+        <Link href="/matches" className="p-4 bg-blue-100 rounded-lg shadow">
           📋 Matches
-        </a>
-        <a href="/club" className="p-4 bg-green-100 rounded-lg shadow">
+        </Link>
+        <Link href="/club" className="p-4 bg-green-100 rounded-lg shadow">
           🏟️ Club Info
-        </a>
+        </Link>
       </div>
     </div>
   );
