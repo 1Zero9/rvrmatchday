@@ -15,7 +15,7 @@ interface Match {
 interface Player {
   id: string;
   name: string;
-  position: string;
+  position?: string; // position may not always come back in joined selects
 }
 
 interface Goal {
@@ -51,17 +51,25 @@ export default function DashboardPage() {
 
       if (playersError) console.error("Error fetching players:", playersError);
 
-      // 3. Goals with scorer + assist
+      // 3. Goals with scorer + assist as single objects
       const { data: goalsData, error: goalsError } = await supabase
         .from("goals")
-        .select("id, match_id, minute, scorer:players(id,name), assist:players(id,name)")
+        .select(
+          `
+            id,
+            match_id,
+            minute,
+            scorer:players!goals_scorer_id_fkey(id, name, position),
+            assist:players!goals_assist_id_fkey(id, name, position)
+          `
+        )
         .order("minute");
 
       if (goalsError) console.error("Error fetching goals:", goalsError);
 
-      setMatches(matchesData || []);
-      setPlayers(playersData || []);
-      setGoals(goalsData || []);
+      setMatches(matchesData ?? []);
+      setPlayers(playersData ?? []);
+      setGoals(goalsData ?? []);
       setLoading(false);
     };
 
