@@ -1,45 +1,21 @@
+// src/app/record-match/[id]/page.tsx
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation"; // ✅ added useRouter
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Match, GoalEvent, Player } from "@/types/match";
 import GoalsAssistsPanel from "@/components/GoalsAssistsPanel";
-import {
-  Paper,
-  Typography,
-  Stack,
-  List,
-  ListItem,
-  ListItemText,
-  Slide,
-  Button, // ✅ added
-} from "@mui/material";
-import { keyframes } from "@emotion/react";
-
-// --- Animations ---
-const flashGreen = keyframes`
-  0% { background-color: #003366; }
-  30% { background-color: #228B22; }
-  100% { background-color: #003366; }
-`;
-
-const flashRed = keyframes`
-  0% { background-color: #003366; }
-  30% { background-color: #B22222; }
-  100% { background-color: #003366; }
-`;
 
 export default function RecordMatchPage() {
   const params = useParams();
-  const router = useRouter(); // ✅
+  const router = useRouter();
   const matchId = params?.id as string;
 
   const [match, setMatch] = useState<Match | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [events, setEvents] = useState<GoalEvent[]>([]);
   const [score, setScore] = useState({ us: 0, them: 0 });
-  const [flash, setFlash] = useState<"green" | "red" | null>(null);
   const eventsEndRef = useRef<HTMLDivElement>(null);
 
   // --- Update score helper
@@ -127,7 +103,6 @@ export default function RecordMatchPage() {
             updateScore(updated);
             return updated;
           });
-          triggerFlash(newGoal.team_id === match?.team_id ? "green" : "red");
         }
       )
       .subscribe();
@@ -137,77 +112,56 @@ export default function RecordMatchPage() {
     };
   }, [matchId, match?.team_id, updateScore]);
 
-  // Trigger flash animation
-  const triggerFlash = (color: "green" | "red") => {
-    setFlash(color);
-    setTimeout(() => setFlash(null), 1000);
-  };
-
   // Auto-scroll events log
   useEffect(() => {
     eventsEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [events]);
 
   if (!match) {
-    return (
-      <Typography variant="h6" sx={{ mt: 4, textAlign: "center" }}>
-        Loading match...
-      </Typography>
-    );
+    return <div className="text-center mt-10">Loading match...</div>;
   }
 
   return (
-    <Stack spacing={3} sx={{ p: 3 }}>
+    <div className="p-6 space-y-6">
       {/* Scoreboard */}
-      <Paper
-        sx={{
-          p: 2,
-          textAlign: "center",
-          backgroundColor: "#003366",
-          color: "white",
-          animation:
-            flash === "green"
-              ? `${flashGreen} 1s ease`
-              : flash === "red"
-              ? `${flashRed} 1s ease`
-              : "none",
-        }}
-      >
-        <Typography variant="h5">
+      <div className="bg-blue-900 text-white p-4 text-center rounded-lg">
+        <h2 className="text-xl font-semibold">
           {match.home_away === "Home"
             ? `Us ${score.us} - ${score.them} ${match.opponents?.[0]?.name}`
             : `${match.opponents?.[0]?.name} ${score.them} - ${score.us} Us`}
-        </Typography>
-      </Paper>
+        </h2>
+      </div>
 
       {/* Goal/Assist Input Panel */}
       <GoalsAssistsPanel matchId={matchId} players={players} />
 
       {/* Events Log */}
-      <Paper sx={{ p: 2, maxHeight: 300, overflow: "auto" }}>
-        <Typography variant="h6">Events Log</Typography>
-        <List>
+      <div className="bg-white shadow rounded-lg p-4 max-h-72 overflow-auto">
+        <h3 className="text-lg font-semibold mb-2">Events Log</h3>
+        <ul className="space-y-2">
           {events.map((event, idx) => (
-            <Slide key={idx} direction="up" in mountOnEnter unmountOnExit>
-              <ListItem>
-                <ListItemText
-                  primary={`${event.minute}' Goal: ${event.scorer?.name}`}
-                  secondary={event.assist ? `Assist: ${event.assist.name}` : ""}
-                />
-              </ListItem>
-            </Slide>
+            <li key={idx} className="border-b pb-1">
+              <span className="font-medium">
+                {event.minute}' Goal: {event.scorer?.name}
+              </span>
+              {event.assist && (
+                <span className="text-sm text-gray-500 ml-2">
+                  (Assist: {event.assist.name})
+                </span>
+              )}
+            </li>
           ))}
           <div ref={eventsEndRef} />
-        </List>
-      </Paper>
+        </ul>
+      </div>
 
-      {/* ✅ Back button */}
-      <Button
-        variant="outlined"
+      {/* Back button */}
+      <button
         onClick={() => router.push(`/matches/${matchId}`)}
+        className="px-4 py-2 border rounded-lg hover:bg-gray-100"
       >
         Back to Match
-      </Button>
-    </Stack>
+      </button>
+    </div>
   );
 }
