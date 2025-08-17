@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 
 interface Match {
@@ -7,53 +7,75 @@ interface Match {
   date: string;
   home_away: string;
   notes: string | null;
-  opponents: { name: string } | null;
-  venues: { name: string } | null;
   our_score: number;
   their_score: number;
+  opponents: { name: string } | null;
+  venues: { name: string } | null;
 }
 
-export default function Matches() {
+export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
 
   useEffect(() => {
     const fetchMatches = async () => {
       const { data, error } = await supabase
         .from("matches")
-        .select("id, date, home_away, notes, our_score, their_score, opponents(name), venues(name)")
+        .select(
+          `
+          id,
+          date,
+          home_away,
+          notes,
+          our_score,
+          their_score,
+          opponents!matches_opponent_id_fkey ( name ),
+          venues!matches_venue_id_fkey ( name )
+        `
+        )
         .order("date", { ascending: false });
-      if (!error && data) setMatches(data as Match[]);
+
+      if (!error && data) {
+        setMatches(data as Match[]);
+      } else {
+        console.error(error);
+      }
     };
+
     fetchMatches();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Matches</h1>
-        <Link
-          href="/app/matches/new"
-          className="px-4 py-2 bg-orange-500 text-white rounded-lg shadow hover:bg-orange-600"
-        >
-          ➕ Record New Match
-        </Link>
-      </div>
-
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Matches</h1>
       {matches.length === 0 ? (
-        <p>No matches yet</p>
+        <p>No matches recorded yet.</p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-4">
           {matches.map((m) => (
-            <li key={m.id} className="bg-white p-4 rounded-lg shadow flex justify-between">
-              <div>
-                <p className="font-semibold">{m.date} · {m.home_away}</p>
-                <p className="text-gray-600">
-                  vs {m.opponents?.name} @ {m.venues?.name || "TBD"}
-                </p>
-                {m.notes && <p className="text-sm text-gray-500">{m.notes}</p>}
+            <li
+              key={m.id}
+              className="border rounded-lg p-4 shadow-sm bg-white hover:shadow-md transition"
+            >
+              <div className="flex justify-between">
+                <span className="font-semibold">{m.date}</span>
+                <span className="text-gray-500">{m.home_away}</span>
               </div>
-              <div className="text-right font-bold text-lg">
-                {m.our_score} – {m.their_score}
+              <div className="mt-2">
+                <p className="text-gray-700">
+                  {m.our_score} - {m.their_score}
+                </p>
+                <p className="text-gray-600">
+                  vs {m.opponents?.name || "Unknown"} @ {m.venues?.name || "TBD"}
+                </p>
+              </div>
+              {m.notes && <p className="mt-2 text-sm text-gray-500">{m.notes}</p>}
+              <div className="mt-3">
+                <Link
+                  href={`/app/matches/${m.id}`}
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  View Details →
+                </Link>
               </div>
             </li>
           ))}
