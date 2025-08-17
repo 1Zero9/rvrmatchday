@@ -3,17 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import {
-  Box,
-  Button,
-  Container,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-  InputLabel,
-  FormControl,
-} from "@mui/material";
 
 interface Opponent {
   id: string;
@@ -101,62 +90,67 @@ export default function NewMatchPage() {
       console.error("Error inserting match:", error);
       alert("Failed to create match");
     } else {
-      router.push(`/app/matches/${data.id}/record`);
+      router.push(`/matches/${data.id}/record`);
     }
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Create New Match
-      </Typography>
-      <Box component="form" onSubmit={handleSubmit}>
-        <TextField
-          label="Date"
-          type="date"
-          fullWidth
-          required
-          margin="normal"
-          InputLabelProps={{ shrink: true }}
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
+    <div className="max-w-md mx-auto p-6 bg-white shadow rounded-lg">
+      <h1 className="text-2xl font-bold mb-4">Create New Match</h1>
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel id="opponent-label">Opponent</InputLabel>
-          <Select
-            labelId="opponent-label"
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Date */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Date</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+            className="w-full border rounded p-2"
+          />
+        </div>
+
+        {/* Opponent */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Opponent</label>
+          <select
             value={opponentId}
             onChange={(e) => setOpponentId(e.target.value)}
             required
+            className="w-full border rounded p-2"
           >
+            <option value="">Select opponent...</option>
             {opponents.map((opp) => (
-              <MenuItem key={opp.id} value={opp.id}>
+              <option key={opp.id} value={opp.id}>
                 {opp.name}
-              </MenuItem>
+              </option>
             ))}
-          </Select>
-        </FormControl>
+          </select>
+        </div>
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel id="homeaway-label">Home / Away</InputLabel>
-          <Select
-            labelId="homeaway-label"
+        {/* Home/Away */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Home / Away</label>
+          <select
             value={homeAway}
             onChange={(e) => setHomeAway(e.target.value)}
-            required
+            className="w-full border rounded p-2"
           >
-            <MenuItem value="Home">Home</MenuItem>
-            <MenuItem value="Away">Away</MenuItem>
-          </Select>
-        </FormControl>
+            <option value="Home">Home</option>
+            <option value="Away">Away</option>
+          </select>
+        </div>
 
-        <Box sx={{ mt: 3 }}>
-          <Button type="submit" variant="contained" disabled={loading || !teamId} fullWidth>
-            {loading ? "Creating..." : "Create Match"}
-          </Button>
-        </Box>
-      </Box>
-    </Container>
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={loading || !teamId}
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+        >
+          {loading ? "Creating..." : "Create Match"}
+        </button>
+      </form>
+    </div>
   );
 }
