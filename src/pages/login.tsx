@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import type { Session } from "@supabase/supabase-js";
 
 export default function Login() {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session: Session | null) => {
       if (session) {
         window.location.href = "/";
       }
