@@ -1,34 +1,44 @@
+"use client";
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Menu, X } from "lucide-react";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 w-full bg-[#001F3F] text-white shadow-md z-50">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
+    <header className="bg-maroon text-white fixed w-full top-0 left-0 z-50 shadow-md">
+      <div className="container mx-auto flex items-center justify-between p-4">
+        {/* Logo + Title */}
         <Link href="/" className="flex items-center space-x-2">
-          <Image src="/images/logo.png" alt="Club Logo" width={40} height={40} />
+          <img
+            src="/images/logo.png"
+            alt="Club Logo"
+            className="h-10 w-10 object-contain"
+          />
           <span className="font-bold text-lg">RVR Football Club</span>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex space-x-6 text-white">
-          <Link href="/about" className="hover:underline">
-            About
+        <nav className="hidden md:flex space-x-6">
+          <Link href="/" className="hover:text-gray-200">
+            Home
           </Link>
-          <Link href="/contact" className="hover:underline">
+          <Link href="/app/teams" className="hover:text-gray-200">
+            Teams
+          </Link>
+          <Link href="/app/news" className="hover:text-gray-200">
+            News
+          </Link>
+          <Link href="/app/contact" className="hover:text-gray-200">
             Contact
           </Link>
         </nav>
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-white"
           onClick={() => setIsOpen(!isOpen)}
+          className="md:hidden focus:outline-none"
         >
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
@@ -36,11 +46,17 @@ export default function Header() {
 
       {/* Mobile Nav */}
       {isOpen && (
-        <nav className="md:hidden bg-[#001F3F] text-white px-4 py-3 space-y-2">
-          <Link href="/about" className="block">
-            About
+        <nav className="md:hidden bg-maroon text-white p-4 space-y-3">
+          <Link href="/" onClick={() => setIsOpen(false)}>
+            Home
           </Link>
-          <Link href="/contact" className="block">
+          <Link href="/app/teams" onClick={() => setIsOpen(false)}>
+            Teams
+          </Link>
+          <Link href="/app/news" onClick={() => setIsOpen(false)}>
+            News
+          </Link>
+          <Link href="/app/contact" onClick={() => setIsOpen(false)}>
             Contact
           </Link>
         </nav>
