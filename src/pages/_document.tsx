@@ -4,9 +4,9 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        {/* Google Font */}
+        {/* Google Fonts */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Bangers&display=swap"
           rel="stylesheet"
         />
       </Head>
