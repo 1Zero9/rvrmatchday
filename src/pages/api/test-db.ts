@@ -20,7 +20,7 @@ export default async function handler(
             table: tableName,
             exists: !error || (error.code !== 'PGRST116' && error.code !== '42P01')
           };
-        } catch (err) {
+        } catch {
           return {
             table: tableName,
             exists: false
@@ -67,11 +67,12 @@ export default async function handler(
       });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Database test error:', error);
     res.status(500).json({
       status: 'error',
-      message: error.message,
+      message: errorMessage,
       needsSchema: true,
       details: {
         existing: [],

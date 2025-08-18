@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Layout from '@/components/Layout';
 
 interface DatabaseStatus {
@@ -32,7 +33,7 @@ export default function Setup() {
       setMessage(result.message);
       setNeedsSchema(result.needsSchema);
       setDetails(result.details || { existing: [], missing: [] });
-    } catch (error) {
+    } catch {
       setConnectionStatus('error');
       setMessage('Failed to connect to database');
       setNeedsSchema(true);
@@ -110,7 +111,7 @@ export default function Setup() {
                 <h2 className="text-xl font-semibold mb-4">Database Schema Setup</h2>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
                   <p className="text-blue-800 mb-4">
-                    Your Supabase database needs to be set up with the required tables. Here's what you need to do:
+                    Your Supabase database needs to be set up with the required tables. Here&apos;s what you need to do:
                   </p>
                   
                   <div className="space-y-4">
@@ -172,12 +173,12 @@ export default function Setup() {
                 <p className="text-green-700 mb-4">
                   Your database is connected and all tables are set up correctly.
                 </p>
-                <a 
+                <Link 
                   href="/"
                   className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition-colors"
                 >
                   Go to Homepage
-                </a>
+                </Link>
               </div>
             )}
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Custom404() {
   return (
@@ -8,9 +9,11 @@ export default function Custom404() {
         Oops! The page dribbled out of bounds. ⚽
       </p>
 
-      <img
+      <Image
         src="/images/ball-lost.png"
         alt="Football lost"
+        width={160}
+        height={160}
         className="w-40 h-40 mb-8 animate-bounce"
       />
 

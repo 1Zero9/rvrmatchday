@@ -17,7 +17,7 @@ export default function Contact() {
                 Contact Rivervalley Rangers AFC
               </h1>
               <p className="text-xl text-gray-700">
-                Got questions about the club? We'd love to hear from you!
+                Got questions about the club? We&apos;d love to hear from you!
               </p>
             </div>
 

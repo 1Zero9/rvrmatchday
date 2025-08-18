@@ -17,8 +17,8 @@ export default function About() {
               About Rivervalley Rangers AFC
             </h1>
             <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-              Building community through football since 2009. We're more than just a club – 
-              we're a family dedicated to developing players, building character, and creating 
+              Building community through football since 2009. We&apos;re more than just a club – 
+              we&apos;re a family dedicated to developing players, building character, and creating 
               lasting memories on and off the pitch.
             </p>
           </motion.div>
@@ -46,7 +46,7 @@ export default function About() {
                 <div className="text-4xl mb-4">🎯</div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Development</h3>
                 <p className="text-gray-700">
-                  Every player's journey is unique. We focus on individual growth, 
+                  Every player&apos;s journey is unique. We focus on individual growth, 
                   skill development, and personal achievement.
                 </p>
               </div>

@@ -122,7 +122,7 @@ export default function Join() {
             {/* What's Included */}
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">What's Included</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">What&apos;s Included</h3>
                 <ul className="space-y-2 text-gray-700">
                   <li className="flex items-center">
                     <span className="text-green-500 mr-2">✓</span>

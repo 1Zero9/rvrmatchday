@@ -177,11 +177,12 @@ export default async function handler(
       }
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Seed data error:', error);
     res.status(500).json({ 
       success: false,
-      message: error.message 
+      message: errorMessage 
     });
   }
 }

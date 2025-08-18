@@ -175,7 +175,7 @@ export default function Home() {
               Choose Your Experience
             </h2>
             <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-              Whether you're joining us for the first time, a current member, or one of our young stars, 
+              Whether you&apos;re joining us for the first time, a current member, or one of our young stars, 
               we have something special designed just for you.
             </p>
           </motion.div>
@@ -256,7 +256,7 @@ export default function Home() {
                 <div className="p-6">
                   <h3 className="text-xl font-bold mb-2 text-gray-900">Sample News Title</h3>
                   <p className="text-gray-700 mb-4">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit...
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit&hellip;
                   </p>
                   <Link href="#" className="text-blue-700 hover:text-blue-800 font-semibold hover:underline">
                     Read More →

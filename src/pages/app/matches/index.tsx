@@ -10,9 +10,9 @@ interface Match {
   notes?: string;
   our_score: number;
   their_score: number;
-  opponents: { name: string };
-  venues: { name: string } | null;
-  teams: { name: string };
+  opponents: { name: string }[];
+  venues: { name: string }[] | null;
+  teams: { name: string }[];
 }
 
 export default function MatchesPage() {
@@ -62,12 +62,12 @@ export default function MatchesPage() {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="font-semibold text-lg">
-                    {match.teams.name} vs {match.opponents.name}
+                    {match.teams[0]?.name || 'Unknown Team'} vs {match.opponents[0]?.name || 'Unknown Opponent'}
                   </h3>
                   <p className="text-gray-600 text-sm">
                     {new Date(match.match_date).toLocaleDateString()} ({match.home_away})
                   </p>
-                  {match.venues && <p className="text-gray-600 text-sm">📍 {match.venues.name}</p>}
+                  {match.venues && match.venues[0] && <p className="text-gray-600 text-sm">📍 {match.venues[0].name}</p>}
                 </div>
                 <div className="text-right">
                   {match.status === 'finished' ? (

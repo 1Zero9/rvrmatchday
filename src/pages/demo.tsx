@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 
@@ -10,9 +11,9 @@ interface Match {
   our_score: number;
   their_score: number;
   notes?: string;
-  teams: { name: string };
-  opponents: { name: string };
-  venues: { name: string };
+  teams: { name: string }[];
+  opponents: { name: string }[];
+  venues: { name: string }[];
 }
 
 export default function Demo() {
@@ -65,7 +66,7 @@ export default function Demo() {
       } else {
         setSeedStatus(`Error: ${result.message}`);
       }
-    } catch (error) {
+    } catch {
       setSeedStatus('Failed to create sample data');
     }
   };
@@ -165,10 +166,10 @@ export default function Demo() {
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg">
-                            {match.teams.name} vs {match.opponents.name}
+                            {match.teams[0]?.name || 'Unknown Team'} vs {match.opponents[0]?.name || 'Unknown Opponent'}
                           </h3>
                           <p className="text-gray-600 text-sm">
-                            {formatDate(match.match_date)} • {match.venues.name} ({match.home_away})
+                            {formatDate(match.match_date)} • {match.venues[0]?.name || 'Unknown Venue'} ({match.home_away})
                           </p>
                         </div>
                         <div className="text-right">
@@ -188,7 +189,7 @@ export default function Demo() {
                         </div>
                       </div>
                       {match.notes && (
-                        <p className="text-gray-700 text-sm mt-2 italic">"{match.notes}"</p>
+                        <p className="text-gray-700 text-sm mt-2 italic">&ldquo;{match.notes}&rdquo;</p>
                       )}
                     </div>
                   ))}
@@ -198,10 +199,10 @@ export default function Demo() {
 
             {/* Next Steps */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-blue-800 mb-4">🚀 What's Next?</h3>
+              <h3 className="text-lg font-semibold text-blue-800 mb-4">🚀 What&apos;s Next?</h3>
               <div className="space-y-3 text-blue-700">
-                <div>• <strong>Homepage:</strong> Go to <a href="/" className="underline">homepage</a> to see your new multi-audience landing page</div>
-                <div>• <strong>Matches:</strong> Visit <a href="/app/matches" className="underline">/app/matches</a> to see the match management system</div>
+                <div>• <strong>Homepage:</strong> Go to <Link href="/" className="underline">homepage</Link> to see your new multi-audience landing page</div>
+                <div>• <strong>Matches:</strong> Visit <Link href="/app/matches" className="underline">/app/matches</Link> to see the match management system</div>
                 <div>• <strong>Kids Zone:</strong> Check out the fun kids section (coming soon!)</div>
                 <div>• <strong>Admin Dashboard:</strong> Build out team management and player registration</div>
                 <div>• <strong>Customize:</strong> Update colors, branding, and content to match your club</div>
