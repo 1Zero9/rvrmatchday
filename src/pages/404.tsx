@@ -9,7 +9,7 @@ export default function Custom404() {
       </p>
 
       <img
-        src="/images/ball-lost.jpg"
+        src="/images/ball-lost.png"
         alt="Football lost"
         className="w-40 h-40 mb-8 animate-bounce"
       />
