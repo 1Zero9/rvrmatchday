@@ -1,64 +1,42 @@
-"use client";
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="bg-maroon text-white fixed w-full top-0 left-0 z-50 shadow-md">
-      <div className="container mx-auto flex items-center justify-between p-4">
-        {/* Logo + Title */}
-        <Link href="/" className="flex items-center space-x-2">
-          <img
-            src="/images/logo.png"
-            alt="Club Logo"
-            className="h-10 w-10 object-contain"
-          />
-          <span className="font-bold text-lg">RVR Football Club</span>
+    <header className="bg-rvr-navy text-white fixed top-0 left-0 right-0 shadow-md z-50">
+      <div className="container mx-auto flex justify-between items-center p-4">
+        <Link href="/" className="text-xl font-bold flex items-center gap-2">
+          <img src="/images/logo.png" alt="Club Logo" className="h-8 w-8" />
+          River Valley Rangers
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex space-x-6">
-          <Link href="/" className="hover:text-gray-200">
-            Home
-          </Link>
-          <Link href="/app/teams" className="hover:text-gray-200">
-            Teams
-          </Link>
-          <Link href="/app/news" className="hover:text-gray-200">
-            News
-          </Link>
-          <Link href="/app/contact" className="hover:text-gray-200">
-            Contact
-          </Link>
+        {/* Desktop nav */}
+        <nav className="hidden md:flex gap-6">
+          <Link href="/">Home</Link>
+          <Link href="/about">About</Link>
+          <Link href="/contact">Contact</Link>
+          <Link href="/app">App</Link>
         </nav>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile nav toggle */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden focus:outline-none"
+          className="md:hidden text-white"
         >
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
-      {/* Mobile Nav */}
+      {/* Mobile menu */}
       {isOpen && (
-        <nav className="md:hidden bg-maroon text-white p-4 space-y-3">
-          <Link href="/" onClick={() => setIsOpen(false)}>
-            Home
-          </Link>
-          <Link href="/app/teams" onClick={() => setIsOpen(false)}>
-            Teams
-          </Link>
-          <Link href="/app/news" onClick={() => setIsOpen(false)}>
-            News
-          </Link>
-          <Link href="/app/contact" onClick={() => setIsOpen(false)}>
-            Contact
-          </Link>
+        <nav className="md:hidden bg-rvr-navy text-white flex flex-col items-center gap-4 py-4">
+          <Link href="/">Home</Link>
+          <Link href="/about">About</Link>
+          <Link href="/contact">Contact</Link>
+          <Link href="/app">App</Link>
         </nav>
       )}
     </header>
