@@ -1,21 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > lastScrollY) {
+        setShowHeader(false); // scrolling down → hide
+      } else {
+        setShowHeader(true); // scrolling up → show
+      }
+      setLastScrollY(window.scrollY);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   return (
-    <header className="bg-[#001f3f] text-white shadow-md fixed top-0 left-0 w-full z-50">
+    <header
+      className={`bg-[#001f3f] text-white shadow-md fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${
+        showHeader ? "translate-y-0" : "-translate-y-full"
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo + title */}
           <Link href="/" className="flex items-center space-x-2">
-            <img
-              src="/images/logo.png"
-              alt="Club Logo"
-              className="h-8 w-8"
-            />
+            <img src="/images/logo.png" alt="Club Logo" className="h-8 w-8" />
             <span className="font-bold text-lg">RVR Football</span>
           </Link>
 
@@ -29,7 +44,7 @@ export default function Header() {
             <Link href="/contact" className="hover:text-gray-300">Contact</Link>
           </nav>
 
-          {/* Mobile button */}
+          {/* Mobile menu button */}
           <div className="md:hidden">
             <button onClick={() => setIsOpen(!isOpen)}>
               {isOpen ? <X size={24} /> : <Menu size={24} />}
