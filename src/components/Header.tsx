@@ -1,84 +1,39 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [lastScroll, setLastScroll] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const current = window.scrollY;
+      if (current > lastScroll && current > 50) {
+        setVisible(false); // scrolling down
+      } else {
+        setVisible(true); // scrolling up
+      }
+      setLastScroll(current);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScroll]);
 
   return (
-    <header className="bg-rvr-navy shadow-md">
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
-        {/* Logo */}
-        <Link href="/" className="text-2xl font-extrabold text-rvr-maroon">
-          River Valley Rangers
+    <header
+      className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 
+      ${visible ? "translate-y-0" : "-translate-y-full"} 
+      bg-[#001F3F] text-white shadow-md`}
+    >
+      <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+        <Link href="/" className="text-lg font-bold text-[#B03060]">
+          RVR Football
         </Link>
-
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex space-x-6 text-white font-medium">
-          <Link href="/" className="hover:text-rvr-maroon transition-colors">
-            Home
-          </Link>
-          <Link href="/about" className="hover:text-rvr-maroon transition-colors">
-            About
-          </Link>
-          <Link
-            href="/contact"
-            className="hover:text-rvr-maroon transition-colors"
-          >
-            Contact
-          </Link>
-          <Link
-            href="/app"
-            className="bg-rvr-maroon hover:bg-rvr-maroon-dark px-4 py-2 rounded-lg transition-colors"
-          >
-            App
-          </Link>
+        <nav className="space-x-4">
+          <Link href="/about">About</Link>
+          <Link href="/contact">Contact</Link>
         </nav>
-
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden text-white"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
       </div>
-
-      {/* Mobile Dropdown */}
-      {isOpen && (
-        <nav className="md:hidden bg-rvr-navy-dark px-6 py-4 space-y-4 text-white font-medium">
-          <Link
-            href="/"
-            className="block hover:text-rvr-maroon"
-            onClick={() => setIsOpen(false)}
-          >
-            Home
-          </Link>
-          <Link
-            href="/about"
-            className="block hover:text-rvr-maroon"
-            onClick={() => setIsOpen(false)}
-          >
-            About
-          </Link>
-          <Link
-            href="/contact"
-            className="block hover:text-rvr-maroon"
-            onClick={() => setIsOpen(false)}
-          >
-            Contact
-          </Link>
-          <Link
-            href="/app"
-            className="block bg-rvr-maroon hover:bg-rvr-maroon-dark px-4 py-2 rounded-lg"
-            onClick={() => setIsOpen(false)}
-          >
-            App
-          </Link>
-        </nav>
-      )}
     </header>
   );
 }

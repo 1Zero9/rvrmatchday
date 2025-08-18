@@ -1,16 +1,16 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { ReactNode } from "react";
+import Header from "./Header";
+import Footer from "./Footer";
 
-interface LayoutProps {
-  children: ReactNode;
-}
-
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-white text-gray-900">
+      {/* Fixed header */}
       <Header />
-      <main className="flex-grow container mx-auto px-4 py-6">{children}</main>
+
+      {/* Page content with padding to avoid overlap */}
+      <main className="flex-grow pt-16 pb-16">{children}</main>
+
+      {/* Fixed footer */}
       <Footer />
     </div>
   );
