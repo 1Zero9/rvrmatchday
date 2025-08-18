@@ -1,67 +1,66 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showHeader, setShowHeader] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [show, setShow] = useState(true);
+  const [lastScroll, setLastScroll] = useState(0);
 
+  // Debounced scroll hide/show
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > lastScrollY) {
-        setShowHeader(false); // scrolling down → hide
+      const currentScroll = window.scrollY;
+      if (Math.abs(currentScroll - lastScroll) < 20) return; // sensitivity
+      if (currentScroll > lastScroll && currentScroll > 100) {
+        setShow(false); // scrolling down
       } else {
-        setShowHeader(true); // scrolling up → show
+        setShow(true); // scrolling up
       }
-      setLastScrollY(window.scrollY);
+      setLastScroll(currentScroll);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  }, [lastScroll]);
 
   return (
     <header
-      className={`bg-[#001f3f] text-white shadow-md fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${
-        showHeader ? "translate-y-0" : "-translate-y-full"
+      className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 bg-[#001F3F] ${
+        show ? "translate-y-0" : "-translate-y-full"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo + title */}
-          <Link href="/" className="flex items-center space-x-2">
-            <img src="/images/logo.png" alt="Club Logo" className="h-8 w-8" />
-            <span className="font-bold text-lg">RVR Football</span>
-          </Link>
+      <div className="max-w-6xl mx-auto flex items-center justify-between p-4 text-white">
+        {/* Logo */}
+        <Link href="/" className="flex items-center space-x-2">
+          <img src="/images/logo.png" alt="Club Logo" className="h-10 w-10" />
+          <span className="font-bold text-lg">RVR FC</span>
+        </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex space-x-6">
-            <Link href="/" className="hover:text-gray-300">Home</Link>
-            <Link href="/about" className="hover:text-gray-300">About</Link>
-            <Link href="/news" className="hover:text-gray-300">News</Link>
-            <Link href="/teams" className="hover:text-gray-300">Teams</Link>
-            <Link href="/matches" className="hover:text-gray-300">Matches</Link>
-            <Link href="/contact" className="hover:text-gray-300">Contact</Link>
-          </nav>
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex space-x-6">
+          <Link href="/">Home</Link>
+          <Link href="/about">About</Link>
+          <Link href="/teams">Teams</Link>
+          <Link href="/app/matches">Matches</Link>
+          <Link href="/contact">Contact</Link>
+        </nav>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button onClick={() => setIsOpen(!isOpen)}>
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden focus:outline-none"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          ☰
+        </button>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile Nav */}
       {isOpen && (
-        <nav className="md:hidden bg-[#001f3f] text-white px-4 py-2 space-y-2">
-          <Link href="/" className="block hover:text-gray-300">Home</Link>
-          <Link href="/about" className="block hover:text-gray-300">About</Link>
-          <Link href="/news" className="block hover:text-gray-300">News</Link>
-          <Link href="/teams" className="block hover:text-gray-300">Teams</Link>
-          <Link href="/matches" className="block hover:text-gray-300">Matches</Link>
-          <Link href="/contact" className="block hover:text-gray-300">Contact</Link>
+        <nav className="md:hidden bg-[#001F3F] text-white px-4 pb-4 space-y-2">
+          <Link href="/" onClick={() => setIsOpen(false)}>Home</Link>
+          <Link href="/about" onClick={() => setIsOpen(false)}>About</Link>
+          <Link href="/teams" onClick={() => setIsOpen(false)}>Teams</Link>
+          <Link href="/app/matches" onClick={() => setIsOpen(false)}>Matches</Link>
+          <Link href="/contact" onClick={() => setIsOpen(false)}>Contact</Link>
         </nav>
       )}
     </header>
