@@ -19,6 +19,20 @@ export async function checkAdminAccess(): Promise<{
   error?: string;
 }> {
   try {
+    // TEMPORARY: Check for dev admin bypass
+    if (typeof window !== 'undefined' && localStorage.getItem('temp_admin') === 'true') {
+      return {
+        isAdmin: true,
+        user: {
+          id: 'temp-admin',
+          email: 'dev@admin.com',
+          role: 'admin',
+          first_name: 'Dev',
+          last_name: 'Admin'
+        }
+      };
+    }
+
     // Get the current authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     

@@ -1,10 +1,22 @@
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState(0);
+  const [showLogo, setShowLogo] = useState(true);
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    // Show logo for 2.5 seconds, then transition to main content
+    const timer = setTimeout(() => {
+      setShowLogo(false);
+      setShowContent(true);
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Interactive sections for the main experience
   const sections = [
@@ -36,19 +48,27 @@ export default function Home() {
       id: 'login',
       title: '👤 Member Area',
       subtitle: 'Players, parents & coaches',
-      color: 'from-red-600 to-rose-700',
+      color: 'from-slate-600 to-slate-700',
       icon: '👤',
       description: 'Access your personalized area'
+    },
+    {
+      id: 'news',
+      title: '📰 News & Updates',
+      subtitle: 'Latest club news & announcements',
+      color: 'from-amber-600 to-orange-700',
+      icon: '📰',
+      description: 'Stay informed with club updates'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-800 via-emerald-800 to-teal-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
       {/* Clean Geometric Background */}
       <div className="absolute inset-0">
         <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-x-48 -translate-y-48"></div>
-        <div className="absolute top-1/2 right-0 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl translate-x-40"></div>
-        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl translate-y-36"></div>
+        <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl translate-x-40"></div>
+        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-indigo-400/10 rounded-full blur-3xl translate-y-36"></div>
         
         {/* Subtle Pattern Overlay */}
         <div className="absolute inset-0 opacity-[0.15]" 
@@ -59,7 +79,94 @@ export default function Home() {
         ></div>
       </div>
 
-      <div className="relative z-10 min-h-screen flex flex-col">
+      <AnimatePresence mode="wait">
+        {showLogo ? (
+          /* Logo Entrance Sequence */
+          <motion.div
+            key="logo-entrance"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.3 }}
+            transition={{ duration: 0.8, exit: { duration: 0.6 } }}
+            className="relative z-10 min-h-screen flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.3, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+              className="text-center"
+            >
+              <motion.div
+                initial={{ y: 50 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 1, delay: 0.3 }}
+                className="mb-8"
+              >
+                <Image 
+                  src="/images/logo.png" 
+                  alt="Rivervalley Rangers AFC Logo" 
+                  width={300}
+                  height={300}
+                  className="mx-auto drop-shadow-2xl filter brightness-110"
+                />
+              </motion.div>
+              
+              <motion.div
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
+                className="text-center"
+              >
+                <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 tracking-wider">
+                  RIVERVALLEY RANGERS
+                </h1>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "200px" }}
+                  transition={{ duration: 0.8, delay: 1.2 }}
+                  className="h-1 bg-gradient-to-r from-blue-400 to-indigo-400 mx-auto mb-4"
+                ></motion.div>
+                <p className="text-xl text-blue-200 font-light">
+                  AFC
+                </p>
+              </motion.div>
+
+              {/* Subtle loading indicator */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.8 }}
+                className="absolute bottom-12 left-1/2 transform -translate-x-1/2"
+              >
+                <div className="flex space-x-2">
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0 }}
+                    className="w-2 h-2 bg-blue-400 rounded-full"
+                  ></motion.div>
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
+                    className="w-2 h-2 bg-indigo-400 rounded-full"
+                  ></motion.div>
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
+                    className="w-2 h-2 bg-slate-400 rounded-full"
+                  ></motion.div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        ) : (
+          /* Main Content */
+          <motion.div
+            key="main-content"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="relative z-10 min-h-screen flex flex-col"
+          >
         
         {/* Top Navigation - Minimal */}
         <motion.div
@@ -68,17 +175,17 @@ export default function Home() {
           transition={{ duration: 0.6 }}
           className="flex justify-between items-center p-6"
         >
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
             <Image 
               src="/images/logo.png" 
               alt="Rivervalley Rangers AFC Logo" 
-              width={40}
-              height={40}
+              width={75}
+              height={75}
               className="drop-shadow-lg"
             />
             <div className="text-white">
-              <h1 className="text-lg font-bold">Rivervalley Rangers</h1>
-              <p className="text-sm text-green-200">AFC</p>
+              <h1 className="text-xl font-bold">Rivervalley Rangers</h1>
+              <p className="text-sm text-blue-200">AFC</p>
             </div>
           </div>
           
@@ -106,11 +213,11 @@ export default function Home() {
             >
               <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
                 Welcome to <br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
                   Rivervalley Rangers
                 </span>
               </h1>
-              <p className="text-xl md:text-2xl text-green-100 mb-8 max-w-3xl mx-auto">
+              <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
                 Building Community Through Football • Your Digital Matchday Experience
               </p>
             </motion.div>
@@ -120,7 +227,7 @@ export default function Home() {
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-16"
             >
               {sections.map((section, index) => (
                 <motion.div
@@ -189,20 +296,20 @@ export default function Home() {
             >
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
                 <div>
-                  <p className="text-3xl font-bold text-yellow-400 mb-1">15+</p>
-                  <p className="text-sm text-green-200">Active Teams</p>
+                  <p className="text-3xl font-bold text-blue-400 mb-1">15+</p>
+                  <p className="text-sm text-blue-200">Active Teams</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-blue-400 mb-1">250+</p>
-                  <p className="text-sm text-green-200">Club Members</p>
+                  <p className="text-3xl font-bold text-indigo-400 mb-1">250+</p>
+                  <p className="text-sm text-blue-200">Club Members</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-purple-400 mb-1">25</p>
-                  <p className="text-sm text-green-200">Years History</p>
+                  <p className="text-3xl font-bold text-slate-400 mb-1">25</p>
+                  <p className="text-sm text-blue-200">Years History</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-red-400 mb-1">100%</p>
-                  <p className="text-sm text-green-200">Community</p>
+                  <p className="text-3xl font-bold text-amber-400 mb-1">100%</p>
+                  <p className="text-sm text-blue-200">Community</p>
                 </div>
               </div>
             </motion.div>
@@ -233,7 +340,9 @@ export default function Home() {
           </p>
         </motion.div>
 
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 
 interface Match {
@@ -129,126 +128,260 @@ export default function MatchCentral() {
 
   if (loading) {
     return (
-      <Layout currentSection="public">
-        <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 flex items-center justify-center">
-          <div className="text-white text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <p>Loading Match Central...</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Loading Match Central...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
 
+  // Main action boxes for Match Central
+  const actionBoxes = [
+    {
+      id: 'recent',
+      title: '🏆 Recent Results',
+      subtitle: `${recentMatches.length} matches completed`,
+      color: 'from-green-600 to-emerald-700',
+      icon: '🏆',
+      description: 'Latest match results and scores',
+      active: activeTab === 'recent'
+    },
+    {
+      id: 'upcoming',
+      title: '📅 Upcoming Fixtures', 
+      subtitle: `${upcomingMatches.length} matches scheduled`,
+      color: 'from-blue-600 to-cyan-700',
+      icon: '📅',
+      description: 'Next matches and fixtures',
+      active: activeTab === 'upcoming'
+    },
+    {
+      id: 'add',
+      title: '➕ Add Match',
+      subtitle: 'Schedule or log results',
+      color: 'from-purple-600 to-violet-700',
+      icon: '➕',
+      description: 'Create new match entries'
+    },
+    {
+      id: 'teams',
+      title: '⚽ Our Teams',
+      subtitle: `${teams.length} active teams`,
+      color: 'from-amber-600 to-orange-700',
+      icon: '⚽',
+      description: 'View all club teams'
+    }
+  ];
+
   return (
-    <Layout currentSection="public">
-      <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      {/* Clean Geometric Background */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-x-48 -translate-y-48"></div>
+        <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl translate-x-40"></div>
+        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-indigo-400/10 rounded-full blur-3xl translate-y-36"></div>
         
-        {/* Header */}
+        {/* Subtle Pattern Overlay */}
+        <div className="absolute inset-0 opacity-[0.15]" 
+             style={{
+               backgroundImage: `radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+               backgroundSize: '30px 30px'
+             }}
+        ></div>
+      </div>
+
+      <div className="relative z-10 min-h-screen flex flex-col">
+        
+        {/* Top Navigation - Minimal */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6 }}
-          className="bg-white/10 backdrop-blur-md border-b border-white/20"
+          className="flex justify-between items-center p-6"
         >
-          <div className="max-w-7xl mx-auto px-6 py-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Image 
-                  src="/images/logo.png" 
-                  alt="Rivervalley Rangers AFC Logo" 
-                  width={60}
-                  height={60}
-                  className="drop-shadow-lg"
-                />
-                <div>
-                  <h1 className="text-3xl md:text-4xl font-bold text-white">Match Central</h1>
-                  <p className="text-blue-100">Your complete matchday experience</p>
-                </div>
-              </div>
-              
-              <div className="hidden md:flex items-center space-x-4">
-                <Link 
-                  href="/app/matches/new"
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
-                >
-                  + Add Match
-                </Link>
-                <Link 
-                  href="/"
-                  className="text-white/80 hover:text-white transition-colors"
-                >
-                  ← Back to Home
-                </Link>
-              </div>
+          <div className="flex items-center space-x-4">
+            <Image 
+              src="/images/logo.png" 
+              alt="Rivervalley Rangers AFC Logo" 
+              width={75}
+              height={75}
+              className="drop-shadow-lg"
+            />
+            <div className="text-white">
+              <h1 className="text-xl font-bold">Match Central</h1>
+              <p className="text-sm text-blue-200">Your complete matchday experience</p>
             </div>
+          </div>
+          
+          {/* Quick Links */}
+          <div className="flex space-x-4 text-sm">
+            <Link href="/" className="text-white/80 hover:text-white transition-colors">
+              ← Home
+            </Link>
           </div>
         </motion.div>
 
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          
-          {/* Quick Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-          >
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 text-center text-white border border-white/20">
-              <div className="text-3xl font-bold text-green-400">{teams.length}</div>
-              <div className="text-sm text-blue-100">Active Teams</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 text-center text-white border border-white/20">
-              <div className="text-3xl font-bold text-blue-400">{recentMatches.length}</div>
-              <div className="text-sm text-blue-100">Recent Matches</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 text-center text-white border border-white/20">
-              <div className="text-3xl font-bold text-yellow-400">{upcomingMatches.length}</div>
-              <div className="text-sm text-blue-100">Upcoming</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 text-center text-white border border-white/20">
-              <div className="text-3xl font-bold text-purple-400">
-                {recentMatches.filter(m => getMatchResult(m) === 'W').length}
-              </div>
-              <div className="text-sm text-blue-100">Recent Wins</div>
-            </div>
-          </motion.div>
+        {/* Main Content - Centered */}
+        <div className="flex-1 flex items-center justify-center px-6">
+          <div className="max-w-6xl w-full">
+            
+            {/* Hero Title */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-center mb-16"
+            >
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
+                  Match Central
+                </span>
+              </h1>
+              <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
+                Your Complete Matchday Experience • Live Updates & Results
+              </p>
+            </motion.div>
 
-          {/* Tab Navigation */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-white/10 backdrop-blur-md rounded-xl p-2 mb-6 border border-white/20"
-          >
-            <div className="flex space-x-1">
-              {[
-                { id: 'recent', label: 'Recent Results', count: recentMatches.length },
-                { id: 'upcoming', label: 'Upcoming Fixtures', count: upcomingMatches.length },
-                { id: 'all', label: 'View All', count: null }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex-1 px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                    activeTab === tab.id
-                      ? 'bg-white text-primary-600 shadow-md'
-                      : 'text-white/80 hover:text-white hover:bg-white/5'
-                  }`}
+            {/* Action Boxes Grid */}
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
+            >
+              {actionBoxes.map((box, index) => (
+                <motion.div
+                  key={box.id}
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.6 + (index * 0.1) }}
+                  whileHover={{ 
+                    y: -10,
+                    scale: 1.02,
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  className="group"
                 >
-                  {tab.label} {tab.count !== null && `(${tab.count})`}
-                </button>
+                  <div 
+                    className={`
+                      bg-gradient-to-br ${box.color} 
+                      rounded-3xl p-8 h-64
+                      text-white shadow-2xl 
+                      cursor-pointer 
+                      border border-white/10
+                      backdrop-blur-sm
+                      relative overflow-hidden
+                      transition-all duration-300
+                      hover:shadow-3xl hover:border-white/30
+                      ${box.active ? 'ring-2 ring-white/50' : ''}
+                    `}
+                    onClick={() => {
+                      if (box.id === 'recent' || box.id === 'upcoming') {
+                        setActiveTab(box.id as any);
+                      } else if (box.id === 'add') {
+                        window.location.href = '/app/matches/new';
+                      }
+                    }}
+                  >
+                    {/* Background Glow Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    <div className="relative z-10 h-full flex flex-col justify-between">
+                      <div>
+                        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                          {box.icon}
+                        </div>
+                        <h3 className="text-xl font-bold mb-2">
+                          {box.title}
+                        </h3>
+                        <p className="text-sm opacity-90 mb-4">
+                          {box.subtitle}
+                        </p>
+                      </div>
+                      <div className="text-xs opacity-70">
+                        {box.description}
+                      </div>
+                    </div>
+                    
+                    {/* Hover Arrow */}
+                    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </div>
+                  </div>
+                </motion.div>
               ))}
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* Match Content */}
+            {/* Quick Stats - Clean & Minimal */}
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.6, delay: 1 }}
+              className="bg-black/20 backdrop-blur-md rounded-2xl p-8 border border-white/10 mb-8"
+            >
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
+                <div>
+                  <p className="text-3xl font-bold text-green-400 mb-1">{teams.length}</p>
+                  <p className="text-sm text-blue-200">Active Teams</p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-blue-400 mb-1">{recentMatches.length}</p>
+                  <p className="text-sm text-blue-200">Recent Matches</p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-amber-400 mb-1">{upcomingMatches.length}</p>
+                  <p className="text-sm text-blue-200">Upcoming</p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-purple-400 mb-1">
+                    {recentMatches.filter(m => getMatchResult(m) === 'W').length}
+                  </p>
+                  <p className="text-sm text-blue-200">Recent Wins</p>
+                </div>
+              </div>
+            </motion.div>
+
+          </div>
+        </div>
+
+        {/* Match Details Overlay */}
+        {(activeTab === 'recent' || activeTab === 'upcoming') && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="bg-white rounded-2xl shadow-2xl overflow-hidden"
+            transition={{ duration: 0.6 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+            onClick={() => setActiveTab('recent')}
           >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-4xl w-full max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                    <span className="mr-2">
+                      {activeTab === 'recent' ? '🏆' : '📅'}
+                    </span>
+                    {activeTab === 'recent' ? 'Recent Results' : 'Upcoming Fixtures'}
+                  </h2>
+                  <button
+                    onClick={() => setActiveTab('recent')}
+                    className="text-gray-500 hover:text-gray-700 p-2"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             
             {/* Recent Matches */}
             {activeTab === 'recent' && (
@@ -414,9 +547,11 @@ export default function MatchCentral() {
                 </div>
               </div>
             )}
+            </motion.div>
           </motion.div>
-        </div>
+        )}
+
       </div>
-    </Layout>
+    </div>
   );
 }
