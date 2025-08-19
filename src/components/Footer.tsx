@@ -33,6 +33,13 @@ export default function Footer() {
             <Link href="/about" className="text-gray-200 hover:text-white transition-colors text-sm">About</Link>
             <Link href="/join" className="text-gray-200 hover:text-white transition-colors text-sm">Join</Link>
             <Link href="/contact" className="text-gray-200 hover:text-white transition-colors text-sm">Contact</Link>
+            <Link 
+              href="/admin/login" 
+              className="text-gray-400 hover:text-white transition-colors text-sm flex items-center space-x-1 group"
+              title="Admin Access"
+            >
+              <span className="text-xs group-hover:scale-110 transition-transform">🔒</span>
+            </Link>
           </div>
           
           {/* Right side - Copyright */}
