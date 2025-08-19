@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
@@ -98,37 +99,58 @@ export default function Home() {
         ))}
 
         {/* Hero Content */}
-        <div className="relative z-10 h-full flex items-center justify-center text-center text-white max-w-4xl mx-auto px-6">
+        <div className="relative z-10 h-full flex items-center justify-center text-center text-white max-w-6xl mx-auto px-6">
           <motion.div
             key={currentSlide}
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8 }}
+            className="flex flex-col lg:flex-row items-center justify-center space-y-8 lg:space-y-0 lg:space-x-12"
           >
-            <h1 className="text-5xl md:text-7xl font-display mb-6 drop-shadow-lg">
-              RIVERVALLEY RANGERS AFC
-            </h1>
-            <h2 className="text-2xl md:text-3xl mb-4 drop-shadow-md">
-              {carouselImages[currentSlide].title}
-            </h2>
-            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md">
-              {carouselImages[currentSlide].subtitle}
-            </p>
+            {/* Large Logo */}
+            <motion.div
+              initial={{ x: -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 1.2, delay: 0.2 }}
+              className="flex-shrink-0"
+            >
+              <Image 
+                src="/images/logo.png" 
+                alt="Rivervalley Rangers AFC Logo" 
+                width={320}
+                height={320}
+                className="h-48 w-48 md:h-64 md:w-64 lg:h-80 lg:w-80 drop-shadow-2xl filter brightness-110"
+              />
+            </motion.div>
+
+            {/* Text Content */}
+            <div className="flex-1">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-display mb-6 drop-shadow-lg tracking-wider">
+                RIVERVALLEY<br/>
+                <span className="text-accent-pink">RANGERS AFC</span>
+              </h1>
+              <h2 className="text-2xl md:text-3xl mb-4 drop-shadow-md font-heading font-medium">
+                {carouselImages[currentSlide].title}
+              </h2>
+              <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md font-accent">
+                {carouselImages[currentSlide].subtitle}
+              </p>
             
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link 
-                href="/join"
-                className="bg-accent-pink hover:bg-accent-pink/90 text-white px-8 py-4 rounded-full text-xl font-bold transition-all transform hover:scale-105 shadow-lg"
-              >
-                Join the Club
-              </Link>
-              <Link 
-                href="/about"
-                className="border-2 border-white hover:bg-white hover:text-gray-900 text-white px-8 py-4 rounded-full text-xl font-bold transition-all shadow-lg"
-              >
-                Learn More
-              </Link>
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link 
+                  href="/join"
+                  className="bg-accent-pink hover:bg-accent-pink/90 text-white px-8 py-4 rounded-full text-xl font-bold transition-all transform hover:scale-105 shadow-lg"
+                >
+                  Join the Club
+                </Link>
+                <Link 
+                  href="/about"
+                  className="border-2 border-white hover:bg-white hover:text-gray-900 text-white px-8 py-4 rounded-full text-xl font-bold transition-all shadow-lg"
+                >
+                  Learn More
+                </Link>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -171,7 +193,7 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-display text-gray-900 mb-6">
+            <h2 className="text-4xl md:text-5xl font-heading font-bold text-gray-900 mb-6 tracking-wide">
               Choose Your Experience
             </h2>
             <p className="text-xl text-gray-700 max-w-3xl mx-auto">
@@ -235,7 +257,7 @@ export default function Home() {
       <section className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-display text-gray-900 mb-4">
+            <h2 className="text-4xl font-heading font-bold text-gray-900 mb-4 tracking-wide">
               Latest News
             </h2>
             <p className="text-gray-700">Stay up to date with club announcements and match results</p>

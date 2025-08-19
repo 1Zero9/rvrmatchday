@@ -8,8 +8,10 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Poppins", "sans-serif"],
-        display: ["Bangers", "cursive"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Orbitron", "system-ui", "sans-serif"],
+        heading: ["Rajdhani", "system-ui", "sans-serif"],
+        accent: ["Exo 2", "system-ui", "sans-serif"],
       },
       colors: {
         primary: {

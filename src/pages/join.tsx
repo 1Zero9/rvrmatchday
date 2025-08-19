@@ -22,6 +22,26 @@ export default function Join() {
               </p>
             </div>
 
+            {/* Coach Registration CTA */}
+            <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8">
+              <div className="flex flex-col md:flex-row items-center justify-between">
+                <div className="mb-4 md:mb-0">
+                  <h3 className="text-xl font-bold text-primary-800 mb-2">
+                    🏃‍♂️ Want to Coach?
+                  </h3>
+                  <p className="text-primary-700">
+                    Join our coaching team and help develop the next generation of football stars.
+                  </p>
+                </div>
+                <Link
+                  href="/coach/register"
+                  className="px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+                >
+                  Apply to Coach
+                </Link>
+              </div>
+            </div>
+
             {/* Registration Options */}
             <div className="grid md:grid-cols-3 gap-8 mb-12">
               <motion.div

@@ -132,14 +132,17 @@ export default function Setup() {
                     <div className="bg-white rounded p-4">
                       <h3 className="font-semibold text-blue-800 mb-2">Step 3: Run Database Schema</h3>
                       <p className="text-sm text-gray-600 mb-2">
-                        Copy and paste the contents of <code className="bg-gray-100 px-2 py-1 rounded">database-schema.sql</code> and run it.
+                        Copy and paste the contents of <code className="bg-gray-100 px-2 py-1 rounded">database-schema-extended.sql</code> and run it.
                       </p>
                       <details className="text-xs">
                         <summary className="cursor-pointer text-blue-600 hover:underline">
                           Click to view schema location
                         </summary>
                         <p className="mt-2 text-gray-500">
-                          The file is located in your project root: <code>/database-schema.sql</code>
+                          The extended file is located in your project root: <code>/database-schema-extended.sql</code>
+                        </p>
+                        <p className="mt-1 text-gray-500 text-xs">
+                          This includes the full MatchDay tracker with coaches, players, teams, and match events.
                         </p>
                       </details>
                     </div>

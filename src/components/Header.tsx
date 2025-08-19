@@ -130,6 +130,9 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
         <div className="hidden md:flex space-x-3">
           {currentSection === "public" && (
             <>
+              <Link href="/coach/login" className="bg-primary-600 px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors font-semibold text-white">
+                Coaches
+              </Link>
               <Link href="/members/login" className="bg-accent-teal px-4 py-2 rounded-lg hover:bg-accent-teal/80 transition-colors font-semibold">
                 Members
               </Link>
@@ -186,6 +189,13 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
             ))}
             {currentSection === "public" && (
               <div className="pt-4 space-y-2">
+                <Link 
+                  href="/coach/login" 
+                  onClick={() => setIsOpen(false)}
+                  className="block bg-primary-600 px-4 py-3 rounded-lg text-center font-semibold text-white"
+                >
+                  Coach Login
+                </Link>
                 <Link 
                   href="/members/login" 
                   onClick={() => setIsOpen(false)}
