@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { getChangeLog, ChangeLogRecord } from '@/lib/changeLog';
-import { supabase } from '@/lib/supabase';
+import { checkAdminAccess } from '@/lib/adminAuth';
 import { motion } from 'framer-motion';
 
 export default function AdminChangeLog() {
@@ -18,26 +18,13 @@ export default function AdminChangeLog() {
   const [dateFilter, setDateFilter] = useState('');
   const [userFilter, setUserFilter] = useState('');
 
-  const checkAdminAccess = useCallback(async () => {
+  const checkAdminAccessLocal = useCallback(async () => {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const adminCheck = await checkAdminAccess();
       
-      if (userError || !user) {
+      if (!adminCheck.isAdmin) {
         router.push('/');
         return;
-      }
-
-      // Check if user has admin role - you'll need to implement your admin check
-      // For now, we'll check if they have a profiles table entry with admin role
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profileError || !profile || profile.role !== 'admin') {
-        // For development, allow access without strict admin check
-        console.warn('Admin access not verified, allowing for development');
       }
 
       setIsAdmin(true);
@@ -92,8 +79,8 @@ export default function AdminChangeLog() {
   }, [changes, tableFilter, actionFilter, dateFilter, userFilter]);
 
   useEffect(() => {
-    checkAdminAccess();
-  }, [checkAdminAccess]);
+    checkAdminAccessLocal();
+  }, [checkAdminAccessLocal]);
 
   useEffect(() => {
     applyFilters();
