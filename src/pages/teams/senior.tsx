@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import StandardLayout from '@/components/StandardLayout';
+import StandardLayout from '../../components/StandardLayout';
 
 export default function SeniorTeams() {
   const seniorTeams = [

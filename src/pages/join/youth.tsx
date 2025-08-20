@@ -1,4 +1,4 @@
-import StandardLayout from '@/components/StandardLayout';
+import StandardLayout from '../../components/StandardLayout';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -157,7 +157,7 @@ export default function YouthMembership() {
                 <Link href="/join/academy" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded hover:bg-gray-50">Youth Academy</Link>
                 <Link href="/join/trials" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded hover:bg-gray-50">Trials & Registration</Link>
               </nav>
-            </div>
+            </motion.div>
 
             {/* Quick Registration */}
             <motion.div

@@ -19,173 +19,175 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Navigation - Modern Large Header */}
-      <header className="bg-gradient-to-br from-green-900 via-green-800 to-green-700 text-white shadow-2xl sticky top-0 z-50 border-b-4 border-green-400">
-        <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/10"></div>
-        <div className="absolute inset-0 opacity-5 bg-[url('data:image/svg+xml;utf8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22 fill=%22white%22%3e%3ccircle cx=%2250%22 cy=%2250%22 r=%224%22/%3e%3ccircle cx=%22150%22 cy=%2280%22 r=%222%22/%3e%3ccircle cx=%2280%22 cy=%22140%22 r=%223%22/%3e%3ccircle cx=%22180%22 cy=%22160%22 r=%222%22/%3e%3ccircle cx=%2220%22 cy=%22120%22 r=%222%22/%3e%3ccircle cx=%22120%22 cy=%2230%22 r=%221.5%22/%3e%3c/svg%3e')] bg-repeat"></div>
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative">
-          <div className="flex justify-between items-center py-6">
+      {/* Header Navigation - Navy Theme */}
+      <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-lg sticky top-0 z-50 border-b-2 border-slate-600">
+        <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;utf8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 fill=%22white%22%3e%3ccircle cx=%2220%22 cy=%2220%22 r=%222%22/%3e%3ccircle cx=%2280%22 cy=%2240%22 r=%221%22/%3e%3ccircle cx=%2240%22 cy=%2270%22 r=%221.5%22/%3e%3ccircle cx=%2290%22 cy=%2280%22 r=%221%22/%3e%3ccircle cx=%2210%22 cy=%2260%22 r=%221%22/%3e%3c/svg%3e')] bg-repeat"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="flex justify-between items-center h-20">
             
-            {/* Enhanced Logo Section */}
-            <div className="flex items-center space-x-6 cursor-pointer group" onClick={handleLogoClick}>
+            {/* Logo Section */}
+            <div className="flex items-center space-x-4 cursor-pointer group" onClick={handleLogoClick}>
               <div className="relative">
-                <div className="bg-white/10 backdrop-blur-sm rounded-full p-2 group-hover:bg-white/20 transition-all duration-300">
-                  <Image 
-                    src="/images/logo.png" 
-                    alt="Rivervalley Rangers AFC Logo" 
-                    width={64}
-                    height={64}
-                    className="drop-shadow-xl group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full animate-pulse shadow-lg"></div>
+                <Image 
+                  src="/images/logo.png" 
+                  alt="Rivervalley Rangers AFC Logo" 
+                  width={48}
+                  height={48}
+                  className="drop-shadow-lg group-hover:scale-105 transition-transform duration-200"
+                />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
               </div>
               <div>
-                <h1 className="font-bold text-2xl text-white group-hover:text-green-100 transition-colors duration-300">
+                <h1 className="font-bold text-xl text-white group-hover:text-slate-200 transition-colors duration-200">
                   Rivervalley Rangers
                 </h1>
-                <p className="text-green-200 text-base font-medium flex items-center space-x-2">
+                <p className="text-slate-300 text-sm font-medium flex items-center space-x-2">
                   <span>AFC</span>
-                  <span className="text-yellow-400 animate-bounce">⚽</span>
-                  <span className="text-xs bg-green-600 px-2 py-1 rounded-full">EST. 2009</span>
+                  <span className="text-green-400">⚽</span>
+                  <span className="text-xs bg-slate-700 px-2 py-1 rounded-full">EST. 2009</span>
                 </p>
               </div>
             </div>
 
-            {/* Modern Large Navigation */}
-            <nav className="hidden lg:flex items-center space-x-2">
-              <Link href="/home" className="px-6 py-3 text-white hover:bg-white/20 rounded-xl transition-all duration-300 font-semibold text-lg backdrop-blur-sm border border-white/10 hover:border-white/30">
-                <span className="flex items-center space-x-2">
-                  <span>🏠</span>
-                  <span>Home</span>
-                </span>
+            {/* Navigation */}
+            <nav className="hidden lg:flex items-center space-x-0.5">
+              <Link href="/home" className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium text-sm">
+                🏠 Home
               </Link>
               
               <div className="relative group">
-                <button className="px-6 py-3 text-white hover:bg-white/20 rounded-xl transition-all duration-300 font-semibold text-lg backdrop-blur-sm border border-white/10 hover:border-white/30 flex items-center space-x-2">
-                  <span>⚽</span>
-                  <span>Matches</span>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <button className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center text-sm">
+                  ⚽ Matches
+                  <svg className="ml-1 w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-4 w-56 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
-                  <Link href="/dashboard" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                  <Link href="/dashboard" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     📊 Live Dashboard
                   </Link>
-                  <Link href="/match-central/fixtures" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/match-central/fixtures" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     📅 Fixtures
                   </Link>
-                  <Link href="/match-central/results" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/match-central/results" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     🏆 Results
                   </Link>
-                  <Link href="/match-central/tables" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700">
+                  <Link href="/match-central/tables" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
                     📋 League Tables
                   </Link>
                 </div>
               </div>
 
               <div className="relative group">
-                <button className="px-6 py-3 text-white hover:bg-white/20 rounded-xl transition-all duration-300 font-semibold text-lg backdrop-blur-sm border border-white/10 hover:border-white/30 flex items-center space-x-2">
+                <button className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-sm">
                   <span>🏛️</span>
-                  <span>Club & Teams</span>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <span>Club</span>
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-4 w-64 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
+                <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
                   <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase">About Club</div>
-                  <Link href="/about" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/about" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     📖 About Us
                   </Link>
-                  <Link href="/club/history" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/club/history" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     🏆 History & Achievements
                   </Link>
-                  <Link href="/club/facilities" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/club/facilities" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     🏟️ Facilities
                   </Link>
+                  <Link href="/club/committee" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
+                    👥 Committee
+                  </Link>
                   <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase border-t">Teams</div>
-                  <Link href="/teams/youth" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/teams/youth" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     👦 Youth Teams
                   </Link>
-                  <Link href="/teams/senior" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/teams/senior" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     👨 Senior Teams
                   </Link>
-                  <Link href="/teams/coaching" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700">
+                  <Link href="/teams/coaching" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
                     🧑‍🏫 Coaches
                   </Link>
                 </div>
               </div>
 
               <div className="relative group">
-                <button className="px-6 py-3 text-white hover:bg-white/20 rounded-xl transition-all duration-300 font-semibold text-lg backdrop-blur-sm border border-white/10 hover:border-white/30 flex items-center space-x-2">
+                <button className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-sm">
                   <span>🎯</span>
-                  <span>Join & Support</span>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <span>Join</span>
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-4 w-64 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
+                <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
                   <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Join Club</div>
-                  <Link href="/join/trials" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/join/trials" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     🎯 Trials & Registration
                   </Link>
-                  <Link href="/join/youth" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/join/youth" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     👦 Youth Membership
                   </Link>
-                  <Link href="/join/senior" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/join/senior" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     👨 Senior Membership
                   </Link>
-                  <Link href="/join/academy" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/join/academy" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     ⭐ Elite Academy
                   </Link>
                   <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase border-t">Support</div>
-                  <Link href="/get-involved/volunteering" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/get-involved/volunteering" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     🙋 Volunteer
                   </Link>
-                  <Link href="/get-involved/sponsorship" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700">
+                  <Link href="/get-involved/fundraising" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
+                    💰 Fundraising
+                  </Link>
+                  <Link href="/get-involved/sponsorship" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
                     🤝 Sponsor
                   </Link>
                 </div>
               </div>
 
               <div className="relative group">
-                <button className="px-6 py-3 text-white hover:bg-white/20 rounded-xl transition-all duration-300 font-semibold text-lg backdrop-blur-sm border border-white/10 hover:border-white/30 flex items-center space-x-2">
+                <button className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-sm">
                   <span>👥</span>
                   <span>Members</span>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-4 w-56 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
-                  <Link href="/members/parents" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                <div className="absolute left-0 mt-2 w-56 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
+                  <Link href="/members/parents" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     👨‍👩‍👧‍👦 Parent Portal
                   </Link>
-                  <Link href="/members/coaches" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                  <Link href="/members/coaches" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     🧑‍🏫 Coach Dashboard
                   </Link>
-                  <Link href="/members/admin" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700">
+                  <Link href="/members/admin" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
                     🔐 Admin Access
                   </Link>
                 </div>
               </div>
 
               <div className="relative group">
-                <button className="px-6 py-3 text-white hover:bg-white/20 rounded-xl transition-all duration-300 font-semibold text-lg backdrop-blur-sm border border-white/10 hover:border-white/30 flex items-center space-x-2">
+                <button className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-sm">
                   <span>📰</span>
-                  <span>News & More</span>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <span>More</span>
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-4 w-56 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
-                  <Link href="/news-media/events" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                <div className="absolute left-0 mt-2 w-56 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
+                  <Link href="/news-media/events" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     📰 News & Events
+                  </Link>
+                  <Link href="/news-media/gallery" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
+                    📸 Photo Gallery
                   </Link>
                   <Link href="/shop" className="block px-4 py-3 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 border-b border-gray-100">
                     🛍️ Club Shop
                   </Link>
-                  <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700">
+                  <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
                     📞 Contact Us
                   </Link>
                 </div>

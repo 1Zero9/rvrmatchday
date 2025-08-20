@@ -1,4 +1,4 @@
-import StandardLayout from '@/components/StandardLayout';
+import StandardLayout from '../../components/StandardLayout';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 

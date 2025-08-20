@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
+import StandardLayout from '../components/StandardLayout';
 
 export default function About() {
   // Interactive content boxes for About page
@@ -40,56 +40,27 @@ export default function About() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-      {/* Clean Geometric Background */}
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-x-48 -translate-y-48"></div>
-        <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl translate-x-40"></div>
-        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-indigo-400/10 rounded-full blur-3xl translate-y-36"></div>
-        
-        {/* Subtle Pattern Overlay */}
-        <div className="absolute inset-0 opacity-[0.15]" 
-             style={{
-               backgroundImage: `radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-               backgroundSize: '30px 30px'
-             }}
-        ></div>
-      </div>
-
-      <div className="relative z-10 min-h-screen flex flex-col">
-        
-        {/* Top Navigation - Minimal */}
-        <motion.div
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          className="flex justify-between items-center p-6"
-        >
-          <div className="flex items-center space-x-4">
-            <Image 
-              src="/images/logo.png" 
-              alt="Rivervalley Rangers AFC Logo" 
-              width={75}
-              height={75}
-              className="drop-shadow-lg"
-            />
-            <div className="text-white">
-              <h1 className="text-xl font-bold">Our Club</h1>
-              <p className="text-sm text-blue-200">History, teams & community</p>
-            </div>
-          </div>
+    <StandardLayout title="About Us">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+        {/* Clean Geometric Background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-x-48 -translate-y-48"></div>
+          <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl translate-x-40"></div>
+          <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-indigo-400/10 rounded-full blur-3xl translate-y-36"></div>
           
-          {/* Quick Links */}
-          <div className="flex space-x-4 text-sm">
-            <Link href="/" className="text-white/80 hover:text-white transition-colors">
-              ← Home
-            </Link>
-          </div>
-        </motion.div>
+          {/* Subtle Pattern Overlay */}
+          <div className="absolute inset-0 opacity-[0.15]" 
+               style={{
+                 backgroundImage: `radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                 backgroundSize: '30px 30px'
+               }}
+          ></div>
+        </div>
 
-        {/* Main Content - Centered */}
-        <div className="flex-1 flex items-center justify-center px-6">
-          <div className="max-w-6xl w-full">
+        <div className="relative z-10 min-h-screen flex flex-col">
+          {/* Main Content - Centered */}
+          <div className="flex-1 flex items-center justify-center px-6">
+            <div className="max-w-6xl w-full py-12">
             
             {/* Hero Title */}
             <motion.div
@@ -230,10 +201,10 @@ export default function About() {
               </div>
             </motion.div>
 
+            </div>
           </div>
         </div>
-
       </div>
-    </div>
+    </StandardLayout>
   );
 }
