@@ -41,26 +41,23 @@ export default function About() {
 
   return (
     <StandardLayout title="About Us">
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-        {/* Clean Geometric Background */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-x-48 -translate-y-48"></div>
-          <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl translate-x-40"></div>
-          <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-indigo-400/10 rounded-full blur-3xl translate-y-36"></div>
-          
-          {/* Subtle Pattern Overlay */}
-          <div className="absolute inset-0 opacity-[0.15]" 
-               style={{
-                 backgroundImage: `radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-                 backgroundSize: '30px 30px'
-               }}
-          ></div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <div className="text-6xl mb-6">🏛️</div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">About Rivervalley Rangers AFC</h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Building Community Through Football Since 2009 • More Than Just a Club
+          </p>
+        </motion.div>
 
-        <div className="relative z-10 min-h-screen flex flex-col">
-          {/* Main Content - Centered */}
-          <div className="flex-1 flex items-center justify-center px-6">
-            <div className="max-w-6xl w-full py-12">
+        <div className="max-w-6xl mx-auto">
             
             {/* Hero Title */}
             <motion.div
@@ -201,8 +198,6 @@ export default function About() {
               </div>
             </motion.div>
 
-            </div>
-          </div>
         </div>
       </div>
     </StandardLayout>

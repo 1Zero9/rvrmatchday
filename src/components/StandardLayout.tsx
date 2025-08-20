@@ -35,7 +35,16 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                   height={48}
                   className="drop-shadow-lg group-hover:scale-105 transition-transform duration-200"
                 />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="absolute -top-2 -right-2 group/indicator">
+                  <div className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg relative">
+                    BETA
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full right-0 mb-2 w-48 bg-black text-white text-xs rounded-lg py-2 px-3 opacity-0 group-hover/indicator:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                      🚧 Site in development - some features may be incomplete
+                      <div className="absolute top-full right-2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div>
                 <h1 className="font-bold text-xl text-white group-hover:text-slate-200 transition-colors duration-200">
@@ -186,6 +195,9 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                   </Link>
                   <Link href="/shop" className="block px-4 py-3 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 border-b border-gray-100">
                     🛍️ Club Shop
+                  </Link>
+                  <Link href="/boot-room" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
+                    🔄 Boot Room
                   </Link>
                   <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
                     📞 Contact Us
