@@ -23,7 +23,7 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
       <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-lg sticky top-0 z-50 border-b-2 border-slate-600">
         <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;utf8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 fill=%22white%22%3e%3ccircle cx=%2220%22 cy=%2220%22 r=%222%22/%3e%3ccircle cx=%2280%22 cy=%2240%22 r=%221%22/%3e%3ccircle cx=%2240%22 cy=%2270%22 r=%221.5%22/%3e%3ccircle cx=%2290%22 cy=%2280%22 r=%221%22/%3e%3ccircle cx=%2210%22 cy=%2260%22 r=%221%22/%3e%3c/svg%3e')] bg-repeat"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="flex justify-between items-center h-20">
+          <div className="flex justify-between items-center h-24">
             
             {/* Logo Section */}
             <div className="flex items-center space-x-4 cursor-pointer group" onClick={handleLogoClick}>
@@ -50,19 +50,19 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
             </div>
 
             {/* Navigation */}
-            <nav className="hidden lg:flex items-center space-x-0.5">
-              <Link href="/home" className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium text-sm">
+            <nav className="hidden lg:flex items-center space-x-1">
+              <Link href="/home" className="px-4 py-3 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium text-base">
                 🏠 Home
               </Link>
               
               <div className="relative group">
-                <button className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center text-sm">
+                <button className="px-4 py-3 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center text-base">
                   ⚽ Matches
-                  <svg className="ml-1 w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
                   <Link href="/dashboard" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     📊 Live Dashboard
                   </Link>
@@ -79,14 +79,14 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
               </div>
 
               <div className="relative group">
-                <button className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-sm">
+                <button className="px-4 py-3 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-base">
                   <span>🏛️</span>
                   <span>Club</span>
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
+                <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
                   <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase">About Club</div>
                   <Link href="/about" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     📖 About Us
@@ -114,14 +114,14 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
               </div>
 
               <div className="relative group">
-                <button className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-sm">
+                <button className="px-4 py-3 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-base">
                   <span>🎯</span>
                   <span>Join</span>
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
+                <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
                   <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Join Club</div>
                   <Link href="/join/trials" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     🎯 Trials & Registration
@@ -149,14 +149,14 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
               </div>
 
               <div className="relative group">
-                <button className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-sm">
+                <button className="px-4 py-3 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-base">
                   <span>👥</span>
                   <span>Members</span>
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-2 w-56 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
+                <div className="absolute left-0 mt-2 w-64 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
                   <Link href="/members/parents" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     👨‍👩‍👧‍👦 Parent Portal
                   </Link>
@@ -170,14 +170,14 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
               </div>
 
               <div className="relative group">
-                <button className="px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-sm">
+                <button className="px-4 py-3 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-base">
                   <span>📰</span>
                   <span>More</span>
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-2 w-56 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
+                <div className="absolute left-0 mt-2 w-64 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
                   <Link href="/news-media/events" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     📰 News & Events
                   </Link>
