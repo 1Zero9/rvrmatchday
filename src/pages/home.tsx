@@ -1,334 +1,531 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
-// import { useState } from "react";
 import StandardLayout from "../components/StandardLayout";
 
 export default function StandardHomepage() {
-  // const [activeCard, setActiveCard] = useState(0);
-
-  // Main navigation cards for the homepage
-  const mainCards = [
-    {
-      id: 'dashboard',
-      title: 'Match Central',
-      subtitle: 'Live matches & fixtures',
-      description: 'Your complete matchday experience',
-      color: 'from-green-600 to-emerald-700',
-      icon: '⚽',
-      href: '/dashboard'
-    },
-    {
-      id: 'join',
-      title: 'Join Us',
-      subtitle: 'Registration & membership', 
-      description: 'Start your football journey',
-      color: 'from-blue-600 to-cyan-700',
-      icon: '🚀',
-      href: '/join'
-    },
-    {
-      id: 'news',
-      title: 'News & Updates',
-      subtitle: 'Latest club announcements',
-      description: 'Stay informed with club updates',
-      color: 'from-purple-600 to-violet-700',
-      icon: '📰',
-      href: '/news'
-    },
-    {
-      id: 'fundraising',
-      title: 'Get Involved',
-      subtitle: 'Fundraising & volunteering',
-      description: 'Support your community club',
-      color: 'from-amber-600 to-orange-700',
-      icon: '🤝',
-      href: '/fundraising'
-    },
-    {
-      id: 'shop',
-      title: 'Club Shop',
-      subtitle: 'Merchandise & gear',
-      description: 'Show your club pride',
-      color: 'from-red-600 to-pink-700',
-      icon: '🛍️',
-      href: '/shop'
-    },
-    {
-      id: 'gallery',
-      title: 'Gallery',
-      subtitle: 'Photos & memories',
-      description: 'Celebrating our community',
-      color: 'from-indigo-600 to-purple-700',
-      icon: '📸',
-      href: '/gallery'
-    }
-  ];
-
   return (
-    <StandardLayout title="Home">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <StandardLayout>
+      <main>
         
-        {/* Welcome Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Welcome to Rivervalley Rangers
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Your complete football community hub. Discover matches, join teams, stay updated, and connect with our community.
-          </p>
-        </motion.div>
-
-        {/* Main Cards Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
-        >
-          {mainCards.map((card, index) => (
+        {/* Hero Section - Authentic Community Feel */}
+        <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+          
+          {/* 
+          ===================================================================
+          🎬 HERO IMAGE/VIDEO REPLACEMENT INSTRUCTIONS (NON-CODER FRIENDLY)
+          ===================================================================
+          
+          TO ADD YOUR HERO IMAGE:
+          1. Save your image as: /public/images/hero-main.jpg (or .png)
+          2. Replace the section below with:
+             <div className="absolute inset-0">
+               <img 
+                 src="/images/hero-main.jpg" 
+                 alt="Rivervalley Rangers AFC - Team celebration"
+                 className="w-full h-full object-cover"
+               />
+               <div className="absolute inset-0 bg-black/40"></div>
+             </div>
+          
+          TO ADD YOUR HERO VIDEO:
+          1. Save your video as: /public/videos/hero-main.mp4
+          2. Replace the section below with:
+             <div className="absolute inset-0">
+               <video 
+                 autoPlay 
+                 muted 
+                 loop 
+                 className="w-full h-full object-cover"
+               >
+                 <source src="/videos/hero-main.mp4" type="video/mp4" />
+                 Your browser does not support the video tag.
+               </video>
+               <div className="absolute inset-0 bg-black/40"></div>
+             </div>
+          
+          BEST HERO IMAGES/VIDEOS:
+          - Team celebrating a win
+          - Players in action during a match  
+          - Community gathering or supporters
+          - Training session with multiple age groups
+          - Club facilities with people
+          
+          IMAGE SPECS: 1920x1080px minimum, landscape orientation
+          VIDEO SPECS: MP4 format, under 10MB, 10-30 seconds max
+          ===================================================================
+          */}
+          
+          {/* CURRENT PLACEHOLDER - REPLACE THIS ENTIRE DIV WITH INSTRUCTIONS ABOVE */}
+          <div className="absolute inset-0">
+               <img 
+                 src="/images/homepg-image1.jpg" 
+                 alt="Rivervalley Rangers AFC - Team celebration"
+                 className="w-full h-full object-cover"
+               />
+               <div className="absolute inset-0 bg-black/40"></div>
+             </div>
+          
+          {/* Hero Content Overlay - Enhanced with Action Grid */}
+          <div className="relative z-10 w-full px-4 max-w-7xl mx-auto">
+            
+            {/* Club Header - Top Center */}
             <motion.div
-              key={card.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 + (index * 0.1) }}
-              whileHover={{ 
-                y: -8,
-                transition: { duration: 0.2 }
-              }}
-              // onHoverStart={() => setActiveCard(index)}
-              className="group"
+              transition={{ duration: 0.8 }}
+              className="text-center text-white mb-8"
             >
-              <Link href={card.href}>
-                <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-                  
-                  {/* Card Header */}
-                  <div className={`bg-gradient-to-r ${card.color} p-6 text-white`}>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-4xl group-hover:scale-110 transition-transform duration-300">
-                        {card.icon}
-                      </div>
-                      <svg className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-bold mb-2">{card.title}</h3>
-                    <p className="text-blue-100 text-sm">{card.subtitle}</p>
-                  </div>
-
-                  {/* Card Body */}
-                  <div className="p-6">
-                    <p className="text-gray-600 mb-4">{card.description}</p>
-                    <div className="text-sm font-medium text-gray-400">
-                      Click to explore →
-                    </div>
-                  </div>
-                </div>
-              </Link>
+              {/* 
+              ========================================
+              🏆 CLUB NAME & MOTTO CUSTOMIZATION
+              ========================================
+              Change "Rivervalley Rangers AFC" to your team name
+              Change the motto/tagline below to your club's motto
+              ======================================== 
+              */}
+              <h1 className="text-4xl md:text-6xl font-bold mb-4 text-shadow-lg">
+                Rivervalley Rangers AFC
+              </h1>
+              <p className="text-xl md:text-2xl font-medium text-green-200">
+                Building Community Through Football Since 1981
+              </p>
             </motion.div>
-          ))}
-        </motion.div>
 
-        {/* CTA Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="bg-gradient-to-r from-green-600 via-blue-600 to-green-700 rounded-2xl shadow-xl p-8 text-white mb-16 relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-black/10"></div>
-          <div className="relative text-center">
-            <div className="text-6xl mb-4">⚽</div>
-            <h2 className="text-3xl font-bold mb-4">Ready to Join?</h2>
-            <p className="text-xl text-green-100 mb-6 max-w-2xl mx-auto">
-              From grassroots to competitive football, we offer programs for all ages and skill levels.
-              Join our football family today!
+            {/* Action Grid - Glass Cards Overlay */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto"
+            >
+              
+              {/* Main CTA - Join Club */}
+              <motion.div 
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="md:col-span-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl p-6 text-center text-white hover:bg-white/25 transition-all duration-300 shadow-2xl"
+              >
+                <div className="text-4xl mb-3">⚽</div>
+                <h3 className="text-xl font-bold mb-2">Join Our Club</h3>
+                <p className="text-sm opacity-90 mb-4">Youth & Senior teams welcoming new players</p>
+                <Link href="/join/trials" className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-all">
+                  Register Now
+                </Link>
+              </motion.div>
+
+              {/* Quick Actions Grid */}
+              <motion.div 
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="bg-blue-600/20 backdrop-blur-md border border-blue-300/30 rounded-2xl p-6 text-center text-white hover:bg-blue-600/30 transition-all duration-300 shadow-xl"
+              >
+                <div className="text-3xl mb-3">📅</div>
+                <h3 className="text-lg font-bold mb-2">Next Fixtures</h3>
+                <p className="text-xs opacity-90 mb-3">Upcoming matches</p>
+                <Link href="/dashboard" className="text-blue-200 hover:text-white font-semibold text-sm">
+                  View Schedule →
+                </Link>
+              </motion.div>
+
+              <motion.div 
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="bg-orange-600/20 backdrop-blur-md border border-orange-300/30 rounded-2xl p-6 text-center text-white hover:bg-orange-600/30 transition-all duration-300 shadow-xl"
+              >
+                <div className="text-3xl mb-3">🤝</div>
+                <h3 className="text-lg font-bold mb-2">Get Involved</h3>
+                <p className="text-xs opacity-90 mb-3">Volunteer & support</p>
+                <Link href="/get-involved/volunteering" className="text-orange-200 hover:text-white font-semibold text-sm">
+                  Help Out →
+                </Link>
+              </motion.div>
+            </motion.div>
+
+            {/* Secondary Action Row */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-6xl mx-auto mt-4"
+            >
+              
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
+              >
+                <div className="text-2xl mb-2">🏆</div>
+                <h4 className="text-sm font-semibold mb-1">Latest Results</h4>
+                <Link href="/match-central/results" className="text-xs text-white/80 hover:text-white">
+                  View →
+                </Link>
+              </motion.div>
+
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
+              >
+                <div className="text-2xl mb-2">📸</div>
+                <h4 className="text-sm font-semibold mb-1">Photo Gallery</h4>
+                <Link href="/news-media/gallery" className="text-xs text-white/80 hover:text-white">
+                  Browse →
+                </Link>
+              </motion.div>
+
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
+              >
+                <div className="text-2xl mb-2">👥</div>
+                <h4 className="text-sm font-semibold mb-1">Our Teams</h4>
+                <Link href="/teams/boys" className="text-xs text-white/80 hover:text-white">
+                  Explore →
+                </Link>
+              </motion.div>
+
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
+              >
+                <div className="text-2xl mb-2">📞</div>
+                <h4 className="text-sm font-semibold mb-1">Contact</h4>
+                <Link href="/contact" className="text-xs text-white/80 hover:text-white">
+                  Get in Touch →
+                </Link>
+              </motion.div>
+            </motion.div>
+          </div>
+          
+          {/* Scroll indicator */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </div>
+        </section>
+
+        {/* Main Sponsors Section - High Visibility */}
+        <section className="bg-white py-16 border-b-4 border-green-600">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Proudly Supported By Our Community Partners</h2>
+              <p className="text-lg text-gray-600">The businesses and organizations that make our club possible</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
+              
+              {/* 
+              ===================================================================
+              💼 SPONSOR LOGO REPLACEMENT INSTRUCTIONS
+              ===================================================================
+              
+              TO ADD SPONSOR LOGOS:
+              1. Save sponsor logo as: /public/images/sponsors/main-sponsor.png (or .jpg)
+              2. Replace the placeholder div below with:
+                 <div className="group cursor-pointer">
+                   <div className="bg-white rounded-lg p-4 h-32 flex items-center justify-center hover:shadow-lg transition-all border">
+                     <img 
+                       src="/images/sponsors/main-sponsor.png" 
+                       alt="Main Sponsor Name"
+                       className="max-w-full max-h-full object-contain"
+                     />
+                   </div>
+                 </div>
+              
+              LOGO SPECS: PNG with transparent background preferred, 400x200px max
+              NAMING: main-sponsor.png, kit-sponsor.png, transport-sponsor.png, etc.
+              ===================================================================
+              */}
+              
+              {/* MAIN SPONSOR - REPLACE THIS DIV */}
+              <div className="group cursor-pointer">
+                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-2xl mb-2">🏢</div>
+                    <p className="text-xs font-bold">MAIN SPONSOR</p>
+                    <p className="text-xs">Logo Placeholder</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="group cursor-pointer">
+                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-2xl mb-2">🛍️</div>
+                    <p className="text-xs font-bold">KIT SPONSOR</p>
+                    <p className="text-xs">Logo Placeholder</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="group cursor-pointer">
+                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-2xl mb-2">🚗</div>
+                    <p className="text-xs font-bold">TRANSPORT PARTNER</p>
+                    <p className="text-xs">Logo Placeholder</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="group cursor-pointer">
+                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-2xl mb-2">🍔</div>
+                    <p className="text-xs font-bold">REFRESHMENTS</p>
+                    <p className="text-xs">Logo Placeholder</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center mt-8">
+              <Link href="/get-involved/sponsorship" className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                Become a Sponsor
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Community News & Quick Updates */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">What's Happening at Rangers</h2>
+              <p className="text-lg text-gray-600">Latest news, results, and community stories</p>
+            </div>
+            
+            <div className="grid lg:grid-cols-3 gap-8">
+              
+              {/* Featured Story */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                  
+                  {/* 
+                  ===================================================================
+                  📰 FEATURED NEWS PHOTO REPLACEMENT INSTRUCTIONS
+                  ===================================================================
+                  
+                  TO ADD NEWS FEATURED IMAGE:
+                  1. Save your image as: /public/images/news/featured-story.jpg (or .png)
+                  2. Replace the div below with:
+                     <div className="h-64 overflow-hidden">
+                       <img 
+                         src="/images/news/featured-story.jpg" 
+                         alt="Featured story - U16 County Cup"
+                         className="w-full h-full object-cover"
+                       />
+                     </div>
+                  
+                  BEST NEWS IMAGES:
+                  - Match action shots
+                  - Award ceremonies  
+                  - Team celebrations
+                  - Community events
+                  - Training highlights
+                  
+                  IMAGE SPECS: 800x400px minimum, landscape orientation
+                  ===================================================================
+                  */}
+                  
+                  {/* FEATURED NEWS PHOTO PLACEHOLDER - REPLACE THIS DIV */}
+                  <div className="h-64 bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
+                    <div className="text-white text-center">
+                      <div className="text-4xl mb-2">📸</div>
+                      <p className="text-sm font-bold">FEATURED STORY PHOTO</p>
+                      <p className="text-xs">See instructions above in code</p>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center mb-2">
+                      <span className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST NEWS</span>
+                      <span className="text-gray-500 text-sm">2 days ago</span>
+                    </div>
+                    {/* 
+                    ===============================================
+                    📝 FEATURED STORY CONTENT CUSTOMIZATION
+                    ===============================================
+                    Update the headline and story text below with your own club news
+                    Keep the format but change to your team's actual stories
+                    =============================================== 
+                    */}
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">U16 Boys Reach County Cup Final</h3>
+                    <p className="text-gray-600 mb-4">
+                      Our U16 boys team made history last weekend by securing their place in the County Cup Final after a thrilling 3-2 victory against Milltown FC. The final will be played at...
+                    </p>
+                    <Link href="/news" className="text-green-600 font-semibold hover:text-green-700">
+                      Read Full Story →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Quick Updates */}
+              <div className="space-y-6">
+                
+                {/* Latest Result */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-3">
+                    <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST RESULT</span>
+                  </div>
+                  <h4 className="font-bold text-gray-900 mb-2">Rangers FC 2-1 Millbrook FC</h4>
+                  <p className="text-gray-600 text-sm mb-3">Great performance from the seniors on Saturday!</p>
+                  <Link href="/match-central/results" className="text-blue-600 text-sm font-semibold">
+                    View All Results →
+                  </Link>
+                </div>
+                
+                {/* Upcoming Fixture */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-3">
+                    <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">NEXT MATCH</span>
+                  </div>
+                  <h4 className="font-bold text-gray-900 mb-2">Rangers FC vs Oakwood United</h4>
+                  <p className="text-gray-600 text-sm mb-1">Saturday 3pm • Home</p>
+                  <p className="text-gray-600 text-sm mb-3">Come support the lads!</p>
+                  <Link href="/match-central/fixtures" className="text-orange-600 text-sm font-semibold">
+                    View All Fixtures →
+                  </Link>
+                </div>
+                
+                {/* Community Story */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-3">
+                    <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">COMMUNITY</span>
+                  </div>
+                  <h4 className="font-bold text-gray-900 mb-2">New Girls Teams Growing Fast</h4>
+                  <p className="text-gray-600 text-sm mb-3">50+ girls registered since launch in 2023</p>
+                  <Link href="/teams/girls" className="text-purple-600 text-sm font-semibold">
+                    Learn More →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Social Media Feeds */}
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Follow Our Journey</h2>
+              <p className="text-lg text-gray-600">Stay connected with live updates from our social channels</p>
+            </div>
+            
+            <div className="grid lg:grid-cols-3 gap-8">
+              
+              {/* Instagram Feed */}
+              <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg p-6 text-white">
+                <div className="flex items-center mb-4">
+                  <div className="text-2xl mr-3">📸</div>
+                  <h3 className="text-xl font-bold">Instagram</h3>
+                </div>
+                <p className="mb-4">Match photos, training sessions, and behind-the-scenes content</p>
+                {/* SOCIAL INTEGRATION PLACEHOLDER */}
+                <div className="bg-white/20 rounded-lg p-4 mb-4 backdrop-blur">
+                  <p className="text-sm opacity-90">📱 INSTAGRAM FEED INTEGRATION</p>
+                  <p className="text-xs opacity-75 mt-1">@rvrfc1981</p>
+                  <p className="text-xs opacity-75">https://www.instagram.com/rvrfc1981/?hl=en</p>
+                </div>
+                <a href="https://www.instagram.com/rvrfc1981/?hl=en" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-purple-600 px-4 py-2 rounded font-semibold hover:bg-gray-100">
+                  Follow Us
+                </a>
+              </div>
+              
+              {/* Main Facebook */}
+              <div className="bg-blue-600 rounded-lg p-6 text-white">
+                <div className="flex items-center mb-4">
+                  <div className="text-2xl mr-3">👥</div>
+                  <h3 className="text-xl font-bold">Facebook - Main Club</h3>
+                </div>
+                <p className="mb-4">Club announcements, events, and community discussions</p>
+                {/* SOCIAL INTEGRATION PLACEHOLDER */}
+                <div className="bg-white/20 rounded-lg p-4 mb-4 backdrop-blur">
+                  <p className="text-sm opacity-90">📱 FACEBOOK FEED INTEGRATION</p>
+                  <p className="text-xs opacity-75 mt-1">Main Club Page</p>
+                  <p className="text-xs opacity-75">https://www.facebook.com/RVRFC/</p>
+                </div>
+                <a href="https://www.facebook.com/RVRFC/" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-blue-600 px-4 py-2 rounded font-semibold hover:bg-gray-100">
+                  Like Our Page
+                </a>
+              </div>
+              
+              {/* Seniors Facebook */}
+              <div className="bg-green-600 rounded-lg p-6 text-white">
+                <div className="flex items-center mb-4">
+                  <div className="text-2xl mr-3">🏆</div>
+                  <h3 className="text-xl font-bold">Facebook - Seniors</h3>
+                </div>
+                <p className="mb-4">Senior team news, match reports, and player updates</p>
+                {/* SOCIAL INTEGRATION PLACEHOLDER */}
+                <div className="bg-white/20 rounded-lg p-4 mb-4 backdrop-blur">
+                  <p className="text-sm opacity-90">📱 FACEBOOK FEED INTEGRATION</p>
+                  <p className="text-xs opacity-75 mt-1">Seniors Team Page</p>
+                  <p className="text-xs opacity-75">https://www.facebook.com/RVRSeniors/</p>
+                </div>
+                <a href="https://www.facebook.com/RVRSeniors/" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-green-600 px-4 py-2 rounded font-semibold hover:bg-gray-100">
+                  Follow Seniors
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Community Gallery Preview */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Community in Action</h2>
+              <p className="text-lg text-gray-600">Capturing the moments that make Rangers special</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* PHOTO PLACEHOLDERS: Community gallery preview */}
+              {[
+                { title: "Match Action", desc: "Players in action during matches" },
+                { title: "Training Sessions", desc: "Youth and senior training" },
+                { title: "Community Events", desc: "Club social events and fundraisers" },
+                { title: "Awards & Celebrations", desc: "Trophy presentations and achievements" }
+              ].map((photo, index) => (
+                <div key={index} className="group cursor-pointer">
+                  <div className="aspect-square bg-gradient-to-br from-green-400 to-blue-500 rounded-lg overflow-hidden relative">
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-100 group-hover:opacity-90 transition-opacity">
+                      <div className="text-white text-center">
+                        <div className="text-3xl mb-2">📸</div>
+                        <p className="text-xs font-bold">{photo.title.toUpperCase()}</p>
+                        <p className="text-xs opacity-75 px-2">{photo.desc}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="text-center mt-8">
+              <Link href="/gallery" className="inline-block bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-900 transition-colors">
+                View Full Gallery
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA Section */}
+        <section className="py-16 bg-green-600 text-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl font-bold mb-4">Ready to Join the Rangers Family?</h2>
+            <p className="text-xl mb-8 text-green-100">
+              Whether you're 7 or 70, there's a place for you at Rivervalley Rangers AFC
             </p>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/join/youth" className="bg-white text-green-700 px-8 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors">
-                Join Youth Teams
+              <Link href="/join" className="bg-white text-green-600 font-bold py-4 px-8 rounded-lg text-lg hover:bg-gray-100 transition-colors">
+                Join as a Player
               </Link>
-              <Link href="/join/senior" className="bg-green-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-900 transition-colors border border-green-600">
-                Senior Football
+              <Link href="/get-involved/volunteering" className="bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-orange-700 transition-colors">
+                Volunteer with Us
               </Link>
-              <Link href="/contact" className="bg-transparent text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors border border-white">
-                Get in Touch
+              <Link href="/get-involved/sponsorship" className="bg-transparent border-2 border-white text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-white/10 transition-colors">
+                Support the Club
               </Link>
             </div>
           </div>
-        </motion.div>
-
-        {/* Quick Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.9 }}
-          className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 mb-16"
-        >
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">Club at a Glance</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <p className="text-3xl font-bold text-blue-600 mb-2">15+</p>
-              <p className="text-sm text-gray-600">Active Teams</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-green-600 mb-2">250+</p>
-              <p className="text-sm text-gray-600">Club Members</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-purple-600 mb-2">44</p>
-              <p className="text-sm text-gray-600">Years History</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-orange-600 mb-2">100%</p>
-              <p className="text-sm text-gray-600">Community</p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Sponsors Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.0 }}
-          className="bg-gradient-to-br from-blue-50 via-white to-green-50 rounded-2xl p-8 border-2 border-blue-200 shadow-xl"
-        >
-          <div className="text-center mb-8">
-            <div className="text-5xl mb-4">🤝</div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Our Community Partners</h2>
-            <p className="text-lg text-gray-600">Supporting Rivervalley Rangers and local football development</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Enhanced sponsor placeholders with logo areas */}
-            <div className="group relative bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-blue-100 hover:border-blue-300">
-              <div className="text-center">
-                {/* Logo placeholder area */}
-                <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg h-20 w-full mb-4 flex items-center justify-center border-2 border-dashed border-blue-300">
-                  <div className="text-center text-blue-600">
-                    <div className="text-2xl mb-1">📷</div>
-                    <p className="text-xs font-medium">Logo Here</p>
-                  </div>
-                </div>
-                <h3 className="font-bold text-gray-900 mb-1">Main Sponsor</h3>
-                <p className="text-blue-600 text-sm font-semibold">Primary Partnership</p>
-                <p className="text-gray-500 text-xs mt-1">€5,000+ per year</p>
-              </div>
-              <div className="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-95 transition-opacity duration-300 rounded-xl flex items-center justify-center">
-                <div className="text-center text-white p-4">
-                  <div className="text-3xl mb-2">🏆</div>
-                  <p className="font-bold mb-2">Partnership Opportunity</p>
-                  <p className="text-sm mb-3">Become our main sponsor and get maximum visibility</p>
-                  <div className="bg-white text-blue-600 px-3 py-1 rounded-full text-xs font-semibold">
-                    Contact Us
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-green-100 hover:border-green-300">
-              <div className="text-center">
-                <div className="bg-gradient-to-br from-green-100 to-green-200 rounded-lg h-20 w-full mb-4 flex items-center justify-center border-2 border-dashed border-green-300">
-                  <div className="text-center text-green-600">
-                    <div className="text-2xl mb-1">📷</div>
-                    <p className="text-xs font-medium">Logo Here</p>
-                  </div>
-                </div>
-                <h3 className="font-bold text-gray-900 mb-1">Local Business</h3>
-                <p className="text-green-600 text-sm font-semibold">Community Support</p>
-                <p className="text-gray-500 text-xs mt-1">€1,000+ per year</p>
-              </div>
-              <div className="absolute inset-0 bg-green-600 opacity-0 group-hover:opacity-95 transition-opacity duration-300 rounded-xl flex items-center justify-center">
-                <div className="text-center text-white p-4">
-                  <div className="text-3xl mb-2">🌱</div>
-                  <p className="font-bold mb-2">Local Partnership</p>
-                  <p className="text-sm mb-3">Support grassroots football in your community</p>
-                  <div className="bg-white text-green-600 px-3 py-1 rounded-full text-xs font-semibold">
-                    Get Involved
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-purple-100 hover:border-purple-300">
-              <div className="text-center">
-                <div className="bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg h-20 w-full mb-4 flex items-center justify-center border-2 border-dashed border-purple-300">
-                  <div className="text-center text-purple-600">
-                    <div className="text-2xl mb-1">📷</div>
-                    <p className="text-xs font-medium">Logo Here</p>
-                  </div>
-                </div>
-                <h3 className="font-bold text-gray-900 mb-1">Kit Sponsor</h3>
-                <p className="text-purple-600 text-sm font-semibold">Equipment Partner</p>
-                <p className="text-gray-500 text-xs mt-1">€2,500+ per year</p>
-              </div>
-              <div className="absolute inset-0 bg-purple-600 opacity-0 group-hover:opacity-95 transition-opacity duration-300 rounded-xl flex items-center justify-center">
-                <div className="text-center text-white p-4">
-                  <div className="text-3xl mb-2">⚽</div>
-                  <p className="font-bold mb-2">Kit Sponsorship</p>
-                  <p className="text-sm mb-3">Your logo on every jersey - maximum exposure</p>
-                  <div className="bg-white text-purple-600 px-3 py-1 rounded-full text-xs font-semibold">
-                    Learn More
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-orange-100 hover:border-orange-300">
-              <div className="text-center">
-                <div className="bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg h-20 w-full mb-4 flex items-center justify-center border-2 border-dashed border-orange-300">
-                  <div className="text-center text-orange-600">
-                    <div className="text-2xl mb-1">📷</div>
-                    <p className="text-xs font-medium">Logo Here</p>
-                  </div>
-                </div>
-                <h3 className="font-bold text-gray-900 mb-1">Community Hub</h3>
-                <p className="text-orange-600 text-sm font-semibold">Local Supporters</p>
-                <p className="text-gray-500 text-xs mt-1">€500+ per year</p>
-              </div>
-              <div className="absolute inset-0 bg-orange-600 opacity-0 group-hover:opacity-95 transition-opacity duration-300 rounded-xl flex items-center justify-center">
-                <div className="text-center text-white p-4">
-                  <div className="text-3xl mb-2">❤️</div>
-                  <p className="font-bold mb-2">Join Our Family</p>
-                  <p className="text-sm mb-3">Be part of our growing community story</p>
-                  <div className="bg-white text-orange-600 px-3 py-1 rounded-full text-xs font-semibold">
-                    Join Us
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-center">
-            <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 mb-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Why Sponsor Us?</h3>
-              <div className="grid md:grid-cols-3 gap-4 text-sm">
-                <div className="text-center">
-                  <div className="text-2xl mb-2">👥</div>
-                  <p className="font-semibold text-gray-900">250+ Members</p>
-                  <p className="text-gray-600">Active community reach</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl mb-2">📱</div>
-                  <p className="font-semibold text-gray-900">Social Media</p>
-                  <p className="text-gray-600">Digital visibility</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl mb-2">🏆</div>
-                  <p className="font-semibold text-gray-900">Match Days</p>
-                  <p className="text-gray-600">Local event presence</p>
-                </div>
-              </div>
-            </div>
-            <Link href="/get-involved/sponsorship" className="inline-block bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-              🤝 Become a Sponsor
-            </Link>
-          </div>
-        </motion.div>
+        </section>
 
       </main>
     </StandardLayout>

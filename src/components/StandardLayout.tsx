@@ -36,12 +36,16 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                   className="drop-shadow-lg group-hover:scale-105 transition-transform duration-200"
                 />
                 <div className="absolute -top-2 -right-2 group/indicator">
-                  <div className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg relative">
-                    BETA
-                    {/* Tooltip - positioned to the left */}
-                    <div className="absolute bottom-full left-0 mb-2 w-48 bg-black text-white text-xs rounded-lg py-2 px-3 opacity-0 group-hover/indicator:opacity-100 transition-opacity duration-200 pointer-events-none z-50 -translate-x-3/4">
-                      🚧 Site in development - some features may be incomplete
-                      <div className="absolute top-full left-3/4 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black"></div>
+                  <div className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg relative cursor-help">
+                    🚧
+                    {/* Tooltip - positioned below */}
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-52 bg-black/90 backdrop-blur-sm text-white text-xs rounded-lg py-3 px-4 opacity-0 group-hover/indicator:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
+                      <div className="text-center">
+                        <div className="text-yellow-400 mb-1">⚠️ BETA VERSION</div>
+                        <div>Site under active development</div>
+                        <div className="text-gray-300 text-xs mt-1">Some features may be incomplete</div>
+                      </div>
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-b-4 border-transparent border-b-black/90"></div>
                     </div>
                   </div>
                 </div>
