@@ -246,7 +246,7 @@ export default function Facilities() {
                 <Link href="/about" className="block text-blue-600 hover:text-blue-800 transition-colors text-sm">
                   ← Back to About Us
                 </Link>
-                <Link href="/club/history" className="block text-gray-600 hover:text-gray-800 transition-colors text-sm">
+                <Link href="/about" className="block text-gray-600 hover:text-gray-800 transition-colors text-sm">
                   → Club History
                 </Link>
                 <Link href="/club/committee" className="block text-gray-600 hover:text-gray-800 transition-colors text-sm">

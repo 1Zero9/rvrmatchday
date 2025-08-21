@@ -162,11 +162,11 @@ export default function ParentsArea() {
                   <h3 className="font-semibold text-gray-900 mb-3">WhatsApp Groups</h3>
                   <div className="space-y-3 text-sm">
                     <div className="bg-green-50 rounded-lg p-3">
-                      <p className="font-medium text-green-900">U10 Rangers Parents</p>
+                      <p className="font-medium text-green-900">U10 Parents</p>
                       <p className="text-green-700">Quick updates and match reminders</p>
                     </div>
                     <div className="bg-green-50 rounded-lg p-3">
-                      <p className="font-medium text-green-900">U12 Rangers Parents</p>
+                      <p className="font-medium text-green-900">U12 Parents</p>
                       <p className="text-green-700">Training schedules and team news</p>
                     </div>
                     <div className="bg-green-50 rounded-lg p-3">
@@ -210,8 +210,8 @@ export default function ParentsArea() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Members Area</h3>
               <nav className="space-y-2">
                 <div className="bg-gradient-to-r from-blue-50 to-green-50 text-blue-700 px-3 py-2 rounded font-medium">Parents Area</div>
-                <Link href="/members/coaches" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded hover:bg-gray-50">Coaches Area</Link>
-                <Link href="/members/admin" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded hover:bg-gray-50">Admin Portal</Link>
+                <Link href="/contact" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded hover:bg-gray-50">Coach Contact</Link>
+                <Link href="/contact" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded hover:bg-gray-50">General Inquiries</Link>
               </nav>
             </motion.div>
 

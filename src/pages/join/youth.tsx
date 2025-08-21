@@ -1,4 +1,5 @@
 import StandardLayout from '../../components/StandardLayout';
+import Breadcrumb from '../../components/Breadcrumb';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -6,6 +7,11 @@ export default function YouthMembership() {
   return (
     <StandardLayout title="Youth Membership">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <Breadcrumb items={[
+          { label: "Join Us", href: "/join" },
+          { label: "Youth Membership" }
+        ]} />
         
         {/* Hero Section */}
         <motion.div

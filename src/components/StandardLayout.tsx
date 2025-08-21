@@ -38,10 +38,10 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                 <div className="absolute -top-2 -right-2 group/indicator">
                   <div className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg relative">
                     BETA
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full right-0 mb-2 w-48 bg-black text-white text-xs rounded-lg py-2 px-3 opacity-0 group-hover/indicator:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                    {/* Tooltip - positioned to the left */}
+                    <div className="absolute bottom-full left-0 mb-2 w-48 bg-black text-white text-xs rounded-lg py-2 px-3 opacity-0 group-hover/indicator:opacity-100 transition-opacity duration-200 pointer-events-none z-50 -translate-x-3/4">
                       🚧 Site in development - some features may be incomplete
-                      <div className="absolute top-full right-2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black"></div>
+                      <div className="absolute top-full left-3/4 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black"></div>
                     </div>
                   </div>
                 </div>
@@ -53,7 +53,7 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                 <p className="text-slate-300 text-sm font-medium flex items-center space-x-2">
                   <span>AFC</span>
                   <span className="text-green-400">⚽</span>
-                  <span className="text-xs bg-slate-700 px-2 py-1 rounded-full">EST. 2009</span>
+                  <span className="text-xs bg-slate-700 px-2 py-1 rounded-full">EST. 1981</span>
                 </p>
               </div>
             </div>
@@ -115,15 +115,15 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                     🌟 U16, U14, U12 Girls
                   </Link>
                   <div className="bg-purple-50 px-3 py-2 text-xs font-semibold text-purple-600 uppercase border-t">🤝 Inclusive</div>
-                  <Link href="/teams/youth#inclusive" className="block px-4 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-b border-gray-100">
+                  <Link href="/teams/inclusive" className="block px-4 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-b border-gray-100">
                     🤝 Football for All
                   </Link>
                   <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase border-t">Adult Teams</div>
                   <Link href="/teams/senior" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     👨 Senior Teams
                   </Link>
-                  <Link href="/teams/coaching" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
-                    🧑‍🏫 Coaches
+                  <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
+                    🧑‍🏫 Contact Coaches
                   </Link>
                 </div>
               </div>
@@ -175,11 +175,11 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                   <Link href="/members/parents" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     👨‍👩‍👧‍👦 Parent Portal
                   </Link>
-                  <Link href="/members/coaches" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    🧑‍🏫 Coach Dashboard
+                  <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
+                    🧑‍🏫 Coach Contact
                   </Link>
-                  <Link href="/members/admin" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
-                    🔐 Admin Access
+                  <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
+                    🔐 General Inquiries
                   </Link>
                 </div>
               </div>
@@ -279,7 +279,7 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                 <h3 className="font-bold">Rivervalley Rangers AFC</h3>
               </div>
               <p className="text-gray-300 text-sm">
-                Building Community Through Football Since 2009
+                Building Community Through Football Since 1981
               </p>
             </div>
             <div>
@@ -295,8 +295,8 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
               <h4 className="font-semibold mb-4">Members</h4>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/members/parents" className="text-gray-300 hover:text-white">Parent Portal</Link></li>
-                <li><Link href="/members/coaches" className="text-gray-300 hover:text-white">Coach Dashboard</Link></li>
-                <li><Link href="/members/admin" className="text-gray-300 hover:text-white">Admin Access</Link></li>
+                <li><Link href="/contact" className="text-gray-300 hover:text-white">Coach Contact</Link></li>
+                <li><Link href="/contact" className="text-gray-300 hover:text-white">General Inquiries</Link></li>
               </ul>
             </div>
             <div>
@@ -311,7 +311,7 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center">
             <p className="text-gray-400 text-sm">
-              © 2024 Rivervalley Rangers AFC. All rights reserved.
+              © 2025 Rivervalley Rangers AFC. All rights reserved.
             </p>
           </div>
         </div>

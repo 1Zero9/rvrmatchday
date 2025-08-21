@@ -278,7 +278,7 @@ export default function Footer() {
                     className="border-t border-gray-700 pt-6 mt-8 text-center text-gray-400 text-xs"
                   >
                     <p>© {currentYear} Rivervalley Rangers AFC • Building Community Through Football</p>
-                    <p className="mt-1">Registered in Ireland • Club Registration: AFC-2024-001</p>
+                    <p className="mt-1">Registered in Ireland • Club Registration: AFC-2025-001</p>
                   </motion.div>
                   
                 </div>

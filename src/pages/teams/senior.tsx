@@ -6,7 +6,7 @@ export default function SeniorTeams() {
   const seniorTeams = [
     {
       id: 'first-team',
-      name: 'Rivervalley Rangers FC',
+      name: 'Rivervalley FC',
       league: 'County Premier League',
       division: 'Premier Division',
       manager: 'Michael O\'Sullivan',
@@ -15,14 +15,14 @@ export default function SeniorTeams() {
       homeGround: 'Main Pitch',
       season: '2024/25',
       players: 23,
-      founded: 2009,
+      founded: 1981,
       achievements: ['Premier League Champions 2022', 'County Cup Winners 2021', 'Promotion Winners 2020'],
       captain: 'Liam McCarthy',
       topScorer: 'Sean O\'Brien (12 goals)'
     },
     {
       id: 'reserves',
-      name: 'Rivervalley Rangers Reserves',
+      name: 'Rivervalley Reserves',
       league: 'County League Division 1',
       division: 'Division 1',
       manager: 'Tommy Walsh',
@@ -98,10 +98,10 @@ export default function SeniorTeams() {
                 <p className="text-sm text-green-700">Adult competitive football</p>
               </div>
               
-              <Link href="/teams/coaching" className="group">
+              <Link href="/contact" className="group">
                 <div className="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 border-l-4 border-gray-300 hover:border-gray-500 transition-all duration-200">
-                  <h3 className="font-medium text-gray-900 mb-2 group-hover:text-gray-700">Coaching Staff</h3>
-                  <p className="text-sm text-gray-600">Meet our qualified coaches</p>
+                  <h3 className="font-medium text-gray-900 mb-2 group-hover:text-gray-700">Contact Coaches</h3>
+                  <p className="text-sm text-gray-600">Get in touch with our coaching staff</p>
                 </div>
               </Link>
             </div>
@@ -364,8 +364,8 @@ export default function SeniorTeams() {
                 <Link href="/teams/youth" className="block text-blue-600 hover:text-blue-800 transition-colors text-sm">
                   → Youth Teams
                 </Link>
-                <Link href="/teams/coaching" className="block text-blue-600 hover:text-blue-800 transition-colors text-sm">
-                  → Coaching Staff
+                <Link href="/contact" className="block text-blue-600 hover:text-blue-800 transition-colors text-sm">
+                  → Contact Coaches
                 </Link>
                 <Link href="/join/senior" className="block text-gray-600 hover:text-gray-800 transition-colors text-sm">
                   → Join Senior Teams

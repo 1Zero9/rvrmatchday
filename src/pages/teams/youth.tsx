@@ -6,7 +6,7 @@ export default function YouthTeams() {
   const boysTeams = [
     {
       id: 'u18-boys',
-      name: 'U18 Boys Rangers',
+      name: 'U18 Boys',
       league: 'County Youth League Division 1',
       ageGroup: 'Under 18',
       manager: 'David Thompson',
@@ -18,7 +18,7 @@ export default function YouthTeams() {
     },
     {
       id: 'u16-boys',
-      name: 'U16 Boys Rangers',
+      name: 'U16 Boys',
       league: 'County Youth League Division 2',
       ageGroup: 'Under 16',
       manager: 'Sarah Mitchell',
@@ -30,7 +30,7 @@ export default function YouthTeams() {
     },
     {
       id: 'u14-boys',
-      name: 'U14 Boys Rangers',
+      name: 'U14 Boys',
       league: 'Regional Youth Development League',
       ageGroup: 'Under 14',
       manager: 'Mark O\'Connor',
@@ -42,7 +42,7 @@ export default function YouthTeams() {
     },
     {
       id: 'u12-boys',
-      name: 'U12 Boys Rangers',
+      name: 'U12 Boys',
       league: 'Local Youth League',
       ageGroup: 'Under 12',
       manager: 'Emma Walsh',
@@ -54,7 +54,7 @@ export default function YouthTeams() {
     },
     {
       id: 'u10-boys',
-      name: 'U10 Boys Rangers',
+      name: 'U10 Boys',
       league: 'Mini Football League',
       ageGroup: 'Under 10',
       manager: 'James Kelly',
@@ -69,7 +69,7 @@ export default function YouthTeams() {
   const girlsTeams = [
     {
       id: 'u16-girls',
-      name: 'U16 Girls Rangers',
+      name: 'U16 Girls',
       league: 'County Girls League Division 1',
       ageGroup: 'Under 16',
       manager: 'Lisa Murphy',
@@ -81,7 +81,7 @@ export default function YouthTeams() {
     },
     {
       id: 'u14-girls',
-      name: 'U14 Girls Rangers',
+      name: 'U14 Girls',
       league: 'Regional Girls Development League',
       ageGroup: 'Under 14',
       manager: 'Rachel O\'Brien',
@@ -93,7 +93,7 @@ export default function YouthTeams() {
     },
     {
       id: 'u12-girls',
-      name: 'U12 Girls Rangers',
+      name: 'U12 Girls',
       league: 'Local Girls Youth League',
       ageGroup: 'Under 12',
       manager: 'Karen Walsh',
@@ -164,10 +164,10 @@ export default function YouthTeams() {
                 </div>
               </Link>
               
-              <Link href="/teams/coaching" className="group">
+              <Link href="/contact" className="group">
                 <div className="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 border-l-4 border-gray-300 hover:border-gray-500 transition-all duration-200">
-                  <h3 className="font-medium text-gray-900 mb-2 group-hover:text-gray-700">Coaching Staff</h3>
-                  <p className="text-sm text-gray-600">Meet our qualified coaches</p>
+                  <h3 className="font-medium text-gray-900 mb-2 group-hover:text-gray-700">Contact Coaches</h3>
+                  <p className="text-sm text-gray-600">Get in touch with our coaching staff</p>
                 </div>
               </Link>
             </div>
@@ -478,23 +478,23 @@ export default function YouthTeams() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Training Schedule</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="font-medium">U18 Rangers</span>
+                  <span className="font-medium">U18</span>
                   <span className="text-gray-600">Tue/Thu 7-8:30pm</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="font-medium">U16 Rangers</span>
+                  <span className="font-medium">U16</span>
                   <span className="text-gray-600">Mon/Wed 6:30-8pm</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="font-medium">U14 Rangers</span>
+                  <span className="font-medium">U14</span>
                   <span className="text-gray-600">Tue/Thu 6-7:30pm</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="font-medium">U12 Rangers</span>
+                  <span className="font-medium">U12</span>
                   <span className="text-gray-600">Sat 10-11:30am</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="font-medium">U10 Rangers</span>
+                  <span className="font-medium">U10</span>
                   <span className="text-gray-600">Sat 9-10am</span>
                 </div>
               </div>
@@ -561,8 +561,8 @@ export default function YouthTeams() {
                 <Link href="/teams/senior" className="block text-blue-600 hover:text-blue-800 transition-colors text-sm">
                   → Senior Teams
                 </Link>
-                <Link href="/teams/coaching" className="block text-blue-600 hover:text-blue-800 transition-colors text-sm">
-                  → Coaching Staff
+                <Link href="/contact" className="block text-blue-600 hover:text-blue-800 transition-colors text-sm">
+                  → Contact Coaches
                 </Link>
                 <Link href="/join/youth" className="block text-gray-600 hover:text-gray-800 transition-colors text-sm">
                   → Join Youth Program

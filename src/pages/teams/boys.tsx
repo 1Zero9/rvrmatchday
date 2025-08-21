@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import StandardLayout from '../../components/StandardLayout';
+import Breadcrumb from '../../components/Breadcrumb';
 
 export default function BoysTeams() {
   const boysTeams = [
     {
       id: 'u18-boys',
-      name: 'U18 Boys Rangers',
+      name: 'U18 Boys',
       league: 'County Youth League Division 1',
       ageGroup: 'Under 18',
       manager: 'David Thompson',
@@ -18,7 +19,7 @@ export default function BoysTeams() {
     },
     {
       id: 'u16-boys',
-      name: 'U16 Boys Rangers',
+      name: 'U16 Boys',
       league: 'County Youth League Division 2',
       ageGroup: 'Under 16',
       manager: 'Sarah Mitchell',
@@ -30,7 +31,7 @@ export default function BoysTeams() {
     },
     {
       id: 'u14-boys',
-      name: 'U14 Boys Rangers',
+      name: 'U14 Boys',
       league: 'Regional Youth Development League',
       ageGroup: 'Under 14',
       manager: 'Mark O\'Connor',
@@ -42,7 +43,7 @@ export default function BoysTeams() {
     },
     {
       id: 'u12-boys',
-      name: 'U12 Boys Rangers',
+      name: 'U12 Boys',
       league: 'Local Youth League',
       ageGroup: 'Under 12',
       manager: 'Emma Walsh',
@@ -54,7 +55,7 @@ export default function BoysTeams() {
     },
     {
       id: 'u10-boys',
-      name: 'U10 Boys Rangers',
+      name: 'U10 Boys',
       league: 'Mini Football League',
       ageGroup: 'Under 10',
       manager: 'James Kelly',
@@ -70,16 +71,10 @@ export default function BoysTeams() {
     <StandardLayout title="Boys Teams">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Breadcrumb Navigation */}
-        <nav className="mb-8">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <Link href="/teams/youth" className="hover:text-blue-600 transition-colors">
-              Teams
-            </Link>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">Boys Teams</span>
-          </div>
-        </nav>
+        <Breadcrumb items={[
+          { label: "Teams", href: "/teams/youth" },
+          { label: "Boys Teams" }
+        ]} />
 
         {/* Teams Section Navigation */}
         <div className="mb-12">
@@ -104,7 +99,7 @@ export default function BoysTeams() {
                 </div>
               </Link>
               
-              <Link href="/teams/youth#inclusive" className="group">
+              <Link href="/teams/inclusive" className="group">
                 <div className="bg-gray-50 hover:bg-purple-50 rounded-lg p-4 border-l-4 border-gray-300 hover:border-purple-500 transition-all duration-200">
                   <h3 className="font-medium text-gray-900 mb-2 group-hover:text-purple-700 flex items-center">
                     <span className="text-xl mr-2">🤝</span>

@@ -7,7 +7,7 @@ export default function LiveDashboard() {
     {
       id: 1,
       date: '2024-08-18',
-      team: 'U12 Rangers',
+      team: 'U12',
       opponent: 'Meadowbrook FC',
       result: '3-2',
       status: 'won',
@@ -25,7 +25,7 @@ export default function LiveDashboard() {
     {
       id: 3,
       date: '2024-08-12',
-      team: 'U16 Rangers',
+      team: 'U16',
       opponent: 'Oakwood Athletic',
       result: '0-2',
       status: 'lost',
@@ -47,7 +47,7 @@ export default function LiveDashboard() {
       id: 2,
       date: '2024-08-26',
       time: '11:00',
-      team: 'U14 Rangers',
+      team: 'U14',
       opponent: 'Hillside Rovers',
       venue: 'Home',
       league: 'Youth League'

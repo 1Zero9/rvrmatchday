@@ -85,7 +85,7 @@ export default function Results() {
             <div className="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500">U12 Division 1</div>
-                <div className="font-semibold">Rivervalley Rangers vs St. Mary's FC</div>
+                <div className="font-semibold">Rivervalley vs St. Mary's FC</div>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-2xl font-bold text-green-600">3-1</span>
@@ -96,7 +96,7 @@ export default function Results() {
             <div className="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500">U14 Division 2</div>
-                <div className="font-semibold">Celtic FC vs Rivervalley Rangers</div>
+                <div className="font-semibold">Celtic FC vs Rivervalley</div>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-2xl font-bold text-blue-600">2-2</span>
@@ -107,7 +107,7 @@ export default function Results() {
             <div className="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500">Senior Squad</div>
-                <div className="font-semibold">Rivervalley Rangers vs United FC</div>
+                <div className="font-semibold">Rivervalley vs United FC</div>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-2xl font-bold text-green-600">4-0</span>

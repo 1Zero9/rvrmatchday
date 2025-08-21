@@ -6,7 +6,7 @@ export default function EventsNews() {
   const newsEvents = [
     {
       id: 1,
-      title: 'U18 Rangers Claim County League Title',
+      title: 'U18 Claim County League Title',
       type: 'Match Report',
       date: 'May 15, 2024',
       excerpt: 'A thrilling 2-1 victory against Blackrock FC secured the County Youth League Division 1 title for our U18 team in dramatic fashion.',
@@ -36,7 +36,7 @@ export default function EventsNews() {
       title: 'Community Coaching Awards Recognition',
       type: 'Achievement',
       date: 'April 22, 2024',
-      excerpt: 'Rivervalley Rangers recognized by Dublin County FA for outstanding community outreach programs in local schools.',
+      excerpt: 'Rivervalley Rangers AFC recognized by Dublin County FA for outstanding community outreach programs in local schools.',
       featured: false,
       category: 'Community'
     },

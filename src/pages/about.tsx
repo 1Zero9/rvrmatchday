@@ -8,7 +8,7 @@ export default function About() {
     {
       id: 'history',
       title: '📜 Our Story',
-      subtitle: 'Since 2009',
+      subtitle: 'Since 1981',
       color: 'from-blue-600 to-cyan-700',
       icon: '📜',
       description: 'Learn about our journey and heritage'
@@ -53,7 +53,7 @@ export default function About() {
           <div className="text-6xl mb-6">🏰</div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Story & Heritage</h1>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto">
-            From Ancient Swords to Modern Rangers • A Thousand Years of Community Spirit
+            From Ancient Swords to Modern Football • A Thousand Years of Community Spirit
           </p>
         </motion.div>
 

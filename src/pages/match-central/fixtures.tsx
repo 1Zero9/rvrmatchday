@@ -1,11 +1,18 @@
 import StandardLayout from '../../components/StandardLayout';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import Breadcrumb from '../../components/Breadcrumb';
 
 export default function Fixtures() {
   return (
     <StandardLayout title="Fixtures">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <Breadcrumb items={[
+          { label: "Match Central", href: "/dashboard" },
+          { label: "Fixtures" }
+        ]} />
+        
         {/* Hero Section */}
         <motion.div
           initial={{ y: 50, opacity: 0 }}

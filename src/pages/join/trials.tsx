@@ -1,11 +1,17 @@
 import StandardLayout from '../../components/StandardLayout';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import Breadcrumb from '../../components/Breadcrumb';
 
 export default function TrialsRegistration() {
   return (
     <StandardLayout title="Trials & Registration">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <Breadcrumb items={[
+          { label: "Join Us", href: "/join" },
+          { label: "Trials & Registration" }
+        ]} />
         
         {/* Hero Section */}
         <motion.div

@@ -117,7 +117,7 @@ export default function Tables() {
                 </tr>
                 <tr className="border-b hover:bg-gray-50 bg-blue-50">
                   <td className="p-3 font-bold text-blue-600">2</td>
-                  <td className="p-3 font-semibold text-blue-600">Rivervalley Rangers</td>
+                  <td className="p-3 font-semibold text-blue-600">Rivervalley</td>
                   <td className="p-3 text-center">12</td>
                   <td className="p-3 text-center">9</td>
                   <td className="p-3 text-center">2</td>
