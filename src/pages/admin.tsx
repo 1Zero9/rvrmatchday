@@ -2,10 +2,12 @@ import StandardLayout from '../components/StandardLayout';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import AdminChangelog from '../components/AdminChangelog';
 
 export default function AdminDashboard() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,7 +125,7 @@ export default function AdminDashboard() {
           transition={{ duration: 0.6 }}
         >
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Site Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
             <p className="text-gray-600">Monitor and manage RVRFC website</p>
           </div>
           <button 
@@ -134,10 +136,55 @@ export default function AdminDashboard() {
           </button>
         </motion.div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+        {/* Tab Navigation */}
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'dashboard'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                📊 Dashboard
+              </button>
+              <button
+                onClick={() => setActiveTab('changelog')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'changelog'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                📝 Changelog
+              </button>
+              <button
+                onClick={() => setActiveTab('system')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'system'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                ⚙️ System Info
+              </button>
+            </nav>
+          </div>
+        </motion.div>
+
+        {/* Tab Content */}
+        {activeTab === 'dashboard' && (
+          <div className="grid lg:grid-cols-3 gap-8">
+            
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
             
             {/* Site Status Cards */}
             <motion.div 
@@ -324,6 +371,102 @@ export default function AdminDashboard() {
             </motion.div>
           </div>
         </div>
+        )}
+
+        {/* Changelog Tab */}
+        {activeTab === 'changelog' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <AdminChangelog />
+          </motion.div>
+        )}
+
+        {/* System Info Tab */}
+        {activeTab === 'system' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="grid lg:grid-cols-2 gap-8"
+          >
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Template Information</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Template Name:</span>
+                  <span className="font-medium">OneZeroNine Premium Football Template</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Current Version:</span>
+                  <span className="font-medium">v2.2.0 - Glass Morphism Pro</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Framework:</span>
+                  <span className="font-medium">Next.js 15.4.6</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Styling:</span>
+                  <span className="font-medium">Tailwind CSS + Glass Morphism</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Animations:</span>
+                  <span className="font-medium">Framer Motion</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Developer:</span>
+                  <span className="font-medium">OneZeroNine</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">AI Collaboration:</span>
+                  <span className="font-medium">Claude (Anthropic)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Design System</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Glass Components:</span>
+                  <span className="font-medium">8 Components</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Hero Sections:</span>
+                  <span className="font-medium">Video/Image Support</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Color System:</span>
+                  <span className="font-medium">4 Gradient Themes</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Responsive:</span>
+                  <span className="font-medium">Mobile-First</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Documentation:</span>
+                  <span className="font-medium">Complete</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Template Ready:</span>
+                  <span className="font-medium text-green-600">✓ Yes</span>
+                </div>
+              </div>
+              
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Contact:</strong> onezeronine@gmail.com
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  For licensing, customization, or technical support
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
       </div>
     </StandardLayout>
   );

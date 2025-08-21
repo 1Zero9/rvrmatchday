@@ -1,7 +1,19 @@
+/**
+ * Standard Layout Component
+ * 
+ * © 2025 OneZeroNine Premium Football Club Template
+ * Developer: OneZeroNine (onezeronine@gmail.com)
+ * AI Collaboration: Claude (Anthropic)
+ * 
+ * This is the main layout wrapper providing consistent navigation,
+ * header, and footer across all pages in the template.
+ */
+
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState, ReactNode } from "react";
+import DeveloperCredits from "./DeveloperCredits";
 
 interface StandardLayoutProps {
   children: ReactNode;
@@ -313,13 +325,19 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center">
-            <p className="text-gray-400 text-sm">
-              © 2025 Rivervalley Rangers AFC. All rights reserved.
-            </p>
+          <div className="border-t border-gray-700 mt-8 pt-8">
+            <div className="text-center mb-4">
+              <p className="text-gray-400 text-sm">
+                © 2025 Rivervalley Rangers AFC. All rights reserved.
+              </p>
+            </div>
+            <DeveloperCredits variant="footer" />
           </div>
         </div>
       </footer>
+      
+      {/* Developer Credits - Minimal Branding */}
+      <DeveloperCredits variant="minimal" />
     </div>
   );
 }

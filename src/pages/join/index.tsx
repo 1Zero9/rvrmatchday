@@ -1,6 +1,18 @@
+/**
+ * Join Club - Main Registration Hub
+ * 
+ * © 2025 OneZeroNine Premium Football Club Template
+ * Developer: OneZeroNine (onezeronine@gmail.com)
+ * AI Collaboration: Claude (Anthropic)
+ * 
+ * Modern glass morphism registration hub with hero section,
+ * membership options, and streamlined signup process.
+ */
+
 import StandardLayout from '../../components/StandardLayout';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { GlassCard, GlassActionCard, GlassHero } from '../../components/Glass';
 
 export default function JoinIndex() {
   const joinOptions = [
@@ -39,24 +51,88 @@ export default function JoinIndex() {
   ];
 
   return (
-    <StandardLayout title="Join Our Club">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        
-        {/* Hero Section */}
+    <StandardLayout>
+      {/* 
+      ===================================================================
+      🎬 JOIN CLUB HERO CUSTOMIZATION (NON-CODER FRIENDLY)
+      ===================================================================
+      
+      TO ADD JOIN PAGE BACKGROUND IMAGE:
+      1. Save your image as: /public/images/join-hero.jpg
+      2. Replace the backgroundImage path below
+      
+      TO ADD VIDEO BACKGROUND:
+      1. Save video as: /public/videos/join-hero.mp4
+      2. Replace backgroundImage with backgroundVideo="/videos/join-hero.mp4"
+      
+      BEST JOIN PAGE BACKGROUNDS:
+      - Players of all ages together
+      - Training session with multiple age groups
+      - Team registration/sign-up event
+      - Community gathering at the club
+      - Diverse group of players celebrating
+      
+      IMAGE SPECS: 1920x1080px minimum, community/diversity focused
+      ===================================================================
+      */}
+      <GlassHero 
+        backgroundImage="/images/homepg-image1.jpg"
+        height="h-[60vh] min-h-[500px]"
+      >
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          transition={{ duration: 0.8 }}
+          className="text-center text-white mb-8"
         >
           <div className="text-6xl mb-6">⚽</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Join Rivervalley Rangers AFC</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Become part of our football family! We welcome players of all ages and abilities to join our community-focused club.
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Join Our Football Family</h1>
+          <p className="text-xl md:text-2xl max-w-3xl mx-auto opacity-90">
+            Whether you're 6 or 60, there's a place for you at Rivervalley Rangers AFC
           </p>
         </motion.div>
 
-        {/* Join Options Grid */}
+        {/* Quick Join Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto"
+        >
+          <GlassActionCard
+            icon="👦"
+            title="Youth Teams"
+            description="Ages 6-17"
+            href="/join/youth"
+            gradient="blue"
+          />
+          <GlassActionCard
+            icon="👨"
+            title="Senior Teams"
+            description="Adult leagues"
+            href="/join/senior"
+            gradient="green"
+          />
+          <GlassActionCard
+            icon="⭐"
+            title="Elite Academy"
+            description="Advanced training"
+            href="/join/academy"
+            gradient="purple"
+          />
+          <GlassActionCard
+            icon="🎯"
+            title="Try-Outs"
+            description="Open trials"
+            href="/join/trials"
+            gradient="orange"
+          />
+        </motion.div>
+      </GlassHero>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        {/* Join Options Grid - Glass Morphism */}
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           {joinOptions.map((option, index) => (
             <motion.div
@@ -64,9 +140,13 @@ export default function JoinIndex() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 * (index + 2) }}
-              className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow group"
+              whileHover={{ y: -5, scale: 1.02 }}
             >
-              <div className="p-6">
+              <GlassCard 
+                intensity="medium" 
+                hover={true}
+                className="p-6 bg-gradient-to-br from-white/80 to-gray-50/80 h-full"
+              >
                 <div className="flex items-center mb-4">
                   <div className="text-4xl mr-4">{option.icon}</div>
                   <div>
@@ -96,7 +176,7 @@ export default function JoinIndex() {
                 >
                   Learn More
                 </Link>
-              </div>
+              </GlassCard>
             </motion.div>
           ))}
         </div>

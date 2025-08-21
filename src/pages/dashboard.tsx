@@ -1,6 +1,18 @@
+/**
+ * Live Dashboard - Match Central Hub
+ * 
+ * © 2025 OneZeroNine Premium Football Club Template
+ * Developer: OneZeroNine (onezeronine@gmail.com)
+ * AI Collaboration: Claude (Anthropic)
+ * 
+ * Modern glass morphism dashboard for live match data,
+ * fixtures, results, and season statistics.
+ */
+
 import StandardLayout from '../components/StandardLayout';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { GlassCard, GlassActionCard, GlassStats, GlassHero } from '../components/Glass';
 
 export default function LiveDashboard() {
   const recentMatches = [
@@ -77,22 +89,78 @@ export default function LiveDashboard() {
   };
 
   return (
-    <StandardLayout title="Live Dashboard">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* Header */}
+    <StandardLayout>
+      {/* 
+      ===================================================================
+      🎬 DASHBOARD HERO CUSTOMIZATION (NON-CODER FRIENDLY)
+      ===================================================================
+      
+      TO ADD DASHBOARD BACKGROUND IMAGE:
+      1. Save your image as: /public/images/dashboard-hero.jpg
+      2. Replace the backgroundImage path below
+      
+      TO ADD VIDEO BACKGROUND:
+      1. Save video as: /public/videos/dashboard-hero.mp4
+      2. Replace backgroundImage with backgroundVideo="/videos/dashboard-hero.mp4"
+      
+      BEST DASHBOARD BACKGROUNDS:
+      - Match action shots from the pitch
+      - Stadium/ground overview
+      - Team celebration moments
+      - Training session energy
+      
+      IMAGE SPECS: 1920x1080px minimum, sports action preferred
+      ===================================================================
+      */}
+      <GlassHero 
+        backgroundImage="/images/homepg-image1.jpg"
+        height="h-[50vh] min-h-[400px]"
+      >
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          transition={{ duration: 0.8 }}
+          className="text-center text-white mb-8"
         >
           <div className="text-6xl mb-6">⚽</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Match Central</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Match Central</h1>
+          <p className="text-xl md:text-2xl max-w-3xl mx-auto opacity-90">
             Your complete matchday experience - live scores, fixtures, and results
           </p>
         </motion.div>
+
+        {/* Quick Action Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto"
+        >
+          <GlassActionCard
+            icon="📅"
+            title="Fixtures"
+            description="Upcoming matches"
+            href="/match-central/fixtures"
+            gradient="blue"
+          />
+          <GlassActionCard
+            icon="🏆"
+            title="Results"
+            description="Latest scores"
+            href="/match-central/results"
+            gradient="green"
+          />
+          <GlassActionCard
+            icon="📊"
+            title="Tables"
+            description="League standings"
+            href="/match-central/tables"
+            gradient="purple"
+          />
+        </motion.div>
+      </GlassHero>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           
@@ -101,12 +169,12 @@ export default function LiveDashboard() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="bg-white rounded-lg shadow-lg p-6"
           >
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-              <span className="text-2xl mr-3">🏆</span>
-              Recent Results
-            </h2>
+            <GlassCard intensity="medium" className="p-6 bg-gradient-to-br from-green-50 to-blue-50">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span className="text-2xl mr-3">🏆</span>
+                Recent Results
+              </h2>
             
             <div className="space-y-4">
               {recentMatches.map((match, index) => (
@@ -134,12 +202,13 @@ export default function LiveDashboard() {
               ))}
             </div>
             
-            <Link 
-              href="/match-central/results"
-              className="block mt-6 bg-blue-600 text-white text-center font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              View All Results
-            </Link>
+              <Link 
+                href="/match-central/results"
+                className="block mt-6 bg-blue-600 text-white text-center font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                View All Results
+              </Link>
+            </GlassCard>
           </motion.div>
 
           {/* Upcoming Fixtures */}
@@ -147,12 +216,12 @@ export default function LiveDashboard() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="bg-white rounded-lg shadow-lg p-6"
           >
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-              <span className="text-2xl mr-3">📅</span>
-              Upcoming Fixtures
-            </h2>
+            <GlassCard intensity="medium" className="p-6 bg-gradient-to-br from-blue-50 to-purple-50">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span className="text-2xl mr-3">📅</span>
+                Upcoming Fixtures
+              </h2>
             
             <div className="space-y-4">
               {upcomingMatches.map((match, index) => (
@@ -185,76 +254,110 @@ export default function LiveDashboard() {
               ))}
             </div>
             
-            <Link 
-              href="/match-central/fixtures"
-              className="block mt-6 bg-green-600 text-white text-center font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              View All Fixtures
-            </Link>
+              <Link 
+                href="/match-central/fixtures"
+                className="block mt-6 bg-green-600 text-white text-center font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                View All Fixtures
+              </Link>
+            </GlassCard>
           </motion.div>
         </div>
 
-        {/* Quick Stats */}
+        {/* Season Statistics - Glass Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="bg-white rounded-lg shadow-lg p-8 mb-8"
+          className="mb-12"
         >
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">Season Statistics</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <p className="text-3xl font-bold text-green-600 mb-2">15</p>
-              <p className="text-sm text-gray-600">Matches Won</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-yellow-600 mb-2">6</p>
-              <p className="text-sm text-gray-600">Draws</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-red-600 mb-2">4</p>
-              <p className="text-sm text-gray-600">Matches Lost</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-blue-600 mb-2">42</p>
-              <p className="text-sm text-gray-600">Goals Scored</p>
-            </div>
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">Season Statistics</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <GlassStats 
+                icon="🏆" 
+                value="15" 
+                label="Matches Won" 
+                gradient="green" 
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+            >
+              <GlassStats 
+                icon="🤝" 
+                value="6" 
+                label="Draws" 
+                gradient="orange" 
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+            >
+              <GlassStats 
+                icon="📉" 
+                value="4" 
+                label="Matches Lost" 
+                gradient="purple" 
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+            >
+              <GlassStats 
+                icon="⚽" 
+                value="42" 
+                label="Goals Scored" 
+                gradient="blue" 
+              />
+            </motion.div>
           </div>
         </motion.div>
 
-        {/* Quick Links */}
+        {/* Additional Quick Actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="grid md:grid-cols-3 gap-6"
+          transition={{ duration: 0.6, delay: 1.0 }}
+          className="bg-gradient-to-br from-blue-900 via-purple-900 to-green-900 rounded-2xl p-8"
         >
-          <Link 
-            href="/match-central/fixtures"
-            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-6 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-300 text-center"
-          >
-            <div className="text-3xl mb-3">📅</div>
-            <h3 className="text-lg font-semibold mb-2">Full Fixtures</h3>
-            <p className="text-green-100 text-sm">Complete match schedule</p>
-          </Link>
-          
-          <Link 
-            href="/match-central/results"
-            className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-6 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 text-center"
-          >
-            <div className="text-3xl mb-3">🏆</div>
-            <h3 className="text-lg font-semibold mb-2">All Results</h3>
-            <p className="text-blue-100 text-sm">Season match results</p>
-          </Link>
-          
-          <Link 
-            href="/match-central/tables"
-            className="bg-gradient-to-r from-purple-600 to-violet-600 text-white p-6 rounded-lg hover:from-purple-700 hover:to-violet-700 transition-all duration-300 text-center"
-          >
-            <div className="text-3xl mb-3">📊</div>
-            <h3 className="text-lg font-semibold mb-2">League Tables</h3>
-            <p className="text-purple-100 text-sm">Current standings</p>
-          </Link>
+          <h2 className="text-3xl font-bold text-white text-center mb-8">Match Central Hub</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <GlassActionCard
+              icon="📅"
+              title="Full Fixtures"
+              description="Complete match schedule"
+              href="/match-central/fixtures"
+              gradient="blue"
+              size="lg"
+            />
+            <GlassActionCard
+              icon="🏆"
+              title="All Results"
+              description="Season match results"
+              href="/match-central/results"
+              gradient="green"
+              size="lg"
+            />
+            <GlassActionCard
+              icon="📊"
+              title="League Tables"
+              description="Current standings"
+              href="/match-central/tables"
+              gradient="purple"
+              size="lg"
+            />
+          </div>
         </motion.div>
 
       </div>
