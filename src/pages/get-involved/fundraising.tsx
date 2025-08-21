@@ -100,18 +100,36 @@ export default function Fundraising() {
     <StandardLayout title="Fundraising">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
-        {/* Hero Section */}
+        {/* Hero Section - Connecting to Historical Theme */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="text-6xl mb-6">💰</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Fundraising</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Help us raise funds to improve facilities, equipment, and opportunities for all our players
+          <div className="text-6xl mb-6">🏰</div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Building Our Legacy</h1>
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+            Like the ancient builders of Swords Castle, we're constructing something lasting for our community.
+            Every contribution helps us create better facilities and opportunities for generations to come.
           </p>
+        </motion.div>
+
+        {/* Historical Connection Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-8 mb-12"
+        >
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">From Castle to Clubhouse</h2>
+            <p className="text-slate-200 max-w-3xl mx-auto leading-relaxed">
+              For over a thousand years, this community has come together to build something greater than themselves.
+              From Brian Boru's stronghold to St. Columba's centers of learning, from Ward Park gatherings to our modern clubhouse -
+              your support continues this proud tradition of community investment.
+            </p>
+          </div>
         </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -166,13 +184,20 @@ export default function Fundraising() {
                 ))}
               </div>
               
-              <div className="mt-6 bg-blue-50 rounded-lg p-6">
-                <h3 className="font-semibold text-blue-900 mb-2">How to Donate</h3>
-                <div className="text-sm text-blue-700 space-y-2">
-                  <p>• Bank Transfer: IBAN IE64 BANK 9311 5500 0000 00</p>
-                  <p>• PayPal: donate@rvrfc.com</p>
-                  <p>• In Person: Contact club treasurer</p>
-                  <p>• Standing Order: Available for regular donations</p>
+              <div className="mt-6 bg-green-50 rounded-lg p-6 border-l-4 border-green-500">
+                <h3 className="font-semibold text-green-900 mb-3 flex items-center">
+                  <span className="text-2xl mr-2">🌊</span>
+                  Join the River Valley Flow of Support
+                </h3>
+                <p className="text-green-700 text-sm mb-4">
+                  Like the River Valley that gives us our name, community support flows continuously through generations. 
+                  Every donation, large or small, keeps this flow strong and steady.
+                </p>
+                <div className="text-sm text-green-700 space-y-2">
+                  <p>• <strong>Bank Transfer:</strong> IBAN IE64 BANK 9311 5500 0000 00</p>
+                  <p>• <strong>PayPal:</strong> donate@rvrfc.com</p>
+                  <p>• <strong>In Person:</strong> Contact club treasurer at the clubhouse</p>
+                  <p>• <strong>Standing Order:</strong> Available for regular monthly contributions</p>
                 </div>
               </div>
             </motion.div>
@@ -257,14 +282,18 @@ export default function Fundraising() {
                 ))}
               </div>
               
-              <div className="mt-6 bg-green-50 rounded-lg p-6">
-                <h3 className="font-semibold text-green-900 mb-3">Want to Organize an Event?</h3>
+              <div className="mt-6 bg-green-50 rounded-lg p-6 border-l-4 border-orange-500">
+                <h3 className="font-semibold text-green-900 mb-3 flex items-center">
+                  <span className="text-2xl mr-2">🇮🇪</span>
+                  Share the Easter Rising Spirit
+                </h3>
                 <p className="text-green-700 text-sm mb-4">
-                  We'd love to support your fundraising initiative! Contact our fundraising committee for guidance, resources, and promotion.
+                  The Easter Rising showed what happens when a community has the courage to build something better.
+                  Want to organize your own fundraising event? We'll support your initiative with guidance, resources, and promotion.
                 </p>
-                <button className="bg-green-600 text-white px-6 py-2 rounded font-semibold text-sm hover:bg-green-700 transition-colors">
+                <Link href="/contact" className="inline-block bg-green-600 text-white px-6 py-2 rounded font-semibold text-sm hover:bg-green-700 transition-colors">
                   Contact Fundraising Team
-                </button>
+                </Link>
               </div>
             </motion.div>
           </div>

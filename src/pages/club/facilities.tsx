@@ -23,10 +23,10 @@ export default function Facilities() {
           <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Explore Our Club</h2>
             <div className="grid md:grid-cols-3 gap-4">
-              <Link href="/club/history" className="group">
+              <Link href="/about" className="group">
                 <div className="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 border-l-4 border-gray-300 hover:border-gray-500 transition-all duration-200">
-                  <h3 className="font-medium text-gray-900 mb-2 group-hover:text-gray-700">History & Achievements</h3>
-                  <p className="text-sm text-gray-600">Our journey since 2009</p>
+                  <h3 className="font-medium text-gray-900 mb-2 group-hover:text-gray-700">Our Story & Heritage</h3>
+                  <p className="text-sm text-gray-600">Our journey since 1981</p>
                 </div>
               </Link>
               

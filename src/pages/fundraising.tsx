@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import Layout from '@/components/Layout';
+import StandardLayout from '../components/StandardLayout';
 
 export default function Fundraising() {
   const [activeTab, setActiveTab] = useState<'current' | 'ways' | 'goals' | 'impact'>('current');
@@ -216,47 +216,41 @@ export default function Fundraising() {
   };
 
   return (
-    <Layout currentSection="public">
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-yellow-50 to-green-50">
+    <StandardLayout title="Fundraising">
         
-        {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Hero Section - Historical Castle Building Theme */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="bg-white border-b border-gray-200 shadow-sm"
+          className="text-center mb-12"
         >
-          <div className="max-w-7xl mx-auto px-6 py-12">
-            <div className="text-center">
-              <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="mb-6"
-              >
-                <div className="text-6xl mb-4">💰</div>
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                  Club Fundraising
-                </h1>
-                <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                  Together, we're building something special. Every contribution, no matter the size, 
-                  helps us provide better facilities, equipment, and experiences for our players.
-                </p>
-              </motion.div>
-              
-              <div className="flex justify-center">
-                <Link
-                  href="/"
-                  className="text-gray-600 hover:text-gray-800 text-sm transition-colors"
-                >
-                  ← Back to Home
-                </Link>
-              </div>
-            </div>
-          </div>
+          <div className="text-6xl mb-6">🏰</div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Building Our Legacy</h1>
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+            Like the ancient builders of Swords Castle, we're constructing something lasting for our community.
+            Every contribution helps us create better facilities and opportunities for generations to come.
+          </p>
         </motion.div>
 
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Historical Connection Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-8 mb-12"
+        >
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">From Castle to Clubhouse</h2>
+            <p className="text-slate-200 max-w-3xl mx-auto leading-relaxed">
+              For over a thousand years, this community has come together to build something greater than themselves.
+              From Brian Boru's stronghold to St. Columba's centers of learning, from Ward Park gatherings to our modern clubhouse -
+              your support continues this proud tradition of community investment.
+            </p>
+          </div>
+        </motion.div>
           
           {/* Tab Navigation */}
           <motion.div
@@ -608,8 +602,7 @@ export default function Fundraising() {
             </motion.div>
           )}
 
-        </div>
       </div>
-    </Layout>
+    </StandardLayout>
   );
 }

@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import StandardLayout from '../../components/StandardLayout';
 
 export default function YouthTeams() {
-  const youthTeams = [
+  const boysTeams = [
     {
-      id: 'u18',
-      name: 'U18 Rangers',
+      id: 'u18-boys',
+      name: 'U18 Boys Rangers',
       league: 'County Youth League Division 1',
       ageGroup: 'Under 18',
       manager: 'David Thompson',
@@ -17,8 +17,8 @@ export default function YouthTeams() {
       achievements: ['League Champions 2023', 'County Cup Semi-finalists']
     },
     {
-      id: 'u16',
-      name: 'U16 Rangers',
+      id: 'u16-boys',
+      name: 'U16 Boys Rangers',
       league: 'County Youth League Division 2',
       ageGroup: 'Under 16',
       manager: 'Sarah Mitchell',
@@ -29,8 +29,8 @@ export default function YouthTeams() {
       achievements: ['Most Improved Team 2023', 'Fair Play Award']
     },
     {
-      id: 'u14',
-      name: 'U14 Rangers',
+      id: 'u14-boys',
+      name: 'U14 Boys Rangers',
       league: 'Regional Youth Development League',
       ageGroup: 'Under 14',
       manager: 'Mark O\'Connor',
@@ -41,8 +41,8 @@ export default function YouthTeams() {
       achievements: ['Development League Winners 2023']
     },
     {
-      id: 'u12',
-      name: 'U12 Rangers',
+      id: 'u12-boys',
+      name: 'U12 Boys Rangers',
       league: 'Local Youth League',
       ageGroup: 'Under 12',
       manager: 'Emma Walsh',
@@ -53,8 +53,8 @@ export default function YouthTeams() {
       achievements: ['Best Newcomers 2023']
     },
     {
-      id: 'u10',
-      name: 'U10 Rangers',
+      id: 'u10-boys',
+      name: 'U10 Boys Rangers',
       league: 'Mini Football League',
       ageGroup: 'Under 10',
       manager: 'James Kelly',
@@ -63,6 +63,72 @@ export default function YouthTeams() {
       season: '2024/25',
       players: 14,
       achievements: ['Participation Award 2023']
+    }
+  ];
+
+  const girlsTeams = [
+    {
+      id: 'u16-girls',
+      name: 'U16 Girls Rangers',
+      league: 'County Girls League Division 1',
+      ageGroup: 'Under 16',
+      manager: 'Lisa Murphy',
+      trainingDays: 'Wednesday & Friday 6:30-8:00pm',
+      homeGround: 'Main Pitch',
+      season: '2024/25',
+      players: 16,
+      achievements: ['New Team - Building Strong Foundation']
+    },
+    {
+      id: 'u14-girls',
+      name: 'U14 Girls Rangers',
+      league: 'Regional Girls Development League',
+      ageGroup: 'Under 14',
+      manager: 'Rachel O\'Brien',
+      trainingDays: 'Tuesday & Thursday 6:00-7:30pm',
+      homeGround: 'Youth Pitch 1',
+      season: '2024/25',
+      players: 14,
+      achievements: ['Fastest Growing Team 2024']
+    },
+    {
+      id: 'u12-girls',
+      name: 'U12 Girls Rangers',
+      league: 'Local Girls Youth League',
+      ageGroup: 'Under 12',
+      manager: 'Karen Walsh',
+      trainingDays: 'Saturday 11:30am-1:00pm',
+      homeGround: 'Youth Pitch 2',
+      season: '2024/25',
+      players: 12,
+      achievements: ['Team Spirit Award 2024']
+    }
+  ];
+
+  const inclusiveTeams = [
+    {
+      id: 'football-for-all-u16',
+      name: 'Football for All U16',
+      league: 'Inclusive Sports League',
+      ageGroup: 'Under 16 (Special Needs)',
+      manager: 'Tom Bradley & Support Team',
+      trainingDays: 'Saturday 2:00-3:30pm',
+      homeGround: 'Training Area',
+      season: '2024/25',
+      players: 10,
+      achievements: ['Participation & Joy in Football']
+    },
+    {
+      id: 'football-for-all-u12',
+      name: 'Football for All U12',
+      league: 'Inclusive Sports League',
+      ageGroup: 'Under 12 (Special Needs)',
+      manager: 'Amy Collins & Support Team',
+      trainingDays: 'Saturday 3:30-5:00pm',
+      homeGround: 'Training Area',
+      season: '2024/25',
+      players: 8,
+      achievements: ['Building Confidence Through Sport']
     }
   ];
 
@@ -152,9 +218,17 @@ export default function YouthTeams() {
               </div>
             </motion.div>
 
-            {/* Youth Teams Grid */}
-            <div className="space-y-6">
-              {youthTeams.map((team, index) => (
+            {/* Boys Teams Section */}
+            <div id="boys" className="mb-12">
+              <div className="bg-blue-50 rounded-lg p-6 mb-6 border-l-4 border-blue-500">
+                <h3 className="text-2xl font-bold text-blue-900 mb-2 flex items-center">
+                  <span className="text-3xl mr-3">⚽</span>
+                  Boys Teams
+                </h3>
+                <p className="text-blue-700">Traditional football development across all age groups</p>
+              </div>
+              <div className="space-y-6">
+                {boysTeams.map((team, index) => (
                 <motion.div
                   key={team.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -214,6 +288,153 @@ export default function YouthTeams() {
                   )}
                 </motion.div>
               ))}
+              </div>
+            </div>
+
+            {/* Girls Teams Section */}
+            <div id="girls" className="mb-12">
+              <div className="bg-pink-50 rounded-lg p-6 mb-6 border-l-4 border-pink-500">
+                <h3 className="text-2xl font-bold text-pink-900 mb-2 flex items-center">
+                  <span className="text-3xl mr-3">🌟</span>
+                  Girls Teams
+                </h3>
+                <p className="text-pink-700">Expanding opportunities for female players - our newest and fastest growing section</p>
+              </div>
+              <div className="space-y-6">
+                {girlsTeams.map((team, index) => (
+                  <motion.div
+                    key={team.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.1 * (index + 1) }}
+                    className="bg-white rounded-lg shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow"
+                  >
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{team.name}</h3>
+                        <p className="text-pink-600 font-medium">{team.league}</p>
+                      </div>
+                      <div className="mt-2 md:mt-0">
+                        <span className="bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-sm font-medium">
+                          {team.ageGroup}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-1">Manager</h4>
+                        <p className="text-gray-600 text-sm">{team.manager}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-1">Training</h4>
+                        <p className="text-gray-600 text-sm">{team.trainingDays}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-1">Home Ground</h4>
+                        <p className="text-gray-600 text-sm">{team.homeGround}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-1">Squad Size</h4>
+                        <p className="text-gray-600 text-sm">{team.players} players</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-1">Season</h4>
+                        <p className="text-gray-600 text-sm">{team.season}</p>
+                      </div>
+                    </div>
+                    
+                    {team.achievements.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-2">Recent Achievements</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {team.achievements.map((achievement, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-pink-50 text-pink-700 px-2 py-1 rounded text-xs border border-pink-200"
+                            >
+                              {achievement}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Inclusive Teams Section */}
+            <div id="inclusive" className="mb-12">
+              <div className="bg-purple-50 rounded-lg p-6 mb-6 border-l-4 border-purple-500">
+                <h3 className="text-2xl font-bold text-purple-900 mb-2 flex items-center">
+                  <span className="text-3xl mr-3">🤝</span>
+                  Football for All
+                </h3>
+                <p className="text-purple-700">Inclusive programs for children with special needs - building confidence through sport</p>
+              </div>
+              <div className="space-y-6">
+                {inclusiveTeams.map((team, index) => (
+                  <motion.div
+                    key={team.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.1 * (index + 1) }}
+                    className="bg-white rounded-lg shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow"
+                  >
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{team.name}</h3>
+                        <p className="text-purple-600 font-medium">{team.league}</p>
+                      </div>
+                      <div className="mt-2 md:mt-0">
+                        <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                          {team.ageGroup}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-1">Manager</h4>
+                        <p className="text-gray-600 text-sm">{team.manager}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-1">Training</h4>
+                        <p className="text-gray-600 text-sm">{team.trainingDays}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-1">Home Ground</h4>
+                        <p className="text-gray-600 text-sm">{team.homeGround}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-1">Squad Size</h4>
+                        <p className="text-gray-600 text-sm">{team.players} players</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-1">Season</h4>
+                        <p className="text-gray-600 text-sm">{team.season}</p>
+                      </div>
+                    </div>
+                    
+                    {team.achievements.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-gray-700 text-sm mb-2">Program Focus</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {team.achievements.map((achievement, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs border border-purple-200"
+                            >
+                              {achievement}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
             </div>
 
           </div>

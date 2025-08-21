@@ -87,18 +87,39 @@ export default function Volunteering() {
     <StandardLayout title="Volunteering">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
-        {/* Hero Section */}
+        {/* Hero Section - Historical Theme */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="text-6xl mb-6">🙋‍♂️</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Volunteer With Us</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Join our team of dedicated volunteers and help make a difference in our community through football
+          <div className="text-6xl mb-6">🤝</div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Community Service</h1>
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+            Like St. Columba's tradition of service and Brian Boru's call to unite for the common good,
+            our volunteers carry forward centuries of community dedication through football.
           </p>
+        </motion.div>
+
+        {/* Historical Connection Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="bg-gradient-to-r from-purple-900 via-purple-800 to-purple-900 text-white rounded-2xl p-8 mb-12"
+        >
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4 flex items-center justify-center">
+              <span className="text-3xl mr-3">⛪</span>
+              Following in Ancient Footsteps
+            </h2>
+            <p className="text-purple-200 max-w-3xl mx-auto leading-relaxed">
+              St. Columba established centers of learning and community service in the 6th century.
+              Today's volunteers continue this noble tradition, dedicating their time to develop young minds
+              and bodies through the beautiful game.
+            </p>
+          </div>
         </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-8">

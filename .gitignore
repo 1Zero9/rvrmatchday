@@ -35,8 +35,17 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (NEVER commit these - contain sensitive keys)
 .env*
+!.env.example
+
+# Database and sensitive files
+*.sql
+*-old.*
+*backup*
+*secret*
+database/
+admin-setup.*
 
 # vercel
 .vercel

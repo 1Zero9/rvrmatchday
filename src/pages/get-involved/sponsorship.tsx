@@ -133,18 +133,39 @@ export default function Sponsorship() {
     <StandardLayout title="Sponsorship">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
-        {/* Hero Section */}
+        {/* Hero Section - Historical Partnership Theme */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="text-6xl mb-6">🤝</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Sponsorship Opportunities</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Partner with Rivervalley Rangers AFC and connect with our passionate community while supporting local football development
+          <div className="text-6xl mb-6">🏰</div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Partnership & Patronage</h1>
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+            Like the noble patrons who supported medieval castles and monastic centers of learning,
+            today's sponsors help build and sustain our community legacy through sport.
           </p>
+        </motion.div>
+
+        {/* Historical Partnership Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white rounded-2xl p-8 mb-12"
+        >
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4 flex items-center justify-center">
+              <span className="text-3xl mr-3">⚔️</span>
+              Merchants & Warriors United
+            </h2>
+            <p className="text-amber-200 max-w-3xl mx-auto leading-relaxed">
+              Throughout history, successful communities thrived when local merchants and leaders supported 
+              centers of excellence. Your sponsorship continues this proud tradition, investing in our youth 
+              while connecting your business to a passionate, loyal community.
+            </p>
+          </div>
         </motion.div>
 
         {/* Why Sponsor Us */}

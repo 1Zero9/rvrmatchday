@@ -50,153 +50,223 @@ export default function About() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="text-6xl mb-6">🏛️</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">About Rivervalley Rangers AFC</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Building Community Through Football Since 2009 • More Than Just a Club
+          <div className="text-6xl mb-6">🏰</div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Story & Heritage</h1>
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+            From Ancient Swords to Modern Rangers • A Thousand Years of Community Spirit
           </p>
         </motion.div>
 
+        {/* Navigation Links to Related Sections */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="mb-12"
+        >
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">Explore Our Community</h2>
+            <div className="grid md:grid-cols-3 gap-4">
+              <Link href="/club/facilities" className="group">
+                <div className="bg-blue-50 hover:bg-blue-100 rounded-lg p-4 border-l-4 border-blue-500 transition-all duration-200">
+                  <h3 className="font-medium text-blue-900 mb-2 group-hover:text-blue-700 flex items-center">
+                    <span className="text-xl mr-2">🏰</span>
+                    Modern Castle
+                  </h3>
+                  <p className="text-sm text-blue-700">Our facilities continue the tradition of community gathering places</p>
+                </div>
+              </Link>
+              
+              <Link href="/get-involved/fundraising" className="group">
+                <div className="bg-green-50 hover:bg-green-100 rounded-lg p-4 border-l-4 border-green-500 transition-all duration-200">
+                  <h3 className="font-medium text-green-900 mb-2 group-hover:text-green-700 flex items-center">
+                    <span className="text-xl mr-2">🌊</span>
+                    Building Legacy
+                  </h3>
+                  <p className="text-sm text-green-700">Like ancient builders, we invest in our community's future</p>
+                </div>
+              </Link>
+              
+              <Link href="/teams/youth" className="group">
+                <div className="bg-purple-50 hover:bg-purple-100 rounded-lg p-4 border-l-4 border-purple-500 transition-all duration-200">
+                  <h3 className="font-medium text-purple-900 mb-2 group-hover:text-purple-700 flex items-center">
+                    <span className="text-xl mr-2">⛪</span>
+                    Centers of Learning
+                  </h3>
+                  <p className="text-sm text-purple-700">Continuing St. Columba's tradition of youth development</p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+
         <div className="max-w-6xl mx-auto">
-            
-            {/* Hero Title */}
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-center mb-16"
-            >
-              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
-                  Rivervalley Rangers
-                </span>
-              </h1>
-              <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
-                Building Community Through Football Since 2009 • More Than Just a Club
+          
+          {/* Club Story - Priority Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mb-16"
+          >
+            <div className="bg-slate-900 text-white rounded-2xl p-8 mb-8">
+              <h2 className="text-3xl font-bold text-center mb-6">Our Club Story</h2>
+              <div className="text-center mb-8">
+                <span className="text-6xl">🏆</span>
+              </div>
+              <p className="text-lg text-slate-200 text-center max-w-4xl mx-auto leading-relaxed mb-6">
+                Established in 1981, Rivervalley Rangers AFC has grown from a local youth club into a cornerstone of the Swords community. 
+                For over 40 years, we've been dedicated to developing young talent, promoting inclusivity, and bringing families together through football.
               </p>
-            </motion.div>
+              <div className="bg-blue-800 rounded-lg p-6 max-w-2xl mx-auto">
+                <h3 className="text-xl font-bold text-center mb-4">FAI Club Mark Accredited</h3>
+                <p className="text-blue-100 text-center text-sm">
+                  We're proud to hold the FAI Club Mark, recognizing our commitment to best practices in governance, 
+                  management, and administration - creating stronger clubs and a stronger game.
+                </p>
+              </div>
+            </div>
 
-            {/* About Boxes Grid */}
-            <motion.div
-              initial={{ y: 100, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
-            >
-              {aboutBoxes.map((box, index) => (
-                <motion.div
-                  key={box.id}
-                  initial={{ y: 50, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.6 + (index * 0.1) }}
-                  whileHover={{ 
-                    y: -10,
-                    scale: 1.02,
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                  className="group"
-                >
-                  <div className={`
-                    bg-gradient-to-br ${box.color} 
-                    rounded-3xl p-8 h-64
-                    text-white shadow-2xl 
-                    cursor-pointer 
-                    border border-white/10
-                    backdrop-blur-sm
-                    relative overflow-hidden
-                    transition-all duration-300
-                    hover:shadow-3xl hover:border-white/30
-                  `}>
-                    {/* Background Glow Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    
-                    <div className="relative z-10 h-full flex flex-col justify-between">
-                      <div>
-                        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                          {box.icon}
-                        </div>
-                        <h3 className="text-xl font-bold mb-2">
-                          {box.title}
-                        </h3>
-                        <p className="text-sm opacity-90 mb-4">
-                          {box.subtitle}
-                        </p>
-                      </div>
-                      <div className="text-xs opacity-70">
-                        {box.description}
-                      </div>
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+              
+              <div className="bg-white rounded-xl shadow-lg p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission & Programs</h3>
+                <ul className="space-y-3 text-gray-600">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-3 mt-1">⚽</span>
+                    <div>
+                      <strong>Boys Teams:</strong> Traditional football development across all age groups
                     </div>
-                    
-                    {/* Hover Arrow */}
-                    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-pink-500 mr-3 mt-1">🌟</span>
+                    <div>
+                      <strong>New Girls Section:</strong> Expanding opportunities for female players of all ages
                     </div>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-purple-500 mr-3 mt-1">🤝</span>
+                    <div>
+                      <strong>Football for All:</strong> Inclusive programs for children with special needs
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-3 mt-1">👨‍👩‍👧‍👦</span>
+                    <div>
+                      <strong>Community Programs:</strong> Walking Football, Ladies Fitness, and family activities
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-green-50 rounded-xl p-8 border border-green-200">
+                <h3 className="text-2xl font-bold text-green-900 mb-4">Our Achievements</h3>
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div className="bg-white rounded-lg p-4 shadow">
+                    <div className="text-2xl font-bold text-green-600">43+</div>
+                    <div className="text-sm text-gray-600">Years Serving Community</div>
                   </div>
-                </motion.div>
-              ))}
-            </motion.div>
+                  <div className="bg-white rounded-lg p-4 shadow">
+                    <div className="text-2xl font-bold text-blue-600">500+</div>
+                    <div className="text-sm text-gray-600">Players Developed</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow">
+                    <div className="text-2xl font-bold text-purple-600">15+</div>
+                    <div className="text-sm text-gray-600">Active Teams</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow">
+                    <div className="text-2xl font-bold text-orange-600">30+</div>
+                    <div className="text-sm text-gray-600">Volunteer Coaches</div>
+                  </div>
+                </div>
+                
+                <div className="mt-6 p-4 bg-green-100 rounded-lg">
+                  <p className="text-sm text-green-800 text-center font-medium">
+                    "Football for All - Developing players, building character, strengthening community" 
+                    <br />- Club Mission Since 1981
+                  </p>
+                </div>
+              </div>
 
-            {/* Club Stats - Clean & Minimal */}
-            <motion.div
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 1 }}
-              className="bg-black/20 backdrop-blur-md rounded-2xl p-8 border border-white/10 mb-8"
-            >
-              <h3 className="text-2xl font-bold text-white text-center mb-8">By the Numbers</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
-                <div>
-                  <p className="text-3xl font-bold text-blue-400 mb-1">250+</p>
-                  <p className="text-sm text-blue-200">Active Players</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-green-400 mb-1">15</p>
-                  <p className="text-sm text-blue-200">Teams</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-amber-400 mb-1">25+</p>
-                  <p className="text-sm text-blue-200">Qualified Coaches</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-purple-400 mb-1">15</p>
-                  <p className="text-sm text-blue-200">Years Excellence</p>
-                </div>
-              </div>
-            </motion.div>
+            </div>
+          </motion.div>
 
-            {/* Core Values - Elegant Cards */}
-            <motion.div
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 1.2 }}
-              className="grid md:grid-cols-3 gap-6"
-            >
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 text-center border border-white/10">
-                <div className="text-4xl mb-4">🤝</div>
-                <h3 className="text-xl font-bold text-white mb-3">Community</h3>
-                <p className="text-blue-100 text-sm">
-                  Football brings people together. We build strong community bonds and mutual support.
-                </p>
+          {/* Local Area History */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.9 }}
+            className="mb-16"
+          >
+            <div className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white rounded-2xl p-8 mb-12">
+              <h2 className="text-3xl font-bold text-center mb-8">The Historic Area of Swords</h2>
+              <p className="text-lg text-amber-100 text-center max-w-4xl mx-auto leading-relaxed">
+                Our club calls home one of Ireland's most historically rich areas. From ancient castles to medieval monasteries, 
+                Swords has been a center of community life for over a millennium, providing the perfect foundation for our modern football club.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white rounded-xl shadow-lg p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission & Programs</h3>
+                <ul className="space-y-3 text-gray-600">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-3 mt-1">⚽</span>
+                    <div>
+                      <strong>Boys Teams:</strong> Traditional football development across all age groups
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-pink-500 mr-3 mt-1">🌟</span>
+                    <div>
+                      <strong>New Girls Section:</strong> Expanding opportunities for female players of all ages
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-purple-500 mr-3 mt-1">🤝</span>
+                    <div>
+                      <strong>Football for All:</strong> Inclusive programs for children with special needs
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-3 mt-1">👨‍👩‍👧‍👦</span>
+                    <div>
+                      <strong>Community Programs:</strong> Walking Football, Ladies Fitness, and family activities
+                    </div>
+                  </li>
+                </ul>
               </div>
-              
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 text-center border border-white/10">
-                <div className="text-4xl mb-4">🎯</div>
-                <h3 className="text-xl font-bold text-white mb-3">Development</h3>
-                <p className="text-blue-100 text-sm">
-                  Every player's journey is unique. We focus on individual growth and achievement.
-                </p>
+
+              <div className="bg-green-50 rounded-xl p-8 border border-green-200">
+                <h3 className="text-2xl font-bold text-green-900 mb-4">Our Achievements</h3>
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div className="bg-white rounded-lg p-4 shadow">
+                    <div className="text-2xl font-bold text-green-600">43+</div>
+                    <div className="text-sm text-gray-600">Years Serving Community</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow">
+                    <div className="text-2xl font-bold text-blue-600">500+</div>
+                    <div className="text-sm text-gray-600">Players Developed</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow">
+                    <div className="text-2xl font-bold text-purple-600">15+</div>
+                    <div className="text-sm text-gray-600">Active Teams</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow">
+                    <div className="text-2xl font-bold text-orange-600">30+</div>
+                    <div className="text-sm text-gray-600">Volunteer Coaches</div>
+                  </div>
+                </div>
+                
+                <div className="mt-6 p-4 bg-green-100 rounded-lg">
+                  <p className="text-sm text-green-800 text-center font-medium">
+                    "Football for All - Developing players, building character, strengthening community" 
+                    <br />- Club Mission Since 1981
+                  </p>
+                </div>
               </div>
-              
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 text-center border border-white/10">
-                <div className="text-4xl mb-4">🏆</div>
-                <h3 className="text-xl font-bold text-white mb-3">Excellence</h3>
-                <p className="text-blue-100 text-sm">
-                  We strive for excellence in training quality, community engagement, and player care.
-                </p>
-              </div>
-            </motion.div>
+            </div>
+          </motion.div>
 
         </div>
       </div>
