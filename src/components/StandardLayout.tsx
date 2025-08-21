@@ -107,11 +107,11 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                     👥 Committee
                   </Link>
                   <div className="bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 uppercase border-t">⚽ Boys Teams</div>
-                  <Link href="/teams/youth#boys" className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 border-b border-gray-100">
+                  <Link href="/teams/boys" className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 border-b border-gray-100">
                     ⚽ U18, U16, U14, U12, U10
                   </Link>
                   <div className="bg-pink-50 px-3 py-2 text-xs font-semibold text-pink-600 uppercase border-t">🌟 Girls Teams</div>
-                  <Link href="/teams/youth#girls" className="block px-4 py-3 text-gray-700 hover:bg-pink-50 hover:text-pink-700 border-b border-gray-100">
+                  <Link href="/teams/girls" className="block px-4 py-3 text-gray-700 hover:bg-pink-50 hover:text-pink-700 border-b border-gray-100">
                     🌟 U16, U14, U12 Girls
                   </Link>
                   <div className="bg-purple-50 px-3 py-2 text-xs font-semibold text-purple-600 uppercase border-t">🤝 Inclusive</div>

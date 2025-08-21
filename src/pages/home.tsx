@@ -133,12 +133,41 @@ export default function StandardHomepage() {
           ))}
         </motion.div>
 
-        {/* Quick Stats */}
+        {/* CTA Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100"
+          className="bg-gradient-to-r from-green-600 via-blue-600 to-green-700 rounded-2xl shadow-xl p-8 text-white mb-16 relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative text-center">
+            <div className="text-6xl mb-4">⚽</div>
+            <h2 className="text-3xl font-bold mb-4">Ready to Join Rangers?</h2>
+            <p className="text-xl text-green-100 mb-6 max-w-2xl mx-auto">
+              From grassroots to competitive football, we offer programs for all ages and skill levels.
+              Join our football family today!
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/join/youth" className="bg-white text-green-700 px-8 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors">
+                Join Youth Teams
+              </Link>
+              <Link href="/join/senior" className="bg-green-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-900 transition-colors border border-green-600">
+                Senior Football
+              </Link>
+              <Link href="/contact" className="bg-transparent text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors border border-white">
+                Get in Touch
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Quick Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 mb-16"
         >
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">Club at a Glance</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -158,6 +187,80 @@ export default function StandardHomepage() {
               <p className="text-3xl font-bold text-orange-600 mb-2">100%</p>
               <p className="text-sm text-gray-600">Community</p>
             </div>
+          </div>
+        </motion.div>
+
+        {/* Sponsors Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.0 }}
+          className="bg-gray-50 rounded-2xl p-8 border border-gray-200"
+        >
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">Our Community Partners</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {/* Sponsor placeholders with hover effects */}
+            <div className="group relative bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer">
+              <div className="text-center">
+                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🏢</div>
+                <h3 className="font-semibold text-gray-900 mb-1">Main Sponsor</h3>
+                <p className="text-gray-500 text-sm">Primary Partnership</p>
+              </div>
+              <div className="absolute inset-0 bg-blue-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
+                <div className="text-center text-blue-700">
+                  <p className="font-semibold mb-1">Partnership Opportunity</p>
+                  <p className="text-sm">Contact us to become our main sponsor</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="group relative bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer">
+              <div className="text-center">
+                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🛍️</div>
+                <h3 className="font-semibold text-gray-900 mb-1">Local Business</h3>
+                <p className="text-gray-500 text-sm">Community Support</p>
+              </div>
+              <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
+                <div className="text-center text-green-700">
+                  <p className="font-semibold mb-1">Local Partnership</p>
+                  <p className="text-sm">Support local football development</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="group relative bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer">
+              <div className="text-center">
+                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🏭</div>
+                <h3 className="font-semibold text-gray-900 mb-1">Kit Sponsor</h3>
+                <p className="text-gray-500 text-sm">Equipment Partner</p>
+              </div>
+              <div className="absolute inset-0 bg-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
+                <div className="text-center text-purple-700">
+                  <p className="font-semibold mb-1">Kit Sponsorship</p>
+                  <p className="text-sm">Outfit our teams in style</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="group relative bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer">
+              <div className="text-center">
+                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🤝</div>
+                <h3 className="font-semibold text-gray-900 mb-1">Community</h3>
+                <p className="text-gray-500 text-sm">Local Supporters</p>
+              </div>
+              <div className="absolute inset-0 bg-orange-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
+                <div className="text-center text-orange-700">
+                  <p className="font-semibold mb-1">Join Our Family</p>
+                  <p className="text-sm">Be part of our community story</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center mt-8">
+            <Link href="/get-involved/sponsorship" className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+              Become a Sponsor
+            </Link>
           </div>
         </motion.div>
 
