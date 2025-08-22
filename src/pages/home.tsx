@@ -110,18 +110,18 @@ export default function StandardHomepage() {
               {/* Action Cards - Right Side */}
               <div className="flex-1 w-full">
 
-                {/* Main Action Grid - Mobile Simplified */}
+                {/* Main Action Grid - Expanded with Better Centering */}
                 <motion.div
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto lg:mx-0"
+                  className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto lg:mx-0"
                 >
               
                   {/* Main CTA - Join Club */}
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="md:col-span-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-xl p-6 text-center text-white hover:bg-white/25 transition-all duration-300 shadow-2xl"
+                    className="md:col-span-3 bg-white/15 backdrop-blur-md border border-white/30 rounded-xl p-6 text-center text-white hover:bg-white/25 transition-all duration-300 shadow-2xl"
                   >
                     <div className="text-4xl mb-3">⚽</div>
                     <h3 className="text-xl font-bold mb-2">Join Our Club</h3>
@@ -131,10 +131,10 @@ export default function StandardHomepage() {
                     </Link>
                   </motion.div>
 
-                  {/* Quick Actions - Desktop Only, Hidden on Mobile */}
+                  {/* Action Cards Row */}
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="hidden md:block bg-blue-600/20 backdrop-blur-md border border-blue-300/30 rounded-xl p-4 text-center text-white hover:bg-blue-600/30 transition-all duration-300 shadow-xl"
+                    className="bg-blue-600/20 backdrop-blur-md border border-blue-300/30 rounded-xl p-4 text-center text-white hover:bg-blue-600/30 transition-all duration-300 shadow-xl"
                   >
                     <div className="text-3xl mb-3">📅</div>
                     <h3 className="text-lg font-bold mb-2">Fixtures</h3>
@@ -145,12 +145,46 @@ export default function StandardHomepage() {
 
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="hidden md:block bg-orange-600/20 backdrop-blur-md border border-orange-300/30 rounded-xl p-4 text-center text-white hover:bg-orange-600/30 transition-all duration-300 shadow-xl"
+                    className="bg-purple-600/20 backdrop-blur-md border border-purple-300/30 rounded-xl p-4 text-center text-white hover:bg-purple-600/30 transition-all duration-300 shadow-xl"
+                  >
+                    <div className="text-3xl mb-3">🏆</div>
+                    <h3 className="text-lg font-bold mb-2">Results</h3>
+                    <Link href="/match-central/results" className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                      Latest Scores
+                    </Link>
+                  </motion.div>
+
+                  <motion.div 
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    className="bg-orange-600/20 backdrop-blur-md border border-orange-300/30 rounded-xl p-4 text-center text-white hover:bg-orange-600/30 transition-all duration-300 shadow-xl"
                   >
                     <div className="text-3xl mb-3">📞</div>
                     <h3 className="text-lg font-bold mb-2">Contact</h3>
                     <Link href="/contact" className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
                       Get in Touch
+                    </Link>
+                  </motion.div>
+
+                  {/* Additional Action Cards */}
+                  <motion.div 
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    className="bg-red-600/20 backdrop-blur-md border border-red-300/30 rounded-xl p-4 text-center text-white hover:bg-red-600/30 transition-all duration-300 shadow-xl"
+                  >
+                    <div className="text-3xl mb-3">📰</div>
+                    <h3 className="text-lg font-bold mb-2">News</h3>
+                    <Link href="/news-media" className="inline-block bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                      Latest News
+                    </Link>
+                  </motion.div>
+
+                  <motion.div 
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    className="bg-teal-600/20 backdrop-blur-md border border-teal-300/30 rounded-xl p-4 text-center text-white hover:bg-teal-600/30 transition-all duration-300 shadow-xl"
+                  >
+                    <div className="text-3xl mb-3">👥</div>
+                    <h3 className="text-lg font-bold mb-2">Teams</h3>
+                    <Link href="/teams" className="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                      Our Teams
                     </Link>
                   </motion.div>
                 </motion.div>
