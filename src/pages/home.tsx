@@ -85,10 +85,10 @@ export default function StandardHomepage() {
               </p>
             </motion.div>
             
-            {/* Content with Logo on Left */}
-            <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-12">
+            {/* Content with Logo on Left - Properly Centered */}
+            <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 lg:gap-12">
               
-              {/* Logo Section - Left Side, Bigger */}
+              {/* Logo Section - Left Side */}
               <motion.div 
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -108,20 +108,20 @@ export default function StandardHomepage() {
               </motion.div>
 
               {/* Action Cards - Right Side */}
-              <div className="flex-1 w-full">
+              <div className="flex-1 w-full max-w-4xl">
 
-                {/* Main Action Grid - Expanded with Better Centering */}
+                {/* Main Action Grid - Larger Boxes */}
                 <motion.div
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
-                  className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto lg:mx-0"
+                  className="grid grid-cols-2 md:grid-cols-4 gap-4 mx-auto"
                 >
               
-                  {/* Main CTA - Join Club */}
+                  {/* Row 1: Large Join Club + Medium Fixtures + Medium Results */}
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="md:col-span-3 bg-white/15 backdrop-blur-md border border-white/30 rounded-xl p-6 text-center text-white hover:bg-white/25 transition-all duration-300 shadow-2xl"
+                    className="col-span-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-xl p-6 text-center text-white hover:bg-white/25 transition-all duration-300 shadow-2xl"
                   >
                     <div className="text-4xl mb-3">⚽</div>
                     <h3 className="text-xl font-bold mb-2">Join Our Club</h3>
@@ -131,7 +131,6 @@ export default function StandardHomepage() {
                     </Link>
                   </motion.div>
 
-                  {/* Action Cards Row */}
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
                     className="bg-blue-600/20 backdrop-blur-md border border-blue-300/30 rounded-xl p-4 text-center text-white hover:bg-blue-600/30 transition-all duration-300 shadow-xl"
@@ -154,6 +153,7 @@ export default function StandardHomepage() {
                     </Link>
                   </motion.div>
 
+                  {/* Row 2: Four Regular Boxes */}
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
                     className="bg-orange-600/20 backdrop-blur-md border border-orange-300/30 rounded-xl p-4 text-center text-white hover:bg-orange-600/30 transition-all duration-300 shadow-xl"
@@ -165,7 +165,6 @@ export default function StandardHomepage() {
                     </Link>
                   </motion.div>
 
-                  {/* Additional Action Cards */}
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
                     className="bg-red-600/20 backdrop-blur-md border border-red-300/30 rounded-xl p-4 text-center text-white hover:bg-red-600/30 transition-all duration-300 shadow-xl"
@@ -185,6 +184,17 @@ export default function StandardHomepage() {
                     <h3 className="text-lg font-bold mb-2">Teams</h3>
                     <Link href="/teams" className="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
                       Our Teams
+                    </Link>
+                  </motion.div>
+
+                  <motion.div 
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    className="bg-indigo-600/20 backdrop-blur-md border border-indigo-300/30 rounded-xl p-4 text-center text-white hover:bg-indigo-600/30 transition-all duration-300 shadow-xl"
+                  >
+                    <div className="text-3xl mb-3">📸</div>
+                    <h3 className="text-lg font-bold mb-2">Gallery</h3>
+                    <Link href="/gallery" className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                      View Photos
                     </Link>
                   </motion.div>
                 </motion.div>
