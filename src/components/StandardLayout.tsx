@@ -18,9 +18,10 @@ import DeveloperCredits from "./DeveloperCredits";
 interface StandardLayoutProps {
   children: ReactNode;
   title?: string;
+  useFloatingFooter?: boolean;
 }
 
-export default function StandardLayout({ children, title }: StandardLayoutProps) {
+export default function StandardLayout({ children, title, useFloatingFooter = false }: StandardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogoClick = () => {
@@ -43,8 +44,8 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                 <Image 
                   src="/images/logo.png" 
                   alt="Rivervalley Rangers AFC Logo" 
-                  width={48}
-                  height={48}
+                  width={64}
+                  height={64}
                   className="drop-shadow-lg group-hover:scale-105 transition-transform duration-200"
                 />
                 <div className="absolute -top-2 -right-2 group/indicator">
@@ -280,61 +281,63 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
         {children}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <Image 
-                  src="/images/logo.png" 
-                  alt="Rivervalley Rangers AFC Logo" 
-                  width={32}
-                  height={32}
-                />
-                <h3 className="font-bold">Rivervalley Rangers AFC</h3>
+      {/* Footer - Only show if not using floating footer */}
+      {!useFloatingFooter && (
+        <footer className="bg-gray-800 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="grid md:grid-cols-4 gap-8">
+              <div>
+                <div className="flex items-center space-x-3 mb-4">
+                  <Image 
+                    src="/images/logo.png" 
+                    alt="Rivervalley Rangers AFC Logo" 
+                    width={32}
+                    height={32}
+                  />
+                  <h3 className="font-bold">Rivervalley Rangers AFC</h3>
+                </div>
+                <p className="text-gray-300 text-sm">
+                  Building Community Through Football Since 1981
+                </p>
               </div>
-              <p className="text-gray-300 text-sm">
-                Building Community Through Football Since 1981
-              </p>
+              <div>
+                <h4 className="font-semibold mb-4">Quick Links</h4>
+                <ul className="space-y-2 text-sm">
+                  <li><Link href="/about" className="text-gray-300 hover:text-white">About Us</Link></li>
+                  <li><Link href="/teams/youth" className="text-gray-300 hover:text-white">Teams</Link></li>
+                  <li><Link href="/match-central/fixtures" className="text-gray-300 hover:text-white">Fixtures</Link></li>
+                  <li><Link href="/join" className="text-gray-300 hover:text-white">Join Us</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Members</h4>
+                <ul className="space-y-2 text-sm">
+                  <li><Link href="/members/parents" className="text-gray-300 hover:text-white">Parent Portal</Link></li>
+                  <li><Link href="/contact" className="text-gray-300 hover:text-white">Coach Contact</Link></li>
+                  <li><Link href="/contact" className="text-gray-300 hover:text-white">General Inquiries</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Connect</h4>
+                <ul className="space-y-2 text-sm">
+                  <li><a href="#" className="text-gray-300 hover:text-white">📘 Facebook</a></li>
+                  <li><a href="#" className="text-gray-300 hover:text-white">📸 Instagram</a></li>
+                  <li><a href="mailto:info@rvrfc.com" className="text-gray-300 hover:text-white">📧 Email</a></li>
+                  <li><a href="tel:+353123456789" className="text-gray-300 hover:text-white">📞 Phone</a></li>
+                </ul>
+              </div>
             </div>
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/about" className="text-gray-300 hover:text-white">About Us</Link></li>
-                <li><Link href="/teams/youth" className="text-gray-300 hover:text-white">Teams</Link></li>
-                <li><Link href="/match-central/fixtures" className="text-gray-300 hover:text-white">Fixtures</Link></li>
-                <li><Link href="/join" className="text-gray-300 hover:text-white">Join Us</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Members</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/members/parents" className="text-gray-300 hover:text-white">Parent Portal</Link></li>
-                <li><Link href="/contact" className="text-gray-300 hover:text-white">Coach Contact</Link></li>
-                <li><Link href="/contact" className="text-gray-300 hover:text-white">General Inquiries</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Connect</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-gray-300 hover:text-white">📘 Facebook</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-white">📸 Instagram</a></li>
-                <li><a href="mailto:info@rvrfc.com" className="text-gray-300 hover:text-white">📧 Email</a></li>
-                <li><a href="tel:+353123456789" className="text-gray-300 hover:text-white">📞 Phone</a></li>
-              </ul>
+            <div className="border-t border-gray-700 mt-8 pt-8">
+              <div className="text-center mb-4">
+                <p className="text-gray-400 text-sm">
+                  © 2025 Rivervalley Rangers AFC. All rights reserved.
+                </p>
+              </div>
+              <DeveloperCredits variant="footer" />
             </div>
           </div>
-          <div className="border-t border-gray-700 mt-8 pt-8">
-            <div className="text-center mb-4">
-              <p className="text-gray-400 text-sm">
-                © 2025 Rivervalley Rangers AFC. All rights reserved.
-              </p>
-            </div>
-            <DeveloperCredits variant="footer" />
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
       
       {/* Developer Credits - Minimal Branding */}
       <DeveloperCredits variant="minimal" />

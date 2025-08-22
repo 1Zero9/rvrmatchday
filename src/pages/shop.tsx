@@ -1,9 +1,51 @@
-import StandardLayout from '../components/StandardLayout';
+/**
+ * Shop Page - Club Merchandise & Kit
+ * 
+ * © 2025 OneZeroNine Premium Football Club Template
+ * Developer: OneZeroNine (onezeronine@gmail.com)
+ * AI Collaboration: Claude (Anthropic)
+ * 
+ * Shop page converted to glass morphism design system.
+ */
+
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import GlassPageTemplate from '../components/GlassPageTemplate';
+import { GlassCard, GlassActionCard } from '../components/Glass';
 
 export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const quickActions = [
+    {
+      icon: "👕",
+      title: "Match Kit",
+      description: "Official home & away jerseys",
+      href: "#kit-clothing",
+      gradient: "blue" as const
+    },
+    {
+      icon: "🏃",
+      title: "Training Gear",
+      description: "Polos, tracksuits & equipment",
+      href: "#training-gear",
+      gradient: "green" as const
+    },
+    {
+      icon: "🎁",
+      title: "Accessories",
+      description: "Bags, scarves & club gifts",
+      href: "#accessories",
+      gradient: "purple" as const
+    },
+    {
+      icon: "🛒",
+      title: "View Cart",
+      description: "Review your selections",
+      href: "#cart",
+      gradient: "orange" as const
+    }
+  ];
 
   const categories = ['All', 'Kit & Clothing', 'Training Gear', 'Accessories', 'Gifts'];
 
@@ -56,47 +98,17 @@ export default function Shop() {
       image: '/api/placeholder/300/300',
       sizes: ['One Size'],
       popular: false,
-      description: 'Show your support with our official club scarf'
+      description: 'Classic club scarf in team colors'
     },
     {
       id: 6,
-      name: 'Training Football',
-      category: 'Training Gear',
-      price: '€25.00',
-      image: '/api/placeholder/300/300',
-      sizes: ['Size 5'],
-      popular: false,
-      description: 'Official training football with club logo'
-    },
-    {
-      id: 7,
-      name: 'Club Water Bottle',
+      name: 'Sports Bag',
       category: 'Accessories',
-      price: '€12.00',
+      price: '€45.00',
       image: '/api/placeholder/300/300',
-      sizes: ['750ml'],
-      popular: false,
-      description: 'Stainless steel water bottle with club crest'
-    },
-    {
-      id: 8,
-      name: 'Club Mug',
-      category: 'Gifts',
-      price: '€15.00',
-      image: '/api/placeholder/300/300',
-      sizes: ['Standard'],
-      popular: false,
-      description: 'Ceramic mug with club logo - perfect gift'
-    },
-    {
-      id: 9,
-      name: 'Training Shorts',
-      category: 'Training Gear',
-      price: '€28.00',
-      image: '/api/placeholder/300/300',
-      sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-      popular: false,
-      description: 'Official training shorts with club badge'
+      sizes: ['One Size'],
+      popular: true,
+      description: 'Large sports bag with club logo'
     }
   ];
 
@@ -105,266 +117,178 @@ export default function Shop() {
     : products.filter(product => product.category === selectedCategory);
 
   return (
-    <StandardLayout title="Club Shop">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <GlassPageTemplate
+      heroTitle="Club Shop"
+      heroSubtitle="Official Rivervalley Rangers merchandise, kit, and training gear"
+      heroIcon="🛒"
+      quickActions={quickActions}
+      sectionName="SHOP"
+      imageSpecs="1920x1080px minimum, merchandise and team kit preferred"
+    >
+
+      {/* Category Filter */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="mb-8"
+      >
+        <GlassCard intensity="medium" className="p-6 bg-gradient-to-br from-white/80 to-gray-50/80">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">Shop Categories</h2>
+          <div className="flex flex-wrap justify-center gap-3">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  selectedCategory === category
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'bg-white/80 text-gray-700 hover:bg-blue-50 border border-gray-200'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </GlassCard>
+      </motion.div>
+
+      {/* Products Grid */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="mb-12"
+      >
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+          {selectedCategory === 'All' ? 'All Products' : selectedCategory}
+        </h2>
         
-        {/* Hero Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <div className="text-6xl mb-6">🛍️</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Club Shop</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Show your support with official Rivervalley Rangers AFC merchandise and equipment
-          </p>
-        </motion.div>
-
-        <div className="grid lg:grid-cols-4 gap-8">
-          
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            
-            {/* Category Filter */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProducts.map((product, index) => (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="bg-white rounded-lg shadow-lg p-6 mb-8"
+              key={product.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.2 + (index * 0.1) }}
+              whileHover={{ y: -5 }}
             >
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Categories</h2>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      selectedCategory === category 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Featured Banner */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="bg-gradient-to-r from-blue-600 to-green-600 rounded-lg p-8 mb-8 text-white"
-            >
-              <div className="flex flex-col md:flex-row items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold mb-2">New Season Kit Available Now!</h2>
-                  <p className="text-blue-100 mb-4">Get your official 2024/25 home and away jerseys with free name printing</p>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="bg-white bg-opacity-20 text-white px-3 py-1 rounded text-sm">Free Delivery over €50</span>
-                    <span className="bg-white bg-opacity-20 text-white px-3 py-1 rounded text-sm">Free Name Printing</span>
+              <GlassCard intensity="medium" className="overflow-hidden bg-gradient-to-br from-white/80 to-gray-50/80 h-full">
+                {product.popular && (
+                  <div className="bg-green-500 text-white text-xs font-bold px-3 py-1 absolute top-4 left-4 rounded-full z-10">
+                    Popular
+                  </div>
+                )}
+                
+                {/* 
+                ===================================================================
+                🛒 PRODUCT IMAGE REPLACEMENT INSTRUCTIONS
+                ===================================================================
+                
+                TO ADD PRODUCT IMAGES:
+                1. Save your image as: /public/images/shop/product-name.jpg
+                2. Replace the placeholder div with an img element
+                
+                BEST PRODUCT IMAGES:
+                - High-quality photos of actual merchandise
+                - Clean white or transparent backgrounds
+                - Multiple angles for complex items
+                - Lifestyle shots showing products in use
+                
+                IMAGE SPECS: 600x600px minimum, square format preferred
+                ===================================================================
+                */}
+                <div className="h-64 bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">👕</div>
+                    <p className="text-sm font-bold text-gray-700">PRODUCT PHOTO</p>
+                    <p className="text-xs text-gray-600">Replace with actual image</p>
                   </div>
                 </div>
-                <div className="mt-4 md:mt-0">
-                  <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                    Shop Jerseys
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Products Grid */}
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 * (index + 4) }}
-                  className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow group"
-                >
-                  <div className="relative">
-                    <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center">
-                      <div className="text-4xl">👕</div>
-                    </div>
-                    {product.popular && (
-                      <div className="absolute top-3 left-3">
-                        <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-medium">
-                          Popular
-                        </span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity"></div>
+                
+                <div className="p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{product.name}</h3>
+                  <p className="text-gray-600 text-sm mb-4">{product.description}</p>
+                  
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-2xl font-bold text-green-600">{product.price}</span>
+                    <span className="text-gray-500 text-sm">{product.category}</span>
                   </div>
                   
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium">
-                        {product.category}
-                      </span>
-                      <span className="text-lg font-bold text-blue-600">{product.price}</span>
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Available Sizes:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {product.sizes.map((size) => (
+                        <span
+                          key={size}
+                          className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded border"
+                        >
+                          {size}
+                        </span>
+                      ))}
                     </div>
-                    
-                    <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                      {product.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-3">{product.description}</p>
-                    
-                    <div className="mb-4">
-                      <p className="text-xs text-gray-500 mb-2">Available sizes:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {product.sizes.map((size, idx) => (
-                          <span key={idx} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                            {size}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <button className="w-full bg-blue-600 text-white py-2 px-4 rounded font-semibold hover:bg-blue-700 transition-colors">
-                      Add to Cart
-                    </button>
                   </div>
-                </motion.div>
-              ))}
-            </div>
+                  
+                  <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    Add to Cart
+                  </button>
+                </div>
+              </GlassCard>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Shop Info */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+        className="bg-gradient-to-br from-green-900 via-blue-900 to-purple-900 rounded-2xl p-8 text-center text-white"
+      >
+        <h2 className="text-3xl font-bold mb-4">Shop Information</h2>
+        <p className="text-xl mb-8 opacity-90">
+          Support your club while looking great in official Rivervalley Rangers gear
+        </p>
+        
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <div>
+            <div className="text-3xl mb-2">🚚</div>
+            <h3 className="font-bold mb-2">Free Delivery</h3>
+            <p className="text-sm opacity-90">Free delivery on orders over €50</p>
           </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            
-            {/* Shopping Cart */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="bg-white rounded-lg shadow-lg p-6 mb-6"
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Shopping Cart</h3>
-              <div className="text-center py-8">
-                <div className="text-4xl mb-3">🛒</div>
-                <p className="text-gray-500 text-sm">Your cart is empty</p>
-                <button className="mt-3 text-blue-600 text-sm font-medium hover:text-blue-800">
-                  Continue Shopping
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Delivery Info */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="bg-white rounded-lg shadow-lg p-6 mb-6"
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Delivery Information</h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-start space-x-3">
-                  <svg className="w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <div>
-                    <p className="font-medium text-gray-900">Free Delivery</p>
-                    <p className="text-gray-600">On orders over €50</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <svg className="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div>
-                    <p className="font-medium text-gray-900">Fast Processing</p>
-                    <p className="text-gray-600">2-3 business days</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <svg className="w-5 h-5 text-purple-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                  </svg>
-                  <div>
-                    <p className="font-medium text-gray-900">Secure Payment</p>
-                    <p className="text-gray-600">PayPal & card accepted</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Size Guide */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-              className="bg-white rounded-lg shadow-lg p-6 mb-6"
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Size Guide</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2">Size</th>
-                      <th className="text-center py-2">Chest</th>
-                      <th className="text-center py-2">Length</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-gray-600">
-                    <tr className="border-b">
-                      <td className="py-1">XS</td>
-                      <td className="text-center">86cm</td>
-                      <td className="text-center">66cm</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="py-1">S</td>
-                      <td className="text-center">91cm</td>
-                      <td className="text-center">69cm</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="py-1">M</td>
-                      <td className="text-center">96cm</td>
-                      <td className="text-center">72cm</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="py-1">L</td>
-                      <td className="text-center">101cm</td>
-                      <td className="text-center">75cm</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1">XL</td>
-                      <td className="text-center">106cm</td>
-                      <td className="text-center">78cm</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </motion.div>
-
-            {/* Contact Shop */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.9 }}
-              className="bg-blue-50 border border-blue-200 rounded-lg p-6"
-            >
-              <h3 className="text-lg font-semibold text-blue-900 mb-4">Need Help?</h3>
-              <div className="space-y-3 text-sm">
-                <div>
-                  <p className="font-medium text-blue-900">Shop Manager</p>
-                  <p className="text-blue-700">Helen Murphy</p>
-                  <p className="text-blue-600">shop@rvrfc.com</p>
-                  <p className="text-blue-500">+353 1 123 4579</p>
-                </div>
-                <div className="pt-3 border-t border-blue-200">
-                  <p className="text-xs text-blue-600">
-                    Available for sizing help, custom orders, and bulk purchases
-                  </p>
-                </div>
-              </div>
-            </motion.div>
+          <div>
+            <div className="text-3xl mb-2">↩️</div>
+            <h3 className="font-bold mb-2">Easy Returns</h3>
+            <p className="text-sm opacity-90">30-day return policy on all items</p>
+          </div>
+          <div>
+            <div className="text-3xl mb-2">💯</div>
+            <h3 className="font-bold mb-2">Quality Guaranteed</h3>
+            <p className="text-sm opacity-90">Official merchandise with club guarantee</p>
           </div>
         </div>
-      </div>
-    </StandardLayout>
+        
+        <div className="grid md:grid-cols-2 gap-6">
+          <GlassActionCard
+            icon="📞"
+            title="Need Help?"
+            description="Contact our shop team"
+            href="/contact"
+            gradient="blue"
+            size="lg"
+          />
+          <GlassActionCard
+            icon="📍"
+            title="Collect in Person"
+            description="Pick up from the clubhouse"
+            href="/club/facilities"
+            gradient="green"
+            size="lg"
+          />
+        </div>
+      </motion.div>
+
+    </GlassPageTemplate>
   );
 }

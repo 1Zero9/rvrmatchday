@@ -1,10 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
+import Footer from "../components/Footer";
 
 export default function StandardHomepage() {
   return (
-    <StandardLayout>
+    <StandardLayout useFloatingFooter={true}>
       <main>
         
         {/* Hero Section - Authentic Community Feel */}
@@ -68,13 +70,32 @@ export default function StandardHomepage() {
           {/* Hero Content Overlay - Enhanced with Action Grid */}
           <div className="relative z-10 w-full px-4 max-w-7xl mx-auto">
             
-            {/* Club Header - Top Center */}
+            {/* Club Header - Top Center with Logo */}
             <motion.div
               initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               className="text-center text-white mb-8"
             >
+              {/* Logo */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="flex justify-center mb-6"
+              >
+                <div className="relative">
+                  <Image 
+                    src="/images/logo.png" 
+                    alt="Rivervalley Rangers AFC Logo" 
+                    width={120}
+                    height={120}
+                    className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
+                </div>
+              </motion.div>
+              
               {/* 
               ========================================
               🏆 CLUB NAME & MOTTO CUSTOMIZATION
@@ -119,9 +140,9 @@ export default function StandardHomepage() {
               >
                 <div className="text-3xl mb-3">📅</div>
                 <h3 className="text-lg font-bold mb-2">Next Fixtures</h3>
-                <p className="text-xs opacity-90 mb-3">Upcoming matches</p>
-                <Link href="/dashboard" className="text-blue-200 hover:text-white font-semibold text-sm">
-                  View Schedule →
+                <p className="text-xs opacity-90 mb-4">Upcoming matches</p>
+                <Link href="/match-central/fixtures" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                  View Schedule
                 </Link>
               </motion.div>
 
@@ -131,9 +152,9 @@ export default function StandardHomepage() {
               >
                 <div className="text-3xl mb-3">🤝</div>
                 <h3 className="text-lg font-bold mb-2">Get Involved</h3>
-                <p className="text-xs opacity-90 mb-3">Volunteer & support</p>
-                <Link href="/get-involved/volunteering" className="text-orange-200 hover:text-white font-semibold text-sm">
-                  Help Out →
+                <p className="text-xs opacity-90 mb-4">Volunteer & support</p>
+                <Link href="/get-involved" className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                  Help Out
                 </Link>
               </motion.div>
             </motion.div>
@@ -151,9 +172,9 @@ export default function StandardHomepage() {
                 className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
               >
                 <div className="text-2xl mb-2">🏆</div>
-                <h4 className="text-sm font-semibold mb-1">Latest Results</h4>
-                <Link href="/match-central/results" className="text-xs text-white/80 hover:text-white">
-                  View →
+                <h4 className="text-sm font-semibold mb-2">Latest Results</h4>
+                <Link href="/match-central/results" className="inline-block bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-3 rounded text-xs transition-all">
+                  View Results
                 </Link>
               </motion.div>
 
@@ -162,9 +183,9 @@ export default function StandardHomepage() {
                 className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
               >
                 <div className="text-2xl mb-2">📸</div>
-                <h4 className="text-sm font-semibold mb-1">Photo Gallery</h4>
-                <Link href="/news-media/gallery" className="text-xs text-white/80 hover:text-white">
-                  Browse →
+                <h4 className="text-sm font-semibold mb-2">Photo Gallery</h4>
+                <Link href="/news-media/gallery" className="inline-block bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-3 rounded text-xs transition-all">
+                  Browse Photos
                 </Link>
               </motion.div>
 
@@ -173,9 +194,9 @@ export default function StandardHomepage() {
                 className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
               >
                 <div className="text-2xl mb-2">👥</div>
-                <h4 className="text-sm font-semibold mb-1">Our Teams</h4>
-                <Link href="/teams/boys" className="text-xs text-white/80 hover:text-white">
-                  Explore →
+                <h4 className="text-sm font-semibold mb-2">Our Teams</h4>
+                <Link href="/teams" className="inline-block bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-3 rounded text-xs transition-all">
+                  View Teams
                 </Link>
               </motion.div>
 
@@ -184,9 +205,9 @@ export default function StandardHomepage() {
                 className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
               >
                 <div className="text-2xl mb-2">📞</div>
-                <h4 className="text-sm font-semibold mb-1">Contact</h4>
-                <Link href="/contact" className="text-xs text-white/80 hover:text-white">
-                  Get in Touch →
+                <h4 className="text-sm font-semibold mb-2">Contact</h4>
+                <Link href="/contact" className="inline-block bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-3 rounded text-xs transition-all">
+                  Get in Touch
                 </Link>
               </motion.div>
             </motion.div>
@@ -528,6 +549,9 @@ export default function StandardHomepage() {
         </section>
 
       </main>
+      
+      {/* Floating Footer */}
+      <Footer />
     </StandardLayout>
   );
 }
