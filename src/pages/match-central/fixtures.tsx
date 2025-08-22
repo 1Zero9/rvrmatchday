@@ -8,7 +8,7 @@
  * Complete fixtures overview with glass morphism design
  */
 
-import { GlassPageTemplate } from '../../components/GlassPageTemplate';
+import GlassPageTemplate from '../../components/GlassPageTemplate';
 import { GlassCard, GlassActionCard, GlassStats } from '../../components/Glass';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -20,28 +20,28 @@ export default function Fixtures() {
       description: "See what's coming up",
       href: "#this-week",
       icon: "📅",
-      gradient: "blue"
+      gradient: "blue" as const
     },
     {
       title: "My Team's Schedule", 
       description: "Filter by your team",
       href: "#my-team",
       icon: "👥",
-      gradient: "green"
+      gradient: "green" as const
     },
     {
       title: "Venue Information",
       description: "Directions & details",
       href: "#venues",
       icon: "📍",
-      gradient: "purple"
+      gradient: "purple" as const
     },
     {
       title: "Season Calendar",
       description: "Download full schedule",
       href: "#calendar",
       icon: "📲",
-      gradient: "orange"
+      gradient: "orange" as const
     }
   ];
 

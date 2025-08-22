@@ -8,7 +8,7 @@
  * Complete league tables overview with glass morphism design
  */
 
-import { GlassPageTemplate } from '../../components/GlassPageTemplate';
+import GlassPageTemplate from '../../components/GlassPageTemplate';
 import { GlassCard, GlassActionCard } from '../../components/Glass';
 import { motion } from 'framer-motion';
 import Link from 'next/link';

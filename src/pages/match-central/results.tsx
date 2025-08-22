@@ -8,7 +8,7 @@
  * Complete results overview with glass morphism design
  */
 
-import { GlassPageTemplate } from '../../components/GlassPageTemplate';
+import GlassPageTemplate from '../../components/GlassPageTemplate';
 import { GlassCard, GlassActionCard, GlassStats } from '../../components/Glass';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
