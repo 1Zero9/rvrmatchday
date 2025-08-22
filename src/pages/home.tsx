@@ -70,147 +70,128 @@ export default function StandardHomepage() {
           {/* Hero Content Overlay - Enhanced with Action Grid */}
           <div className="relative z-10 w-full px-4 max-w-7xl mx-auto">
             
-            {/* Club Header - Top Center with Logo */}
-            <motion.div
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center text-white mb-8"
-            >
-              {/* Logo */}
+            {/* Hero Content with Logo on Left and Smaller Cards */}
+            <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8 lg:gap-12">
+              
+              {/* Logo Section - Left Side */}
               <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="flex justify-center mb-6"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                className="flex-shrink-0 text-center lg:text-left text-white"
               >
-                <div className="relative">
+                <div className="relative mb-4">
                   <Image 
                     src="/images/logo.png" 
                     alt="Rivervalley Rangers AFC Logo" 
-                    width={120}
-                    height={120}
-                    className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                    width={100}
+                    height={100}
+                    className="drop-shadow-2xl hover:scale-105 transition-transform duration-300 mx-auto lg:mx-0"
                   />
                   <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
                 </div>
+                
+                <h1 className="text-3xl lg:text-4xl font-bold mb-2 text-shadow-lg">
+                  Rivervalley Rangers AFC
+                </h1>
+                <p className="text-lg lg:text-xl font-medium text-green-200">
+                  Building Community Through Football Since 1981
+                </p>
               </motion.div>
+
+              {/* Action Cards - Right Side */}
+              <div className="flex-1 w-full lg:max-w-4xl">
+
+                {/* Main Action Grid - Smaller Cards */}
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
+                >
               
-              {/* 
-              ========================================
-              🏆 CLUB NAME & MOTTO CUSTOMIZATION
-              ========================================
-              Change "Rivervalley Rangers AFC" to your team name
-              Change the motto/tagline below to your club's motto
-              ======================================== 
-              */}
-              <h1 className="text-4xl md:text-6xl font-bold mb-4 text-shadow-lg">
-                Rivervalley Rangers AFC
-              </h1>
-              <p className="text-xl md:text-2xl font-medium text-green-200">
-                Building Community Through Football Since 1981
-              </p>
-            </motion.div>
+                  {/* Main CTA - Join Club */}
+                  <motion.div 
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    className="lg:col-span-3 bg-white/15 backdrop-blur-md border border-white/30 rounded-xl p-4 text-center text-white hover:bg-white/25 transition-all duration-300 shadow-2xl"
+                  >
+                    <div className="text-3xl mb-2">⚽</div>
+                    <h3 className="text-lg font-bold mb-2">Join Our Club</h3>
+                    <p className="text-xs opacity-90 mb-3">Youth & Senior teams welcoming new players</p>
+                    <Link href="/join/trials" className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                      Register Now
+                    </Link>
+                  </motion.div>
 
-            {/* Action Grid - Glass Cards Overlay */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto"
-            >
+                  {/* Quick Actions Grid - Smaller Cards */}
+                  <motion.div 
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    className="bg-blue-600/20 backdrop-blur-md border border-blue-300/30 rounded-xl p-4 text-center text-white hover:bg-blue-600/30 transition-all duration-300 shadow-xl"
+                  >
+                    <div className="text-2xl mb-2">📅</div>
+                    <h3 className="text-sm font-bold mb-1">Next Fixtures</h3>
+                    <p className="text-xs opacity-90 mb-3">Upcoming matches</p>
+                    <Link href="/match-central/fixtures" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg transition-all text-xs">
+                      View Schedule
+                    </Link>
+                  </motion.div>
+
+                  <motion.div 
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    className="bg-orange-600/20 backdrop-blur-md border border-orange-300/30 rounded-xl p-4 text-center text-white hover:bg-orange-600/30 transition-all duration-300 shadow-xl"
+                  >
+                    <div className="text-2xl mb-2">🤝</div>
+                    <h3 className="text-sm font-bold mb-1">Get Involved</h3>
+                    <p className="text-xs opacity-90 mb-3">Volunteer & support</p>
+                    <Link href="/get-involved" className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-bold py-1 px-3 rounded-lg transition-all text-xs">
+                      Help Out
+                    </Link>
+                  </motion.div>
+                </motion.div>
+
+                {/* Secondary Action Row */}
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                  className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-3"
+                >
               
-              {/* Main CTA - Join Club */}
-              <motion.div 
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="md:col-span-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl p-6 text-center text-white hover:bg-white/25 transition-all duration-300 shadow-2xl"
-              >
-                <div className="text-4xl mb-3">⚽</div>
-                <h3 className="text-xl font-bold mb-2">Join Our Club</h3>
-                <p className="text-sm opacity-90 mb-4">Youth & Senior teams welcoming new players</p>
-                <Link href="/join/trials" className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-all">
-                  Register Now
-                </Link>
-              </motion.div>
+                  <motion.div 
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-3 text-center text-white hover:bg-white/20 transition-all duration-300"
+                  >
+                    <div className="text-lg mb-1">🏆</div>
+                    <h4 className="text-xs font-semibold mb-1">Latest Results</h4>
+                    <Link href="/match-central/results" className="inline-block bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-2 rounded text-xs transition-all">
+                      View Results
+                    </Link>
+                  </motion.div>
 
-              {/* Quick Actions Grid */}
-              <motion.div 
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="bg-blue-600/20 backdrop-blur-md border border-blue-300/30 rounded-2xl p-6 text-center text-white hover:bg-blue-600/30 transition-all duration-300 shadow-xl"
-              >
-                <div className="text-3xl mb-3">📅</div>
-                <h3 className="text-lg font-bold mb-2">Next Fixtures</h3>
-                <p className="text-xs opacity-90 mb-4">Upcoming matches</p>
-                <Link href="/match-central/fixtures" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
-                  View Schedule
-                </Link>
-              </motion.div>
+                  <motion.div 
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-3 text-center text-white hover:bg-white/20 transition-all duration-300"
+                  >
+                    <div className="text-lg mb-1">👥</div>
+                    <h4 className="text-xs font-semibold mb-1">Our Teams</h4>
+                    <Link href="/teams" className="inline-block bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-2 rounded text-xs transition-all">
+                      View Teams
+                    </Link>
+                  </motion.div>
 
-              <motion.div 
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="bg-orange-600/20 backdrop-blur-md border border-orange-300/30 rounded-2xl p-6 text-center text-white hover:bg-orange-600/30 transition-all duration-300 shadow-xl"
-              >
-                <div className="text-3xl mb-3">🤝</div>
-                <h3 className="text-lg font-bold mb-2">Get Involved</h3>
-                <p className="text-xs opacity-90 mb-4">Volunteer & support</p>
-                <Link href="/get-involved" className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
-                  Help Out
-                </Link>
-              </motion.div>
-            </motion.div>
-
-            {/* Secondary Action Row */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-6xl mx-auto mt-4"
-            >
-              
-              <motion.div 
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
-              >
-                <div className="text-2xl mb-2">🏆</div>
-                <h4 className="text-sm font-semibold mb-2">Latest Results</h4>
-                <Link href="/match-central/results" className="inline-block bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-3 rounded text-xs transition-all">
-                  View Results
-                </Link>
-              </motion.div>
-
-              <motion.div 
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
-              >
-                <div className="text-2xl mb-2">📸</div>
-                <h4 className="text-sm font-semibold mb-2">Photo Gallery</h4>
-                <Link href="/news-media/gallery" className="inline-block bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-3 rounded text-xs transition-all">
-                  Browse Photos
-                </Link>
-              </motion.div>
-
-              <motion.div 
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
-              >
-                <div className="text-2xl mb-2">👥</div>
-                <h4 className="text-sm font-semibold mb-2">Our Teams</h4>
-                <Link href="/teams" className="inline-block bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-3 rounded text-xs transition-all">
-                  View Teams
-                </Link>
-              </motion.div>
-
-              <motion.div 
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center text-white hover:bg-white/20 transition-all duration-300"
-              >
-                <div className="text-2xl mb-2">📞</div>
-                <h4 className="text-sm font-semibold mb-2">Contact</h4>
-                <Link href="/contact" className="inline-block bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-3 rounded text-xs transition-all">
-                  Get in Touch
-                </Link>
-              </motion.div>
-            </motion.div>
+                  <motion.div 
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-3 text-center text-white hover:bg-white/20 transition-all duration-300"
+                  >
+                    <div className="text-lg mb-1">📞</div>
+                    <h4 className="text-xs font-semibold mb-1">Contact</h4>
+                    <Link href="/contact" className="inline-block bg-white/20 hover:bg-white/30 text-white font-medium py-1 px-2 rounded text-xs transition-all">
+                      Get in Touch
+                    </Link>
+                  </motion.div>
+                </motion.div>
+              </div>
+            </div>
           </div>
           
           {/* Scroll indicator */}

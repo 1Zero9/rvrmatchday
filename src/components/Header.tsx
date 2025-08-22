@@ -21,7 +21,9 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Different navigation based on section
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+  // Navigation items with dropdowns
   const getNavItems = () => {
     switch (currentSection) {
       case "kids":
@@ -50,10 +52,56 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
       default: // public
         return [
           { href: "/", label: "Home", color: "" },
-          { href: "/about", label: "About", color: "" },
-          { href: "/teams", label: "Teams", color: "" },
-          { href: "/join", label: "Join Us", color: "" },
-          { href: "/contact", label: "Contact", color: "" },
+          { 
+            href: "/match-central/fixtures", 
+            label: "Matches", 
+            color: "",
+            dropdown: [
+              { href: "/match-central/fixtures", label: "Fixtures", desc: "Upcoming matches & schedule" },
+              { href: "/match-central/results", label: "Results", desc: "Latest match results" },
+              { href: "/match-central/tables", label: "Tables", desc: "League standings" }
+            ]
+          },
+          { 
+            href: "/club", 
+            label: "Club", 
+            color: "",
+            dropdown: [
+              { href: "/club", label: "Overview", desc: "About our club" },
+              { href: "/club/committee", label: "Committee", desc: "Meet our committee" },
+              { href: "/club/facilities", label: "Facilities", desc: "Our grounds & facilities" }
+            ]
+          },
+          { 
+            href: "/join", 
+            label: "Join", 
+            color: "",
+            dropdown: [
+              { href: "/join", label: "Overview", desc: "How to join the club" },
+              { href: "/join/youth", label: "Youth Teams", desc: "Join our youth teams" },
+              { href: "/join/senior", label: "Senior Teams", desc: "Join our senior teams" },
+              { href: "/join/trials", label: "Trials", desc: "Book a trial session" }
+            ]
+          },
+          { 
+            href: "/members", 
+            label: "Members", 
+            color: "",
+            dropdown: [
+              { href: "/members", label: "Member Area", desc: "Members only content" },
+              { href: "/members/parents", label: "Parents Info", desc: "Information for parents" }
+            ]
+          },
+          { 
+            href: "/news-media", 
+            label: "More", 
+            color: "",
+            dropdown: [
+              { href: "/news-media", label: "News & Media", desc: "Latest club news" },
+              { href: "/get-involved", label: "Get Involved", desc: "Volunteer & support us" },
+              { href: "/contact", label: "Contact", desc: "Get in touch with us" }
+            ]
+          }
         ];
     }
   };
@@ -113,15 +161,43 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
+              className="relative group"
+              onMouseEnter={() => (item as any).dropdown && setActiveDropdown(item.label)}
+              onMouseLeave={() => setActiveDropdown(null)}
             >
               <Link 
                 href={item.href} 
-                className={`hover:text-accent-teal transition-colors duration-300 font-medium ${
+                className={`hover:text-accent-teal transition-colors duration-300 font-medium flex items-center ${
                   item.color || textColorClass
                 } ${isKidsSection ? 'text-lg font-bold' : 'drop-shadow-sm'}`}
               >
                 {item.label}
+                {(item as any).dropdown && <span className="ml-1 text-xs">▼</span>}
               </Link>
+              
+              {/* Dropdown Menu */}
+              {(item as any).dropdown && activeDropdown === item.label && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border z-50"
+                >
+                  <div className="py-2">
+                    {(item as any).dropdown.map((dropItem: any, dropIndex: number) => (
+                      <Link
+                        key={dropItem.href}
+                        href={dropItem.href}
+                        className="block px-4 py-3 text-gray-800 hover:bg-gray-100 border-b last:border-b-0"
+                        onClick={() => setActiveDropdown(null)}
+                      >
+                        <div className="font-semibold text-sm">{dropItem.label}</div>
+                        <div className="text-xs text-gray-600 mt-1">{dropItem.desc}</div>
+                      </Link>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           ))}
         </nav>
@@ -158,7 +234,7 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
         </button>
       </div>
 
-      {/* Mobile Nav */}
+      {/* Mobile Nav - Simplified */}
       <AnimatePresence>
         {isOpen && (
           <motion.nav
@@ -166,49 +242,76 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className={`md:hidden ${headerClasses} px-4 pb-6 space-y-4 overflow-hidden`}
+            className={`md:hidden ${headerClasses} px-4 pb-6 space-y-2 overflow-hidden`}
           >
-            {navItems.map((item, index) => (
-              <motion.div
-                key={item.href}
-                initial={{ x: -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: index * 0.1 }}
-                className="block"
+            {/* Mobile - Show only key items */}
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="block"
+            >
+              <Link 
+                href="/" 
+                onClick={() => setIsOpen(false)}
+                className={`block py-2 text-lg font-medium hover:text-accent-teal transition-colors ${textColorClass} drop-shadow-sm`}
               >
-                <Link 
-                  href={item.href} 
-                  onClick={() => setIsOpen(false)}
-                  className={`block py-2 text-lg font-medium hover:text-accent-teal transition-colors ${
-                    item.color || textColorClass
-                  } ${isKidsSection ? '' : 'drop-shadow-sm'}`}
-                >
-                  {item.label}
-                </Link>
-              </motion.div>
-            ))}
+                🏠 Home
+              </Link>
+            </motion.div>
+            
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="block"
+            >
+              <Link 
+                href="/match-central/fixtures" 
+                onClick={() => setIsOpen(false)}
+                className={`block py-2 text-lg font-medium hover:text-accent-teal transition-colors ${textColorClass} drop-shadow-sm`}
+              >
+                ⚽ Fixtures
+              </Link>
+            </motion.div>
+            
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="block"
+            >
+              <Link 
+                href="/join" 
+                onClick={() => setIsOpen(false)}
+                className={`block py-2 text-lg font-medium hover:text-accent-teal transition-colors ${textColorClass} drop-shadow-sm`}
+              >
+                🚀 Join Us
+              </Link>
+            </motion.div>
+            
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="block"
+            >
+              <Link 
+                href="/contact" 
+                onClick={() => setIsOpen(false)}
+                className={`block py-2 text-lg font-medium hover:text-accent-teal transition-colors ${textColorClass} drop-shadow-sm`}
+              >
+                📞 Contact
+              </Link>
+            </motion.div>
+            
             {currentSection === "public" && (
               <div className="pt-4 space-y-2">
                 <Link 
-                  href="/coach/login" 
-                  onClick={() => setIsOpen(false)}
-                  className="block bg-primary-600 px-4 py-3 rounded-lg text-center font-semibold text-white"
-                >
-                  Coach Login
-                </Link>
-                <Link 
                   href="/members/login" 
                   onClick={() => setIsOpen(false)}
-                  className="block bg-accent-teal px-4 py-3 rounded-lg text-center font-semibold"
+                  className="block bg-accent-teal px-4 py-2 rounded-lg text-center font-semibold text-sm"
                 >
                   Members Login
-                </Link>
-                <Link 
-                  href="/kids" 
-                  onClick={() => setIsOpen(false)}
-                  className="block bg-kids-orange px-4 py-3 rounded-lg text-center font-semibold"
-                >
-                  Kids Zone
                 </Link>
               </div>
             )}

@@ -96,7 +96,7 @@ export default function Footer() {
                   </div>
                 </div>
 
-                {/* Center - Quick Actions */}
+                {/* Center - Quick Actions Desktop / Mobile Message */}
                 <div className="hidden md:flex items-center space-x-4">
                   <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors text-sm px-3 py-1 rounded hover:bg-white/10">
                     ⚽ Match Central
@@ -107,6 +107,12 @@ export default function Footer() {
                   <Link href="/shop" className="text-gray-300 hover:text-white transition-colors text-sm px-3 py-1 rounded hover:bg-white/10">
                     🛒 Shop
                   </Link>
+                </div>
+                
+                {/* Mobile - Desktop Recommendation */}
+                <div className="md:hidden flex items-center space-x-2 text-yellow-400 text-xs bg-yellow-400/10 px-3 py-1 rounded">
+                  <span>💻</span>
+                  <span>Best viewed on desktop</span>
                 </div>
 
                 {/* Right - Expand/Collapse Button */}
@@ -279,6 +285,7 @@ export default function Footer() {
                   >
                     <p>© {currentYear} Rivervalley Rangers AFC • Building Community Through Football</p>
                     <p className="mt-1">Registered in Ireland • Club Registration: AFC-2025-001</p>
+                    <p className="mt-2 text-yellow-400">💻 For the best experience, view this site on desktop</p>
                   </motion.div>
                   
                 </div>
