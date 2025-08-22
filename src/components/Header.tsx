@@ -165,15 +165,25 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
               onMouseEnter={() => (item as any).dropdown && setActiveDropdown(item.label)}
               onMouseLeave={() => setActiveDropdown(null)}
             >
-              <Link 
-                href={item.href} 
-                className={`hover:text-accent-teal transition-colors duration-300 font-medium flex items-center ${
-                  item.color || textColorClass
-                } ${isKidsSection ? 'text-lg font-bold' : 'drop-shadow-sm'}`}
-              >
-                {item.label}
-                {(item as any).dropdown && <span className="ml-1 text-xs">▼</span>}
-              </Link>
+              <div className="flex items-center">
+                <Link 
+                  href={item.href} 
+                  className={`hover:text-accent-teal transition-colors duration-300 font-medium ${
+                    item.color || textColorClass
+                  } ${isKidsSection ? 'text-lg font-bold' : 'drop-shadow-sm'}`}
+                >
+                  {item.label}
+                </Link>
+                {(item as any).dropdown && (
+                  <button 
+                    className={`ml-1 text-xs hover:text-accent-teal transition-colors ${
+                      item.color || textColorClass
+                    }`}
+                  >
+                    ▼
+                  </button>
+                )}
+              </div>
               
               {/* Dropdown Menu */}
               {(item as any).dropdown && activeDropdown === item.label && (
@@ -244,65 +254,30 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
             transition={{ duration: 0.3 }}
             className={`md:hidden ${headerClasses} px-4 pb-6 space-y-2 overflow-hidden`}
           >
-            {/* Mobile - Show only key items */}
-            <motion.div
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              className="block"
-            >
-              <Link 
-                href="/" 
-                onClick={() => setIsOpen(false)}
-                className={`block py-2 text-lg font-medium hover:text-accent-teal transition-colors ${textColorClass} drop-shadow-sm`}
+            {/* Mobile - Key items with better styling */}
+            {[
+              { href: "/", label: "🏠 Home", delay: 0 },
+              { href: "/match-central/fixtures", label: "⚽ Fixtures", delay: 0.1 },
+              { href: "/club", label: "🏛️ Club", delay: 0.2 },
+              { href: "/join", label: "🚀 Join Us", delay: 0.25 },
+              { href: "/contact", label: "📞 Contact", delay: 0.3 }
+            ].map((navItem, index) => (
+              <motion.div
+                key={navItem.href}
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: navItem.delay }}
+                className="block"
               >
-                🏠 Home
-              </Link>
-            </motion.div>
-            
-            <motion.div
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="block"
-            >
-              <Link 
-                href="/match-central/fixtures" 
-                onClick={() => setIsOpen(false)}
-                className={`block py-2 text-lg font-medium hover:text-accent-teal transition-colors ${textColorClass} drop-shadow-sm`}
-              >
-                ⚽ Fixtures
-              </Link>
-            </motion.div>
-            
-            <motion.div
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="block"
-            >
-              <Link 
-                href="/join" 
-                onClick={() => setIsOpen(false)}
-                className={`block py-2 text-lg font-medium hover:text-accent-teal transition-colors ${textColorClass} drop-shadow-sm`}
-              >
-                🚀 Join Us
-              </Link>
-            </motion.div>
-            
-            <motion.div
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="block"
-            >
-              <Link 
-                href="/contact" 
-                onClick={() => setIsOpen(false)}
-                className={`block py-2 text-lg font-medium hover:text-accent-teal transition-colors ${textColorClass} drop-shadow-sm`}
-              >
-                📞 Contact
-              </Link>
-            </motion.div>
+                <Link 
+                  href={navItem.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`block py-3 px-2 text-lg font-medium hover:text-accent-teal hover:bg-white/10 rounded-lg transition-all ${textColorClass} drop-shadow-sm`}
+                >
+                  {navItem.label}
+                </Link>
+              </motion.div>
+            ))}
             
             {currentSection === "public" && (
               <div className="pt-4 space-y-2">
