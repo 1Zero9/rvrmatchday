@@ -89,20 +89,18 @@ export default function StandardLayout({ children, title, useFloatingFooter = fa
                   </svg>
                 </button>
                 <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                  <Link href="/match-tracker" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100 font-medium">
+                  <Link href="/match-central" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100 font-medium">
+                    📊 Match Central
+                  </Link>
+                  <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Quick Access</div>
+                  <Link href="/match-central#tracker" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100 text-sm">
                     🎯 Match Tracker
                   </Link>
-                  <Link href="/dashboard" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    📊 Live Dashboard
-                  </Link>
-                  <Link href="/match-central/fixtures" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
+                  <Link href="/match-central#fixtures" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100 text-sm">
                     📅 Fixtures
                   </Link>
-                  <Link href="/match-central/results" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
+                  <Link href="/match-central#results" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
                     🏆 Results
-                  </Link>
-                  <Link href="/match-central/tables" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
-                    📋 League Tables
                   </Link>
                 </div>
               </div>
@@ -260,8 +258,7 @@ export default function StandardLayout({ children, title, useFloatingFooter = fa
           >
             <nav className="px-4 py-4 space-y-1">
               <Link href="/home" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>🏠 Home</Link>
-              <Link href="/match-central/fixtures" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>⚽ Fixtures</Link>
-              <Link href="/match-central/results" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>🏆 Results</Link>
+              <Link href="/match-central" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>⚽ Match Central</Link>
               <Link href="/teams" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>👥 Teams</Link>
               <Link href="/join/trials" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>🎯 Join</Link>
               <Link href="/contact" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>📞 Contact</Link>
