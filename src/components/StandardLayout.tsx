@@ -89,6 +89,9 @@ export default function StandardLayout({ children, title, useFloatingFooter = fa
                   </svg>
                 </button>
                 <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                  <Link href="/match-tracker" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100 font-medium">
+                    🎯 Match Tracker
+                  </Link>
                   <Link href="/dashboard" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
                     📊 Live Dashboard
                   </Link>
