@@ -285,9 +285,12 @@ export default function MatchCentral() {
             >
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-900">Match Tracker</h2>
-                <button className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700">
+                <a
+                  href="/matches/new"
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
+                >
                   + New Match
-                </button>
+                </a>
               </div>
 
               {teamSummaries.length === 0 ? (
@@ -329,12 +332,18 @@ export default function MatchCentral() {
                       </div>
 
                       <div className="flex gap-2">
-                        <button className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700">
+                        <a
+                          href={`/match-tracker/teams/${summary.team.id}`}
+                          className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 text-center transition-colors"
+                        >
                           View Details
-                        </button>
-                        <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700">
+                        </a>
+                        <a
+                          href="/matches/new"
+                          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 text-center transition-colors"
+                        >
                           Add Match
-                        </button>
+                        </a>
                       </div>
                     </div>
                   ))}
