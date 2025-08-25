@@ -256,12 +256,12 @@ export default function StandardLayout({ children, title, useFloatingFooter = fa
             className="lg:hidden bg-green-800 border-t-2 border-white"
           >
             <nav className="px-4 py-4 space-y-1">
-              <Link href="/home" className="block py-3 text-white hover:bg-green-700 rounded px-2">🏠 Home</Link>
-              <Link href="/dashboard" className="block py-3 text-white hover:bg-green-700 rounded px-2">⚽ Matches</Link>
-              <Link href="/about" className="block py-3 text-white hover:bg-green-700 rounded px-2">🏛️ Club & Teams</Link>
-              <Link href="/join/trials" className="block py-3 text-white hover:bg-green-700 rounded px-2">🎯 Join & Support</Link>
-              <Link href="/members/parents" className="block py-3 text-white hover:bg-green-700 rounded px-2">👨‍👩‍👧‍👦 Members</Link>
-              <Link href="/news-media/events" className="block py-3 text-white hover:bg-green-700 rounded px-2">📰 News & More</Link>
+              <Link href="/home" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>🏠 Home</Link>
+              <Link href="/match-central/fixtures" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>⚽ Fixtures</Link>
+              <Link href="/match-central/results" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>🏆 Results</Link>
+              <Link href="/teams" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>👥 Teams</Link>
+              <Link href="/join/trials" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>🎯 Join</Link>
+              <Link href="/contact" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>📞 Contact</Link>
             </nav>
           </motion.div>
         )}

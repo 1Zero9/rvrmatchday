@@ -210,8 +210,8 @@ export default function StandardHomepage() {
           </div>
         </section>
 
-        {/* Main Sponsors Section - High Visibility */}
-        <section className="bg-white py-16 border-b-4 border-green-600">
+        {/* Main Sponsors Section - High Visibility - Hidden on Mobile */}
+        <section className="hidden md:block bg-white py-16 border-b-4 border-green-600">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Proudly Supported By Our Community Partners</h2>
@@ -297,13 +297,13 @@ export default function StandardHomepage() {
         <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">What's Happening at Rangers</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">What's Happening at RVR</h2>
               <p className="text-lg text-gray-600">Latest news, results, and community stories</p>
             </div>
             
             <div className="grid lg:grid-cols-3 gap-8">
               
-              {/* Featured Story */}
+              {/* Featured Story - Simplified on Mobile */}
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                   
@@ -334,8 +334,8 @@ export default function StandardHomepage() {
                   ===================================================================
                   */}
                   
-                  {/* FEATURED NEWS PHOTO PLACEHOLDER - REPLACE THIS DIV */}
-                  <div className="h-64 bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
+                  {/* FEATURED NEWS PHOTO PLACEHOLDER - HIDDEN ON MOBILE */}
+                  <div className="hidden md:block h-64 bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
                     <div className="text-white text-center">
                       <div className="text-4xl mb-2">📸</div>
                       <p className="text-sm font-bold">FEATURED STORY PHOTO</p>
@@ -366,15 +366,15 @@ export default function StandardHomepage() {
                 </div>
               </div>
               
-              {/* Quick Updates */}
-              <div className="space-y-6">
+              {/* Quick Updates - Hidden on Mobile */}
+              <div className="hidden lg:block space-y-6">
                 
                 {/* Latest Result */}
                 <div className="bg-white rounded-lg shadow p-6">
                   <div className="flex items-center mb-3">
                     <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST RESULT</span>
                   </div>
-                  <h4 className="font-bold text-gray-900 mb-2">Rangers FC 2-1 Millbrook FC</h4>
+                  <h4 className="font-bold text-gray-900 mb-2">RVR FC 2-1 Millbrook FC</h4>
                   <p className="text-gray-600 text-sm mb-3">Great performance from the seniors on Saturday!</p>
                   <Link href="/match-central/results" className="text-blue-600 text-sm font-semibold">
                     View All Results →
@@ -386,7 +386,7 @@ export default function StandardHomepage() {
                   <div className="flex items-center mb-3">
                     <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">NEXT MATCH</span>
                   </div>
-                  <h4 className="font-bold text-gray-900 mb-2">Rangers FC vs Oakwood United</h4>
+                  <h4 className="font-bold text-gray-900 mb-2">RVR FC vs Oakwood United</h4>
                   <p className="text-gray-600 text-sm mb-1">Saturday 3pm • Home</p>
                   <p className="text-gray-600 text-sm mb-3">Come support the lads!</p>
                   <Link href="/match-central/fixtures" className="text-orange-600 text-sm font-semibold">
@@ -410,8 +410,8 @@ export default function StandardHomepage() {
           </div>
         </section>
 
-        {/* Social Media Feeds */}
-        <section className="py-16 bg-white">
+        {/* Social Media Feeds - Hidden on Mobile */}
+        <section className="hidden md:block py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Follow Our Journey</h2>
@@ -477,12 +477,12 @@ export default function StandardHomepage() {
           </div>
         </section>
 
-        {/* Community Gallery Preview */}
-        <section className="py-16 bg-gray-50">
+        {/* Community Gallery Preview - Hidden on Mobile */}
+        <section className="hidden md:block py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Community in Action</h2>
-              <p className="text-lg text-gray-600">Capturing the moments that make Rangers special</p>
+              <p className="text-lg text-gray-600">Capturing the moments that make RVR special</p>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -518,7 +518,7 @@ export default function StandardHomepage() {
         {/* Final CTA Section */}
         <section className="py-16 bg-green-600 text-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">Ready to Join the Rangers Family?</h2>
+            <h2 className="text-3xl font-bold mb-4">Ready to Join Our Club?</h2>
             <p className="text-xl mb-8 text-green-100">
               Whether you're 7 or 70, there's a place for you at Rivervalley Rangers AFC
             </p>
