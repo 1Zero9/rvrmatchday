@@ -236,7 +236,7 @@ export default function NewsUpdates() {
               </div>
               
               <Link 
-                href="/news-media/events"
+                href="/get-involved/events"
                 className="block mt-4 bg-blue-600 text-white text-center font-semibold py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors"
               >
                 View All Events
@@ -253,10 +253,10 @@ export default function NewsUpdates() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Links</h3>
               
               <div className="space-y-2">
-                <Link href="/news-media/gallery" className="block text-gray-600 hover:text-blue-600 py-2 text-sm">
+                <Link href="/gallery" className="block text-gray-600 hover:text-blue-600 py-2 text-sm">
                   📸 Photo Gallery
                 </Link>
-                <Link href="/news-media/events" className="block text-gray-600 hover:text-blue-600 py-2 text-sm">
+                <Link href="/get-involved/events" className="block text-gray-600 hover:text-blue-600 py-2 text-sm">
                   📅 Events Calendar
                 </Link>
                 <Link href="/join/trials" className="block text-gray-600 hover:text-blue-600 py-2 text-sm">

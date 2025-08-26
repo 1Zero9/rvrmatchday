@@ -13,15 +13,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState, ReactNode } from "react";
+import Footer from "./Footer";
 import DeveloperCredits from "./DeveloperCredits";
 
 interface StandardLayoutProps {
   children: ReactNode;
   title?: string;
-  useFloatingFooter?: boolean;
 }
 
-export default function StandardLayout({ children, title, useFloatingFooter = false }: StandardLayoutProps) {
+export default function StandardLayout({ children, title }: StandardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogoClick = () => {
@@ -32,8 +32,8 @@ export default function StandardLayout({ children, title, useFloatingFooter = fa
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Navigation - Vibrant Football Theme */}
-      <header className="bg-gradient-to-r from-green-700 via-green-600 to-blue-700 text-white shadow-lg sticky top-0 z-50 border-b-4 border-green-300">
+      {/* Header Navigation - Single Primary Color */}
+      <header className="bg-club-primary text-white shadow-lg sticky top-0 z-50 border-b-4 border-club-accent">
         <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;utf8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 fill=%22white%22%3e%3ccircle cx=%2220%22 cy=%2220%22 r=%222%22/%3e%3ccircle cx=%2280%22 cy=%2240%22 r=%221%22/%3e%3ccircle cx=%2240%22 cy=%2270%22 r=%221.5%22/%3e%3ccircle cx=%2290%22 cy=%2280%22 r=%221%22/%3e%3ccircle cx=%2210%22 cy=%2260%22 r=%221%22/%3e%3c/svg%3e')] bg-repeat"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="flex justify-between items-center h-24">
@@ -75,164 +75,93 @@ export default function StandardLayout({ children, title, useFloatingFooter = fa
               </div>
             </div>
 
-            {/* Navigation */}
+            {/* Balanced Navigation */}
             <nav className="hidden lg:flex items-center space-x-1">
-              <Link href="/home" className="px-4 py-3 text-white hover:bg-green-800 rounded-lg transition-all duration-200 font-medium text-base">
+              <Link href="/home" className="px-4 py-3 text-white hover:bg-club-primary-light rounded-lg transition-all duration-200 font-medium text-base">
                 🏠 Home
               </Link>
               
               <div className="relative group">
-                <button className="px-4 py-3 text-white hover:bg-green-800 rounded-lg transition-all duration-200 font-medium flex items-center text-base">
-                  ⚽ Matches
+                <button className="px-4 py-3 text-white hover:bg-club-primary-light rounded-lg transition-all duration-200 font-medium flex items-center text-base">
+                  🏛️ About
                   <svg className="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                  <Link href="/match-central" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100 font-medium">
-                    📊 Match Central
+                <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                  <Link href="/about" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    🏰 Our Story
                   </Link>
-                  <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Quick Access</div>
-                  <Link href="/match-central#tracker" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100 text-sm">
-                    🎯 Match Tracker
+                  <Link href="/club/history" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    📜 Club History
                   </Link>
-                  <Link href="/match-central#fixtures" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100 text-sm">
-                    📅 Fixtures
-                  </Link>
-                  <Link href="/match-central#results" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
-                    🏆 Results
-                  </Link>
-                </div>
-              </div>
-
-              <div className="relative group">
-                <button className="px-4 py-3 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-base">
-                  <span>🏛️</span>
-                  <span>Club</span>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
-                  <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Our Story</div>
-                  <Link href="/about" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    🏰 Our Story & Heritage
-                  </Link>
-                  <Link href="/club/facilities" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
+                  <Link href="/club/facilities" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
                     🏟️ Facilities
                   </Link>
-                  <Link href="/club/committee" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
+                  <Link href="/club/committee" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary">
                     👥 Committee
                   </Link>
-                  <div className="bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 uppercase border-t">⚽ Boys Teams</div>
-                  <Link href="/teams/boys" className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 border-b border-gray-100">
-                    ⚽ U18, U16, U14, U12, U10
+                </div>
+              </div>
+
+              <div className="relative group">
+                <button className="px-4 py-3 text-white hover:bg-club-secondary-light rounded-lg transition-all duration-200 font-medium flex items-center text-base">
+                  👥 Teams
+                  <svg className="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                  <Link href="/teams" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium">
+                    👥 All Teams
                   </Link>
-                  <div className="bg-pink-50 px-3 py-2 text-xs font-semibold text-pink-600 uppercase border-t">🌟 Girls Teams</div>
-                  <Link href="/teams/girls" className="block px-4 py-3 text-gray-700 hover:bg-pink-50 hover:text-pink-700 border-b border-gray-100">
-                    🌟 U16, U14, U12 Girls
+                  <Link href="/teams/boys" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100">
+                    ⚽ Boys Teams
                   </Link>
-                  <div className="bg-purple-50 px-3 py-2 text-xs font-semibold text-purple-600 uppercase border-t">🤝 Inclusive</div>
-                  <Link href="/teams/inclusive" className="block px-4 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-b border-gray-100">
-                    🤝 Football for All
+                  <Link href="/teams/girls" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    🌟 Girls Teams
                   </Link>
-                  <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase border-t">Adult Teams</div>
-                  <Link href="/teams/senior" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
+                  <Link href="/teams/senior" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary">
                     👨 Senior Teams
                   </Link>
-                  <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
-                    🧑‍🏫 Contact Coaches
-                  </Link>
                 </div>
               </div>
 
-              <div className="relative group">
-                <button className="px-4 py-3 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-base">
-                  <span>🎯</span>
-                  <span>Join</span>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
-                  <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Join Club</div>
-                  <Link href="/join/trials" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    🎯 Trials & Registration
-                  </Link>
-                  <Link href="/join/youth" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    👦 Youth Membership
-                  </Link>
-                  <Link href="/join/senior" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    👨 Senior Membership
-                  </Link>
-                  <Link href="/join/academy" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    ⭐ Elite Academy
-                  </Link>
-                  <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500 uppercase border-t">Support</div>
-                  <Link href="/get-involved/volunteering" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    🙋 Volunteer
-                  </Link>
-                  <Link href="/get-involved/fundraising" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    💰 Fundraising
-                  </Link>
-                  <Link href="/get-involved/sponsorship" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
-                    🤝 Sponsor
-                  </Link>
-                </div>
-              </div>
+              <Link href="/match-central" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base">
+                ⚽ Matches
+              </Link>
+
+              <Link href="/volunteering" className="px-4 py-3 text-white hover:bg-club-primary-dark rounded-lg transition-all duration-200 font-medium text-base">
+                🤝 Volunteer
+              </Link>
 
               <div className="relative group">
-                <button className="px-4 py-3 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-base">
-                  <span>👥</span>
-                  <span>Members</span>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <button className="px-4 py-3 text-white hover:bg-club-neutral-dark rounded-lg transition-all duration-200 font-medium flex items-center text-base">
+                  📞 Contact
+                  <svg className="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-2 w-64 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
-                  <Link href="/members/parents" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    👨‍👩‍👧‍👦 Parent Portal
-                  </Link>
-                  <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    🧑‍🏫 Coach Contact
-                  </Link>
-                  <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
-                    🔐 General Inquiries
-                  </Link>
-                </div>
-              </div>
-
-              <div className="relative group">
-                <button className="px-4 py-3 text-white hover:bg-slate-700 rounded-lg transition-all duration-200 font-medium flex items-center space-x-1 text-base">
-                  <span>📰</span>
-                  <span>More</span>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                <div className="absolute left-0 mt-2 w-64 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
-                  <Link href="/news-media/events" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    📰 News & Events
-                  </Link>
-                  <Link href="/news-media/gallery" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700 border-b border-gray-100">
-                    📸 Photo Gallery
-                  </Link>
-                  <Link href="/shop" className="block px-4 py-3 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 border-b border-gray-100">
-                    🛍️ Club Shop
-                  </Link>
-                  <Link href="/boot-room" className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 border-b border-gray-100">
-                    🔄 Boot Room
-                  </Link>
-                  <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-slate-50 hover:text-slate-700">
+                <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                  <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium">
                     📞 Contact Us
+                  </Link>
+                  <Link href="/join" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    🎯 Join the Club
+                  </Link>
+                  <Link href="/join/trials" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    ⚽ Trials
+                  </Link>
+                  <Link href="/coach" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary">
+                    🧑‍🏫 Become a Coach
                   </Link>
                 </div>
               </div>
             </nav>
 
-            {/* Mobile Menu Button - Football Style */}
+            {/* Mobile Menu Button - Club Colors */}
             <button 
-              className="lg:hidden text-white bg-green-600 p-2 rounded-lg hover:bg-green-500 transition-colors"
+              className="lg:hidden text-white bg-club-primary p-2 rounded-lg hover:bg-club-primary-light transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -254,14 +183,21 @@ export default function StandardLayout({ children, title, useFloatingFooter = fa
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="lg:hidden bg-green-800 border-t-2 border-white"
+            className="lg:hidden bg-club-primary border-t-2 border-club-accent"
           >
-            <nav className="px-4 py-4 space-y-1">
-              <Link href="/home" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>🏠 Home</Link>
-              <Link href="/match-central" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>⚽ Match Central</Link>
-              <Link href="/teams" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>👥 Teams</Link>
-              <Link href="/join/trials" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>🎯 Join</Link>
-              <Link href="/contact" className="block py-3 text-white hover:bg-green-700 rounded px-2" onClick={() => setMobileMenuOpen(false)}>📞 Contact</Link>
+            <nav className="px-4 py-4 space-y-2">
+              <Link href="/home" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>🏠 Home</Link>
+              <Link href="/about" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>🏛️ About</Link>
+              <Link href="/club/history" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>📜 Club History</Link>
+              <Link href="/teams" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>👥 Teams</Link>
+              <Link href="/teams/boys" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>⚽ Boys Teams</Link>
+              <Link href="/teams/girls" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>🌟 Girls Teams</Link>
+              <Link href="/match-central" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>⚽ Matches</Link>
+              <Link href="/volunteering" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>🤝 Volunteer</Link>
+              <Link href="/contact" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>📞 Contact</Link>
+              <Link href="/join" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>🎯 Join the Club</Link>
+              <Link href="/join/trials" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>⚽ Trials</Link>
+              <Link href="/coach" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>🧑‍🏫 Become a Coach</Link>
             </nav>
           </motion.div>
         )}
@@ -281,63 +217,8 @@ export default function StandardLayout({ children, title, useFloatingFooter = fa
         {children}
       </main>
 
-      {/* Footer - Only show if not using floating footer */}
-      {!useFloatingFooter && (
-        <footer className="bg-gray-800 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="grid md:grid-cols-4 gap-8">
-              <div>
-                <div className="flex items-center space-x-3 mb-4">
-                  <Image 
-                    src="/images/logo.png" 
-                    alt="Rivervalley Rangers AFC Logo" 
-                    width={32}
-                    height={32}
-                  />
-                  <h3 className="font-bold">Rivervalley Rangers AFC</h3>
-                </div>
-                <p className="text-gray-300 text-sm">
-                  Building Community Through Football Since 1981
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Quick Links</h4>
-                <ul className="space-y-2 text-sm">
-                  <li><Link href="/about" className="text-gray-300 hover:text-white">About Us</Link></li>
-                  <li><Link href="/teams/youth" className="text-gray-300 hover:text-white">Teams</Link></li>
-                  <li><Link href="/match-central/fixtures" className="text-gray-300 hover:text-white">Fixtures</Link></li>
-                  <li><Link href="/join" className="text-gray-300 hover:text-white">Join Us</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Members</h4>
-                <ul className="space-y-2 text-sm">
-                  <li><Link href="/members/parents" className="text-gray-300 hover:text-white">Parent Portal</Link></li>
-                  <li><Link href="/contact" className="text-gray-300 hover:text-white">Coach Contact</Link></li>
-                  <li><Link href="/contact" className="text-gray-300 hover:text-white">General Inquiries</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Connect</h4>
-                <ul className="space-y-2 text-sm">
-                  <li><a href="#" className="text-gray-300 hover:text-white">📘 Facebook</a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white">📸 Instagram</a></li>
-                  <li><a href="mailto:info@rvrfc.com" className="text-gray-300 hover:text-white">📧 Email</a></li>
-                  <li><a href="tel:+353123456789" className="text-gray-300 hover:text-white">📞 Phone</a></li>
-                </ul>
-              </div>
-            </div>
-            <div className="border-t border-gray-700 mt-8 pt-8">
-              <div className="text-center mb-4">
-                <p className="text-gray-400 text-sm">
-                  © 2025 Rivervalley Rangers AFC. All rights reserved.
-                </p>
-              </div>
-              <DeveloperCredits variant="footer" />
-            </div>
-          </div>
-        </footer>
-      )}
+      {/* Enhanced Footer Component - Consistent across all pages */}
+      <Footer />
       
       {/* Developer Credits - Minimal Branding */}
       <DeveloperCredits variant="minimal" />

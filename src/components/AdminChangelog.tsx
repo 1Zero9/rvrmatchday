@@ -32,6 +32,144 @@ interface ChangelogEntry {
 
 const changelogData: ChangelogEntry[] = [
   {
+    version: "2.6.0",
+    title: "Consistent Footer System & UX Improvements", 
+    date: "2025-01-26",
+    type: "major",
+    impact: "improvement",
+    filesChanged: 5,
+    linesAdded: 98,
+    linesRemoved: 125,
+    changes: [
+      {
+        category: "Footer System Unification",
+        icon: "🔄",
+        color: "text-blue-600",
+        items: [
+          "Replaced StandardLayout static footer with enhanced Footer component for consistency across all pages",
+          "Removed useFloatingFooter parameter complexity - now all pages use the same expandable footer",
+          "Unified 'More Info' popup functionality available on every page, not just home page",
+          "Admin access link integrated into unified footer system for easy access from any page",
+          "Fixed footer branding colors to match club palette throughout expanded sections"
+        ]
+      },
+      {
+        category: "Code Quality & Bug Fixes",
+        icon: "🐛", 
+        color: "text-red-600",
+        items: [
+          "Fixed syntax errors in join page caused by color palette updates (missing closing tags)",
+          "Cleaned up duplicate Footer imports and calls in home.tsx",
+          "Standardized footer implementation reduces maintenance overhead",
+          "Improved site-wide navigation consistency and user experience"
+        ]
+      }
+    ]
+  },
+  {
+    version: "2.5.0", 
+    title: "Enhanced Club Branding & Database Integration",
+    date: "2025-01-26",
+    type: "major",
+    impact: "feature", 
+    filesChanged: 12,
+    linesAdded: 456,
+    linesRemoved: 67,
+    changes: [
+      {
+        category: "Site-wide Branding Enhancement",
+        icon: "🏆",
+        color: "text-purple-600",
+        items: [
+          "Applied club color palette throughout all key pages - replaced generic green/blue colors with Burgundy/Blue-Gray theme",
+          "Enhanced Footer component with full club branding - primary colors for bars and backgrounds",
+          "Updated Home page hero actions and CTAs with club primary/accent colors for consistent brand identity",
+          "Join page registration buttons and highlights now use club color scheme",
+          "Contact page icons and elements updated to reflect club branding standards"
+        ]
+      },
+      {
+        category: "Database Integration & Task Management",
+        icon: "🗄️", 
+        color: "text-green-600",
+        items: [
+          "Full Supabase database integration implemented with live connection testing",
+          "Created tasks and task_changes tables with complete CRUD API endpoints",
+          "Real-time task management system with priority levels, categories, and change tracking",
+          "Multi-user task assignment system ready for team collaboration",
+          "Database test integration successful - Task ID #1 created and verified"
+        ]
+      },
+      {
+        category: "Admin System Improvements", 
+        icon: "⚙️",
+        color: "text-blue-600",
+        items: [
+          "Fixed sitemap iframe issue - replaced nested iframe with dedicated AdminSiteMap component",
+          "Environment configuration system updated with real Supabase credentials",
+          "Admin dashboard now displays proper task management interface",
+          "Enhanced sitemap display without nested layout rendering issues"
+        ]
+      }
+    ]
+  },
+  {
+    version: "2.4.0",
+    title: "Club Brand Color System",
+    date: "2025-01-26",
+    type: "major",
+    impact: "feature",
+    filesChanged: 6,
+    linesAdded: 284,
+    linesRemoved: 45,
+    changes: [
+      {
+        category: "Brand Color Implementation",
+        icon: "🎨",
+        color: "text-red-600",
+        items: [
+          "Complete club brand color palette implementation: Primary Burgundy (#972A4C), Secondary Blue-Gray (#5E7794), Accent Light Blue (#98C0F0), Neutral Gray (#B6B7B6)",
+          "Tailwind CSS integration with full color variants (light, dark, lighter, darker) for each club color",
+          "CSS Custom Properties system with gradient definitions for consistent brand application",
+          "Fixed CSS class resolution issue - changed from bg-gradient-hero to gradient-hero for proper rendering"
+        ]
+      },
+      {
+        category: "Header & Navigation",
+        icon: "🧭",
+        color: "text-blue-600",
+        items: [
+          "Updated header with new club color gradient (burgundy → blue-gray → light blue)",
+          "All navigation hover states now use club colors instead of generic green/blue",
+          "Glass component integration with club color variants",
+          "Border and accent colors updated throughout navigation system"
+        ]
+      },
+      {
+        category: "Design System Enhancement",
+        icon: "🛠️",
+        color: "text-purple-600",
+        items: [
+          "Glass morphism components updated to support club-primary, club-secondary, club-accent variants",
+          "Color preview page created for design validation and client approval",
+          "Comprehensive UX analysis included with color strengths and considerations",
+          "Mobile responsiveness maintained with lighter color variants for better readability"
+        ]
+      },
+      {
+        category: "Technical Implementation",
+        icon: "⚙️",
+        color: "text-green-600",
+        items: [
+          "Resolved CSS loading order issues with proper Tailwind configuration",
+          "Custom background gradients added to Tailwind config",
+          "Updated global styles with color.css import and CSS variable definitions",
+          "Verified cross-browser compatibility and rendering consistency"
+        ]
+      }
+    ]
+  },
+  {
     version: "2.3.0",
     title: "Glass Template System",
     date: "2025-01-22",

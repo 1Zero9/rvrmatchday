@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import StandardLayout from '../components/StandardLayout';
+import GlassPageTemplate from '../components/GlassPageTemplate';
+import { GlassCard, GlassActionCard } from '../components/Glass';
 
 export default function Fundraising() {
   const [activeTab, setActiveTab] = useState<'current' | 'ways' | 'goals' | 'impact'>('current');
@@ -215,41 +216,65 @@ export default function Fundraising() {
     });
   };
 
-  return (
-    <StandardLayout title="Fundraising">
-        
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* Hero Section - Historical Castle Building Theme */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <div className="text-6xl mb-6">🏰</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Building Our Legacy</h1>
-          <p className="text-xl text-gray-600 max-w-4xl mx-auto">
-            Like the ancient builders of Swords Castle, we're constructing something lasting for our community.
-            Every contribution helps us create better facilities and opportunities for generations to come.
-          </p>
-        </motion.div>
+  const quickActions = [
+    {
+      icon: "🎯",
+      title: "Current Campaigns",
+      description: "Support active fundraisers",
+      href: "#current-campaigns",
+      gradient: "blue" as const
+    },
+    {
+      icon: "💡",
+      title: "Ways to Help",
+      description: "Find your perfect contribution",
+      href: "#ways-to-help",
+      gradient: "green" as const
+    },
+    {
+      icon: "🏗️",
+      title: "Club Goals",
+      description: "See what we're building",
+      href: "#club-goals",
+      gradient: "purple" as const
+    },
+    {
+      icon: "✨",
+      title: "Our Impact",
+      description: "Celebrate achievements",
+      href: "#our-impact",
+      gradient: "orange" as const
+    }
+  ];
 
+  return (
+    <GlassPageTemplate
+      heroTitle="Building Our Legacy"
+      heroSubtitle="Like the ancient builders of Swords Castle, we're constructing something lasting for our community"
+      heroIcon="🏰"
+      quickActions={quickActions}
+      sectionName="FUNDRAISING"
+      imageSpecs="1920x1080px minimum, club facilities and community building activities preferred"
+    >
+
+      <div className="max-w-7xl mx-auto">
         {/* Historical Connection Banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-8 mb-12"
+          className="mb-12"
         >
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">From Castle to Clubhouse</h2>
-            <p className="text-slate-200 max-w-3xl mx-auto leading-relaxed">
-              For over a thousand years, this community has come together to build something greater than themselves.
-              From Brian Boru's stronghold to St. Columba's centers of learning, from Ward Park gatherings to our modern clubhouse -
-              your support continues this proud tradition of community investment.
-            </p>
-          </div>
+          <GlassCard intensity="heavy" className="bg-gradient-to-r from-slate-900/90 via-slate-800/90 to-slate-900/90 text-white p-8">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-4">From Castle to Clubhouse</h2>
+              <p className="text-slate-200 max-w-3xl mx-auto leading-relaxed">
+                For over a thousand years, this community has come together to build something greater than themselves.
+                From Brian Boru's stronghold to St. Columba's centers of learning, from Ward Park gatherings to our modern clubhouse -
+                your support continues this proud tradition of community investment.
+              </p>
+            </div>
+          </GlassCard>
         </motion.div>
           
           {/* Tab Navigation */}
@@ -257,8 +282,9 @@ export default function Fundraising() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 mb-8"
+            className="mb-8"
           >
+            <GlassCard intensity="medium" className="bg-gradient-to-br from-white/80 to-gray-50/80 p-2">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {[
                 { id: 'current', label: 'Current Campaigns', icon: '🎯', desc: 'Active fundraisers' },
@@ -281,6 +307,7 @@ export default function Fundraising() {
                 </button>
               ))}
             </div>
+            </GlassCard>
           </motion.div>
 
           {/* Current Campaigns Tab */}
@@ -290,7 +317,7 @@ export default function Fundraising() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <GlassCard intensity="medium" className="bg-gradient-to-br from-white/80 to-gray-50/80 p-8" id="current-campaigns">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                   <span className="mr-3">🎯</span>
                   Active Fundraising Campaigns
@@ -303,7 +330,7 @@ export default function Fundraising() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.6, delay: index * 0.2 }}
-                      className="bg-gradient-to-r from-gray-50 to-green-50 rounded-xl p-6 border border-gray-100"
+                      className="bg-gradient-to-r from-gray-50/80 to-green-50/80 rounded-xl p-6 border border-gray-100"
                     >
                       <div className="flex flex-col lg:flex-row gap-6">
                         <div className="lg:w-2/3">
@@ -361,7 +388,7 @@ export default function Fundraising() {
                     </motion.div>
                   ))}
                 </div>
-              </div>
+              </GlassCard>
             </motion.div>
           )}
 
@@ -372,7 +399,7 @@ export default function Fundraising() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <GlassCard intensity="medium" className="bg-gradient-to-br from-white/80 to-gray-50/80 p-8" id="ways-to-help">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                   <span className="mr-3">💡</span>
                   Ways You Can Help
@@ -394,7 +421,7 @@ export default function Fundraising() {
                         {category.methods.map((method, methodIndex) => (
                           <div
                             key={method.title}
-                            className="bg-gradient-to-br from-yellow-50 to-green-50 rounded-xl p-6 border border-yellow-100"
+                            className="bg-gradient-to-br from-yellow-50/80 to-green-50/80 rounded-xl p-6 border border-yellow-100"
                           >
                             <h4 className="font-semibold text-gray-900 mb-3">{method.title}</h4>
                             <p className="text-sm text-gray-700 mb-4">{method.description}</p>
@@ -424,7 +451,7 @@ export default function Fundraising() {
                   ))}
                 </div>
 
-                <div className="mt-8 bg-green-50 rounded-xl p-6 border border-green-200 text-center">
+                <div className="mt-8 bg-green-50/80 rounded-xl p-6 border border-green-200 text-center">
                   <h3 className="text-lg font-semibold text-green-900 mb-3">🎉 Can't find your preferred way to help?</h3>
                   <p className="text-green-700 mb-4">
                     We're always open to creative fundraising ideas! Have a unique skill, connection, or idea? 
@@ -434,7 +461,7 @@ export default function Fundraising() {
                     Suggest an Idea
                   </button>
                 </div>
-              </div>
+              </GlassCard>
             </motion.div>
           )}
 
@@ -445,7 +472,7 @@ export default function Fundraising() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <GlassCard intensity="medium" className="bg-gradient-to-br from-white/80 to-gray-50/80 p-8" id="club-goals">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                   <span className="mr-3">🏗️</span>
                   Long-term Club Goals
@@ -458,7 +485,7 @@ export default function Fundraising() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.6, delay: index * 0.2 }}
-                      className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-6 border border-gray-100"
+                      className="bg-gradient-to-r from-gray-50/80 to-blue-50/80 rounded-xl p-6 border border-gray-100"
                     >
                       <div className="flex flex-col lg:flex-row gap-6">
                         <div className="lg:w-2/3">
@@ -522,7 +549,7 @@ export default function Fundraising() {
                     </motion.div>
                   ))}
                 </div>
-              </div>
+              </GlassCard>
             </motion.div>
           )}
 
@@ -533,7 +560,7 @@ export default function Fundraising() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <GlassCard intensity="medium" className="bg-gradient-to-br from-white/80 to-gray-50/80 p-8" id="our-impact">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                   <span className="mr-3">✨</span>
                   Our Fundraising Impact
@@ -541,15 +568,15 @@ export default function Fundraising() {
                 
                 <div className="mb-8 text-center">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6 border border-green-100">
+                    <div className="bg-gradient-to-br from-green-50/80 to-blue-50/80 rounded-xl p-6 border border-green-100">
                       <div className="text-3xl font-bold text-green-600 mb-2">€47,350</div>
                       <div className="text-sm text-gray-600">Total Raised (Last 3 Years)</div>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
+                    <div className="bg-gradient-to-br from-blue-50/80 to-purple-50/80 rounded-xl p-6 border border-blue-100">
                       <div className="text-3xl font-bold text-blue-600 mb-2">234</div>
                       <div className="text-sm text-gray-600">Community Contributors</div>
                     </div>
-                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
+                    <div className="bg-gradient-to-br from-purple-50/80 to-pink-50/80 rounded-xl p-6 border border-purple-100">
                       <div className="text-3xl font-bold text-purple-600 mb-2">15</div>
                       <div className="text-sm text-gray-600">Major Projects Completed</div>
                     </div>
@@ -565,7 +592,7 @@ export default function Fundraising() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: index * 0.2 }}
-                      className="bg-gradient-to-r from-yellow-50 to-green-50 rounded-xl p-6 border border-yellow-100"
+                      className="bg-gradient-to-r from-yellow-50/80 to-green-50/80 rounded-xl p-6 border border-yellow-100"
                     >
                       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                         <div className="lg:w-1/4 text-center lg:text-left">
@@ -585,7 +612,7 @@ export default function Fundraising() {
                   ))}
                 </div>
 
-                <div className="mt-8 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-8 border border-green-200 text-center">
+                <div className="mt-8 bg-gradient-to-r from-green-50/80 to-blue-50/80 rounded-xl p-8 border border-green-200 text-center">
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">🙏 Thank You to Our Community</h3>
                   <p className="text-gray-700 mb-6">
                     None of this would be possible without the incredible generosity and support of our parents, 
@@ -598,11 +625,12 @@ export default function Fundraising() {
                     <span className="bg-white px-4 py-2 rounded-full text-orange-800 shadow-sm">🎉 Event Participants</span>
                   </div>
                 </div>
-              </div>
+              </GlassCard>
             </motion.div>
           )}
 
       </div>
-    </StandardLayout>
+
+    </GlassPageTemplate>
   );
 }

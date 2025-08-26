@@ -3,7 +3,7 @@
  * Consolidates live dashboard, fixtures, results, tables, and match tracker
  */
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
@@ -43,6 +43,99 @@ export default function MatchCentral() {
     }
   }, []);
 
+  // Get actual match data for fixtures and results
+  const getUpcomingMatches = () => {
+    const allMatches = storage.getMatches();
+    const upcoming = allMatches
+      .filter(match => match.status === 'Scheduled')
+      .sort((a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime())
+      .slice(0, 10);
+    
+    if (selectedTeam === 'all') {
+      return upcoming;
+    }
+    
+    return upcoming.filter(match => match.teamId === selectedTeam);
+  };
+
+  const getRecentResults = () => {
+    const allMatches = storage.getMatches();
+    const finished = allMatches
+      .filter(match => match.status === 'Finished')
+      .sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime())
+      .slice(0, 10);
+    
+    if (selectedTeam === 'all') {
+      return finished;
+    }
+    
+    return finished.filter(match => match.teamId === selectedTeam);
+  };
+
+  // Recalculate data when selectedTeam changes
+  const upcomingMatches = React.useMemo(() => getUpcomingMatches(), [selectedTeam, teams]);
+  const recentResults = React.useMemo(() => getRecentResults(), [selectedTeam, teams]);
+
+  // Generate league table from match results
+  const getLeagueTable = () => {
+    const teamStats = new Map();
+    
+    // Initialize team stats
+    teams.forEach(team => {
+      teamStats.set(team.id, {
+        team: team,
+        played: 0,
+        won: 0,
+        drawn: 0,
+        lost: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+        goalDifference: 0,
+        points: 0
+      });
+    });
+
+    // Process finished matches
+    const finishedMatches = storage.getMatches().filter(match => match.status === 'Finished');
+    
+    finishedMatches.forEach(match => {
+      if (match.homeScore !== undefined && match.awayScore !== undefined) {
+        const stats = teamStats.get(match.teamId);
+        if (stats) {
+          stats.played++;
+          
+          const teamScore = match.isHomeMatch ? match.homeScore : match.awayScore;
+          const opponentScore = match.isHomeMatch ? match.awayScore : match.homeScore;
+          
+          stats.goalsFor += teamScore;
+          stats.goalsAgainst += opponentScore;
+          stats.goalDifference = stats.goalsFor - stats.goalsAgainst;
+          
+          if (teamScore > opponentScore) {
+            stats.won++;
+            stats.points += 3;
+          } else if (teamScore === opponentScore) {
+            stats.drawn++;
+            stats.points += 1;
+          } else {
+            stats.lost++;
+          }
+        }
+      }
+    });
+
+    // Convert to array and sort by points, then goal difference, then goals for
+    return Array.from(teamStats.values())
+      .filter(stats => stats.played > 0) // Only show teams that have played
+      .sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+        return b.goalsFor - a.goalsFor;
+      });
+  };
+
+  const leagueTable = React.useMemo(() => getLeagueTable(), [teams]);
+
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     // Update URL hash without page reload
@@ -57,50 +150,23 @@ export default function MatchCentral() {
     { id: 'tables', label: 'Tables', icon: '📋' }
   ] as const;
 
-  // Sample data for fixtures and results
-  const upcomingMatches = [
-    {
-      id: 1,
-      date: '2024-08-25',
-      time: '14:30',
-      team: 'RVR U12 Boys',
-      opponent: 'Greenfield FC',
-      venue: 'Away',
-      league: 'DDSL U12'
-    },
-    {
-      id: 2,
-      date: '2024-08-26',
-      time: '11:00',
-      team: 'RVR U14 Girls',
-      opponent: 'Hillside Rovers',
-      venue: 'Home',
-      league: 'DGSL U14'
-    }
-  ];
 
-  const recentResults = [
-    {
-      id: 1,
-      date: '2024-08-18',
-      team: 'RVR U12 Boys',
-      opponent: 'Meadowbrook FC',
-      homeScore: 3,
-      awayScore: 2,
-      venue: 'Home',
-      status: 'won'
-    },
-    {
-      id: 2,
-      date: '2024-08-15',
-      team: 'RVR U14 Girls',
-      opponent: 'Riverside United',
-      homeScore: 1,
-      awayScore: 1,
-      venue: 'Away',
-      status: 'draw'
+  const getMatchResult = (match: Match) => {
+    if (match.homeScore === undefined || match.awayScore === undefined) {
+      return { status: 'unknown', label: 'N/A' };
     }
-  ];
+    
+    const teamScore = match.isHomeMatch ? match.homeScore : match.awayScore;
+    const opponentScore = match.isHomeMatch ? match.awayScore : match.homeScore;
+    
+    if (teamScore > opponentScore) {
+      return { status: 'won', label: 'WON' };
+    } else if (teamScore === opponentScore) {
+      return { status: 'draw', label: 'DRAW' };
+    } else {
+      return { status: 'lost', label: 'LOST' };
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -333,10 +399,10 @@ export default function MatchCentral() {
 
                       <div className="flex gap-2">
                         <a
-                          href={`/match-tracker/teams/${summary.team.id}`}
+                          href={`/teams`}
                           className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 text-center transition-colors"
                         >
-                          View Details
+                          View Team
                         </a>
                         <a
                           href="/matches/new"
@@ -363,23 +429,38 @@ export default function MatchCentral() {
               <div className="bg-white rounded-xl shadow-md overflow-hidden">
                 <div className="p-6">
                   <div className="space-y-4">
-                    {upcomingMatches.map((match) => (
-                      <div key={match.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-900">{match.team}</div>
-                          <div className="text-sm text-gray-600">vs {match.opponent}</div>
-                          <div className="text-xs text-blue-600">{match.league}</div>
-                        </div>
-                        <div className="text-center mx-4">
-                          <div className="font-medium">{new Date(match.date).toLocaleDateString()}</div>
-                          <div className="text-sm text-gray-600">{match.time}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium text-gray-900">{match.venue}</div>
-                          <button className="text-sm text-green-600 hover:text-green-700">View Details</button>
-                        </div>
+                    {upcomingMatches.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        {selectedTeam === 'all' ? 'No upcoming fixtures scheduled' : 'No upcoming fixtures for selected team'}
                       </div>
-                    ))}
+                    ) : (
+                      upcomingMatches.map((match) => {
+                        const team = teams.find(t => t.id === match.teamId);
+                        return (
+                          <div key={match.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{team?.name || 'Unknown Team'}</div>
+                              <div className="text-sm text-gray-600">vs {match.opponent}</div>
+                              <div className="text-xs text-blue-600">{match.matchType} • {team?.league}</div>
+                            </div>
+                            <div className="text-center mx-4">
+                              <div className="font-medium">{match.scheduledDate.toLocaleDateString()}</div>
+                              <div className="text-sm text-gray-600">{match.scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-medium text-gray-900">{match.isHomeMatch ? 'Home' : 'Away'}</div>
+                              <div className="text-sm text-gray-600">{match.venue}</div>
+                              <button 
+                                onClick={() => router.push(`/matches/${match.id}/record`)}
+                                className="text-sm text-green-600 hover:text-green-700"
+                              >
+                                Start Recording
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               </div>
@@ -397,27 +478,51 @@ export default function MatchCentral() {
               <div className="bg-white rounded-xl shadow-md overflow-hidden">
                 <div className="p-6">
                   <div className="space-y-4">
-                    {recentResults.map((match) => (
-                      <div key={match.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-900">{match.team}</div>
-                          <div className="text-sm text-gray-600">vs {match.opponent}</div>
-                          <div className="text-xs text-gray-500">{new Date(match.date).toLocaleDateString()}</div>
-                        </div>
-                        <div className="text-center mx-4">
-                          <div className="text-2xl font-bold text-gray-900">
-                            {match.homeScore}-{match.awayScore}
-                          </div>
-                          <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(match.status)}`}>
-                            {match.status.toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium text-gray-900">{match.venue}</div>
-                          <button className="text-sm text-green-600 hover:text-green-700">View Details</button>
-                        </div>
+                    {recentResults.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        {selectedTeam === 'all' ? 'No recent results available' : 'No recent results for selected team'}
                       </div>
-                    ))}
+                    ) : (
+                      recentResults.map((match) => {
+                        const team = teams.find(t => t.id === match.teamId);
+                        const result = getMatchResult(match);
+                        const teamScore = match.isHomeMatch ? match.homeScore : match.awayScore;
+                        const opponentScore = match.isHomeMatch ? match.awayScore : match.homeScore;
+                        
+                        return (
+                          <div key={match.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{team?.name || 'Unknown Team'}</div>
+                              <div className="text-sm text-gray-600">vs {match.opponent}</div>
+                              <div className="text-xs text-gray-500">
+                                {match.scheduledDate.toLocaleDateString()} • {match.matchType}
+                              </div>
+                            </div>
+                            <div className="text-center mx-4">
+                              <div className="text-2xl font-bold text-gray-900">
+                                {teamScore !== undefined && opponentScore !== undefined 
+                                  ? `${teamScore}-${opponentScore}` 
+                                  : 'N/A'
+                                }
+                              </div>
+                              <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(result.status)}`}>
+                                {result.label}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-medium text-gray-900">{match.isHomeMatch ? 'Home' : 'Away'}</div>
+                              <div className="text-sm text-gray-600">{match.venue}</div>
+                              <button 
+                                onClick={() => router.push(`/matches/${match.id}/record`)}
+                                className="text-sm text-green-600 hover:text-green-700"
+                              >
+                                View Details
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               </div>
@@ -433,13 +538,109 @@ export default function MatchCentral() {
             >
               <h2 className="text-2xl font-bold text-gray-900">League Tables</h2>
               <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                <div className="p-6">
-                  <div className="text-center py-12">
-                    <div className="text-6xl mb-4">📋</div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">League Tables Coming Soon</h3>
-                    <p className="text-gray-600">League standings will be automatically calculated from match results.</p>
+                {leagueTable.length === 0 ? (
+                  <div className="p-6">
+                    <div className="text-center py-12">
+                      <div className="text-6xl mb-4">📋</div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No League Data Yet</h3>
+                      <p className="text-gray-600">Complete some matches to see league standings here.</p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Position
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Team
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            P
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            W
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            D
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            L
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            GF
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            GA
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            GD
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                            Pts
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {leagueTable.map((teamStats, index) => (
+                          <tr key={teamStats.team.id} className={index < 3 ? 'bg-green-50' : ''}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold ${
+                                  index === 0 ? 'bg-yellow-400 text-yellow-900' : 
+                                  index < 3 ? 'bg-green-100 text-green-800' : 
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {index + 1}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">
+                                    {teamStats.team.name}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    {teamStats.team.ageGroup} {teamStats.team.gender}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                              {teamStats.played}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-green-600 font-medium">
+                              {teamStats.won}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-yellow-600 font-medium">
+                              {teamStats.drawn}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-red-600 font-medium">
+                              {teamStats.lost}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                              {teamStats.goalsFor}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                              {teamStats.goalsAgainst}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                              <span className={teamStats.goalDifference >= 0 ? 'text-green-600' : 'text-red-600'}>
+                                {teamStats.goalDifference >= 0 ? '+' : ''}{teamStats.goalDifference}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-900">
+                              {teamStats.points}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}

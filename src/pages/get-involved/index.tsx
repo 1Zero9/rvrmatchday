@@ -112,6 +112,7 @@ export default function GetInvolvedIndex() {
       heroTitle="Get Involved"
       heroSubtitle="Join our community and help make Rivervalley Rangers even stronger"
       heroIcon="🤝"
+      backgroundImage="/images/get-involved-hero.jpg"
       quickActions={quickActions}
       sectionName="GET INVOLVED"
       imageSpecs="1920x1080px minimum, community volunteers and events preferred"

@@ -50,6 +50,7 @@ export default function About() {
       heroTitle="About Rivervalley Rangers"
       heroSubtitle="From Ancient Swords to Modern Football • A Thousand Years of Community Spirit"
       heroIcon="🏰"
+      backgroundImage="/images/hero/aboutus.jpg"
       quickActions={quickActions}
       sectionName="ABOUT"
       imageSpecs="1920x1080px minimum, club heritage and community activities preferred"

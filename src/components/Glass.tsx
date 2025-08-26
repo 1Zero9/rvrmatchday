@@ -6,7 +6,7 @@ interface GlassCardProps {
   children: ReactNode;
   className?: string;
   intensity?: 'light' | 'medium' | 'heavy';
-  gradient?: 'blue' | 'green' | 'purple' | 'orange' | 'white' | 'dark';
+  gradient?: 'blue' | 'green' | 'purple' | 'orange' | 'white' | 'dark' | 'club-primary' | 'club-secondary' | 'club-accent';
   hover?: boolean;
   onClick?: () => void;
 }
@@ -31,7 +31,10 @@ export function GlassCard({
     purple: 'bg-purple-600/20 border-purple-300/30',
     orange: 'bg-orange-600/20 border-orange-300/30',
     white: intensityStyles[intensity],
-    dark: 'bg-black/20 backdrop-blur-md border-gray-400/30'
+    dark: 'bg-black/20 backdrop-blur-md border-gray-400/30',
+    'club-primary': 'bg-club-primary/20 border-club-primary/30',
+    'club-secondary': 'bg-club-secondary/20 border-club-secondary/30', 
+    'club-accent': 'bg-club-accent/20 border-club-accent/30'
   };
 
   const hoverStyles = hover ? 'hover:bg-white/30 hover:scale-[1.02] transition-all duration-300' : '';
@@ -58,7 +61,7 @@ interface GlassActionCardProps {
   title: string;
   description?: string;
   href?: string;
-  gradient?: 'blue' | 'green' | 'purple' | 'orange' | 'white';
+  gradient?: 'blue' | 'green' | 'purple' | 'orange' | 'white' | 'club-primary' | 'club-secondary' | 'club-accent';
   size?: 'sm' | 'md' | 'lg';
   children?: ReactNode;
 }

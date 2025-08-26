@@ -102,6 +102,7 @@ export default function ClubIndex() {
       heroTitle="Our Club"
       heroSubtitle="Discover the heart and heritage of Rivervalley Rangers Football Club"
       heroIcon="🏆"
+      backgroundImage="/images/club-hero.jpg"
       quickActions={quickActions}
       sectionName="CLUB"
       imageSpecs="1920x1080px minimum, club history and facilities preferred"

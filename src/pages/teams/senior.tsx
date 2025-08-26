@@ -9,7 +9,7 @@ export default function SeniorTeams() {
       name: 'Rivervalley FC',
       league: 'County Premier League',
       division: 'Premier Division',
-      manager: 'Michael O\'Sullivan',
+      manager: "Michael O'Sullivan",
       assistantManager: 'Patrick Ryan',
       trainingDays: 'Tuesday & Thursday 7:30-9:00pm',
       homeGround: 'Main Pitch',
@@ -18,7 +18,7 @@ export default function SeniorTeams() {
       founded: 1981,
       achievements: ['Premier League Champions 2022', 'County Cup Winners 2021', 'Promotion Winners 2020'],
       captain: 'Liam McCarthy',
-      topScorer: 'Sean O\'Brien (12 goals)'
+      topScorer: "Sean O'Brien (12 goals)"
     },
     {
       id: 'reserves',
@@ -42,14 +42,14 @@ export default function SeniorTeams() {
       league: 'Over 35s League',
       division: 'Division A',
       manager: 'John Fitzgerald',
-      assistantManager: 'Paddy O\'Connor',
+      assistantManager: "Paddy O'Connor",
       trainingDays: 'Thursday 8:00-9:30pm',
       homeGround: 'Youth Pitch 1',
       season: '2024/25',
       players: 18,
       founded: 2015,
       achievements: ['Over 35s Champions 2023', 'Fair Play Award 2022'],
-      captain: 'Mick O\'Leary',
+      captain: "Mick O'Leary",
       topScorer: 'Jimmy Ryan (6 goals)'
     }
   ];

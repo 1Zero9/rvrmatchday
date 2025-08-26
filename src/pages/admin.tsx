@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import AdminChangelog from '../components/AdminChangelog';
+import AdminTodoList from '../components/AdminTodoList';
+import AdminSiteMap from '../components/AdminSiteMap';
 
 export default function AdminDashboard() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -166,6 +168,26 @@ export default function AdminDashboard() {
                 📝 Changelog
               </button>
               <button
+                onClick={() => setActiveTab('todos')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'todos'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                ✅ Todo List
+              </button>
+              <button
+                onClick={() => setActiveTab('sitemap')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'sitemap'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                🗺️ Site Map
+              </button>
+              <button
                 onClick={() => setActiveTab('system')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'system'
@@ -295,9 +317,25 @@ export default function AdminDashboard() {
             >
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
               <div className="space-y-2">
-                <button className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                  📝 View Change Log
+                <button 
+                  onClick={() => setActiveTab('todos')}
+                  className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  ✅ Todo List
                 </button>
+                <button 
+                  onClick={() => setActiveTab('sitemap')}
+                  className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  🗺️ Site Map
+                </button>
+                <button 
+                  onClick={() => setActiveTab('changelog')}
+                  className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  📝 Change Log
+                </button>
+                <hr className="my-2" />
                 <button className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
                   🔄 Refresh Cache
                 </button>
@@ -381,6 +419,42 @@ export default function AdminDashboard() {
             transition={{ duration: 0.6 }}
           >
             <AdminChangelog />
+          </motion.div>
+        )}
+
+        {/* Todo List Tab */}
+        {activeTab === 'todos' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <AdminTodoList />
+          </motion.div>
+        )}
+
+        {/* Site Map Tab */}
+        {activeTab === 'sitemap' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Site Map & Navigation Analysis</h2>
+                <div className="text-sm text-gray-600">
+                  Admin-only access • <Link href="/sitemap" className="text-blue-600 hover:text-blue-800">Legacy public link</Link>
+                </div>
+              </div>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <p className="text-yellow-800 text-sm">
+                  <strong>Note:</strong> The sitemap has been moved to the admin area for security. 
+                  Only authenticated administrators can view the complete site structure and page analysis.
+                </p>
+              </div>
+              <AdminSiteMap />
+            </div>
           </motion.div>
         )}
 

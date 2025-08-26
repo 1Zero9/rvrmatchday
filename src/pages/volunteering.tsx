@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import Layout from '@/components/Layout';
+import GlassPageTemplate from '../components/GlassPageTemplate';
+import { GlassCard } from '../components/Glass';
 
 export default function Volunteering() {
   const [activeTab, setActiveTab] = useState<'opportunities' | 'benefits' | 'signup' | 'recognition'>('opportunities');
@@ -132,48 +133,47 @@ export default function Volunteering() {
     }
   };
 
-  return (
-    <Layout currentSection="public">
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50">
-        
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="bg-white border-b border-gray-200 shadow-sm"
-        >
-          <div className="max-w-7xl mx-auto px-6 py-12">
-            <div className="text-center">
-              <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="mb-6"
-              >
-                <div className="text-6xl mb-4">🤝</div>
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                  Get Involved
-                </h1>
-                <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                  Join our amazing community of volunteers who make Rivervalley Rangers more than just a football club. 
-                  Every contribution matters, no matter how small.
-                </p>
-              </motion.div>
-              
-              <div className="flex justify-center">
-                <Link
-                  href="/"
-                  className="text-gray-600 hover:text-gray-800 text-sm transition-colors"
-                >
-                  ← Back to Home
-                </Link>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+  const quickActions = [
+    {
+      icon: "🙋‍♀️",
+      title: "Join Our Team",
+      description: "Start volunteering today",
+      href: "#signup",
+      gradient: "blue" as const
+    },
+    {
+      icon: "📋",
+      title: "View Opportunities",
+      description: "Find your perfect role",
+      href: "#opportunities",
+      gradient: "green" as const
+    },
+    {
+      icon: "❤️",
+      title: "Volunteer Benefits",
+      description: "What you'll get back",
+      href: "#benefits",
+      gradient: "purple" as const
+    },
+    {
+      icon: "🏆",
+      title: "Recognition",
+      description: "Celebrating our heroes",
+      href: "#recognition",
+      gradient: "orange" as const
+    }
+  ];
 
-        <div className="max-w-7xl mx-auto px-6 py-12">
+  return (
+    <GlassPageTemplate
+      heroTitle="Join Our Volunteer Team"
+      heroSubtitle="Help us build something special at Rivervalley Rangers - every contribution makes a difference in our community"
+      heroIcon="🤝"
+      backgroundImage="/images/volunteering-hero.jpg"
+      quickActions={quickActions}
+      sectionName="VOLUNTEERING"
+      imageSpecs="1920x1080px minimum, community and volunteering activities preferred"
+    >
           
           {/* Tab Navigation */}
           <motion.div
@@ -517,8 +517,6 @@ export default function Volunteering() {
             </motion.div>
           )}
 
-        </div>
-      </div>
-    </Layout>
+    </GlassPageTemplate>
   );
 }

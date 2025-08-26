@@ -45,6 +45,35 @@ const config: Config = {
           lime: '#8bc34a',
           'lime-dark': '#558b2f',
         },
+        // New Club Brand Colors
+        'club-primary': {
+          DEFAULT: '#972A4C',
+          light: '#B8477A',
+          lighter: '#D86BA8',
+          dark: '#7A2240',
+          darker: '#5D1B33',
+        },
+        'club-secondary': {
+          DEFAULT: '#5E7794',
+          light: '#7A92AD',
+          lighter: '#96ADC6',
+          dark: '#4A5F78',
+          darker: '#36475C',
+        },
+        'club-accent': {
+          DEFAULT: '#98C0F0',
+          light: '#B5D1F5',
+          lighter: '#D2E2FA',
+          dark: '#7BAEEB',
+          darker: '#5E9CE6',
+        },
+        'club-neutral': {
+          DEFAULT: '#B6B7B6',
+          light: '#CACBCA',
+          lighter: '#DEDEDE',
+          dark: '#9D9E9D',
+          darker: '#848584',
+        },
         club: {
           navy: '#0d1b2a',
           'navy-light': '#1b263b',
@@ -60,6 +89,12 @@ const config: Config = {
           muted: '#718096',
           inverse: '#ffffff',
         }
+      },
+      backgroundImage: {
+        'gradient-hero': 'linear-gradient(135deg, #972A4C 0%, #5E7794 50%, #98C0F0 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #972A4C 0%, #B8477A 100%)',
+        'gradient-secondary': 'linear-gradient(135deg, #5E7794 0%, #7A92AD 100%)',
+        'gradient-accent': 'linear-gradient(135deg, #98C0F0 0%, #B5D1F5 100%)',
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',

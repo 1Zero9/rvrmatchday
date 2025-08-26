@@ -2,11 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
-import Footer from "../components/Footer";
 
 export default function StandardHomepage() {
   return (
-    <StandardLayout useFloatingFooter={true}>
+    <StandardLayout>
       <main>
         
         {/* Hero Section - Authentic Community Feel */}
@@ -60,7 +59,7 @@ export default function StandardHomepage() {
           {/* CURRENT PLACEHOLDER - REPLACE THIS ENTIRE DIV WITH INSTRUCTIONS ABOVE */}
           <div className="absolute inset-0">
                <img 
-                 src="/images/homepg-image1.jpg" 
+                 src="/images/hero/cornerflag.png" 
                  alt="Rivervalley Rangers AFC - Team celebration"
                  className="w-full h-full object-cover"
                />
@@ -126,18 +125,18 @@ export default function StandardHomepage() {
                     <div className="text-4xl mb-3">⚽</div>
                     <h3 className="text-xl font-bold mb-2">Join Our Club</h3>
                     <p className="text-sm opacity-90 mb-4">Youth & Senior teams welcoming new players</p>
-                    <Link href="/join/trials" className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-all">
+                    <Link href="/join/trials" className="inline-block bg-club-primary hover:bg-club-secondary text-white font-bold py-3 px-6 rounded-lg transition-all">
                       Register Now
                     </Link>
                   </motion.div>
 
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="bg-blue-600/20 backdrop-blur-md border border-blue-300/30 rounded-xl p-4 text-center text-white hover:bg-blue-600/30 transition-all duration-300 shadow-xl"
+                    className="bg-club-secondary/20 backdrop-blur-md border border-club-accent/30 rounded-xl p-4 text-center text-white hover:bg-club-secondary/30 transition-all duration-300 shadow-xl"
                   >
                     <div className="text-3xl mb-3">📅</div>
                     <h3 className="text-lg font-bold mb-2">Fixtures</h3>
-                    <Link href="/match-central/fixtures" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                    <Link href="/match-central/fixtures" className="inline-block bg-club-accent hover:bg-club-primary text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
                       View Schedule
                     </Link>
                   </motion.div>
@@ -171,7 +170,7 @@ export default function StandardHomepage() {
                   >
                     <div className="text-3xl mb-3">📰</div>
                     <h3 className="text-lg font-bold mb-2">News</h3>
-                    <Link href="/news-media" className="inline-block bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                    <Link href="/news" className="inline-block bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
                       Latest News
                     </Link>
                   </motion.div>
@@ -210,8 +209,8 @@ export default function StandardHomepage() {
           </div>
         </section>
 
-        {/* Main Sponsors Section - High Visibility - Hidden on Mobile */}
-        <section className="hidden md:block bg-white py-16 border-b-4 border-green-600">
+        {/* Main Sponsors Section - High Visibility */}
+        <section className="bg-white py-16 border-b-4 border-green-600">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Proudly Supported By Our Community Partners</h2>
@@ -286,7 +285,7 @@ export default function StandardHomepage() {
             </div>
             
             <div className="text-center mt-8">
-              <Link href="/get-involved/sponsorship" className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+              <Link href="/get-involved/sponsorship" className="inline-block bg-club-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-club-secondary transition-colors">
                 Become a Sponsor
               </Link>
             </div>
@@ -297,13 +296,13 @@ export default function StandardHomepage() {
         <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">What's Happening at RVR</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">What's Happening at Rangers</h2>
               <p className="text-lg text-gray-600">Latest news, results, and community stories</p>
             </div>
             
             <div className="grid lg:grid-cols-3 gap-8">
               
-              {/* Featured Story - Simplified on Mobile */}
+              {/* Featured Story */}
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                   
@@ -334,8 +333,8 @@ export default function StandardHomepage() {
                   ===================================================================
                   */}
                   
-                  {/* FEATURED NEWS PHOTO PLACEHOLDER - HIDDEN ON MOBILE */}
-                  <div className="hidden md:block h-64 bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
+                  {/* FEATURED NEWS PHOTO PLACEHOLDER - REPLACE THIS DIV */}
+                  <div className="h-64 bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
                     <div className="text-white text-center">
                       <div className="text-4xl mb-2">📸</div>
                       <p className="text-sm font-bold">FEATURED STORY PHOTO</p>
@@ -344,7 +343,7 @@ export default function StandardHomepage() {
                   </div>
                   <div className="p-6">
                     <div className="flex items-center mb-2">
-                      <span className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST NEWS</span>
+                      <span className="bg-club-primary text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST NEWS</span>
                       <span className="text-gray-500 text-sm">2 days ago</span>
                     </div>
                     {/* 
@@ -366,13 +365,13 @@ export default function StandardHomepage() {
                 </div>
               </div>
               
-              {/* Quick Updates - Hidden on Mobile */}
-              <div className="hidden lg:block space-y-6">
+              {/* Quick Updates */}
+              <div className="space-y-6">
                 
                 {/* Latest Result */}
                 <div className="bg-white rounded-lg shadow p-6">
                   <div className="flex items-center mb-3">
-                    <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST RESULT</span>
+                    <span className="bg-club-accent text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST RESULT</span>
                   </div>
                   <h4 className="font-bold text-gray-900 mb-2">RVR FC 2-1 Millbrook FC</h4>
                   <p className="text-gray-600 text-sm mb-3">Great performance from the seniors on Saturday!</p>
@@ -410,8 +409,8 @@ export default function StandardHomepage() {
           </div>
         </section>
 
-        {/* Social Media Feeds - Hidden on Mobile */}
-        <section className="hidden md:block py-16 bg-white">
+        {/* Social Media Feeds */}
+        <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Follow Our Journey</h2>
@@ -439,7 +438,7 @@ export default function StandardHomepage() {
               </div>
               
               {/* Main Facebook */}
-              <div className="bg-blue-600 rounded-lg p-6 text-white">
+              <div className="bg-club-secondary rounded-lg p-6 text-white">
                 <div className="flex items-center mb-4">
                   <div className="text-2xl mr-3">👥</div>
                   <h3 className="text-xl font-bold">Facebook - Main Club</h3>
@@ -457,7 +456,7 @@ export default function StandardHomepage() {
               </div>
               
               {/* Seniors Facebook */}
-              <div className="bg-green-600 rounded-lg p-6 text-white">
+              <div className="bg-club-primary rounded-lg p-6 text-white">
                 <div className="flex items-center mb-4">
                   <div className="text-2xl mr-3">🏆</div>
                   <h3 className="text-xl font-bold">Facebook - Seniors</h3>
@@ -477,12 +476,12 @@ export default function StandardHomepage() {
           </div>
         </section>
 
-        {/* Community Gallery Preview - Hidden on Mobile */}
-        <section className="hidden md:block py-16 bg-gray-50">
+        {/* Community Gallery Preview */}
+        <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Community in Action</h2>
-              <p className="text-lg text-gray-600">Capturing the moments that make RVR special</p>
+              <p className="text-lg text-gray-600">Capturing the moments that make Rangers special</p>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -516,9 +515,9 @@ export default function StandardHomepage() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-16 bg-green-600 text-white">
+        <section className="py-16 bg-club-primary text-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">Ready to Join Our Club?</h2>
+            <h2 className="text-3xl font-bold mb-4">Ready to Join the Rangers Family?</h2>
             <p className="text-xl mb-8 text-green-100">
               Whether you're 7 or 70, there's a place for you at Rivervalley Rangers AFC
             </p>
@@ -527,7 +526,7 @@ export default function StandardHomepage() {
               <Link href="/join" className="bg-white text-green-600 font-bold py-4 px-8 rounded-lg text-lg hover:bg-gray-100 transition-colors">
                 Join as a Player
               </Link>
-              <Link href="/get-involved/volunteering" className="bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-orange-700 transition-colors">
+              <Link href="/volunteering" className="bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-orange-700 transition-colors">
                 Volunteer with Us
               </Link>
               <Link href="/get-involved/sponsorship" className="bg-transparent border-2 border-white text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-white/10 transition-colors">
@@ -539,8 +538,6 @@ export default function StandardHomepage() {
 
       </main>
       
-      {/* Floating Footer */}
-      <Footer />
     </StandardLayout>
   );
 }

@@ -83,7 +83,7 @@ export default function Footer() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-md border-t border-gray-700"
+            className="fixed bottom-0 left-0 right-0 z-50 bg-club-primary backdrop-blur-md border-t border-club-secondary/50"
           >
             <div className="max-w-7xl mx-auto px-6 py-3">
               <div className="flex items-center justify-between">
@@ -101,7 +101,7 @@ export default function Footer() {
                   <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors text-sm px-3 py-1 rounded hover:bg-white/10">
                     ⚽ Match Central
                   </Link>
-                  <Link href="/join" className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1 rounded transition-colors">
+                  <Link href="/join" className="bg-club-accent hover:bg-club-secondary text-white text-sm px-3 py-1 rounded transition-colors">
                     Join Club
                   </Link>
                   <Link href="/shop" className="text-gray-300 hover:text-white transition-colors text-sm px-3 py-1 rounded hover:bg-white/10">
@@ -140,7 +140,7 @@ export default function Footer() {
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="fixed bottom-16 left-0 right-0 z-40 bg-gray-800/98 backdrop-blur-md border-t border-gray-700 overflow-hidden"
+                className="fixed bottom-16 left-0 right-0 z-40 bg-club-secondary backdrop-blur-md border-t border-club-primary/50 overflow-hidden"
               >
                 <div className="max-w-7xl mx-auto px-6 py-8">
                   
@@ -178,7 +178,7 @@ export default function Footer() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.4 }}
-                    className="border-t border-gray-700 pt-8 mb-8"
+                    className="border-t border-club-primary/30 pt-8 mb-8"
                   >
                     <h4 className="text-white font-semibold mb-4 flex items-center">
                       <span className="mr-2">🤝</span>
@@ -201,7 +201,7 @@ export default function Footer() {
                       ))}
                     </div>
                     <div className="mt-4 text-center">
-                      <Link href="/sponsors" className="text-green-400 hover:text-green-300 text-sm hover:underline">
+                      <Link href="/sponsors" className="text-club-accent hover:text-white text-sm hover:underline">
                         Interested in sponsoring us? Learn more →
                       </Link>
                     </div>
@@ -212,7 +212,7 @@ export default function Footer() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.6 }}
-                    className="border-t border-gray-700 pt-8 grid grid-cols-1 md:grid-cols-3 gap-8"
+                    className="border-t border-club-primary/30 pt-8 grid grid-cols-1 md:grid-cols-3 gap-8"
                   >
                     {/* Contact Info */}
                     <div>
@@ -266,9 +266,9 @@ export default function Footer() {
                           Child Protection
                         </Link>
                         <Link 
-                          href="/admin/login" 
+                          href="/admin" 
                           className="text-gray-400 hover:text-white transition-colors text-sm flex items-center"
-                          title="Admin Access"
+                          title="Admin Dashboard"
                         >
                           <span className="mr-1 text-xs">🔒</span> Admin Access
                         </Link>
@@ -281,7 +281,7 @@ export default function Footer() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3, delay: 0.8 }}
-                    className="border-t border-gray-700 pt-6 mt-8 text-center text-gray-400 text-xs"
+                    className="border-t border-club-primary/30 pt-6 mt-8 text-center text-club-neutral text-xs"
                   >
                     <p>© {currentYear} Rivervalley Rangers AFC • Building Community Through Football</p>
                     <p className="mt-1">Registered in Ireland • Club Registration: AFC-2025-001</p>

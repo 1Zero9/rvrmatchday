@@ -39,28 +39,28 @@ export default function Contact() {
       title: "General Inquiry",
       description: "Get in touch with questions",
       href: "#contact-form",
-      gradient: "blue" as const
+      gradient: "club-accent" as const
     },
     {
       icon: "⚽",
       title: "Youth Teams",
       description: "Registration & information",
       href: "#youth-contact",
-      gradient: "green" as const
+      gradient: "club-primary" as const
     },
     {
       icon: "🏟️",
       title: "Facilities",
       description: "Bookings & facility info",
       href: "#facilities-contact",
-      gradient: "purple" as const
+      gradient: "club-secondary" as const
     },
     {
       icon: "🤝",
       title: "Sponsorship",
       description: "Partnership opportunities",
       href: "#commercial-contact",
-      gradient: "orange" as const
+      gradient: "club-primary" as const
     }
   ];
 
@@ -131,6 +131,7 @@ export default function Contact() {
       heroTitle="Contact Us"
       heroSubtitle="Get in touch with Rivervalley Rangers AFC - we're here to help with any questions or inquiries"
       heroIcon="📞"
+      backgroundImage="/images/contact-hero.jpg"
       quickActions={quickActions}
       sectionName="CONTACT"
       imageSpecs="1920x1080px minimum, club facilities and contact activities preferred"
@@ -269,7 +270,7 @@ export default function Contact() {
                 
                 <button
                   type="submit"
-                  className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="w-full bg-club-primary text-white font-semibold py-3 px-6 rounded-lg hover:bg-club-primary-light transition-colors"
                 >
                   Send Message
                 </button>
@@ -330,7 +331,7 @@ export default function Contact() {
                   </div>
                   
                   <div className="mt-6">
-                    <button className="bg-green-600 text-white px-4 py-2 rounded font-semibold text-sm hover:bg-green-700 transition-colors">
+                    <button className="bg-club-secondary text-white px-4 py-2 rounded font-semibold text-sm hover:bg-club-secondary-light transition-colors">
                       Get Directions
                     </button>
                   </div>
@@ -354,7 +355,7 @@ export default function Contact() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Contact</h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <div className="bg-blue-100 rounded-full p-2">
+                  <div className="bg-club-accent/20 rounded-full p-2">
                     <span className="text-blue-600 text-lg">📧</span>
                   </div>
                   <div>
@@ -364,7 +365,7 @@ export default function Contact() {
                 </div>
                 
                 <div className="flex items-center space-x-3">
-                  <div className="bg-green-100 rounded-full p-2">
+                  <div className="bg-club-primary/20 rounded-full p-2">
                     <span className="text-green-600 text-lg">📞</span>
                   </div>
                   <div>
@@ -451,7 +452,7 @@ export default function Contact() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Follow Us</h3>
               <div className="space-y-3">
                 <a href="https://www.facebook.com/RVRFC/" className="flex items-center space-x-3 text-gray-600 hover:text-blue-600 transition-colors">
-                  <div className="bg-blue-500 text-white rounded p-2">
+                  <div className="bg-club-secondary text-white rounded p-2">
                     <span className="text-sm">👥</span>
                   </div>
                   <span className="text-sm font-medium">Facebook</span>

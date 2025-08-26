@@ -22,7 +22,7 @@ export default function GirlsTeams() {
       name: 'U14 Girls',
       league: 'Regional Girls Development League',
       ageGroup: 'Under 14',
-      manager: 'Rachel O\'Brien',
+      manager: "Rachel O'Brien",
       trainingDays: 'Tuesday & Thursday 6:00-7:30pm',
       homeGround: 'Youth Pitch 1',
       season: '2024/25',

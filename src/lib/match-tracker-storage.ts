@@ -348,6 +348,78 @@ class MatchTrackerStorage {
 
     sampleTeams.forEach(team => this.saveTeam(team));
 
+    // Sample players for U12 Boys
+    const samplePlayers: Player[] = [
+      {
+        id: 'player-u12-1',
+        teamId: 'team-u12-boys',
+        name: 'Jamie Murphy',
+        number: 7,
+        position: 'Forward',
+        dateOfBirth: new Date('2012-03-15'),
+        parentName: 'Sarah Murphy',
+        parentPhone: '+353-87-123-4567',
+        parentEmail: 'sarah.murphy@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 'player-u12-2',
+        teamId: 'team-u12-boys',
+        name: 'Luke O\'Brien',
+        number: 10,
+        position: 'Midfielder',
+        dateOfBirth: new Date('2012-05-22'),
+        parentName: 'Tom O\'Brien',
+        parentPhone: '+353-87-234-5678',
+        parentEmail: 'tom.obrien@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 'player-u12-3',
+        teamId: 'team-u12-boys',
+        name: 'Sean Walsh',
+        number: 1,
+        position: 'Goalkeeper',
+        dateOfBirth: new Date('2012-01-10'),
+        parentName: 'Mary Walsh',
+        parentPhone: '+353-87-345-6789',
+        parentEmail: 'mary.walsh@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      // Sample players for U14 Girls
+      {
+        id: 'player-u14-1',
+        teamId: 'team-u14-girls',
+        name: 'Emma Kelly',
+        number: 9,
+        position: 'Forward',
+        dateOfBirth: new Date('2010-08-20'),
+        parentName: 'David Kelly',
+        parentPhone: '+353-87-456-7890',
+        parentEmail: 'david.kelly@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 'player-u14-2',
+        teamId: 'team-u14-girls',
+        name: 'Sophie Ryan',
+        number: 8,
+        position: 'Midfielder',
+        dateOfBirth: new Date('2010-12-03'),
+        parentName: 'Lisa Ryan',
+        parentPhone: '+353-87-567-8901',
+        parentEmail: 'lisa.ryan@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ];
+
+    samplePlayers.forEach(player => this.savePlayer(player));
+
     // Sample admin user
     const adminUser: User = {
       id: 'admin-1',
@@ -360,6 +432,104 @@ class MatchTrackerStorage {
     };
 
     this.saveUser(adminUser);
+
+    // Sample finished matches for league table testing
+    const sampleMatches: Match[] = [
+      {
+        id: 'match-sample-1',
+        teamId: 'team-u12-boys',
+        opponent: 'Greenfield FC',
+        matchType: 'League',
+        isHomeMatch: true,
+        venue: 'Home Ground',
+        scheduledDate: new Date('2024-08-10T14:00:00'),
+        status: 'Finished',
+        homeScore: 3,
+        awayScore: 1,
+        referee: 'John Smith',
+        weather: 'Sunny',
+        temperature: 22,
+        pitchCond: 'Good',
+        recordedBy: 'admin-1',
+        createdAt: new Date('2024-08-10T14:00:00'),
+        updatedAt: new Date('2024-08-10T16:00:00')
+      },
+      {
+        id: 'match-sample-2',
+        teamId: 'team-u12-boys',
+        opponent: 'Meadowbrook FC',
+        matchType: 'League',
+        isHomeMatch: false,
+        venue: 'Away Ground',
+        scheduledDate: new Date('2024-08-17T15:30:00'),
+        status: 'Finished',
+        homeScore: 2,
+        awayScore: 2,
+        referee: 'Mary Johnson',
+        weather: 'Overcast',
+        temperature: 18,
+        pitchCond: 'Fair',
+        recordedBy: 'admin-1',
+        createdAt: new Date('2024-08-17T15:30:00'),
+        updatedAt: new Date('2024-08-17T17:30:00')
+      },
+      {
+        id: 'match-sample-3',
+        teamId: 'team-u14-girls',
+        opponent: 'Riverside United',
+        matchType: 'League',
+        isHomeMatch: true,
+        venue: 'Home Ground',
+        scheduledDate: new Date('2024-08-15T11:00:00'),
+        status: 'Finished',
+        homeScore: 4,
+        awayScore: 0,
+        referee: 'Tom Wilson',
+        weather: 'Sunny',
+        temperature: 25,
+        pitchCond: 'Excellent',
+        recordedBy: 'admin-1',
+        createdAt: new Date('2024-08-15T11:00:00'),
+        updatedAt: new Date('2024-08-15T13:00:00')
+      },
+      // Upcoming matches
+      {
+        id: 'match-upcoming-1',
+        teamId: 'team-u12-boys',
+        opponent: 'Celtic Tigers',
+        matchType: 'League',
+        isHomeMatch: true,
+        venue: 'Home Ground',
+        scheduledDate: new Date('2024-08-31T14:00:00'),
+        status: 'Scheduled',
+        referee: 'Sarah Davis',
+        weather: undefined,
+        temperature: undefined,
+        pitchCond: 'Good',
+        recordedBy: 'admin-1',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 'match-upcoming-2',
+        teamId: 'team-u14-girls',
+        opponent: 'Phoenix FC',
+        matchType: 'Cup',
+        isHomeMatch: false,
+        venue: 'Phoenix Park',
+        scheduledDate: new Date('2024-09-02T16:00:00'),
+        status: 'Scheduled',
+        referee: 'Mike O\'Connor',
+        weather: undefined,
+        temperature: undefined,
+        pitchCond: 'Good',
+        recordedBy: 'admin-1',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ];
+
+    sampleMatches.forEach(match => this.saveMatch(match));
   }
 }
 

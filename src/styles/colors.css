@@ -1,0 +1,140 @@
+/**
+ * RVRFC Club Color Palette
+ * 
+ * New brand colors with complementary UX palette
+ * Primary palette: #972A4C, #5E7794, #98C0F0, #B6B7B6
+ */
+
+:root {
+  /* === CLUB BRAND COLORS === */
+  
+  /* Primary Brand - Burgundy/Maroon */
+  --club-primary: #972A4C;
+  --club-primary-light: #B8477A;
+  --club-primary-lighter: #D86BA8;
+  --club-primary-dark: #7A2240;
+  --club-primary-darker: #5D1B33;
+  
+  /* Secondary Brand - Muted Blue-Gray */
+  --club-secondary: #5E7794;
+  --club-secondary-light: #7A92AD;
+  --club-secondary-lighter: #96ADC6;
+  --club-secondary-dark: #4A5F78;
+  --club-secondary-darker: #36475C;
+  
+  /* Accent - Light Blue */
+  --club-accent: #98C0F0;
+  --club-accent-light: #B5D1F5;
+  --club-accent-lighter: #D2E2FA;
+  --club-accent-dark: #7BAEEB;
+  --club-accent-darker: #5E9CE6;
+  
+  /* Neutral - Light Gray */
+  --club-neutral: #B6B7B6;
+  --club-neutral-light: #CACBCA;
+  --club-neutral-lighter: #DEDEDE;
+  --club-neutral-dark: #9D9E9D;
+  --club-neutral-darker: #848584;
+  
+  /* === COMPLEMENTARY UX COLORS === */
+  
+  /* Success Colors (complement to burgundy) */
+  --success: #2D7A4C;
+  --success-light: #47B872;
+  --success-bg: #F0F9F4;
+  
+  /* Warning Colors (complement to blue-gray) */
+  --warning: #F59E0B;
+  --warning-light: #FCD34D;
+  --warning-bg: #FFFBEB;
+  
+  /* Error Colors (complement to light blue) */
+  --error: #DC2626;
+  --error-light: #F87171;
+  --error-bg: #FEF2F2;
+  
+  /* Info Colors (using club accent) */
+  --info: var(--club-accent);
+  --info-light: var(--club-accent-light);
+  --info-bg: #F0F8FF;
+  
+  /* === GRADIENTS === */
+  --gradient-primary: linear-gradient(135deg, var(--club-primary) 0%, var(--club-primary-light) 100%);
+  --gradient-secondary: linear-gradient(135deg, var(--club-secondary) 0%, var(--club-secondary-light) 100%);
+  --gradient-accent: linear-gradient(135deg, var(--club-accent) 0%, var(--club-accent-light) 100%);
+  --gradient-hero: linear-gradient(135deg, var(--club-primary) 0%, var(--club-secondary) 50%, var(--club-accent) 100%);
+  
+  /* === GLASS MORPHISM VARIANTS === */
+  --glass-primary: rgba(151, 42, 76, 0.1);
+  --glass-secondary: rgba(94, 119, 148, 0.1);
+  --glass-accent: rgba(152, 192, 240, 0.1);
+  --glass-neutral: rgba(182, 183, 182, 0.1);
+  
+  /* === TEXT COLORS === */
+  --text-on-primary: #FFFFFF;
+  --text-on-secondary: #FFFFFF;
+  --text-on-accent: #1F2937;
+  --text-on-neutral: #374151;
+}
+
+/* === UTILITY CLASSES === */
+
+/* Background Colors */
+.bg-club-primary { background-color: var(--club-primary); }
+.bg-club-primary-light { background-color: var(--club-primary-light); }
+.bg-club-secondary { background-color: var(--club-secondary); }
+.bg-club-secondary-light { background-color: var(--club-secondary-light); }
+.bg-club-accent { background-color: var(--club-accent); }
+.bg-club-neutral { background-color: var(--club-neutral); }
+
+/* Text Colors */
+.text-club-primary { color: var(--club-primary); }
+.text-club-secondary { color: var(--club-secondary); }
+.text-club-accent { color: var(--club-accent); }
+.text-club-neutral { color: var(--club-neutral); }
+
+/* Border Colors */
+.border-club-primary { border-color: var(--club-primary); }
+.border-club-secondary { border-color: var(--club-secondary); }
+.border-club-accent { border-color: var(--club-accent); }
+.border-club-neutral { border-color: var(--club-neutral); }
+
+/* Hover States */
+.hover-club-primary:hover { background-color: var(--club-primary-light); }
+.hover-club-secondary:hover { background-color: var(--club-secondary-light); }
+.hover-club-accent:hover { background-color: var(--club-accent-dark); }
+
+/* Gradients */
+.gradient-primary { background: var(--gradient-primary); }
+.gradient-secondary { background: var(--gradient-secondary); }
+.gradient-accent { background: var(--gradient-accent); }
+.gradient-hero { background: var(--gradient-hero); }
+
+/* Glass Effects */
+.glass-primary { background: var(--glass-primary); backdrop-filter: blur(10px); }
+.glass-secondary { background: var(--glass-secondary); backdrop-filter: blur(10px); }
+.glass-accent { background: var(--glass-accent); backdrop-filter: blur(10px); }
+
+/* Custom Tailwind Extensions */
+@layer utilities {
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .backdrop-blur-club {
+    backdrop-filter: blur(12px) saturate(1.5);
+  }
+}
+
+/* === RESPONSIVE ADJUSTMENTS === */
+@media (max-width: 768px) {
+  :root {
+    /* Slightly lighter variants for mobile readability */
+    --club-secondary: #6B8299;
+    --club-primary: #A3325A;
+  }
+}
