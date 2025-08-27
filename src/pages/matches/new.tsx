@@ -7,6 +7,7 @@ import { Match, MatchType, Team } from "../../types/match-tracker";
 
 export default function NewMatch() {
   const router = useRouter();
+  const { tracker } = router.query;
   const [saving, setSaving] = useState(false);
   const [teams, setTeams] = useState<Team[]>([]);
   const [formData, setFormData] = useState({
@@ -84,7 +85,7 @@ export default function NewMatch() {
       <div className="min-h-screen bg-gray-50">
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white py-8">
+        <div className="bg-gradient-to-r from-club-primary to-club-secondary text-white py-8">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between">
               <div>
@@ -92,7 +93,7 @@ export default function NewMatch() {
                 <p className="text-green-100 mt-1">Set up a match for tracking</p>
               </div>
               <Link
-                href="/match-central#tracker"
+                href={tracker ? "/tracker" : "/match-central#tracker"}
                 className="bg-white/20 text-white px-4 py-2 rounded-lg font-medium hover:bg-white/30 transition-colors"
               >
                 ← Back
@@ -303,13 +304,13 @@ export default function NewMatch() {
                 className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors ${
                   saving || !formData.teamId || !formData.opponent
                     ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-green-600 hover:bg-green-700'
+                    : 'bg-club-primary hover:bg-club-secondary'
                 } text-white`}
               >
                 {saving ? 'Creating Match...' : 'Create & Start Recording'}
               </button>
               <Link
-                href="/match-central#tracker"
+                href={tracker ? "/tracker" : "/match-central#tracker"}
                 className="px-6 py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-colors"
               >
                 Cancel

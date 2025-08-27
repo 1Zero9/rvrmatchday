@@ -74,9 +74,7 @@ export default function AdminSiteMap() {
     { path: '/match-central/tables', title: 'League Tables', status: 'working', template: 'custom', category: 'matches', description: 'League standings', linkedFrom: ['Match Central'] },
 
     // Match Tracker (Premium Feature)
-    { path: '/match-tracker', title: 'Match Tracker Hub', status: 'working', template: 'custom', category: 'premium', description: 'Premium match tracking system', linkedFrom: ['Match Central'] },
-    { path: '/match-tracker/teams', title: 'Tracker Teams', status: 'working', template: 'custom', category: 'premium', description: 'Team management for tracking', linkedFrom: ['Match Tracker'] },
-    { path: '/match-tracker/teams/new', title: 'New Team', status: 'working', template: 'custom', category: 'premium', description: 'Add new team to tracker', linkedFrom: ['Tracker Teams'] },
+    { path: '/tracker', title: 'Match Tracker Dashboard', status: 'working', template: 'custom', category: 'premium', description: 'Authenticated match tracker with login system', linkedFrom: ['Match Central', 'Navigation'] },
     { path: '/matches/new', title: 'New Match', status: 'working', template: 'custom', category: 'premium', description: 'Create new match for tracking', linkedFrom: ['Match Tracker'] },
     { path: '/matches/[id]/record', title: 'Match Recording', status: 'working', template: 'custom', category: 'premium', description: 'Live match recording interface', linkedFrom: ['Active matches'] },
 

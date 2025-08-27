@@ -4,15 +4,24 @@ import { motion } from "framer-motion";
 import StandardLayout from "../../../components/StandardLayout";
 import { storage } from "../../../lib/match-tracker-storage";
 import { Match, MatchEvent, EventType, Team, Player, MatchStats } from "../../../types/match-tracker";
+import { MatchValidator, MatchSecurity, RealtimeValidator, SecurityContext } from "../../../lib/match-validation";
 
 export default function MatchRecord() {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, secure } = router.query;
   const [match, setMatch] = useState<Match | null>(null);
   const [team, setTeam] = useState<Team | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [events, setEvents] = useState<MatchEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Real-time event sync
+  const [lastSync, setLastSync] = useState<Date>(new Date());
+  const [autoSave, setAutoSave] = useState(true);
+  
+  // Security context
+  const [securityContext, setSecurityContext] = useState<SecurityContext | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   
   // Match state
   const [currentHalf, setCurrentHalf] = useState<1 | 2>(1);
@@ -47,19 +56,37 @@ export default function MatchRecord() {
   useEffect(() => {
     if (id && typeof id === 'string') {
       loadMatch(id);
+      if (secure) {
+        initializeSecurityContext();
+      }
     }
-  }, [id]);
+  }, [id, secure]);
 
-  // Timer effect
+  // Timer effect with real-time sync
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isRunning) {
       interval = setInterval(() => {
         setMatchTime(prev => prev + 1);
+        // Auto-save match state every minute when running
+        if (autoSave && match) {
+          saveMatchState();
+        }
       }, 60000); // Update every minute
     }
     return () => clearInterval(interval);
-  }, [isRunning]);
+  }, [isRunning, autoSave, match]);
+
+  // Real-time sync effect - check for updates every 10 seconds
+  useEffect(() => {
+    if (!match?.id || !secure) return;
+
+    const syncInterval = setInterval(() => {
+      syncMatchData();
+    }, 10000); // Sync every 10 seconds
+
+    return () => clearInterval(syncInterval);
+  }, [match?.id, secure]);
 
   const loadMatch = (matchId: string) => {
     const loadedMatch = storage.getMatch(matchId);
@@ -113,6 +140,53 @@ export default function MatchRecord() {
     setLoading(false);
   };
 
+  const saveMatchState = () => {
+    if (!match) return;
+    
+    const updatedMatch = {
+      ...match,
+      homeScore: match.isHomeMatch ? homeScore : awayScore,
+      awayScore: match.isHomeMatch ? awayScore : homeScore,
+      updatedAt: new Date()
+    };
+    
+    storage.saveMatch(updatedMatch);
+    setLastSync(new Date());
+  };
+
+  const syncMatchData = async () => {
+    if (!match?.id) return;
+    
+    try {
+      // Reload latest match data
+      const latestMatch = storage.getMatch(match.id);
+      const latestEvents = storage.getMatchEvents(match.id);
+      
+      if (latestMatch && latestMatch.updatedAt > lastSync) {
+        // Update match state if newer data available
+        setMatch(latestMatch);
+        if (latestMatch.homeScore !== undefined && latestMatch.awayScore !== undefined) {
+          if (latestMatch.isHomeMatch) {
+            setHomeScore(latestMatch.homeScore);
+            setAwayScore(latestMatch.awayScore);
+          } else {
+            setHomeScore(latestMatch.awayScore);
+            setAwayScore(latestMatch.homeScore);
+          }
+        }
+        setLastSync(new Date());
+      }
+      
+      // Update events if different
+      if (latestEvents.length !== events.length) {
+        setEvents(latestEvents);
+      }
+      
+    } catch (error) {
+      console.error('Sync error:', error);
+    }
+  };
+
   const toggleTimer = () => {
     setIsRunning(!isRunning);
   };
@@ -147,13 +221,36 @@ export default function MatchRecord() {
     alert('Match finished and saved!');
   };
 
-  const quickEvent = (eventType: EventType, playerId?: string) => {
+  const initializeSecurityContext = () => {
+    try {
+      const userStr = localStorage.getItem('match-recorder-user');
+      const token = localStorage.getItem('match-recorder-token');
+      
+      if (userStr && token) {
+        const user = JSON.parse(userStr);
+        const context: SecurityContext = {
+          userId: user.id,
+          userRole: user.role,
+          authorizedTeams: user.teams,
+          sessionToken: token
+        };
+        setSecurityContext(context);
+      }
+    } catch (error) {
+      console.error('Error initializing security context:', error);
+    }
+  };
+
+  const quickEvent = async (eventType: EventType, playerId?: string) => {
     if (!match || !team) return;
+    
+    // Clear any previous validation errors
+    setValidationErrors([]);
 
     const player = playerId ? players.find(p => p.id === playerId) : null;
     
     const event: MatchEvent = {
-      id: `event-${Date.now()}`,
+      id: secure ? MatchSecurity.generateSecureEventId() : `event-${Date.now()}`,
       matchId: match.id,
       playerId: player?.id,
       playerName: player?.name || 'Unknown Player',
@@ -161,8 +258,29 @@ export default function MatchRecord() {
       minute: matchTime,
       half: currentHalf,
       recordedAt: new Date(),
-      recordedBy: 'admin-1' // TODO: Use actual user
+      recordedBy: secure ? localStorage.getItem('match-recorder-user') ? JSON.parse(localStorage.getItem('match-recorder-user')!).id : 'admin-1' : 'admin-1'
     };
+
+    // Validate event if secure mode
+    if (secure && securityContext) {
+      try {
+        const validation = await RealtimeValidator.queueEventValidation(event, match, securityContext);
+        
+        if (!validation.isValid) {
+          setValidationErrors(validation.errors);
+          alert('Event validation failed: ' + validation.errors.join(', '));
+          return;
+        }
+        
+        if (validation.warnings.length > 0) {
+          console.warn('Event warnings:', validation.warnings);
+        }
+      } catch (error) {
+        console.error('Validation error:', error);
+        alert('Security validation failed. Event not recorded.');
+        return;
+      }
+    }
 
     // Handle goal scoring and stat updates
     if (eventType === 'Goal') {
@@ -309,7 +427,7 @@ export default function MatchRecord() {
             <h1 className="text-2xl font-bold mb-4">Match Not Found</h1>
             <button
               onClick={() => router.push('/match-central#tracker')}
-              className="bg-green-600 text-white px-6 py-3 rounded-lg"
+              className="bg-club-primary text-white px-6 py-3 rounded-lg"
             >
               Back to Match Central
             </button>
@@ -347,17 +465,17 @@ export default function MatchRecord() {
       </div>
 
       {/* Score Display */}
-      <div className="bg-gradient-to-r from-green-800 to-blue-800 p-6">
+      <div className="bg-gradient-to-r from-club-primary to-club-secondary p-6">
         <div className="flex items-center justify-center space-x-8">
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-200">{team.name}</div>
+            <div className="text-2xl font-bold text-club-accent">{team.name}</div>
             <div className="text-6xl font-bold">{homeScore}</div>
           </div>
           
           <div className="text-4xl font-bold text-white">-</div>
           
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-200">{match.opponent}</div>
+            <div className="text-2xl font-bold text-club-neutral">{match.opponent}</div>
             <div className="text-6xl font-bold">{awayScore}</div>
           </div>
         </div>
@@ -370,8 +488,8 @@ export default function MatchRecord() {
             onClick={toggleTimer}
             className={`px-6 py-3 rounded-lg font-bold text-lg ${
               isRunning 
-                ? 'bg-red-600 hover:bg-red-700' 
-                : 'bg-green-600 hover:bg-green-700'
+                ? 'bg-club-secondary hover:bg-club-primary' 
+                : 'bg-club-primary hover:bg-club-secondary'
             }`}
           >
             {isRunning ? '⏸️ Pause' : '▶️ Start'}
@@ -379,7 +497,7 @@ export default function MatchRecord() {
           
           <button
             onClick={nextHalf}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-lg"
+            className="px-6 py-3 bg-club-accent hover:bg-club-secondary rounded-lg font-bold text-lg"
           >
             {currentHalf === 1 ? 'Half Time' : 'Full Time'}
           </button>
@@ -394,7 +512,7 @@ export default function MatchRecord() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => quickEvent('Goal')}
-            className="bg-green-600 hover:bg-green-700 p-4 rounded-xl text-center font-bold text-lg transition-colors"
+            className="bg-club-primary hover:bg-club-secondary p-4 rounded-xl text-center font-bold text-lg transition-colors"
           >
             ⚽ Goal
           </motion.button>
@@ -410,7 +528,7 @@ export default function MatchRecord() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => quickEvent('RedCard')}
-            className="bg-red-600 hover:bg-red-700 p-4 rounded-xl text-center font-bold text-lg transition-colors"
+            className="bg-club-secondary hover:bg-club-primary p-4 rounded-xl text-center font-bold text-lg transition-colors"
           >
             🟥 Red
           </motion.button>
@@ -418,7 +536,7 @@ export default function MatchRecord() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => quickEvent('Substitution')}
-            className="bg-blue-600 hover:bg-blue-700 p-4 rounded-xl text-center font-bold text-lg transition-colors"
+            className="bg-club-accent hover:bg-club-secondary p-4 rounded-xl text-center font-bold text-lg transition-colors"
           >
             🔄 Sub
           </motion.button>
@@ -448,7 +566,7 @@ export default function MatchRecord() {
           {events.length > 5 && (
             <button 
               onClick={() => setShowEventDetails(true)}
-              className="text-sm text-green-400 hover:text-green-300"
+              className="text-sm text-club-accent hover:text-white"
             >
               View All
             </button>
@@ -474,7 +592,7 @@ export default function MatchRecord() {
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
                   <button
                     onClick={() => editEvent(event)}
-                    className="text-blue-400 hover:text-blue-300 p-1"
+                    className="text-club-accent hover:text-white p-1"
                     title="Edit event"
                   >
                     ✏️
@@ -530,7 +648,7 @@ export default function MatchRecord() {
                       <div className="flex space-x-1">
                         <button
                           onClick={() => editEvent(event)}
-                          className="text-blue-400 hover:text-blue-300 p-1"
+                          className="text-club-accent hover:text-white p-1"
                         >
                           ✏️
                         </button>
@@ -706,7 +824,7 @@ export default function MatchRecord() {
                     saveMatchStats();
                     setShowStatsModal(false);
                   }}
-                  className="flex-1 bg-green-600 hover:bg-green-700 py-2 px-4 rounded-lg font-medium"
+                  className="flex-1 bg-club-primary hover:bg-club-secondary py-2 px-4 rounded-lg font-medium"
                 >
                   Save Stats
                 </button>
@@ -787,7 +905,7 @@ export default function MatchRecord() {
               <div className="flex space-x-3">
                 <button
                   onClick={saveEventEdit}
-                  className="flex-1 bg-green-600 hover:bg-green-700 py-2 px-4 rounded-lg font-medium"
+                  className="flex-1 bg-club-primary hover:bg-club-secondary py-2 px-4 rounded-lg font-medium"
                 >
                   Save Changes
                 </button>
@@ -806,11 +924,38 @@ export default function MatchRecord() {
       {/* Bottom Actions */}
       <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 p-4">
         <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-400">
-            Status: {match.status}
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-gray-400">
+              Status: {match.status}
+            </div>
+            {secure && (
+              <div className="flex items-center space-x-2 text-xs">
+                <div className={`w-2 h-2 rounded-full ${autoSave ? 'bg-green-500' : 'bg-gray-500'}`}></div>
+                <span className="text-gray-400">
+                  {autoSave ? 'Auto-sync' : 'Manual'} | Last sync: {lastSync.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </span>
+                {validationErrors.length > 0 && (
+                  <div className="ml-2 text-red-400">
+                    ⚠️ {validationErrors.length} validation errors
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
           <div className="flex space-x-3">
+            {secure && (
+              <button
+                onClick={() => setAutoSave(!autoSave)}
+                className={`px-3 py-2 rounded-lg text-xs font-medium ${
+                  autoSave 
+                    ? 'bg-green-600 hover:bg-green-700' 
+                    : 'bg-gray-600 hover:bg-gray-700'
+                }`}
+              >
+                {autoSave ? '🔄 Auto' : '⏸️ Manual'}
+              </button>
+            )}
             <button 
               onClick={() => setShowEventDetails(true)}
               className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm"

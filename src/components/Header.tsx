@@ -59,7 +59,9 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
             dropdown: [
               { href: "/match-central/fixtures", label: "Fixtures", desc: "Upcoming matches & schedule" },
               { href: "/match-central/results", label: "Results", desc: "Latest match results" },
-              { href: "/match-central/tables", label: "Tables", desc: "League standings" }
+              { href: "/match-central/tables", label: "Tables", desc: "League standings" },
+              { href: "/tracker", label: "🎯 Match Tracker", desc: "Authenticated tracker dashboard" },
+              { href: "/secure-match-recorder", label: "🔒 Secure Recorder", desc: "Authorized match recording" }
             ]
           },
           { 

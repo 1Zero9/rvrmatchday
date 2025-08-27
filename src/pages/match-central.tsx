@@ -351,12 +351,21 @@ export default function MatchCentral() {
             >
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-900">Match Tracker</h2>
-                <a
-                  href="/matches/new"
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
-                >
-                  + New Match
-                </a>
+                <div className="flex space-x-3">
+                  <a
+                    href="/secure-match-recorder"
+                    className="bg-club-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-club-secondary transition-colors flex items-center space-x-2"
+                  >
+                    <span>🔒</span>
+                    <span>Secure Recorder</span>
+                  </a>
+                  <a
+                    href="/matches/new"
+                    className="bg-club-accent text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors"
+                  >
+                    + New Match
+                  </a>
+                </div>
               </div>
 
               {teamSummaries.length === 0 ? (
