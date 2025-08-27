@@ -59,7 +59,7 @@ export default function StandardHomepage() {
           {/* CURRENT PLACEHOLDER - REPLACE THIS ENTIRE DIV WITH INSTRUCTIONS ABOVE */}
           <div className="absolute inset-0">
                <img 
-                 src="/images/hero/cornerflag.png" 
+                 src="/images/hero/halftime2.jpg" 
                  alt="Rivervalley Rangers AFC - Team celebration"
                  className="w-full h-full object-cover"
                />
