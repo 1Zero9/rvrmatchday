@@ -13,11 +13,14 @@ export default function AdminDashboard() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple demo login (in real app, this would be proper authentication)
-    if (loginForm.username === 'admin' && loginForm.password === 'rvrfc2025') {
+    // Environment-based authentication
+    const adminUser = process.env.NEXT_PUBLIC_ADMIN_USER || 'admin';
+    const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASS || 'defaultpass123';
+    
+    if (loginForm.username === adminUser && loginForm.password === adminPass) {
       setIsLoggedIn(true);
     } else {
-      alert('Invalid credentials. Try: admin / rvrfc2025');
+      alert('Invalid credentials');
     }
   };
 
@@ -105,7 +108,7 @@ export default function AdminDashboard() {
               
               <div className="text-center">
                 <p className="text-xs text-gray-500">
-                  Demo credentials: admin / rvrfc2025
+                  Contact administrator for credentials
                 </p>
               </div>
             </motion.form>

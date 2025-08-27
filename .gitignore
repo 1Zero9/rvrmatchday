@@ -38,12 +38,15 @@ yarn-error.log*
 # env files (NEVER commit these - contain sensitive keys)
 .env*
 !.env.example
+!.env.local.example
 
 # Database and sensitive files
 *.sql
 *-old.*
 *backup*
 *secret*
+*password*
+*credential*
 database/
 admin-setup.*
 

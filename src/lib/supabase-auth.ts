@@ -331,7 +331,7 @@ export async function createDemoUsers(): Promise<void> {
     const demoUsers = [
       {
         email: 'admin@rvrfc.com',
-        password: 'admin123',
+        password: process.env.DEMO_ADMIN_PASS || 'secure' + Math.random().toString(36),
         username: 'admin',
         full_name: 'Club Administrator',
         role: 'admin' as const,
@@ -340,7 +340,7 @@ export async function createDemoUsers(): Promise<void> {
       },
       {
         email: 'coach@rvrfc.com',
-        password: 'coach123',
+        password: process.env.DEMO_COACH_PASS || 'secure' + Math.random().toString(36),
         username: 'coach',
         full_name: 'Head Coach',
         role: 'coach' as const,
@@ -349,7 +349,7 @@ export async function createDemoUsers(): Promise<void> {
       },
       {
         email: 'manager@rvrfc.com',
-        password: 'manager123',
+        password: process.env.DEMO_MANAGER_PASS || 'secure' + Math.random().toString(36),
         username: 'manager',
         full_name: 'Team Manager',
         role: 'manager' as const,
@@ -358,7 +358,7 @@ export async function createDemoUsers(): Promise<void> {
       },
       {
         email: 'parent@rvrfc.com',
-        password: 'parent123',
+        password: process.env.DEMO_PARENT_PASS || 'secure' + Math.random().toString(36),
         username: 'parent',
         full_name: 'Parent User',
         role: 'parent' as const,

@@ -18,7 +18,7 @@ const MATCH_RECORDERS = [
   {
     id: 'coach1',
     username: 'coach',
-    password: '$2a$10$N9qo8uLOickgx2ZMRZoMgOURAR.rYqoHgeCjJW1OBYyX1Dn4qjl9.', // 'coach123'
+    password: '$2a$10$N9qo8uLOickgx2ZMRZoMgOURAR.rYqoHgeCjJW1OBYyX1Dn4qjl9.',
     name: 'Head Coach',
     role: 'coach',
     teams: ['u16-boys', 'u18-boys']
@@ -26,7 +26,7 @@ const MATCH_RECORDERS = [
   {
     id: 'manager1', 
     username: 'manager',
-    password: '$2a$10$N9qo8uLOickgx2ZMRZoMgOURAR.rYqoHgeCjJW1OBYyX1Dn4qjl9.', // 'manager123'
+    password: '$2a$10$N9qo8uLOickgx2ZMRZoMgOURAR.rYqoHgeCjJW1OBYyX1Dn4qjl9.',
     name: 'Team Manager',
     role: 'manager',
     teams: ['u14-girls', 'u16-girls']
@@ -34,14 +34,17 @@ const MATCH_RECORDERS = [
   {
     id: 'admin1',
     username: 'admin',
-    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // 'password'
+    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
     name: 'Administrator',
     role: 'admin',
     teams: ['*'] // Access to all teams
   }
 ];
 
-const JWT_SECRET = process.env.JWT_SECRET || 'rvrfc-match-recorder-secret-2025';
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.error('WARNING: JWT_SECRET environment variable not set!');
+  return 'insecure-default-change-immediately';
+})();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
