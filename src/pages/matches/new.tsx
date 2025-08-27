@@ -13,15 +13,17 @@ export default function NewMatch() {
   const [formData, setFormData] = useState({
     teamId: '',
     opponent: '',
+    opponentType: 'new' as 'existing' | 'new',
+    existingOpponentId: '',
     matchType: 'League' as MatchType,
     isHomeMatch: true,
     venue: '',
     scheduledDate: '',
     scheduledTime: '',
-    referee: '',
+    hasReferee: false,
     weather: '',
-    temperature: '',
-    pitchCondition: 'Good' as 'Excellent' | 'Good' | 'Fair' | 'Poor'
+    pitchCondition: 'Good' as 'Excellent' | 'Good' | 'Fair' | 'Poor',
+    recordingType: 'live' as 'live' | 'post'
   });
 
   // Load teams on component mount
@@ -43,18 +45,22 @@ export default function NewMatch() {
       // Combine date and time
       const scheduledDateTime = new Date(`${formData.scheduledDate}T${formData.scheduledTime}`);
 
+      // Determine opponent name
+      const opponentName = formData.opponentType === 'existing' && formData.existingOpponentId
+        ? teams.find(t => t.id === formData.existingOpponentId)?.name || formData.opponent
+        : formData.opponent;
+
       const match: Match = {
         id: `match-${Date.now()}`,
         teamId: formData.teamId,
-        opponent: formData.opponent,
+        opponent: opponentName,
         matchType: formData.matchType,
         isHomeMatch: formData.isHomeMatch,
         venue: formData.venue || (formData.isHomeMatch ? 'Home Ground' : 'Away Ground'),
         scheduledDate: scheduledDateTime,
-        status: 'Scheduled',
-        referee: formData.referee || undefined,
+        status: formData.recordingType === 'post' ? 'Finished' : 'Scheduled',
+        referee: formData.hasReferee ? 'Assigned' : undefined,
         weather: formData.weather || undefined,
-        temperature: formData.temperature ? parseInt(formData.temperature) : undefined,
         pitchCond: formData.pitchCondition,
         recordedBy: 'admin-1', // TODO: Use actual logged-in user
         createdAt: new Date(),
@@ -63,8 +69,14 @@ export default function NewMatch() {
 
       storage.saveMatch(match);
       
-      // Redirect to match recording interface
-      router.push(`/matches/${match.id}/record`);
+      // Redirect based on recording type
+      if (formData.recordingType === 'live') {
+        // Go to live recording interface
+        router.push(`/matches/${match.id}/record`);
+      } else {
+        // Go to post-match result entry
+        router.push(`/matches/${match.id}/record?mode=post`);
+      }
     } catch (error) {
       console.error('Error creating match:', error);
       alert('Error creating match. Please try again.');
@@ -132,14 +144,51 @@ export default function NewMatch() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Opponent *
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.opponent}
-                    onChange={(e) => updateFormData('opponent', e.target.value)}
-                    placeholder="e.g., Greenfield FC"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
+                  <div className="space-y-3">
+                    <div className="flex gap-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          checked={formData.opponentType === 'existing'}
+                          onChange={() => updateFormData('opponentType', 'existing')}
+                          className="mr-2"
+                        />
+                        Existing Team
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          checked={formData.opponentType === 'new'}
+                          onChange={() => updateFormData('opponentType', 'new')}
+                          className="mr-2"
+                        />
+                        New Opponent
+                      </label>
+                    </div>
+                    
+                    {formData.opponentType === 'existing' ? (
+                      <select
+                        required
+                        value={formData.existingOpponentId}
+                        onChange={(e) => updateFormData('existingOpponentId', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      >
+                        <option value="">Select Opponent Team</option>
+                        {teams.filter(team => team.id !== formData.teamId).map(team => (
+                          <option key={team.id} value={team.id}>{team.name}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        required
+                        value={formData.opponent}
+                        onChange={(e) => updateFormData('opponent', e.target.value)}
+                        placeholder="e.g., Greenfield FC"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      />
+                    )}
+                  </div>
                 </div>
                 
                 <div>
@@ -233,22 +282,68 @@ export default function NewMatch() {
               </div>
             </div>
 
+            {/* Recording Type */}
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Recording Type</h2>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex gap-6">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={formData.recordingType === 'live'}
+                      onChange={() => updateFormData('recordingType', 'live')}
+                      className="mr-2"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-900">📱 Live Recording</div>
+                      <div className="text-sm text-gray-600">Track events in real-time during the match</div>
+                    </div>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={formData.recordingType === 'post'}
+                      onChange={() => updateFormData('recordingType', 'post')}
+                      className="mr-2"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-900">📝 Post-Match Entry</div>
+                      <div className="text-sm text-gray-600">Enter results and stats after the match</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             {/* Match Conditions */}
             <div className="mb-8">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Match Conditions</h2>
               
-              <div className="grid gap-6 md:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Referee
+                    Referee Available?
                   </label>
-                  <input
-                    type="text"
-                    value={formData.referee}
-                    onChange={(e) => updateFormData('referee', e.target.value)}
-                    placeholder="Referee name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
+                  <div className="flex gap-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        checked={formData.hasReferee}
+                        onChange={() => updateFormData('hasReferee', true)}
+                        className="mr-2"
+                      />
+                      Yes
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        checked={!formData.hasReferee}
+                        onChange={() => updateFormData('hasReferee', false)}
+                        className="mr-2"
+                      />
+                      No
+                    </label>
+                  </div>
                 </div>
                 
                 <div>
@@ -260,19 +355,6 @@ export default function NewMatch() {
                     value={formData.weather}
                     onChange={(e) => updateFormData('weather', e.target.value)}
                     placeholder="e.g., Sunny, Rainy"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Temperature (°C)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.temperature}
-                    onChange={(e) => updateFormData('temperature', e.target.value)}
-                    placeholder="e.g., 18"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -300,14 +382,19 @@ export default function NewMatch() {
             <div className="flex gap-4">
               <button
                 type="submit"
-                disabled={saving || !formData.teamId || !formData.opponent}
+                disabled={saving || !formData.teamId || (formData.opponentType === 'new' && !formData.opponent) || (formData.opponentType === 'existing' && !formData.existingOpponentId)}
                 className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors ${
-                  saving || !formData.teamId || !formData.opponent
+                  saving || !formData.teamId || (formData.opponentType === 'new' && !formData.opponent) || (formData.opponentType === 'existing' && !formData.existingOpponentId)
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-club-primary hover:bg-club-secondary'
                 } text-white`}
               >
-                {saving ? 'Creating Match...' : 'Create & Start Recording'}
+                {saving 
+                  ? 'Creating Match...' 
+                  : formData.recordingType === 'live' 
+                    ? 'Create & Start Live Recording' 
+                    : 'Create & Enter Results'
+                }
               </button>
               <Link
                 href={tracker ? "/tracker" : "/match-central#tracker"}
