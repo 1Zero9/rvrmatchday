@@ -20,6 +20,7 @@ export default function PostMatchEntryImproved() {
   const [match, setMatch] = useState<Match | null>(null);
   const [team, setTeam] = useState<Team | null>(null);
   const [saving, setSaving] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [formData, setFormData] = useState({
     homeScore: '',
     awayScore: '',
@@ -108,6 +109,80 @@ export default function PostMatchEntryImproved() {
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-club-primary mx-auto mb-4"></div>
             <p className="text-lg font-medium text-gray-600">Loading Match Details...</p>
+          </div>
+        </div>
+      </StandardLayout>
+    );
+  }
+
+  // For now, show auth gate - in production this would check actual auth
+  if (!isAuthenticated) {
+    return (
+      <StandardLayout>
+        <div className="min-h-screen bg-gray-50">
+          {/* Page Header */}
+          <div className="bg-slate-800 border-b border-slate-700">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center">
+                    <span className="text-2xl text-white">🔒</span>
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold text-white">Admin Access Required</h1>
+                    <p className="text-slate-300 mt-1">Match editing requires admin authentication</p>
+                  </div>
+                </div>
+                <Link
+                  href="/match-central#results"
+                  className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                >
+                  <span>←</span>
+                  <span>Back to Results</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🔐</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Staff Authentication Required</h3>
+              <p className="text-gray-600 mb-6">
+                This match editing feature is only available to authorized club staff.
+              </p>
+              
+              <div className="bg-slate-50 rounded-lg p-4 mb-6">
+                <h4 className="font-semibold text-slate-900 mb-2">🎯 Admin Features</h4>
+                <ul className="text-sm text-slate-600 space-y-1">
+                  <li>• Edit match scores and details</li>
+                  <li>• Add player statistics and notes</li>
+                  <li>• Manage match recordings</li>
+                  <li>• Update team information</li>
+                </ul>
+              </div>
+              
+              <div className="space-y-4">
+                <a
+                  href="/login"
+                  className="bg-slate-800 hover:bg-slate-900 text-white px-8 py-3 rounded-lg font-medium transition-colors inline-flex items-center"
+                >
+                  <span className="mr-2">🔑</span>
+                  Staff Login
+                </a>
+                <div className="text-sm text-gray-500">
+                  Don't have admin access? Contact the club administrator.
+                </div>
+                <button
+                  onClick={() => setIsAuthenticated(true)}
+                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  (Demo: Click to bypass auth)
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </StandardLayout>

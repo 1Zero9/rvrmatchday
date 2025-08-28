@@ -123,17 +123,17 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
 
   const headerClasses = isKidsSection 
     ? `bg-gradient-to-r from-kids-yellow via-kids-orange to-kids-purple ${isScrolled ? 'backdrop-blur-sm' : ''}`
-    : `bg-club-navy ${isScrolled ? 'backdrop-blur-sm shadow-lg' : ''} transition-all duration-300`;
+    : `bg-club-primary/90 backdrop-blur-md border-b border-white/10 ${isScrolled ? 'bg-club-primary/95 shadow-xl backdrop-blur-lg' : ''} transition-all duration-300`;
   
-  const textColorClass = 'text-white'; // Always white text with image background
+  const textColorClass = 'text-white text-shadow'; // Always white text with image background
 
   return (
     <header
       className={`fixed top-0 left-0 w-full z-50 ${headerClasses}`}
       style={headerStyle}
     >
-      {/* Semi-transparent overlay for better text readability */}
-      <div className={`absolute inset-0 ${isKidsSection ? '' : 'bg-black/30'} transition-all duration-300`}></div>
+      {/* Glass morphism overlay for better text readability */}
+      <div className={`absolute inset-0 ${isKidsSection ? '' : 'bg-gradient-to-r from-white/5 to-white/10'} transition-all duration-300`}></div>
       
       <div className={`relative z-10 max-w-6xl mx-auto flex items-center justify-between p-4 ${textColorClass}`}>
         {/* Logo */}

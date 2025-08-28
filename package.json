@@ -4,6 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:robust": "./dev-server.sh",
+    "dev:simple": "next dev --turbopack --port 3000",
+    "dev:clean": "pkill -f 'next dev' || true && lsof -ti:3000 | xargs kill -9 2>/dev/null || true && sleep 2 && npm run dev",
+    "health": "./health-check.sh",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

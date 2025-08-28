@@ -11,10 +11,11 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
+import CelebrationResultCard from "../components/CelebrationResultCard";
 import { storage } from "../lib/match-tracker-storage";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
 
-type TabType = 'overview' | 'tracker' | 'fixtures' | 'results' | 'tables';
+type TabType = 'overview' | 'fixtures' | 'results' | 'tables' | 'management';
 
 export default function MatchCentral() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function MatchCentral() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamSummaries, setTeamSummaries] = useState<TeamSummary[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string>('all');
+  const [overviewFilter, setOverviewFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
 
@@ -43,7 +45,7 @@ export default function MatchCentral() {
 
     // Handle hash routing
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['overview', 'tracker', 'fixtures', 'results', 'tables'].includes(hash)) {
+    if (hash && ['overview', 'fixtures', 'results', 'tables', 'management'].includes(hash)) {
       setActiveTab(hash as TabType);
     }
   }, []);
@@ -80,6 +82,22 @@ export default function MatchCentral() {
   // Recalculate data when selectedTeam changes
   const upcomingMatches = React.useMemo(() => getUpcomingMatches(), [selectedTeam, teams]);
   const recentResults = React.useMemo(() => getRecentResults(), [selectedTeam, teams]);
+
+  // Get filtered results for overview
+  const getFilteredOverviewResults = () => {
+    const allMatches = storage.getMatches();
+    const finished = allMatches
+      .filter(match => match.status === 'Finished')
+      .sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime());
+    
+    if (overviewFilter === 'all') {
+      return finished;
+    }
+    
+    return finished.filter(match => match.teamId === overviewFilter);
+  };
+
+  const filteredOverviewResults = React.useMemo(() => getFilteredOverviewResults(), [overviewFilter, teams]);
 
   // Generate league table from match results
   const getLeagueTable = () => {
@@ -178,11 +196,11 @@ export default function MatchCentral() {
   }
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: '📊' },
-    { id: 'tracker', label: 'Match Tracker', icon: '🎯' },
-    { id: 'fixtures', label: 'Fixtures', icon: '📅' },
-    { id: 'results', label: 'Results', icon: '🏆' },
-    { id: 'tables', label: 'Tables', icon: '📋' }
+    { id: 'overview', label: 'Overview', icon: '📊', public: true },
+    { id: 'fixtures', label: 'Fixtures', icon: '📅', public: true },
+    { id: 'results', label: 'Results', icon: '🏆', public: true },
+    { id: 'tables', label: 'Tables', icon: '📋', public: true },
+    { id: 'management', label: 'Management', icon: '⚙️', public: false }
   ];
 
   return (
@@ -202,20 +220,13 @@ export default function MatchCentral() {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <a
-                  href="/match-admin"
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                <button
+                  onClick={() => handleTabChange('management')}
+                  className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 shadow-lg"
                 >
-                  <span>⚙️</span>
+                  <span>🔑</span>
                   <span>Admin</span>
-                </a>
-                <a
-                  href="/matches/new"
-                  className="bg-club-primary hover:bg-club-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
-                >
-                  <span>+</span>
-                  <span>New Match</span>
-                </a>
+                </button>
               </div>
             </div>
           </div>
@@ -242,8 +253,8 @@ export default function MatchCentral() {
           </nav>
         </div>
 
-        {/* Team Filter (for tracker, fixtures, results) */}
-        {(activeTab === 'tracker' || activeTab === 'fixtures' || activeTab === 'results') && (
+        {/* Team Filter (for management) */}
+        {(activeTab === 'management') && (
           <div className="bg-white rounded-lg shadow-sm border p-4 mb-8">
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium text-gray-700">Filter by team:</label>
@@ -270,269 +281,189 @@ export default function MatchCentral() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
+              className="relative"
             >
-              {/* Enhanced Recent Results with Glass Effect */}
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-3xl"></div>
-                <div className="relative bg-white/40 backdrop-blur-sm border border-white/20 rounded-3xl p-8 shadow-xl">
-                  <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-3xl font-bold text-gray-900 flex items-center">
-                      <span className="mr-3 text-4xl">🏆</span>
-                      Recent Match Results
-                    </h2>
-                    <a
-                      href="/match-central#results" 
-                      className="bg-blue-500/20 backdrop-blur-sm border border-blue-200/50 text-blue-700 px-4 py-2 rounded-xl font-medium hover:bg-blue-500/30 transition-all"
+              {/* Modern Background Pattern */}
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/30 rounded-2xl"></div>
+              <div className="absolute inset-0 opacity-[0.02]" style={{
+                backgroundImage: `radial-gradient(circle at 25px 25px, rgba(59, 130, 246, 0.8) 1px, transparent 1px)`,
+                backgroundSize: '50px 50px'
+              }}></div>
+              
+              <div className="relative z-10">
+                {/* Clean Filter Section */}
+                <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-4 mb-6">
+                  <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center sm:justify-between">
+                    <label className="text-gray-700 font-medium">Filter by team:</label>
+                    <select
+                      value={overviewFilter}
+                      onChange={(e) => setOverviewFilter(e.target.value)}
+                      className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-club-primary focus:border-club-primary bg-white text-gray-900 hover:border-gray-300 transition-all cursor-pointer shadow-sm min-w-[200px]"
                     >
-                      View All Results
-                    </a>
+                      <option value="all">All Teams</option>
+                      {teams.filter(team => !team.isOpponent).map(team => (
+                        <option key={team.id} value={team.id}>
+                          {team.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {recentResults.slice(0, 6).map((match, index) => {
+                </div>
+
+                {/* Modern Results Display */}
+                <div className="bg-white/90 backdrop-blur-sm border border-white/30 rounded-2xl shadow-lg overflow-hidden">
+                {filteredOverviewResults.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">⚽</div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">No Results Yet!</h3>
+                    <p className="text-gray-600">
+                      {overviewFilter === 'all' 
+                        ? 'Play some matches and results will appear here!' 
+                        : `No results yet for ${teams.find(t => t.id === overviewFilter)?.name || 'this team'}`
+                      }
+                    </p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {filteredOverviewResults.map((match, index) => {
                       const team = teams.find(t => t.id === match.teamId);
                       const result = getMatchResult(match);
-                      const expanded = expandedResults[match.id] || false;
-                      const toggleExpanded = () => setExpandedResults(prev => ({
-                        ...prev,
-                        [match.id]: !prev[match.id]
-                      }));
                       
+                      if (!team) return null;
+
                       return (
-                        <motion.div 
+                        <motion.div
                           key={match.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, delay: index * 0.1 }}
-                          className="group cursor-pointer"
-                          onClick={toggleExpanded}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.4, delay: index * 0.05 }}
+                          className={`p-6 hover:bg-gray-50/80 transition-all duration-200 border-l-4 ${
+                            result.result === 'W' ? 'border-l-green-500 hover:border-l-green-600' : 
+                            result.result === 'L' ? 'border-l-red-500 hover:border-l-red-600' : 'border-l-yellow-500 hover:border-l-yellow-600'
+                          }`}
                         >
-                          <div className="bg-white/60 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/80">
-                            {/* Main Result Display */}
-                            <div className="flex items-center justify-between mb-4">
-                              <div className="flex-1">
-                                <div className="font-bold text-lg text-gray-900">{team?.name}</div>
-                                <div className="text-gray-600">vs {match.opponent}</div>
-                                <div className="text-sm text-gray-500 flex items-center mt-1">
-                                  <span className="mr-1">📅</span>
-                                  {new Date(match.scheduledDate).toLocaleDateString()}
-                                </div>
-                              </div>
-                              
-                              {/* Score Display */}
-                              <div className="text-center mr-4">
-                                <div className="text-3xl font-bold text-gray-900 mb-1">
-                                  {result.teamScore} - {result.opponentScore}
-                                </div>
-                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${
-                                  result.result === 'W' 
-                                    ? 'bg-green-100/80 text-green-800 border border-green-200' 
-                                    : result.result === 'L' 
-                                    ? 'bg-red-100/80 text-red-800 border border-red-200'
-                                    : 'bg-yellow-100/80 text-yellow-800 border border-yellow-200'
-                                }`}>
-                                  {result.result === 'W' ? '🏆 WIN' : result.result === 'L' ? '💔 LOSS' : '🤝 DRAW'}
-                                </span>
-                              </div>
-                              
-                              {/* Expand Icon */}
-                              <motion.div
-                                animate={{ rotate: expanded ? 180 : 0 }}
-                                transition={{ duration: 0.3 }}
-                                className="text-gray-400 text-xl"
-                              >
-                                ⌄
-                              </motion.div>
-                            </div>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             
-                            {/* Expandable Content */}
-                            <motion.div
-                              initial={false}
-                              animate={{
-                                height: expanded ? 'auto' : 0,
-                                opacity: expanded ? 1 : 0,
-                              }}
-                              transition={{ duration: 0.3 }}
-                              className="overflow-hidden"
-                            >
-                              <div className="pt-4 border-t border-gray-200/50">
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <span className="text-gray-500">Competition:</span>
-                                    <div className="font-medium text-gray-900">{match.matchType}</div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-500">Venue:</span>
-                                    <div className="font-medium text-gray-900">
-                                      {match.isHomeMatch ? '🏠 ' : '✈️ '}{match.venue || (match.isHomeMatch ? 'Home' : 'Away')}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-500">Time:</span>
-                                    <div className="font-medium text-gray-900">
-                                      {new Date(match.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-500">Status:</span>
-                                    <div className="font-medium text-gray-900">{match.status}</div>
-                                  </div>
-                                </div>
-                                
-                                <div className="mt-4 flex justify-between items-center">
-                                  <a
-                                    href={`/matches/${match.id}/post-match`}
-                                    className="bg-blue-500/20 backdrop-blur-sm border border-blue-200/50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-500/30 transition-all"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    View Details
-                                  </a>
-                                  <div className="text-xs text-gray-500">
-                                    Click to {expanded ? 'collapse' : 'expand'}
-                                  </div>
+                            {/* Match Info - Left Side */}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className={`w-3 h-3 rounded-full ${match.isHomeMatch ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+                                <span className="text-lg font-bold text-gray-900">{team.name}</span>
+                                <span className="text-gray-500 text-lg font-medium">vs</span>
+                                <span className="text-lg font-bold text-gray-900">{match.opponent}</span>
+                                {match.isHomeMatch && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">🏠 Home</span>}
+                                {!match.isHomeMatch && <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">✈️ Away</span>}
+                              </div>
+                              <div className="text-sm text-gray-600 flex items-center gap-4">
+                                <span>📅 {new Date(match.scheduledDate).toLocaleDateString()}</span>
+                                <span>🏆 {match.matchType}</span>
+                                <span>📍 {match.venue || (match.isHomeMatch ? 'Home' : 'Away')}</span>
+                              </div>
+                            </div>
+
+                            {/* Score & Result - Right Side */}
+                            <div className="flex items-center gap-4">
+                              <div className="text-center bg-gray-50 rounded-xl p-3 border border-gray-200">
+                                <div className="text-3xl font-bold">
+                                  <span className={result.result === 'W' ? 'text-green-600' : result.result === 'L' ? 'text-red-500' : 'text-yellow-600'}>
+                                    {result.teamScore}
+                                  </span>
+                                  <span className="text-gray-400 mx-2">-</span>
+                                  <span className="text-gray-700">{result.opponentScore}</span>
                                 </div>
                               </div>
-                            </motion.div>
+                              
+                              <div className={`px-4 py-2 rounded-xl font-semibold text-sm ${
+                                result.result === 'W' 
+                                  ? 'bg-green-100 text-green-800 border border-green-200' 
+                                  : result.result === 'L' 
+                                  ? 'bg-red-100 text-red-800 border border-red-200'
+                                  : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                              }`}>
+                                {result.result === 'W' && '✓ Won'}
+                                {result.result === 'L' && '○ Lost'}
+                                {result.result === 'D' && '= Draw'}
+                              </div>
+                            </div>
                           </div>
                         </motion.div>
                       );
                     })}
                   </div>
-                  
-                  {recentResults.length === 0 && (
-                    <div className="text-center py-12">
-                      <div className="text-6xl mb-4">🏆</div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">No Recent Results</h3>
-                      <p className="text-gray-600">Complete some matches to see results here</p>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
 
-              {/* Next Fixtures Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 mt-8">
-                <div className="bg-white rounded-xl shadow-sm border p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                    <span className="mr-2">📅</span>
-                    Next Fixtures
-                  </h3>
-                  <div className="space-y-3">
-                    {upcomingMatches.slice(0, 5).map((match) => {
-                      const team = teams.find(t => t.id === match.teamId);
-                      return (
-                        <div key={match.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div>
-                            <div className="font-medium text-gray-900">{team?.name}</div>
-                            <div className="text-sm text-gray-600">vs {match.opponent}</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-medium text-gray-900">
-                              {match.scheduledDate.toLocaleDateString()}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              {match.scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  
-                  {upcomingMatches.length === 0 && (
-                    <div className="text-center py-8">
-                      <div className="text-4xl mb-2">📅</div>
-                      <h4 className="font-medium text-gray-900 mb-1">No Upcoming Fixtures</h4>
-                      <p className="text-gray-600 text-sm">Schedule some matches to see them here</p>
-                    </div>
-                  )}
+              {/* Quick Navigation */}
+              <div className="mt-6 flex justify-center">
+                <div className="flex gap-3 bg-white/80 backdrop-blur-sm border border-white/30 rounded-2xl shadow-lg p-3">
+                  <button
+                    onClick={() => handleTabChange('fixtures')}
+                    className="px-5 py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl font-medium transition-colors flex items-center space-x-2 border border-blue-100"
+                  >
+                    <span>📅</span>
+                    <span>View Fixtures</span>
+                  </button>
+                  <button
+                    onClick={() => handleTabChange('tables')}
+                    className="px-5 py-3 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl font-medium transition-colors flex items-center space-x-2 border border-green-100"
+                  >
+                    <span>📊</span>
+                    <span>League Tables</span>
+                  </button>
                 </div>
               </div>
-
-              {/* Quick Actions */}
-              <div className="mt-8 text-center">
-                <div className="flex flex-wrap justify-center gap-4">
-                  <a
-                    href="/match-admin"
-                    className="bg-white/60 backdrop-blur-md border border-white/30 hover:bg-white/80 text-gray-700 px-6 py-3 rounded-xl font-medium transition-all shadow-lg hover:shadow-xl flex items-center space-x-2"
-                  >
-                    <span>⚙️</span>
-                    <span>Admin</span>
-                  </a>
-                  <a
-                    href="/matches/new"
-                    className="bg-blue-500/80 backdrop-blur-md border border-blue-200/50 hover:bg-blue-600/90 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-lg hover:shadow-xl flex items-center space-x-2"
-                  >
-                    <span>+</span>
-                    <span>New Match</span>
-                  </a>
-                </div>
-              </div>
+            </div>
             </motion.div>
           )}
 
-          {/* Match Tracker Tab */}
-          {activeTab === 'tracker' && (
+          {/* Management Tab - Requires Authentication */}
+          {activeTab === 'management' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {teamSummaries.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
-                  <div className="text-6xl mb-4">🎯</div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">No Team Data Yet</h3>
-                  <p className="text-gray-600 mb-6">Create teams and add matches to see tracking information</p>
-                  <a
-                    href="/match-admin"
-                    className="bg-club-primary hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                  >
-                    Set Up Teams
-                  </a>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {teamSummaries.map((summary) => (
-                    <div key={summary.team.id} className="bg-white rounded-xl shadow-sm border p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-gray-900">{summary.team.name}</h3>
-                        <div className="text-xl font-bold text-club-primary">
-                          {summary.currentSeason.points} pts
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-4 mb-4">
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-green-600">{summary.currentSeason.won}</div>
-                          <div className="text-xs text-gray-500">Won</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-yellow-600">{summary.currentSeason.drawn}</div>
-                          <div className="text-xs text-gray-500">Drawn</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-red-600">{summary.currentSeason.lost}</div>
-                          <div className="text-xs text-gray-500">Lost</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-2 text-xs">
-                        <a
-                          href={`/teams/${summary.team.id}`}
-                          className="flex-1 bg-club-primary hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium text-center transition-colors"
-                        >
-                          View Team
-                        </a>
-                        <a
-                          href="/matches/new"
-                          className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium text-center transition-colors"
-                        >
-                          Add Match
-                        </a>
-                      </div>
+              <div className="bg-white rounded-xl shadow-sm border p-8">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">🔒</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Authentication Required</h3>
+                  <p className="text-gray-600 mb-6">
+                    Team management features require authentication. Please log in to access match creation, editing, and team management tools.
+                  </p>
+                  
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-900 mb-2">🎯 Management Features</h4>
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        <li>• Create and schedule new matches</li>
+                        <li>• Edit match details and results</li>
+                        <li>• Manage team rosters and information</li>
+                        <li>• Access detailed match statistics</li>
+                        <li>• Admin tools for club management</li>
+                      </ul>
                     </div>
-                  ))}
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <a
+                        href="/login"
+                        className="bg-slate-800 hover:bg-slate-900 text-white px-8 py-4 rounded-xl font-bold transition-colors flex items-center justify-center shadow-xl hover:shadow-2xl"
+                      >
+                        <span className="mr-3 text-xl">🔑</span>
+                        <div>
+                          <div className="text-lg">Admin Login</div>
+                          <div className="text-xs opacity-90">Management Access</div>
+                        </div>
+                      </a>
+                    </div>
+                    
+                    <div className="text-sm text-gray-500 border-t pt-4 mt-6">
+                      <p>Don't have an account? Contact the club administrator to request access.</p>
+                    </div>
+                  </div>
                 </div>
-              )}
+              </div>
             </motion.div>
           )}
 

@@ -9,11 +9,11 @@
   /* === CLUB BRAND COLORS === */
   
   /* Primary Brand - Burgundy/Maroon */
-  --club-primary: #972A4C;
-  --club-primary-light: #B8477A;
+  --club-primary: #A32A4C;
+  --club-primary-light: #C44771;
   --club-primary-lighter: #D86BA8;
-  --club-primary-dark: #7A2240;
-  --club-primary-darker: #5D1B33;
+  --club-primary-dark: #872440;
+  --club-primary-darker: #6B1D33;
   
   /* Secondary Brand - Muted Blue-Gray */
   --club-secondary: #5E7794;
@@ -82,6 +82,7 @@
 /* Background Colors */
 .bg-club-primary { background-color: var(--club-primary); }
 .bg-club-primary-light { background-color: var(--club-primary-light); }
+.bg-club-primary-dark { background-color: var(--club-primary-dark); }
 .bg-club-secondary { background-color: var(--club-secondary); }
 .bg-club-secondary-light { background-color: var(--club-secondary-light); }
 .bg-club-accent { background-color: var(--club-accent); }
@@ -135,6 +136,6 @@
   :root {
     /* Slightly lighter variants for mobile readability */
     --club-secondary: #6B8299;
-    --club-primary: #A3325A;
+    --club-primary: #B33D5A;
   }
 }

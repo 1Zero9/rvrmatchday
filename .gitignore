@@ -56,3 +56,5 @@ admin-setup.*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+DEVELOPMENT_REPORT_48H.md
+MATCH_CENTRAL_ENHANCEMENT_PLAN.md
