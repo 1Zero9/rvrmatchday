@@ -22,40 +22,57 @@ export type AgeGroup = 'U12' | 'U13' | 'U14' | 'U15' | 'U16' | 'U17' | 'U18' | '
 export interface Team {
   id: string;
   name: string;
-  ageGroup: AgeGroup;
-  gender: 'Boys' | 'Girls' | 'Mixed';
-  coachIds: string[];
-  assistantCoachIds: string[];
-  season: string; // e.g., "2024-25"
-  league: string;
-  homeKit: {
+  ageGroup?: AgeGroup | string;
+  gender?: 'Boys' | 'Girls' | 'Mixed' | 'Male' | 'Female';
+  coachIds?: string[];
+  assistantCoachIds?: string[];
+  season?: string; // e.g., "2024-25"
+  league?: string;
+  homeKit?: {
     primary: string;
     secondary: string;
   };
-  awayKit: {
+  awayKit?: {
     primary: string;
     secondary: string;
   };
-  createdAt: Date;
-  updatedAt: Date;
+  
+  // Additional fields for opponent teams and admin management
+  isOpponent?: boolean;
+  homeVenue?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  notes?: string;
+  players?: Player[];
+  
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // Player Management
 export interface Player {
   id: string;
-  teamId: string;
+  teamId?: string;
   name: string;
-  jerseyNumber: number;
-  position: 'GK' | 'DEF' | 'MID' | 'FWD';
-  dateOfBirth: Date;
+  jerseyNumber?: number;
+  shirtNumber?: number;
+  number?: number; // For compatibility with existing data
+  position?: 'GK' | 'DEF' | 'MID' | 'FWD' | 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward' | string;
+  dateOfBirth?: Date;
   parentContact?: {
     name: string;
     email: string;
     phone: string;
   };
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  // Compatibility with existing storage format
+  parentName?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  
+  role?: 'player' | 'substitute' | 'coach';
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // Match Management
@@ -85,6 +102,10 @@ export interface Match {
   // Result
   homeScore?: number;
   awayScore?: number;
+  
+  // VEO Recording Integration
+  veoRecording?: boolean;
+  veoUrl?: string;
   
   // Match Events will be in separate MatchEvent table
   createdAt: Date;

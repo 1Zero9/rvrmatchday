@@ -241,7 +241,7 @@ export default function MatchRecord() {
     }
   };
 
-  const quickEvent = async (eventType: EventType, playerId?: string) => {
+  const quickEvent = async (eventType: EventType, playerId?: string, forOpponent: boolean = false) => {
     if (!match || !team) return;
     
     // Clear any previous validation errors
@@ -253,7 +253,7 @@ export default function MatchRecord() {
       id: secure ? MatchSecurity.generateSecureEventId() : `event-${Date.now()}`,
       matchId: match.id,
       playerId: player?.id,
-      playerName: player?.name || 'Unknown Player',
+      playerName: player?.name || (forOpponent ? match.opponent : 'Unknown Player'),
       eventType,
       minute: matchTime,
       half: currentHalf,
@@ -284,10 +284,20 @@ export default function MatchRecord() {
 
     // Handle goal scoring and stat updates
     if (eventType === 'Goal') {
-      if (match.isHomeMatch) {
-        setHomeScore(prev => prev + 1);
+      if (forOpponent) {
+        // Goal for opponent team
+        if (match.isHomeMatch) {
+          setAwayScore(prev => prev + 1);
+        } else {
+          setHomeScore(prev => prev + 1);
+        }
       } else {
-        setAwayScore(prev => prev + 1);
+        // Goal for your team
+        if (match.isHomeMatch) {
+          setHomeScore(prev => prev + 1);
+        } else {
+          setAwayScore(prev => prev + 1);
+        }
       }
       // Increment shots on target for goals
       setMatchStats(prev => ({ ...prev, shotsOn: prev.shotsOn + 1 }));
@@ -306,10 +316,24 @@ export default function MatchRecord() {
     if (eventType === 'Goal' && match) {
       const updatedMatch = {
         ...match,
-        homeScore: match.isHomeMatch ? homeScore + 1 : awayScore,
-        awayScore: match.isHomeMatch ? awayScore : homeScore + 1,
+        homeScore: match.isHomeMatch ? homeScore : awayScore,
+        awayScore: match.isHomeMatch ? awayScore : homeScore,
         updatedAt: new Date()
       };
+      // Apply the score change based on who scored
+      if (forOpponent) {
+        if (match.isHomeMatch) {
+          updatedMatch.awayScore = awayScore + 1;
+        } else {
+          updatedMatch.homeScore = homeScore + 1;
+        }
+      } else {
+        if (match.isHomeMatch) {
+          updatedMatch.homeScore = homeScore + 1;
+        } else {
+          updatedMatch.awayScore = awayScore + 1;
+        }
+      }
       storage.saveMatch(updatedMatch);
     }
   };
@@ -331,11 +355,50 @@ export default function MatchRecord() {
 
     // Handle goal deletion - update score
     if (eventToDelete.eventType === 'Goal') {
-      if (match.isHomeMatch) {
-        setHomeScore(prev => Math.max(0, prev - 1));
+      // Determine if the goal was for your team or opponent based on player name
+      const wasOpponentGoal = eventToDelete.playerName === match.opponent || 
+                              !players.find(p => p.name === eventToDelete.playerName);
+      
+      if (wasOpponentGoal) {
+        // Opponent goal - subtract from their score
+        if (match.isHomeMatch) {
+          setAwayScore(prev => Math.max(0, prev - 1));
+        } else {
+          setHomeScore(prev => Math.max(0, prev - 1));
+        }
       } else {
-        setAwayScore(prev => Math.max(0, prev - 1));
+        // Your team's goal - subtract from your score
+        if (match.isHomeMatch) {
+          setHomeScore(prev => Math.max(0, prev - 1));
+        } else {
+          setAwayScore(prev => Math.max(0, prev - 1));
+        }
       }
+      
+      // Update match scores in storage
+      const updatedMatch = {
+        ...match,
+        homeScore: match.isHomeMatch ? homeScore : awayScore,
+        awayScore: match.isHomeMatch ? awayScore : homeScore,
+        updatedAt: new Date()
+      };
+      
+      // Apply the score subtraction
+      if (wasOpponentGoal) {
+        if (match.isHomeMatch) {
+          updatedMatch.awayScore = Math.max(0, awayScore - 1);
+        } else {
+          updatedMatch.homeScore = Math.max(0, homeScore - 1);
+        }
+      } else {
+        if (match.isHomeMatch) {
+          updatedMatch.homeScore = Math.max(0, homeScore - 1);
+        } else {
+          updatedMatch.awayScore = Math.max(0, awayScore - 1);
+        }
+      }
+      
+      storage.saveMatch(updatedMatch);
     }
 
     // Delete from storage and state
@@ -408,119 +471,154 @@ export default function MatchRecord() {
 
   if (loading) {
     return (
-      <StandardLayout title="Match Recording">
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400 mx-auto mb-4"></div>
-            <p>Loading match...</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-club-primary via-club-secondary to-club-primary flex items-center justify-center text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Loading match...</p>
         </div>
-      </StandardLayout>
+      </div>
     );
   }
 
   if (!match || !team) {
     return (
-      <StandardLayout title="Match Not Found">
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-          <div className="text-center text-white">
-            <h1 className="text-2xl font-bold mb-4">Match Not Found</h1>
-            <button
-              onClick={() => router.push('/match-central#tracker')}
-              className="bg-club-primary text-white px-6 py-3 rounded-lg"
-            >
-              Back to Match Central
-            </button>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-club-primary via-club-secondary to-club-primary flex items-center justify-center text-white">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Match Not Found</h1>
+          <button
+            onClick={() => router.push('/match-central#tracker')}
+            className="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg font-medium transition-all"
+          >
+            Back to Match Central
+          </button>
         </div>
-      </StandardLayout>
+      </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white overflow-hidden">
-      {/* Pitch-Side Interface - No StandardLayout for full screen */}
+    <div className="min-h-screen bg-gradient-to-br from-club-primary via-club-secondary to-club-primary text-white overflow-hidden">
+      {/* Full Screen Match Recording Interface */}
       
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 p-4">
+      <div className="bg-white/10 backdrop-blur-md border-b border-white/20 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => router.push('/match-central#tracker')}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors"
             >
               ← Exit
             </button>
             <div>
               <h1 className="text-lg font-bold">{team.name} vs {match.opponent}</h1>
-              <p className="text-sm text-gray-400">{match.matchType} • {match.venue}</p>
+              <p className="text-sm text-white/70">{match.matchType} • {match.venue}</p>
             </div>
           </div>
           
           <div className="text-right">
-            <div className="text-sm text-gray-400">Half {currentHalf}</div>
+            <div className="text-sm text-white/70">Half {currentHalf}</div>
             <div className="text-lg font-bold">{formatTime(matchTime)}'</div>
           </div>
         </div>
       </div>
 
       {/* Score Display */}
-      <div className="bg-gradient-to-r from-club-primary to-club-secondary p-6">
+      <div className="bg-white/10 backdrop-blur-md p-6">
         <div className="flex items-center justify-center space-x-8">
           <div className="text-center">
-            <div className="text-2xl font-bold text-club-accent">{team.name}</div>
-            <div className="text-6xl font-bold">{homeScore}</div>
+            <div className="text-2xl font-bold text-white">{team.name}</div>
+            <div className="text-6xl font-bold text-white">{homeScore}</div>
           </div>
           
           <div className="text-4xl font-bold text-white">-</div>
           
           <div className="text-center">
-            <div className="text-2xl font-bold text-club-neutral">{match.opponent}</div>
-            <div className="text-6xl font-bold">{awayScore}</div>
+            <div className="text-2xl font-bold text-white">{match.opponent}</div>
+            <div className="text-6xl font-bold text-white">{awayScore}</div>
           </div>
         </div>
+
+        {/* Start Match Button for Scheduled Matches */}
+        {match.status === 'Scheduled' && (
+          <div className="mt-6 text-center">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                const updatedMatch = { ...match, status: 'In Progress' as const };
+                storage.saveMatch(updatedMatch);
+                setMatch(updatedMatch);
+                setIsRunning(true);
+              }}
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all flex items-center space-x-3 mx-auto"
+            >
+              <span className="text-2xl">🔴</span>
+              <span>Start Recording Match</span>
+            </motion.button>
+            <p className="text-sm text-white/70 mt-3">
+              Match is scheduled. Click to begin live recording.
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Timer Controls */}
-      <div className="p-4 bg-gray-800">
-        <div className="flex justify-center space-x-4">
+      {/* Timer Controls - Only show if match has started */}
+      {match.status === 'In Progress' && (
+        <div className="p-4 bg-white/5 backdrop-blur-md">
+          <div className="flex justify-center space-x-4">
           <button
             onClick={toggleTimer}
             className={`px-6 py-3 rounded-lg font-bold text-lg ${
               isRunning 
-                ? 'bg-club-secondary hover:bg-club-primary' 
-                : 'bg-club-primary hover:bg-club-secondary'
-            }`}
+                ? 'bg-white/20 hover:bg-white/30' 
+                : 'bg-white/20 hover:bg-white/30'
+            } transition-all backdrop-blur-md`}
           >
             {isRunning ? '⏸️ Pause' : '▶️ Start'}
           </button>
           
           <button
             onClick={nextHalf}
-            className="px-6 py-3 bg-club-accent hover:bg-club-secondary rounded-lg font-bold text-lg"
+            className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-bold text-lg transition-all backdrop-blur-md"
           >
             {currentHalf === 1 ? 'Half Time' : 'Full Time'}
           </button>
         </div>
       </div>
+      )}
 
-      {/* Quick Event Buttons */}
-      <div className="p-4">
-        <h3 className="text-lg font-bold mb-4 text-center">Quick Events</h3>
+      {/* Quick Event Buttons - Only show if match has started */}
+      {match.status === 'In Progress' && (
+        <div className="p-4">
+          <h3 className="text-lg font-bold mb-4 text-center">Quick Events</h3>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+        {/* Goal Buttons - Separate for each team */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={() => quickEvent('Goal')}
-            className="bg-club-primary hover:bg-club-secondary p-4 rounded-xl text-center font-bold text-lg transition-colors"
+            onClick={() => quickEvent('Goal', undefined, false)}
+            className="bg-white/20 hover:bg-white/30 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
           >
-            ⚽ Goal
+            ⚽ {team.name} Goal
           </motion.button>
           
           <motion.button
             whileTap={{ scale: 0.95 }}
+            onClick={() => quickEvent('Goal', undefined, true)}
+            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
+          >
+            ⚽ {match.opponent} Goal
+          </motion.button>
+        </div>
+        
+        {/* Other Event Buttons */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+          
+          <motion.button
+            whileTap={{ scale: 0.95 }}
             onClick={() => quickEvent('YellowCard')}
-            className="bg-yellow-600 hover:bg-yellow-700 p-4 rounded-xl text-center font-bold text-lg transition-colors"
+            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
           >
             🟨 Yellow
           </motion.button>
@@ -528,7 +626,7 @@ export default function MatchRecord() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => quickEvent('RedCard')}
-            className="bg-club-secondary hover:bg-club-primary p-4 rounded-xl text-center font-bold text-lg transition-colors"
+            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
           >
             🟥 Red
           </motion.button>
@@ -536,7 +634,7 @@ export default function MatchRecord() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => quickEvent('Substitution')}
-            className="bg-club-accent hover:bg-club-secondary p-4 rounded-xl text-center font-bold text-lg transition-colors"
+            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
           >
             🔄 Sub
           </motion.button>
@@ -544,7 +642,7 @@ export default function MatchRecord() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => quickEvent('CornerKick')}
-            className="bg-purple-600 hover:bg-purple-700 p-4 rounded-xl text-center font-bold text-lg transition-colors"
+            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
           >
             🚩 Corner
           </motion.button>
@@ -552,21 +650,22 @@ export default function MatchRecord() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => quickEvent('Foul')}
-            className="bg-orange-600 hover:bg-orange-700 p-4 rounded-xl text-center font-bold text-lg transition-colors"
+            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
           >
             ⚠️ Foul
           </motion.button>
         </div>
       </div>
+      )}
 
       {/* Recent Events */}
-      <div className="p-4 bg-gray-800">
+      <div className="p-4 bg-white/10 backdrop-blur-md">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-bold">Match Events ({events.length})</h3>
           {events.length > 5 && (
             <button 
               onClick={() => setShowEventDetails(true)}
-              className="text-sm text-club-accent hover:text-white"
+              className="text-sm text-white/70 hover:text-white"
             >
               View All
             </button>
@@ -575,31 +674,31 @@ export default function MatchRecord() {
         
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {events.slice(-5).reverse().map((event) => (
-            <div key={event.id} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg group">
+            <div key={event.id} className="flex items-center justify-between bg-white/10 backdrop-blur-md p-3 rounded-lg group border border-white/20">
               <div className="flex items-center space-x-3">
                 <span className="text-lg">{getEventIcon(event.eventType)}</span>
                 <div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm font-mono text-gray-400">{event.minute}'</span>
+                    <span className="text-sm font-mono text-white/70">{event.minute}'</span>
                     <span className="font-medium">{event.playerName || 'Team'}</span>
                   </div>
-                  <span className="text-xs text-gray-400">{event.eventType}</span>
+                  <span className="text-xs text-white/50">{event.eventType}</span>
                 </div>
               </div>
               
               <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-500">H{event.half}</span>
+                <span className="text-xs text-white/50">H{event.half}</span>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
                   <button
                     onClick={() => editEvent(event)}
-                    className="text-club-accent hover:text-white p-1"
+                    className="text-white/70 hover:text-white p-1"
                     title="Edit event"
                   >
                     ✏️
                   </button>
                   <button
                     onClick={() => deleteEvent(event.id)}
-                    className="text-red-400 hover:text-red-300 p-1"
+                    className="text-white/70 hover:text-white p-1"
                     title="Delete event"
                   >
                     🗑️
@@ -609,7 +708,7 @@ export default function MatchRecord() {
             </div>
           ))}
           {events.length === 0 && (
-            <p className="text-gray-500 text-center py-4">No events recorded yet</p>
+            <p className="text-white/50 text-center py-4">No events recorded yet</p>
           )}
         </div>
       </div>
@@ -617,12 +716,12 @@ export default function MatchRecord() {
       {/* Event Details Modal */}
       {showEventDetails && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-            <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-white/20 flex justify-between items-center">
               <h3 className="text-lg font-bold">All Match Events</h3>
               <button
                 onClick={() => setShowEventDetails(false)}
-                className="text-gray-400 hover:text-white"
+                className="text-white/70 hover:text-white"
               >
                 ✕
               </button>
@@ -631,30 +730,30 @@ export default function MatchRecord() {
             <div className="p-4 max-h-96 overflow-y-auto">
               <div className="space-y-2">
                 {events.map((event) => (
-                  <div key={event.id} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg">
+                  <div key={event.id} className="flex items-center justify-between bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <span className="text-lg">{getEventIcon(event.eventType)}</span>
                       <div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm font-mono text-gray-400">{event.minute}'</span>
+                          <span className="text-sm font-mono text-white/70">{event.minute}'</span>
                           <span className="font-medium">{event.playerName || 'Team'}</span>
                         </div>
-                        <span className="text-xs text-gray-400">{event.eventType}</span>
+                        <span className="text-xs text-white/50">{event.eventType}</span>
                       </div>
                     </div>
                     
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs text-gray-500">H{event.half}</span>
+                      <span className="text-xs text-white/50">H{event.half}</span>
                       <div className="flex space-x-1">
                         <button
                           onClick={() => editEvent(event)}
-                          className="text-club-accent hover:text-white p-1"
+                          className="text-white/70 hover:text-white p-1"
                         >
                           ✏️
                         </button>
                         <button
                           onClick={() => deleteEvent(event.id)}
-                          className="text-red-400 hover:text-red-300 p-1"
+                          className="text-white/70 hover:text-white p-1"
                         >
                           🗑️
                         </button>
@@ -671,8 +770,8 @@ export default function MatchRecord() {
       {/* Statistics Modal */}
       {showStatsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl max-w-md w-full">
-            <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl max-w-md w-full">
+            <div className="p-4 border-b border-white/20 flex justify-between items-center">
               <h3 className="text-lg font-bold">Match Statistics</h3>
               <button
                 onClick={() => setShowStatsModal(false)}
@@ -684,18 +783,18 @@ export default function MatchRecord() {
             
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Possession (%)</label>
+                <label className="block text-sm font-medium text-white/80 mb-2">Possession (%)</label>
                 <div className="flex items-center space-x-3">
                   <button 
                     onClick={() => updateStat('possession', matchStats.possession - 5)}
-                    className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                    className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                   >
                     -5%
                   </button>
                   <span className="flex-1 text-center font-bold text-lg">{matchStats.possession}%</span>
                   <button 
                     onClick={() => updateStat('possession', Math.min(100, matchStats.possession + 5))}
-                    className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                    className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                   >
                     +5%
                   </button>
@@ -704,18 +803,18 @@ export default function MatchRecord() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Shots On Target</label>
+                  <label className="block text-sm font-medium text-white/80 mb-2">Shots On Target</label>
                   <div className="flex items-center space-x-2">
                     <button 
                       onClick={() => updateStat('shotsOn', matchStats.shotsOn - 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       -
                     </button>
                     <span className="flex-1 text-center font-bold">{matchStats.shotsOn}</span>
                     <button 
                       onClick={() => updateStat('shotsOn', matchStats.shotsOn + 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       +
                     </button>
@@ -723,18 +822,18 @@ export default function MatchRecord() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Shots Off Target</label>
+                  <label className="block text-sm font-medium text-white/80 mb-2">Shots Off Target</label>
                   <div className="flex items-center space-x-2">
                     <button 
                       onClick={() => updateStat('shotsOff', matchStats.shotsOff - 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       -
                     </button>
                     <span className="flex-1 text-center font-bold">{matchStats.shotsOff}</span>
                     <button 
                       onClick={() => updateStat('shotsOff', matchStats.shotsOff + 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       +
                     </button>
@@ -742,18 +841,18 @@ export default function MatchRecord() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Corners</label>
+                  <label className="block text-sm font-medium text-white/80 mb-2">Corners</label>
                   <div className="flex items-center space-x-2">
                     <button 
                       onClick={() => updateStat('corners', matchStats.corners - 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       -
                     </button>
                     <span className="flex-1 text-center font-bold">{matchStats.corners}</span>
                     <button 
                       onClick={() => updateStat('corners', matchStats.corners + 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       +
                     </button>
@@ -761,18 +860,18 @@ export default function MatchRecord() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Fouls</label>
+                  <label className="block text-sm font-medium text-white/80 mb-2">Fouls</label>
                   <div className="flex items-center space-x-2">
                     <button 
                       onClick={() => updateStat('fouls', matchStats.fouls - 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       -
                     </button>
                     <span className="flex-1 text-center font-bold">{matchStats.fouls}</span>
                     <button 
                       onClick={() => updateStat('fouls', matchStats.fouls + 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       +
                     </button>
@@ -780,18 +879,18 @@ export default function MatchRecord() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Offsides</label>
+                  <label className="block text-sm font-medium text-white/80 mb-2">Offsides</label>
                   <div className="flex items-center space-x-2">
                     <button 
                       onClick={() => updateStat('offsides', matchStats.offsides - 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       -
                     </button>
                     <span className="flex-1 text-center font-bold">{matchStats.offsides}</span>
                     <button 
                       onClick={() => updateStat('offsides', matchStats.offsides + 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       +
                     </button>
@@ -799,18 +898,18 @@ export default function MatchRecord() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Saves</label>
+                  <label className="block text-sm font-medium text-white/80 mb-2">Saves</label>
                   <div className="flex items-center space-x-2">
                     <button 
                       onClick={() => updateStat('saves', matchStats.saves - 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       -
                     </button>
                     <span className="flex-1 text-center font-bold">{matchStats.saves}</span>
                     <button 
                       onClick={() => updateStat('saves', matchStats.saves + 1)}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
                     >
                       +
                     </button>
@@ -824,13 +923,13 @@ export default function MatchRecord() {
                     saveMatchStats();
                     setShowStatsModal(false);
                   }}
-                  className="flex-1 bg-club-primary hover:bg-club-secondary py-2 px-4 rounded-lg font-medium"
+                  className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 py-2 px-4 rounded-lg font-medium transition-all"
                 >
                   Save Stats
                 </button>
                 <button
                   onClick={() => setShowStatsModal(false)}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg"
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-lg transition-all"
                 >
                   Cancel
                 </button>
@@ -843,8 +942,8 @@ export default function MatchRecord() {
       {/* Edit Event Modal */}
       {editingEvent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl max-w-md w-full">
-            <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl max-w-md w-full">
+            <div className="p-4 border-b border-white/20 flex justify-between items-center">
               <h3 className="text-lg font-bold">Edit Event</h3>
               <button
                 onClick={() => setEditingEvent(null)}
@@ -856,11 +955,11 @@ export default function MatchRecord() {
             
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Event Type</label>
+                <label className="block text-sm font-medium text-white/80 mb-2">Event Type</label>
                 <select
                   value={editEventData.eventType}
                   onChange={(e) => setEditEventData(prev => ({ ...prev, eventType: e.target.value as EventType }))}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-3 py-2 text-white"
                 >
                   <option value="Goal">Goal</option>
                   <option value="YellowCard">Yellow Card</option>
@@ -875,23 +974,23 @@ export default function MatchRecord() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Minute</label>
+                <label className="block text-sm font-medium text-white/80 mb-2">Minute</label>
                 <input
                   type="number"
                   min="0"
                   max="120"
                   value={editEventData.minute}
                   onChange={(e) => setEditEventData(prev => ({ ...prev, minute: parseInt(e.target.value) || 0 }))}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-3 py-2 text-white"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Player (Optional)</label>
+                <label className="block text-sm font-medium text-white/80 mb-2">Player (Optional)</label>
                 <select
                   value={editEventData.playerId}
                   onChange={(e) => setEditEventData(prev => ({ ...prev, playerId: e.target.value }))}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-3 py-2 text-white"
                 >
                   <option value="">Select Player</option>
                   {players.map(player => (
@@ -905,13 +1004,13 @@ export default function MatchRecord() {
               <div className="flex space-x-3">
                 <button
                   onClick={saveEventEdit}
-                  className="flex-1 bg-club-primary hover:bg-club-secondary py-2 px-4 rounded-lg font-medium"
+                  className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 py-2 px-4 rounded-lg font-medium transition-all"
                 >
                   Save Changes
                 </button>
                 <button
                   onClick={() => setEditingEvent(null)}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg"
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-lg transition-all"
                 >
                   Cancel
                 </button>
@@ -922,20 +1021,20 @@ export default function MatchRecord() {
       )}
 
       {/* Bottom Actions */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-md border-t border-white/20 p-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-400">
+            <div className="text-sm text-white/70">
               Status: {match.status}
             </div>
             {secure && (
               <div className="flex items-center space-x-2 text-xs">
-                <div className={`w-2 h-2 rounded-full ${autoSave ? 'bg-green-500' : 'bg-gray-500'}`}></div>
-                <span className="text-gray-400">
+                <div className={`w-2 h-2 rounded-full ${autoSave ? 'bg-white' : 'bg-white/50'}`}></div>
+                <span className="text-white/70">
                   {autoSave ? 'Auto-sync' : 'Manual'} | Last sync: {lastSync.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </span>
                 {validationErrors.length > 0 && (
-                  <div className="ml-2 text-red-400">
+                  <div className="ml-2 text-white/80">
                     ⚠️ {validationErrors.length} validation errors
                   </div>
                 )}
@@ -949,28 +1048,38 @@ export default function MatchRecord() {
                 onClick={() => setAutoSave(!autoSave)}
                 className={`px-3 py-2 rounded-lg text-xs font-medium ${
                   autoSave 
-                    ? 'bg-green-600 hover:bg-green-700' 
-                    : 'bg-gray-600 hover:bg-gray-700'
-                }`}
+                    ? 'bg-white/20 hover:bg-white/30 border border-white/20' 
+                    : 'bg-white/10 hover:bg-white/20 border border-white/20'
+                } transition-all backdrop-blur-md`}
               >
                 {autoSave ? '🔄 Auto' : '⏸️ Manual'}
               </button>
             )}
             <button 
               onClick={() => setShowEventDetails(true)}
-              className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm"
+              className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm border border-white/20 backdrop-blur-md transition-all"
             >
               📊 Events ({events.length})
             </button>
             <button 
               onClick={() => setShowStatsModal(true)}
-              className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm"
+              className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm border border-white/20 backdrop-blur-md transition-all"
             >
               📈 Stats
             </button>
+            {match.veoRecording && match.veoUrl && (
+              <a
+                href={match.veoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm border border-white/20 backdrop-blur-md transition-all"
+              >
+                📹 VEO
+              </a>
+            )}
             <button
               onClick={finishMatch}
-              className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-medium"
+              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium border border-white/20 backdrop-blur-md transition-all"
             >
               Finish Match
             </button>

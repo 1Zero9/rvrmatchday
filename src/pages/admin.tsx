@@ -5,6 +5,7 @@ import { useState } from 'react';
 import AdminChangelog from '../components/AdminChangelog';
 import AdminTodoList from '../components/AdminTodoList';
 import AdminSiteMap from '../components/AdminSiteMap';
+import SessionRecording from '../components/SessionRecording';
 
 export default function AdminDashboard() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -189,6 +190,16 @@ export default function AdminDashboard() {
                 }`}
               >
                 🗺️ Site Map
+              </button>
+              <button
+                onClick={() => setActiveTab('sessions')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'sessions'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                🎯 Sessions
               </button>
               <button
                 onClick={() => setActiveTab('system')}
@@ -458,6 +469,17 @@ export default function AdminDashboard() {
               </div>
               <AdminSiteMap />
             </div>
+          </motion.div>
+        )}
+
+        {/* Session Recording Tab */}
+        {activeTab === 'sessions' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <SessionRecording />
           </motion.div>
         )}
 
