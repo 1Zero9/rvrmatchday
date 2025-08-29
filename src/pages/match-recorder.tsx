@@ -213,297 +213,306 @@ export default function MatchControlCenter() {
 
   return (
     <StandardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/40">
-        {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `radial-gradient(circle at 25px 25px, rgba(59, 130, 246, 0.8) 2px, transparent 2px)`,
-          backgroundSize: '50px 50px'
-        }}></div>
-        
-        {/* Hero Header */}
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-green-600 to-blue-700 opacity-90"></div>
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;utf8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 fill=%22white%22 opacity=%220.1%22%3e%3ccircle cx=%2220%22 cy=%2220%22 r=%222%22/%3e%3ccircle cx=%2280%22 cy=%2240%22 r=%221%22/%3e%3ccircle cx=%2240%22 cy=%2270%22 r=%221.5%22/%3e%3ccircle cx=%2290%22 cy=%2280%22 r=%221%22/%3e%3ccircle cx=%2210%22 cy=%2260%22 r=%221%22/%3e%3c/svg%3e')] bg-repeat"></div>
-          <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center text-white"
-            >
-              <motion.div 
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl border border-white/20"
-              >
-                <span className="text-5xl">⚽</span>
-              </motion.div>
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-5xl font-black mb-4 bg-gradient-to-r from-white via-blue-100 to-green-100 bg-clip-text text-transparent drop-shadow-lg"
-              >
-                Match Recorder
-              </motion.h1>
-              <motion.p 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed"
-              >
-                Professional match recording system • Select your method and get started
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-                className="mt-8 flex items-center justify-center space-x-6 text-white/80 text-sm"
-              >
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-                  <span>Live Recording</span>
+      <div className="min-h-screen bg-gray-50">
+        {/* Page Header with Integrated Navigation */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-club-primary rounded-xl flex items-center justify-center">
+                  <span className="text-2xl text-white">⚽</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                  <span>Post-Match Entry</span>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Match Recorder</h1>
+                  <p className="text-gray-600 mt-1">Professional match recording and management system</p>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span>Match Management</span>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                {/* Quick Navigation */}
+                <nav className="flex space-x-2">
+                  <a
+                    href="/match-central"
+                    className="flex items-center space-x-2 py-2 px-3 rounded-lg font-medium text-sm transition-all text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  >
+                    <span className="text-base">📊</span>
+                    <span className="hidden sm:inline">Overview</span>
+                  </a>
+                  <a
+                    href="/match-central#fixtures"
+                    className="flex items-center space-x-2 py-2 px-3 rounded-lg font-medium text-sm transition-all text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  >
+                    <span className="text-base">📅</span>
+                    <span className="hidden sm:inline">Fixtures</span>
+                  </a>
+                </nav>
+                
+                {/* Divider */}
+                <div className="h-8 w-px bg-gray-300"></div>
+                
+                {/* Action Buttons */}
+                <div className="flex items-center space-x-3">
+                  <a
+                    href="/match-central"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
+                  >
+                    <span className="text-lg">📊</span>
+                    <span className="hidden sm:inline">Central</span>
+                  </a>
+                  <a
+                    href="/match-admin"
+                    className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
+                  >
+                    <span className="text-lg">⚙️</span>
+                    <span className="hidden sm:inline">Admin</span>
+                  </a>
                 </div>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Quick Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="grid md:grid-cols-3 gap-6 mb-8"
-          >
-            {quickActions.map((action, index) => (
-              <motion.button
-                key={action.id}
-                initial={{ opacity: 0, y: 30 }}
+        {/* Main Content Area */}
+        <div className="relative min-h-screen">
+          {/* Hero Background Image with Blur Effect */}
+          <div className="absolute inset-0 rounded-3xl overflow-hidden">
+            <img 
+              src="/images/homepg-image3.jpg" 
+              alt="Match recording background"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/60"></div>
+          </div>
+          
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Quick Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="grid md:grid-cols-3 gap-6 mb-8"
+            >
+              {quickActions.map((action, index) => (
+                <motion.button
+                  key={action.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={action.action}
+                  className={`relative overflow-hidden bg-gradient-to-br ${action.color} text-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group`}
+                >
+                  <div className="flex items-center space-x-4">
+                    <motion.div 
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      className="text-4xl"
+                    >
+                      {action.icon}
+                    </motion.div>
+                    <div className="text-left">
+                      <h3 className="text-xl font-bold mb-2">{action.title}</h3>
+                      <p className="text-white/80 text-sm">{action.description}</p>
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </motion.button>
+              ))}
+            </motion.div>
+
+            {/* Dashboard Grid */}
+            <div className="grid lg:grid-cols-3 gap-8">
+              
+              {/* Live Matches */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={action.action}
-                className={`relative overflow-hidden bg-gradient-to-br ${action.color} text-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group`}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl overflow-hidden"
               >
-                <div className="flex items-center space-x-4">
-                  <motion.div 
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="text-4xl"
-                  >
-                    {action.icon}
-                  </motion.div>
-                  <div className="text-left">
-                    <h3 className="text-xl font-bold mb-2">{action.title}</h3>
-                    <p className="text-white/80 text-sm">{action.description}</p>
+                <div className="p-6 border-b border-white/10 bg-red-500/20 backdrop-blur-sm">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <span className="mr-2">🔴</span>
+                      Live Matches
+                    </h3>
+                    <span className="bg-red-500/30 border border-red-400/30 px-2 py-1 rounded-full text-xs font-bold text-red-200">
+                      {liveMatches.length} Active
+                    </span>
                   </div>
                 </div>
-                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </motion.button>
-            ))}
-          </motion.div>
-
-          {/* Dashboard Grid */}
-          <div className="grid lg:grid-cols-3 gap-8">
-            
-            {/* Live Matches */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
-            >
-              <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-red-50 to-red-100">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-red-800 flex items-center">
-                    <span className="mr-2">🔴</span>
-                    Live Matches
-                  </h3>
-                  <span className="bg-red-100 border border-red-200 px-2 py-1 rounded-full text-xs font-bold text-red-700">
-                    {liveMatches.length} Active
-                  </span>
-                </div>
-              </div>
-              <div className="p-6">
-                {liveMatches.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="text-4xl mb-4">⚽</div>
-                    <p className="text-sm">No live matches</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {liveMatches.map(match => {
-                      const team = teams.find(t => t.id === match.teamId);
-                      return (
-                        <div key={match.id} className="p-4 bg-red-50 border border-red-100 rounded-lg">
-                          <div className="font-medium text-gray-900 mb-1">
-                            {team?.name} vs {match.opponent}
-                          </div>
-                          <div className="text-sm text-red-600 font-medium flex items-center">
-                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mr-2"></div>
-                            LIVE - {match.matchType}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Upcoming Matches */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
-            >
-              <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-blue-100">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-blue-800 flex items-center">
-                    <span className="mr-2">📅</span>
-                    Next Up
-                  </h3>
-                  <span className="bg-blue-100 border border-blue-200 px-2 py-1 rounded-full text-xs font-bold text-blue-700">
-                    {upcomingMatches.length} Scheduled
-                  </span>
-                </div>
-              </div>
-              <div className="p-6">
-                {upcomingMatches.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="text-4xl mb-4">📅</div>
-                    <p className="text-sm">No upcoming matches</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {upcomingMatches.map(match => {
-                      const team = teams.find(t => t.id === match.teamId);
-                      const daysAway = Math.ceil((match.scheduledDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-                      return (
-                        <div key={match.id} className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                          <div className="font-medium text-gray-900 mb-1">
-                            {team?.name} vs {match.opponent}
-                          </div>
-                          <div className="text-sm text-blue-600 mb-1">
-                            {match.scheduledDate.toLocaleDateString()} - {match.matchType}
-                          </div>
-                          <div className="text-xs text-gray-600">
-                            {daysAway <= 0 ? 'Today' : daysAway === 1 ? 'Tomorrow' : `${daysAway} days away`}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Recent Results */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
-            >
-              <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-gray-800 flex items-center">
-                    <span className="mr-2">📊</span>
-                    Recent Results
-                  </h3>
-                  <span className="bg-gray-100 border border-gray-200 px-2 py-1 rounded-full text-xs font-bold text-gray-700">
-                    {recentResults.length} Completed
-                  </span>
-                </div>
-              </div>
-              <div className="p-6">
-                {recentResults.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="text-4xl mb-4">🏆</div>
-                    <p className="text-sm">No recent results</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {recentResults.map(match => {
-                      const team = teams.find(t => t.id === match.teamId);
-                      const result = getMatchResult(match);
-                      return (
-                        <div key={match.id} className="p-4 bg-gray-50 border border-gray-100 rounded-lg">
-                          <div className="font-medium text-gray-900 mb-1">
-                            {team?.name} vs {match.opponent}
-                          </div>
-                          {result && (
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="text-lg font-bold">
-                                <span className={result.result === 'W' ? 'text-green-600' : result.result === 'L' ? 'text-red-500' : 'text-yellow-600'}>
-                                  {result.teamScore}
-                                </span>
-                                <span className="text-gray-400 mx-2">-</span>
-                                <span className="text-gray-700">{result.opponentScore}</span>
-                              </div>
-                              <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                result.result === 'W' ? 'bg-green-100 text-green-800' :
-                                result.result === 'L' ? 'bg-red-100 text-red-800' :
-                                'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {result.result === 'W' ? 'Won' : result.result === 'L' ? 'Lost' : 'Drew'}
-                              </span>
+                <div className="p-6">
+                  {liveMatches.length === 0 ? (
+                    <div className="text-center py-8 text-white/70">
+                      <div className="text-4xl mb-4">⚽</div>
+                      <p className="text-sm">No live matches</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {liveMatches.map(match => {
+                        const team = teams.find(t => t.id === match.teamId);
+                        return (
+                          <div key={match.id} className="p-4 bg-red-500/20 border border-red-400/30 rounded-lg backdrop-blur-sm">
+                            <div className="font-medium text-white mb-1">
+                              {team?.name} vs {match.opponent}
                             </div>
-                          )}
-                          <div className="text-xs text-gray-600">
-                            {match.scheduledDate.toLocaleDateString()} - {match.matchType}
+                            <div className="text-sm text-red-300 font-medium flex items-center">
+                              <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse mr-2"></div>
+                              LIVE - {match.matchType}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+
+              {/* Upcoming Matches */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl overflow-hidden"
+              >
+                <div className="p-6 border-b border-white/10 bg-blue-500/20 backdrop-blur-sm">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <span className="mr-2">📅</span>
+                      Next Up
+                    </h3>
+                    <span className="bg-blue-500/30 border border-blue-400/30 px-2 py-1 rounded-full text-xs font-bold text-blue-200">
+                      {upcomingMatches.length} Scheduled
+                    </span>
                   </div>
-                )}
+                </div>
+                <div className="p-6">
+                  {upcomingMatches.length === 0 ? (
+                    <div className="text-center py-8 text-white/70">
+                      <div className="text-4xl mb-4">📅</div>
+                      <p className="text-sm">No upcoming matches</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {upcomingMatches.map(match => {
+                        const team = teams.find(t => t.id === match.teamId);
+                        const daysAway = Math.ceil((match.scheduledDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                        return (
+                          <div key={match.id} className="p-4 bg-blue-500/20 border border-blue-400/30 rounded-lg backdrop-blur-sm">
+                            <div className="font-medium text-white mb-1">
+                              {team?.name} vs {match.opponent}
+                            </div>
+                            <div className="text-sm text-blue-300 mb-1">
+                              {match.scheduledDate.toLocaleDateString()} - {match.matchType}
+                            </div>
+                            <div className="text-xs text-white/60">
+                              {daysAway <= 0 ? 'Today' : daysAway === 1 ? 'Tomorrow' : `${daysAway} days away`}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+
+              {/* Recent Results */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl overflow-hidden"
+              >
+                <div className="p-6 border-b border-white/10 bg-gray-500/20 backdrop-blur-sm">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white flex items-center">
+                      <span className="mr-2">📊</span>
+                      Recent Results
+                    </h3>
+                    <span className="bg-gray-500/30 border border-gray-400/30 px-2 py-1 rounded-full text-xs font-bold text-gray-200">
+                      {recentResults.length} Completed
+                    </span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  {recentResults.length === 0 ? (
+                    <div className="text-center py-8 text-white/70">
+                      <div className="text-4xl mb-4">🏆</div>
+                      <p className="text-sm">No recent results</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {recentResults.map(match => {
+                        const team = teams.find(t => t.id === match.teamId);
+                        const result = getMatchResult(match);
+                        return (
+                          <div key={match.id} className="p-4 bg-gray-500/20 border border-gray-400/30 rounded-lg backdrop-blur-sm">
+                            <div className="font-medium text-white mb-1">
+                              {team?.name} vs {match.opponent}
+                            </div>
+                            {result && (
+                              <div className="flex items-center justify-between mb-1">
+                                <div className="text-lg font-bold">
+                                  <span className={`${result.teamScore > result.opponentScore ? 'text-green-400' : 'text-white'}`}>
+                                    {result.teamScore}
+                                  </span>
+                                  <span className="text-white/40 mx-2">-</span>
+                                  <span className={`${result.opponentScore > result.teamScore ? 'text-green-400' : 'text-white'}`}>
+                                    {result.opponentScore}
+                                  </span>
+                                </div>
+                                <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                  result.result === 'W' ? 'bg-green-500/30 text-green-300 border border-green-400/30' :
+                                  result.result === 'L' ? 'bg-red-500/30 text-red-300 border border-red-400/30' :
+                                  'bg-yellow-500/30 text-yellow-300 border border-yellow-400/30'
+                                }`}>
+                                  {result.result === 'W' ? 'Won' : result.result === 'L' ? 'Lost' : 'Drew'}
+                                </span>
+                              </div>
+                            )}
+                            <div className="text-xs text-white/60">
+                              {match.scheduledDate.toLocaleDateString()} - {match.matchType}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+            </motion.div>
+            </div>
+
+            {/* System Status */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="mt-8 bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl p-6"
+            >
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                <span className="mr-2">📊</span>
+                System Overview
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-400">{teams.filter(t => !t.isOpponent).length}</div>
+                  <div className="text-sm text-white/70">Active Teams</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-400">{matches.length}</div>
+                  <div className="text-sm text-white/70">Total Matches</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-400">{liveMatches.length}</div>
+                  <div className="text-sm text-white/70">Live Now</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-400">{upcomingMatches.length}</div>
+                  <div className="text-sm text-white/70">Next 3 Days</div>
+                </div>
               </div>
             </motion.div>
           </div>
-
-          {/* System Status */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
-          >
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-              <span className="mr-2">📊</span>
-              System Overview
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{teams.filter(t => !t.isOpponent).length}</div>
-                <div className="text-sm text-gray-600">Active Teams</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{matches.length}</div>
-                <div className="text-sm text-gray-600">Total Matches</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{liveMatches.length}</div>
-                <div className="text-sm text-gray-600">Live Now</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">{upcomingMatches.length}</div>
-                <div className="text-sm text-gray-600">Next 3 Days</div>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </div>
     </StandardLayout>

@@ -226,9 +226,9 @@ export default function MatchCentral() {
   return (
     <StandardLayout>
       <div className="min-h-screen bg-gray-50">
-        {/* Page Header */}
+        {/* Page Header with Integrated Navigation */}
         <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-club-primary rounded-xl flex items-center justify-center">
@@ -239,46 +239,52 @@ export default function MatchCentral() {
                   <p className="text-gray-600 mt-1">Complete football match management system</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <a
-                  href="/match-recorder"
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  <span className="text-xl">🔴</span>
-                  <span>Record Match</span>
-                </a>
-                <a
-                  href="/match-admin"
-                  className="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  <span className="text-xl">⚙️</span>
-                  <span>Admin</span>
-                </a>
+              
+              <div className="flex items-center space-x-3">
+                {/* Navigation Tabs */}
+                <nav className="flex space-x-2">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => handleTabChange(tab.id)}
+                      className={`flex items-center space-x-2 py-2 px-3 rounded-lg font-medium text-sm transition-all ${
+                        activeTab === tab.id
+                          ? 'bg-club-primary text-white shadow-md'
+                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <span className="text-base">{tab.icon}</span>
+                      <span className="hidden sm:inline">{tab.label}</span>
+                    </button>
+                  ))}
+                </nav>
+                
+                {/* Divider */}
+                <div className="h-8 w-px bg-gray-300"></div>
+                
+                {/* Action Buttons */}
+                <div className="flex items-center space-x-3">
+                  <a
+                    href="/match-recorder"
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
+                  >
+                    <span className="text-lg">🔴</span>
+                    <span className="hidden sm:inline">Record</span>
+                  </a>
+                  <a
+                    href="/match-admin"
+                    className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
+                  >
+                    <span className="text-lg">⚙️</span>
+                    <span className="hidden sm:inline">Admin</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="flex space-x-8">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-club-primary text-club-primary'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <span className="text-lg">{tab.icon}</span>
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
 
         {/* Team Filter (for management) */}
         {(activeTab === 'management') && (
@@ -313,7 +319,7 @@ export default function MatchCentral() {
               {/* Hero Background Image with Blur Effect */}
               <div className="absolute inset-0 rounded-3xl overflow-hidden">
                 <img 
-                  src="/images/hero/halftime2.jpg" 
+                  src="/images/homepg-image3.jpg" 
                   alt="Match background"
                   className="w-full h-full object-cover"
                 />
@@ -400,7 +406,7 @@ export default function MatchCentral() {
                             <div className="flex items-center justify-between">
                               
                               {/* Team Names & Info */}
-                              <div className="flex items-center gap-3 flex-1">
+                              <div className="flex items-center gap-4 flex-1">
                                 <div className="flex items-center gap-3">
                                   <span className="font-bold text-white text-lg">{team.name}</span>
                                   <span className="text-white/60 font-medium">vs</span>
@@ -420,37 +426,30 @@ export default function MatchCentral() {
                                 </div>
                               </div>
 
-                              {/* Score Display */}
-                              <div className="flex items-center gap-4">
-                                <div className="bg-black/20 rounded-lg px-4 py-2 border border-white/20">
-                                  <div className="text-2xl font-black text-center">
-                                    <span className="text-white">{result.teamScore}</span>
-                                    <span className="text-white/40 mx-2">-</span>
-                                    <span className="text-white">{result.opponentScore}</span>
-                                  </div>
+                              {/* Clean Score Display */}
+                              <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-4">
+                                  <span className={`text-4xl font-black ${
+                                    result.teamScore > result.opponentScore ? 'text-green-400' : 'text-white'
+                                  }`}>
+                                    {result.teamScore}
+                                  </span>
+                                  <span className="text-white/40 text-3xl font-bold">-</span>
+                                  <span className={`text-4xl font-black ${
+                                    result.opponentScore > result.teamScore ? 'text-green-400' : 'text-white'
+                                  }`}>
+                                    {result.opponentScore}
+                                  </span>
                                 </div>
                                 
-                                {/* Win Icon in Middle */}
-                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg ${
-                                  result.result === 'W' 
-                                    ? 'bg-green-500 text-white' 
-                                    : result.result === 'L' 
-                                    ? 'bg-red-500 text-white'
-                                    : 'bg-yellow-500 text-black'
-                                }`}>
-                                  {result.result === 'W' && '🏆'}
-                                  {result.result === 'L' && '💔'}
-                                  {result.result === 'D' && '🤝'}
-                                </div>
-                                
-                                {/* Expand Indicator - Moved to Far Right */}
+                                {/* Expand Indicator - Far Right */}
                                 {hasExtra && (
                                   <motion.div
                                     animate={{ rotate: isExpanded ? 180 : 0 }}
                                     transition={{ duration: 0.2 }}
-                                    className="text-white/60 group-hover:text-white/80 transition-colors ml-2"
+                                    className="text-white/60 group-hover:text-white/80 transition-colors ml-4"
                                   >
-                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                                     </svg>
                                   </motion.div>
