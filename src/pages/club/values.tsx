@@ -101,6 +101,7 @@ export default function ClubValues() {
       heroTitle="Our Values"
       heroSubtitle="The principles that guide everything we do at Rivervalley Rangers AFC"
       heroIcon="🤝"
+      backgroundImage="/images/hero/ariel-pitch.jpg"
       quickActions={quickActions}
       sectionName="CLUB VALUES"
       imageSpecs="1920x1080px minimum, community and team activities preferred"

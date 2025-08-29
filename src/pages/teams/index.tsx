@@ -88,7 +88,7 @@ export default function TeamsIndex() {
       heroTitle="Our Teams"
       heroSubtitle="From grassroots to competitive football - teams for every age and ability"
       heroIcon="👥"
-      backgroundImage="/images/teams.jpg"
+      backgroundImage="/images/hero/nets1.jpg"
       quickActions={quickActions}
       sectionName="TEAMS"
       imageSpecs="1920x1080px minimum, team photos and action shots preferred"

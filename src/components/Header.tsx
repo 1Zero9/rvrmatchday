@@ -53,10 +53,12 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
         return [
           { href: "/", label: "Home", color: "" },
           { 
-            href: "/match-central/fixtures", 
+            href: "/match-central", 
             label: "Matches", 
             color: "",
             dropdown: [
+              { href: "/match-central", label: "Match Central", desc: "Complete match management hub" },
+              { href: "/dashboard", label: "Dashboard", desc: "Club overview dashboard" },
               { href: "/match-central/fixtures", label: "Fixtures", desc: "Upcoming matches & schedule" },
               { href: "/match-central/results", label: "Results", desc: "Latest match results" },
               { href: "/match-central/tables", label: "Tables", desc: "League standings" },
@@ -70,19 +72,29 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
             color: "",
             dropdown: [
               { href: "/club", label: "Overview", desc: "About our club" },
+              { href: "/about", label: "About Us", desc: "Club history and mission" },
+              { href: "/club/values", label: "Our Values", desc: "Core principles and beliefs" },
+              { href: "/club/history", label: "History", desc: "Our proud heritage" },
               { href: "/club/committee", label: "Committee", desc: "Meet our committee" },
               { href: "/club/facilities", label: "Facilities", desc: "Our grounds & facilities" }
             ]
           },
           { 
-            href: "/join", 
-            label: "Join", 
+            href: "/teams", 
+            label: "Teams", 
             color: "",
             dropdown: [
-              { href: "/join", label: "Overview", desc: "How to join the club" },
-              { href: "/join/youth", label: "Youth Teams", desc: "Join our youth teams" },
-              { href: "/join/senior", label: "Senior Teams", desc: "Join our senior teams" },
-              { href: "/join/trials", label: "Trials", desc: "Book a trial session" }
+              { href: "/teams", label: "All Teams", desc: "Overview of all our teams" },
+              { href: "/teams/boys", label: "Boys Teams", desc: "Boys football teams" },
+              { href: "/teams/girls", label: "Girls Teams", desc: "Girls football teams" },
+              { href: "/teams/youth", label: "Youth Teams", desc: "Youth development" },
+              { href: "/teams/senior", label: "Senior Teams", desc: "Adult teams" },
+              { href: "/teams/inclusive", label: "Inclusive Football", desc: "Football for everyone" },
+              { href: "/coach", label: "Coaching Staff", desc: "Meet our coaches" },
+              { href: "/join", label: "Join Us", desc: "How to join the club" },
+              { href: "/join/trials", label: "Trials", desc: "Book a trial session" },
+              { href: "/join/academy", label: "Youth Academy", desc: "Academy program" },
+              { href: "/join/inclusive", label: "Join Inclusive", desc: "Inclusive programs" }
             ]
           },
           { 
@@ -90,17 +102,28 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
             label: "Members", 
             color: "",
             dropdown: [
-              { href: "/members", label: "Member Area", desc: "Members only content" },
-              { href: "/members/parents", label: "Parents Info", desc: "Information for parents" }
+              { href: "/members", label: "Members Hub", desc: "Main member area" },
+              { href: "/members/parents", label: "Parents Area", desc: "Information for parents" },
+              { href: "/members/faq", label: "FAQ", desc: "Frequently asked questions" },
+              { href: "/members/feedback", label: "Feedback", desc: "Share your thoughts" },
+              { href: "/login", label: "Member Login", desc: "Access your account" }
             ]
           },
           { 
-            href: "/news-media", 
+            href: "/get-involved", 
             label: "More", 
             color: "",
             dropdown: [
               { href: "/news-media", label: "News & Media", desc: "Latest club news" },
-              { href: "/get-involved", label: "Get Involved", desc: "Volunteer & support us" },
+              { href: "/news", label: "News", desc: "Club news and updates" },
+              { href: "/gallery", label: "Gallery", desc: "Photos and media" },
+              { href: "/get-involved", label: "Get Involved", desc: "Ways to help the club" },
+              { href: "/get-involved/events", label: "Events", desc: "Club events and activities" },
+              { href: "/get-involved/sponsorship", label: "Sponsorship", desc: "Partnership opportunities" },
+              { href: "/volunteering", label: "Volunteering", desc: "Volunteer opportunities" },
+              { href: "/fundraising", label: "Fundraising", desc: "Support our campaigns" },
+              { href: "/shop", label: "Club Shop", desc: "Merchandise and kit" },
+              { href: "/boot-room", label: "Boot Room", desc: "Behind the scenes" },
               { href: "/contact", label: "Contact", desc: "Get in touch with us" }
             ]
           }

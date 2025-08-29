@@ -126,6 +126,7 @@ export default function MembersIndex() {
       heroTitle="Members Hub"
       heroSubtitle="Your central resource for club communications, support, and community connection"
       heroIcon="👥"
+      backgroundImage="https://images.unsplash.com/photo-1529900748604-07564a03e7a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
       quickActions={quickActions}
       sectionName="MEMBERS"
       imageSpecs="1920x1080px minimum, family and community activities preferred"

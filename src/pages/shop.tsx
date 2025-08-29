@@ -121,6 +121,7 @@ export default function Shop() {
       heroTitle="Club Shop"
       heroSubtitle="Official Rivervalley Rangers merchandise, kit, and training gear"
       heroIcon="🛒"
+      backgroundImage="https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
       quickActions={quickActions}
       sectionName="SHOP"
       imageSpecs="1920x1080px minimum, merchandise and team kit preferred"

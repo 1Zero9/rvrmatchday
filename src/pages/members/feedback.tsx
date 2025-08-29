@@ -105,6 +105,7 @@ export default function MembersFeedback() {
       heroTitle="Member Feedback"
       heroSubtitle="Share your thoughts, suggestions, and ideas to help us improve our club"
       heroIcon="💬"
+      backgroundImage="https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
       quickActions={quickActions}
       sectionName="MEMBER FEEDBACK"
       imageSpecs="1920x1080px minimum, community and support activities preferred"

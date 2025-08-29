@@ -13,9 +13,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
 import { storage } from "../lib/match-tracker-storage";
-import { Team, Player } from "../types/match-tracker";
+import { Team, Player, Match } from "../types/match-tracker";
 
-type AdminTab = 'teams' | 'opponents' | 'venues' | 'leagues' | 'players' | 'settings';
+type AdminTab = 'teams' | 'opponents' | 'venues' | 'leagues' | 'matches' | 'players' | 'settings';
 
 interface Venue {
   id: string;
@@ -39,6 +39,7 @@ export default function MatchAdmin() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<AdminTab>('teams');
   const [teams, setTeams] = useState<Team[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -86,6 +87,16 @@ export default function MatchAdmin() {
     division: ''
   });
 
+  const [matchForm, setMatchForm] = useState({
+    teamId: '',
+    opponent: '',
+    scheduledDate: '',
+    scheduledTime: '',
+    venue: '',
+    matchType: 'League',
+    isHomeMatch: true
+  });
+
   useEffect(() => {
     loadData();
   }, []);
@@ -93,7 +104,9 @@ export default function MatchAdmin() {
   const loadData = () => {
     try {
       const loadedTeams = storage.getTeams();
+      const loadedMatches = storage.getMatches();
       setTeams(loadedTeams);
+      setMatches(loadedMatches);
       
       // Load venues and leagues from localStorage
       const savedVenues = localStorage.getItem('rvr_venues');
@@ -292,6 +305,54 @@ export default function MatchAdmin() {
     }
   };
 
+  const handleMatchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      const scheduledDateTime = new Date(`${matchForm.scheduledDate}T${matchForm.scheduledTime}`);
+      
+      const newMatch: Match = {
+        id: `match-${Date.now()}`,
+        teamId: matchForm.teamId,
+        opponent: matchForm.opponent,
+        scheduledDate: scheduledDateTime,
+        venue: matchForm.venue,
+        matchType: matchForm.matchType as any,
+        isHomeMatch: matchForm.isHomeMatch,
+        status: 'Scheduled',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      storage.saveMatch(newMatch);
+      setMatches([...matches, newMatch]);
+      setMatchForm({
+        teamId: '',
+        opponent: '',
+        scheduledDate: '',
+        scheduledTime: '',
+        venue: '',
+        matchType: 'League',
+        isHomeMatch: true
+      });
+      
+      alert('Match created successfully!');
+    } catch (error) {
+      console.error('Error creating match:', error);
+      alert('Error creating match. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteMatch = (matchId: string) => {
+    if (confirm('Are you sure you want to delete this match?')) {
+      storage.deleteMatch(matchId);
+      setMatches(matches.filter(match => match.id !== matchId));
+    }
+  };
+
   if (loading) {
     return (
       <StandardLayout>
@@ -310,6 +371,7 @@ export default function MatchAdmin() {
     { id: 'opponents', label: 'Opponents', icon: '🏟️', count: teams.filter(t => t.isOpponent).length },
     { id: 'venues', label: 'Venues', icon: '📍', count: venues.length },
     { id: 'leagues', label: 'Leagues', icon: '🏆', count: leagues.length },
+    { id: 'matches', label: 'Matches', icon: '🎯', count: matches.length },
     { id: 'players', label: 'Players', icon: '👥', count: 0 },
     { id: 'settings', label: 'Settings', icon: '⚙️', count: 0 }
   ];
@@ -867,6 +929,197 @@ export default function MatchAdmin() {
                 <div className="text-6xl mb-4">👥</div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Player Management</h3>
                 <p className="text-gray-500">Player management features coming soon</p>
+              </div>
+            </div>
+          )}
+
+          {/* Matches Tab */}
+          {activeTab === 'matches' && (
+            <div>
+              {/* Create Match Form */}
+              <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                  <span className="mr-3 text-2xl">➕</span>
+                  Schedule New Match
+                </h2>
+                
+                <form onSubmit={handleMatchSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Your Team *
+                      </label>
+                      <select
+                        required
+                        value={matchForm.teamId}
+                        onChange={(e) => setMatchForm(prev => ({ ...prev, teamId: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900"
+                      >
+                        <option value="">Select your team...</option>
+                        {teams.filter(team => !team.isOpponent).map(team => (
+                          <option key={team.id} value={team.id}>{team.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Opponent *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={matchForm.opponent}
+                        onChange={(e) => setMatchForm(prev => ({ ...prev, opponent: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900"
+                        placeholder="e.g., Celtic Tigers FC"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Match Date *
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={matchForm.scheduledDate}
+                        onChange={(e) => setMatchForm(prev => ({ ...prev, scheduledDate: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Kick-off Time *
+                      </label>
+                      <input
+                        type="time"
+                        required
+                        value={matchForm.scheduledTime}
+                        onChange={(e) => setMatchForm(prev => ({ ...prev, scheduledTime: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Venue
+                      </label>
+                      <input
+                        type="text"
+                        value={matchForm.venue}
+                        onChange={(e) => setMatchForm(prev => ({ ...prev, venue: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900"
+                        placeholder="e.g., Phoenix Park Pitch 1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Match Type
+                      </label>
+                      <select
+                        value={matchForm.matchType}
+                        onChange={(e) => setMatchForm(prev => ({ ...prev, matchType: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900"
+                      >
+                        <option value="League">League</option>
+                        <option value="Cup">Cup</option>
+                        <option value="Friendly">Friendly</option>
+                        <option value="Tournament">Tournament</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={matchForm.isHomeMatch}
+                        onChange={(e) => setMatchForm(prev => ({ ...prev, isHomeMatch: e.target.checked }))}
+                        className="w-4 h-4 text-club-primary focus:ring-club-primary border-gray-300 rounded"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Home Match</span>
+                    </label>
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full bg-club-primary hover:bg-club-primary/90 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+                  >
+                    {saving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Creating Match...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Schedule Match</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+
+              {/* Matches List */}
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                  <span className="mr-3 text-2xl">🎯</span>
+                  Scheduled Matches ({matches.length})
+                </h2>
+                
+                {matches.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">🎯</div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No matches scheduled</h3>
+                    <p className="text-gray-500">Create your first match using the form above</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {matches.map((match) => {
+                      const team = teams.find(t => t.id === match.teamId);
+                      return (
+                        <div key={match.id} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-900 mb-1">
+                                {team?.name || 'Unknown Team'} vs {match.opponent}
+                              </div>
+                              <div className="text-sm text-gray-600 space-x-4">
+                                <span>📅 {match.scheduledDate.toLocaleDateString()}</span>
+                                <span>🕐 {match.scheduledDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
+                                <span>📍 {match.venue || (match.isHomeMatch ? 'Home' : 'Away')}</span>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  match.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' :
+                                  match.status === 'Live' ? 'bg-green-100 text-green-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {match.status}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <Link
+                                href={`/matches/${match.id}/record`}
+                                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
+                              >
+                                📱 Record
+                              </Link>
+                              <button
+                                onClick={() => deleteMatch(match.id)}
+                                className="text-red-500 hover:text-red-700 p-1"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           )}

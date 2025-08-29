@@ -92,6 +92,12 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                   <Link href="/about" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
                     🏰 Our Story
                   </Link>
+                  <Link href="/club" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    🏛️ Club Overview
+                  </Link>
+                  <Link href="/club/values" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    🤝 Our Values
+                  </Link>
                   <Link href="/club/history" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
                     📜 Club History
                   </Link>
@@ -111,7 +117,7 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
                   <Link href="/teams" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium">
                     👥 All Teams
                   </Link>
@@ -121,19 +127,71 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                   <Link href="/teams/girls" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
                     🌟 Girls Teams
                   </Link>
-                  <Link href="/teams/senior" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary">
+                  <Link href="/teams/youth" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100">
+                    🧒 Youth Teams
+                  </Link>
+                  <Link href="/teams/senior" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100">
                     👨 Senior Teams
+                  </Link>
+                  <Link href="/teams/inclusive" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    🌈 Inclusive Football
+                  </Link>
+                  <Link href="/coach" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-accent">
+                    👨‍🏫 Coaching Staff
                   </Link>
                 </div>
               </div>
 
-              <Link href="/match-central" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base">
-                ⚽ Matches
-              </Link>
+              <div className="relative group">
+                <button className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base flex items-center space-x-1">
+                  <span>⚽ Matches</span>
+                  <span className="text-xs">▼</span>
+                </button>
+                {/* Dropdown */}
+                <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                  <Link href="/match-recorder" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium">
+                    📱 Record Match
+                  </Link>
+                  <Link href="/match-central" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100">
+                    📊 Match Central
+                  </Link>
+                  <Link href="/match-admin" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary">
+                    ⚙️ Administration
+                  </Link>
+                </div>
+              </div>
 
-              <Link href="/volunteering" className="px-4 py-3 text-white hover:bg-club-primary-dark rounded-lg transition-all duration-200 font-medium text-base">
-                🤝 Volunteer
-              </Link>
+              <div className="relative group">
+                <button className="px-4 py-3 text-white hover:bg-club-primary-dark rounded-lg transition-all duration-200 font-medium flex items-center text-base">
+                  🌟 More
+                  <svg className="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                  <Link href="/news" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    📰 News
+                  </Link>
+                  <Link href="/gallery" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    📸 Gallery
+                  </Link>
+                  <Link href="/volunteering" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    🤝 Volunteer
+                  </Link>
+                  <Link href="/fundraising" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    💰 Fundraising
+                  </Link>
+                  <Link href="/shop" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    🛒 Club Shop
+                  </Link>
+                  <Link href="/get-involved/events" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    🎉 Events
+                  </Link>
+                  <Link href="/boot-room" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary">
+                    👢 Boot Room
+                  </Link>
+                </div>
+              </div>
 
               <div className="relative group">
                 <button className="px-4 py-3 text-white hover:bg-club-neutral-dark rounded-lg transition-all duration-200 font-medium flex items-center text-base">
@@ -142,7 +200,7 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
                   <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium">
                     📞 Contact Us
                   </Link>
@@ -152,8 +210,11 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                   <Link href="/join/trials" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
                     ⚽ Trials
                   </Link>
-                  <Link href="/coach" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary">
-                    🧑‍🏫 Become a Coach
+                  <Link href="/join/inclusive" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                    🌈 Inclusive Football
+                  </Link>
+                  <Link href="/members" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-accent">
+                    👥 Member Area
                   </Link>
                 </div>
               </div>
@@ -192,7 +253,9 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
               <Link href="/teams" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>👥 Teams</Link>
               <Link href="/teams/boys" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>⚽ Boys Teams</Link>
               <Link href="/teams/girls" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>🌟 Girls Teams</Link>
-              <Link href="/match-central" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>⚽ Matches</Link>
+              <Link href="/match-recorder" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>📱 Record Match</Link>
+              <Link href="/match-central" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>📊 Match Central</Link>
+              <Link href="/match-admin" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>⚙️ Admin</Link>
               <Link href="/volunteering" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>🤝 Volunteer</Link>
               <Link href="/contact" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>📞 Contact</Link>
               <Link href="/join" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>🎯 Join the Club</Link>

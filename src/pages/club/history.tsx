@@ -164,7 +164,7 @@ export default function ClubHistory() {
       heroTitle="Our Club History"
       heroSubtitle="44 Years of Community Football • From 1981 to Today"
       heroIcon="📚"
-      backgroundImage="/images/club-history-hero.jpg"
+      backgroundImage="/images/hero/3balls-pitch.jpg"
       quickActions={quickActions}
       sectionName="HISTORY"
       imageSpecs="1920x1080px minimum, historic club photos and milestone moments preferred"

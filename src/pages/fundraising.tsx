@@ -252,6 +252,7 @@ export default function Fundraising() {
       heroTitle="Building Our Legacy"
       heroSubtitle="Like the ancient builders of Swords Castle, we're constructing something lasting for our community"
       heroIcon="🏰"
+      backgroundImage="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
       quickActions={quickActions}
       sectionName="FUNDRAISING"
       imageSpecs="1920x1080px minimum, club facilities and community building activities preferred"

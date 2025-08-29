@@ -96,6 +96,7 @@ export default function MembersFAQ() {
       heroTitle="Frequently Asked Questions"
       heroSubtitle="Quick answers to common questions about membership, training, and club activities"
       heroIcon="❓"
+      backgroundImage="https://images.unsplash.com/photo-1553778263-73a83bab9b0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
       quickActions={quickActions}
       sectionName="MEMBERS FAQ"
       imageSpecs="1920x1080px minimum, community and support activities preferred"

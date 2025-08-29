@@ -105,6 +105,7 @@ export default function GetInvolvedEvents() {
       heroTitle="Club Events & Activities"
       heroSubtitle="Join our community events and help create memorable experiences for everyone"
       heroIcon="🎊"
+      backgroundImage="https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
       quickActions={quickActions}
       sectionName="CLUB EVENTS"
       imageSpecs="1920x1080px minimum, community events and activities preferred"

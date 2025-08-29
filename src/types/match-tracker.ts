@@ -107,6 +107,13 @@ export interface Match {
   veoRecording?: boolean;
   veoUrl?: string;
   
+  // Match Statistics (optional - for post-match entry)
+  playerOfTheMatch?: string;
+  yellowCards?: string; // Comma-separated player names
+  redCards?: string; // Comma-separated player names
+  attendance?: number;
+  notes?: string;
+  
   // Match Events will be in separate MatchEvent table
   createdAt: Date;
   updatedAt: Date;

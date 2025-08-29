@@ -50,6 +50,7 @@ export default function ParentsArea() {
       heroTitle="Hey Parents! 😊"
       heroSubtitle="Everything you need to support your little footballer • We're here to help! 💚"
       heroIcon="👨‍👩‍👧‍👦"
+      backgroundImage="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
       quickActions={quickActions}
       sectionName="PARENTS"
       imageSpecs="1200x600px recommended, family-friendly football moments preferred"

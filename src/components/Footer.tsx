@@ -24,44 +24,30 @@ export default function Footer() {
       title: "Quick Links",
       icon: "🔗",
       links: [
-        { href: "/dashboard", label: "Match Central" },
-        { href: "/about", label: "Our Club" },
-        { href: "/join", label: "Join Us" },
-        { href: "/login", label: "Member Area" },
-        { href: "/contact", label: "Contact Us" }
-      ]
-    },
-    {
-      title: "Club Features",
-      icon: "⚽",
-      links: [
-        { href: "/boot-room", label: "Boot Room" },
-        { href: "/shop", label: "Club Shop" },
-        { href: "/volunteering", label: "Volunteering" },
-        { href: "/fundraising", label: "Fundraising" },
-        { href: "/events", label: "Events Calendar" }
-      ]
-    },
-    {
-      title: "Teams & Training",
-      icon: "🏆",
-      links: [
+        { href: "/match-central", label: "Match Central" },
         { href: "/teams", label: "Our Teams" },
-        { href: "/coaching", label: "Coaching Staff" },
-        { href: "/training", label: "Training Schedule" },
-        { href: "/academy", label: "Youth Academy" },
-        { href: "/trials", label: "Trials & Registration" }
+        { href: "/join", label: "Join Us" },
+        { href: "/contact", label: "Contact" }
       ]
     },
     {
-      title: "Community",
+      title: "Get Involved",
       icon: "🤝",
       links: [
-        { href: "/news", label: "Latest News" },
-        { href: "/history", label: "Club History" },
-        { href: "/gallery", label: "Photo Gallery" },
-        { href: "/achievements", label: "Achievements" },
-        { href: "/testimonials", label: "Parent Testimonials" }
+        { href: "/volunteering", label: "Volunteering" },
+        { href: "/fundraising", label: "Fundraising" },
+        { href: "/get-involved/events", label: "Events" },
+        { href: "/shop", label: "Club Shop" }
+      ]
+    },
+    {
+      title: "Members",
+      icon: "👥",
+      links: [
+        { href: "/members", label: "Member Hub" },
+        { href: "/members/parents", label: "Parents Area" },
+        { href: "/members/faq", label: "FAQ" },
+        { href: "/login", label: "Login" }
       ]
     }
   ];

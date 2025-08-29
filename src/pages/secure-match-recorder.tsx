@@ -74,6 +74,14 @@ export default function SecureMatchRecorderPage() {
       action: () => window.location.reload()
     },
     {
+      id: 'recorder',
+      title: 'Simple Recorder',
+      description: 'Use the simple match recorder',
+      icon: '📱',
+      color: 'bg-red-600 hover:bg-red-700',
+      action: () => router.push('/match-recorder')
+    },
+    {
       id: 'central',
       title: 'Match Central',
       description: 'View all match data',

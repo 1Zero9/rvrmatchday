@@ -169,7 +169,7 @@ export default function Volunteering() {
       heroTitle="Join Our Volunteer Team"
       heroSubtitle="Help us build something special at Rivervalley Rangers - every contribution makes a difference in our community"
       heroIcon="🤝"
-      backgroundImage="/images/volunteering-hero.jpg"
+      backgroundImage="/images/hero/astrocorner.jpg"
       quickActions={quickActions}
       sectionName="VOLUNTEERING"
       imageSpecs="1920x1080px minimum, community and volunteering activities preferred"

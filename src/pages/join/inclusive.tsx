@@ -105,6 +105,7 @@ export default function JoinInclusive() {
       heroTitle="Football for Everyone"
       heroSubtitle="Inclusive football programs welcoming players of all abilities and backgrounds"
       heroIcon="🌈"
+      backgroundImage="https://images.unsplash.com/photo-1593341646782-e0b495cff86d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
       quickActions={quickActions}
       sectionName="INCLUSIVE FOOTBALL"
       imageSpecs="1920x1080px minimum, inclusive sports and community activities preferred"
