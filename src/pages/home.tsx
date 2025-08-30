@@ -173,7 +173,7 @@ export default function StandardHomepage() {
                 View →
               </Link>
             </motion.div>
-          </div>
+          </motion.div>
 
           {/* Upcoming Events Section - Instagram Style */}
           <motion.div 
