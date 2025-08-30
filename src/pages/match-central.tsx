@@ -224,52 +224,197 @@ export default function MatchCentral() {
   ];
 
   return (
-    <StandardLayout>
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
+      {/* Mobile-Only Design */}
+      <div className="block md:hidden bg-white">
         {/* Simplified Mobile Header */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
-            {/* Mobile Layout */}
-            <div className="block md:hidden">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-club-primary rounded-xl flex items-center justify-center">
-                    <span className="text-xl text-white">⚽</span>
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-gray-900">Match Central</h1>
-                  </div>
-                </div>
-                <a
-                  href="/match-recorder"
-                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-semibold transition-all flex items-center space-x-1 shadow-lg"
-                >
-                  <span className="text-lg">🔴</span>
-                  <span className="text-sm">Record</span>
-                </a>
-              </div>
-              
-              {/* Mobile Tabs - Horizontal Scroll */}
-              <nav className="flex space-x-2 overflow-x-auto pb-2">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id)}
-                    className={`flex items-center space-x-2 py-2 px-4 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
-                      activeTab === tab.id
-                        ? 'bg-club-primary text-white shadow-md'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                    }`}
+        <div className="bg-club-primary text-white p-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-lg font-bold">Match Central</h1>
+            <a
+              href="/match-recorder"
+              className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1"
+            >
+              <span>🔴</span>
+              <span className="text-sm">Record</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Simple Tab Bar */}
+        <div className="bg-white border-b border-gray-200 px-4">
+          <nav className="flex space-x-1">
+            <button
+              onClick={() => handleTabChange('overview')}
+              className={`py-3 px-4 font-medium text-sm transition-all ${
+                activeTab === 'overview'
+                  ? 'border-b-2 border-club-primary text-club-primary'
+                  : 'text-gray-500'
+              }`}
+            >
+              Results
+            </button>
+            <button
+              onClick={() => handleTabChange('fixtures')}
+              className={`py-3 px-4 font-medium text-sm transition-all ${
+                activeTab === 'fixtures'
+                  ? 'border-b-2 border-club-primary text-club-primary'
+                  : 'text-gray-500'
+              }`}
+            >
+              Fixtures
+            </button>
+          </nav>
+        </div>
+
+        {/* Mobile Content */}
+        <div className="p-4">
+          {/* Mobile Overview */}
+          {activeTab === 'overview' && (
+            <div>
+              {/* Simple Filter */}
+              {teams.filter(team => !team.isOpponent).length > 1 && (
+                <div className="mb-4">
+                  <select
+                    value={overviewFilter}
+                    onChange={(e) => setOverviewFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   >
-                    <span className="text-base">{tab.icon}</span>
-                    <span>{tab.label}</span>
-                  </button>
-                ))}
-              </nav>
+                    <option value="all">All Teams</option>
+                    {teams.filter(team => !team.isOpponent).map(team => (
+                      <option key={team.id} value={team.id}>{team.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Mobile Match Cards */}
+              <div className="space-y-3">
+                {filteredOverviewResults.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-3">⚽</div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">No Results Yet</h3>
+                    <a
+                      href="/match-recorder"
+                      className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium"
+                    >
+                      <span>🔴</span>
+                      Record Match
+                    </a>
+                  </div>
+                ) : (
+                  filteredOverviewResults.map((match) => {
+                    const team = teams.find(t => t.id === match.teamId);
+                    const result = getMatchResult(match);
+                    const isExpanded = expandedResults[match.id];
+                    const hasExtra = hasExtraInfo(match);
+                    
+                    if (!team) return null;
+
+                    return (
+                      <div
+                        key={match.id}
+                        className="bg-white rounded-lg border shadow-sm"
+                      >
+                        {/* Compact Mobile Card */}
+                        <div 
+                          className={`p-3 ${hasExtra ? 'cursor-pointer' : ''}`}
+                          onClick={() => hasExtra && toggleMatchExpand(match.id)}
+                        >
+                          <div className="flex items-center justify-between">
+                            {/* Teams & Date */}
+                            <div className="flex-1">
+                              <div className="text-sm font-bold text-gray-900 mb-1">
+                                {team.name} vs {match.opponent}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {new Date(match.scheduledDate).toLocaleDateString()}
+                              </div>
+                            </div>
+                            
+                            {/* Score */}
+                            <div className="text-right">
+                              <div className="text-xl font-black text-gray-900">
+                                {result.teamScore} - {result.opponentScore}
+                              </div>
+                              <div className={`text-xs font-bold px-2 py-1 rounded ${
+                                result.result === 'W' ? 'bg-green-100 text-green-700' :
+                                result.result === 'L' ? 'bg-red-100 text-red-700' :
+                                'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                {result.result === 'W' ? 'WIN' : result.result === 'L' ? 'LOSS' : 'DRAW'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Expandable Details */}
+                        {hasExtra && isExpanded && (
+                          <div className="border-t border-gray-100 bg-gray-50 p-3">
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              {match.playerOfTheMatch && (
+                                <div className="text-center p-2 bg-yellow-100 rounded">
+                                  <div>⭐ Player of Match</div>
+                                  <div className="font-bold">{match.playerOfTheMatch}</div>
+                                </div>
+                              )}
+                              {match.attendance && (
+                                <div className="text-center p-2 bg-blue-100 rounded">
+                                  <div>👥 Attendance</div>
+                                  <div className="font-bold">{match.attendance}</div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
-            
-            {/* Desktop Layout */}
-            <div className="hidden md:flex items-center justify-between">
+          )}
+
+          {/* Mobile Fixtures */}
+          {activeTab === 'fixtures' && (
+            <div className="space-y-3">
+              {upcomingMatches.map((match) => {
+                const team = teams.find(t => t.id === match.teamId);
+                return (
+                  <div key={match.id} className="bg-white rounded-lg border shadow-sm p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-bold text-gray-900">
+                          {team?.name || 'Unknown'} vs {match.opponent}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {match.scheduledDate.toLocaleDateString()} • {match.scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                      <a
+                        href={`/matches/${match.id}/record`}
+                        className="bg-green-600 text-white px-3 py-1 rounded text-xs font-medium"
+                      >
+                        Record
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop Design - Hidden on Mobile */}
+      <div className="hidden md:block">
+        <StandardLayout>
+          <div className="min-h-screen bg-gray-50">
+            {/* Simplified Mobile Header */}
+            <div className="bg-white border-b border-gray-200">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
+                {/* Desktop Layout */}
+                <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-club-primary rounded-xl flex items-center justify-center">
                   <span className="text-2xl text-white">⚽</span>
@@ -690,9 +835,9 @@ export default function MatchCentral() {
 
 
 
-        </div>
-        </div>
+          </div>
+        </StandardLayout>
       </div>
-    </StandardLayout>
+    </div>
   );
 }

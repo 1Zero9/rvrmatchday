@@ -180,38 +180,223 @@ export default function MatchRecorder() {
   }
 
   return (
-    <StandardLayout>
-      <div className="min-h-screen bg-gray-50">
-        {/* Simplified Mobile Header */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
-            {/* Mobile Layout */}
-            <div className="block md:hidden">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-club-primary rounded-xl flex items-center justify-center">
-                    <span className="text-xl text-white">⚽</span>
+    <div className="min-h-screen">
+      {/* Mobile-Only Design */}
+      <div className="block md:hidden bg-white">
+        {/* Simple Mobile Header */}
+        <div className="bg-club-primary text-white p-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-lg font-bold">Match Recorder</h1>
+            <a
+              href="/match-central"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1"
+            >
+              <span>📊</span>
+              <span className="text-sm">Results</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Mobile Content */}
+        <div className="p-4">
+          {/* Mobile Setup Selection */}
+          {recorderType === '' && (
+            <div>
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Record a Match</h2>
+                <p className="text-gray-600 text-sm">How do you want to set up?</p>
+              </div>
+
+              <div className="space-y-4">
+                {/* Quick Setup - Mobile */}
+                <button
+                  onClick={() => setRecorderType('quick')}
+                  className="w-full p-4 bg-green-50 border-2 border-green-200 rounded-xl text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">⚡</span>
+                    <div>
+                      <h3 className="font-bold text-green-700">Quick Setup</h3>
+                      <p className="text-xs text-gray-600">Record now, add details later</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Full Setup - Mobile */}
+                <button
+                  onClick={() => setRecorderType('full')}
+                  className="w-full p-4 bg-blue-50 border-2 border-blue-200 rounded-xl text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🎯</span>
+                    <div>
+                      <h3 className="font-bold text-blue-700">Full Setup</h3>
+                      <p className="text-xs text-gray-600">Complete configuration</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Mobile Quick Setup */}
+          {recorderType === 'quick' && (
+            <div>
+              <div className="text-center mb-4">
+                <h2 className="text-lg font-bold text-gray-900 mb-1">Quick Setup</h2>
+                <p className="text-gray-600 text-sm">Just the essentials</p>
+              </div>
+
+              <div className="space-y-4">
+                {/* Teams */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Home Team</label>
+                  <select
+                    value={quickSetup.homeTeam}
+                    onChange={(e) => setQuickSetup(prev => ({ ...prev, homeTeam: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="">Select or add team...</option>
+                    {getAvailableTeams().map(team => (
+                      <option key={team.id} value={team.name}>{team.name}</option>
+                    ))}
+                    <option value="custom">Add New Team</option>
+                  </select>
+                  {quickSetup.homeTeam === 'custom' && (
+                    <input
+                      type="text"
+                      value={quickSetup.homeTeamCustom}
+                      onChange={(e) => setQuickSetup(prev => ({ ...prev, homeTeamCustom: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg mt-2"
+                      placeholder="Team name..."
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Away Team</label>
+                  <select
+                    value={quickSetup.awayTeam}
+                    onChange={(e) => setQuickSetup(prev => ({ ...prev, awayTeam: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="">Select or add team...</option>
+                    {getAvailableTeams().map(team => (
+                      <option key={team.id} value={team.name}>{team.name}</option>
+                    ))}
+                    <option value="custom">Add New Team</option>
+                  </select>
+                  {quickSetup.awayTeam === 'custom' && (
+                    <input
+                      type="text"
+                      value={quickSetup.awayTeamCustom}
+                      onChange={(e) => setQuickSetup(prev => ({ ...prev, awayTeamCustom: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg mt-2"
+                      placeholder="Opposition team..."
+                    />
+                  )}
+                </div>
+
+                {/* Venue & Time */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Venue</label>
+                    <select
+                      value={quickSetup.venue}
+                      onChange={(e) => setQuickSetup(prev => ({ ...prev, venue: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    >
+                      <option value="">Where?</option>
+                      {getAvailableVenues().map(venue => (
+                        <option key={venue} value={venue}>{venue}</option>
+                      ))}
+                      <option value="custom">New Venue</option>
+                    </select>
+                    {quickSetup.venue === 'custom' && (
+                      <input
+                        type="text"
+                        value={quickSetup.venueCustom}
+                        onChange={(e) => setQuickSetup(prev => ({ ...prev, venueCustom: e.target.value }))}
+                        className="w-full px-2 py-2 border border-gray-300 rounded-lg mt-2 text-sm"
+                        placeholder="Venue..."
+                      />
+                    )}
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-gray-900">Match Recorder</h1>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Kickoff</label>
+                    <input
+                      type="time"
+                      value={quickSetup.kickoffTime}
+                      onChange={(e) => setQuickSetup(prev => ({ ...prev, kickoffTime: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    />
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <a
-                    href="/match-central"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold transition-all flex items-center space-x-1 shadow-lg text-sm"
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-4">
+                  <button
+                    onClick={() => setRecorderType('')}
+                    className="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 text-sm"
                   >
-                    <span>📊</span>
-                  </a>
-                  <a
-                    href="/match-admin"
-                    className="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg font-semibold transition-all flex items-center space-x-1 shadow-lg text-sm"
+                    Back
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('Quick recording started:', quickSetup);
+                      router.push('/matches/quick/record');
+                    }}
+                    disabled={!(quickSetup.homeTeam && quickSetup.homeTeam !== 'custom' || quickSetup.homeTeamCustom) || !(quickSetup.awayTeam && quickSetup.awayTeam !== 'custom' || quickSetup.awayTeamCustom)}
+                    className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white rounded-lg font-medium text-sm flex items-center justify-center gap-2"
                   >
-                    <span>⚙️</span>
-                  </a>
+                    <span>🔴</span>
+                    Start Recording
+                  </button>
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Mobile Full Setup Navigation */}
+          {recorderType === 'full' && (
+            <div>
+              <div className="text-center mb-4">
+                <h2 className="text-lg font-bold text-gray-900 mb-1">Full Setup</h2>
+                <p className="text-gray-600 text-sm">Complete match configuration</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {recordingModes.map((mode) => (
+                  <button
+                    key={mode.id}
+                    onClick={() => handleModeSelection(mode.id)}
+                    className={`p-3 rounded-lg border-2 ${mode.borderColor} ${mode.bgColor} text-center`}
+                  >
+                    <div className="text-2xl mb-1">{mode.icon}</div>
+                    <div className={`text-xs font-bold ${mode.textColor}`}>{mode.title}</div>
+                  </button>
+                ))}
+              </div>
+              
+              <button
+                onClick={() => setRecorderType('')}
+                className="w-full mt-4 px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 text-sm"
+              >
+                ← Back to Options
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop Design - Hidden on Mobile */}
+      <div className="hidden md:block">
+        <StandardLayout>
+          <div className="min-h-screen bg-gray-50">
+            {/* Desktop Header */}
+            <div className="bg-white border-b border-gray-200">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="flex items-center justify-between">
             
             {/* Desktop Layout */}
             <div className="hidden md:flex items-center justify-between">
@@ -941,8 +1126,9 @@ export default function MatchRecorder() {
             </motion.div>
           )}
 
-        </div>
+          </div>
+        </StandardLayout>
       </div>
-    </StandardLayout>
+    </div>
   );
 }
