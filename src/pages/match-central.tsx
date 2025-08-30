@@ -316,255 +316,237 @@ export default function MatchCentral() {
               transition={{ duration: 0.5 }}
               className="relative min-h-screen"
             >
-              {/* Hero Background Image with Blur Effect */}
+              {/* Hero Background with Glass Effect */}
               <div className="absolute inset-0 rounded-3xl overflow-hidden">
                 <img 
                   src="/images/homepg-image3.jpg" 
                   alt="Match background"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black/60"></div>
+                <div className="absolute inset-0 bg-black/40"></div>
               </div>
               
-              <div className="relative z-10 p-8">
-                {/* Dashboard Header with Quick Actions */}
-                <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                  
-                  {/* Filter */}
-                  <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-4 flex-1">
+              <div className="relative z-10 p-4 md:p-8">
+                {/* Filter Bar */}
+                <div className="bg-white/90 backdrop-blur-md border border-white/30 rounded-xl p-4 mb-6 shadow-xl">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                      <span>🏆</span>
+                      Match Results
+                    </h2>
                     <div className="flex items-center gap-3">
-                      <label className="text-white font-medium">Filter:</label>
+                      <label className="text-sm font-medium text-gray-700">Filter:</label>
                       <select
                         value={overviewFilter}
                         onChange={(e) => setOverviewFilter(e.target.value)}
-                        className="px-3 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg text-white text-sm hover:bg-white/25 transition-all cursor-pointer min-w-[150px]"
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900"
                       >
                         <option value="all">All Teams</option>
                         {teams.filter(team => !team.isOpponent).map(team => (
-                          <option key={team.id} value={team.id}>
-                            {team.name}
-                          </option>
+                          <option key={team.id} value={team.id}>{team.name}</option>
                         ))}
                       </select>
                     </div>
                   </div>
-                  
-                  {/* Quick Actions */}
-                  <div className="flex gap-3">
-                    <motion.button
-                      onClick={loadData}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-2 shadow-lg border border-white/30"
-                    >
-                      <span>🔄</span>
-                      <span className="hidden sm:inline">Refresh</span>
-                    </motion.button>
-                  </div>
                 </div>
 
-                {/* Glass Results Display */}
-                <div className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl overflow-hidden">
+              {/* Results */}
+              <div className="space-y-3">
                 {filteredOverviewResults.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="text-6xl mb-4">⚽</div>
-                    <h3 className="text-xl font-bold text-white mb-2">No Results Yet!</h3>
-                    <p className="text-white/80">
+                  <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+                    <div className="text-4xl mb-4">⚽</div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">No Results Yet!</h3>
+                    <p className="text-gray-600 mb-6">
                       {overviewFilter === 'all' 
                         ? 'Play some matches and results will appear here!' 
                         : `No results yet for ${teams.find(t => t.id === overviewFilter)?.name || 'this team'}`
                       }
                     </p>
+                    <a
+                      href="/match-recorder"
+                      className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                    >
+                      <span>🔴</span>
+                      <span>Record Your First Match</span>
+                    </a>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {filteredOverviewResults.map((match, index) => {
-                      const team = teams.find(t => t.id === match.teamId);
-                      const result = getMatchResult(match);
-                      const isExpanded = expandedResults[match.id];
-                      const hasExtra = hasExtraInfo(match);
-                      
-                      if (!team) return null;
+                  filteredOverviewResults.map((match, index) => {
+                    const team = teams.find(t => t.id === match.teamId);
+                    const result = getMatchResult(match);
+                    const isExpanded = expandedResults[match.id];
+                    const hasExtra = hasExtraInfo(match);
+                    
+                    if (!team) return null;
 
-                      return (
-                        <motion.div
-                          key={match.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.2, delay: index * 0.02 }}
-                          className="bg-white/15 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-all duration-200 hover:shadow-lg group cursor-pointer relative overflow-hidden"
-                          onClick={() => hasExtra && toggleMatchExpand(match.id)}
-                        >
-                          {/* Subtle Result Indicator Line */}
-                          <div className={`absolute left-0 top-0 bottom-0 w-1 ${
-                            result.result === 'W' ? 'bg-green-400' : 
-                            result.result === 'L' ? 'bg-red-400' : 'bg-yellow-400'
-                          }`}></div>
-                          
-                          {/* Compact Match Row */}
-                          <div className="p-4">
-                            <div className="flex items-center justify-between">
-                              
-                              {/* Team Names & Info */}
-                              <div className="flex items-center gap-4 flex-1">
-                                <div className="flex items-center gap-3">
-                                  <span className="font-bold text-white text-lg">{team.name}</span>
-                                  <span className="text-white/60 font-medium">vs</span>
-                                  <span className="font-bold text-white text-lg">{match.opponent}</span>
+                    return (
+                      <motion.div
+                        key={match.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className={`bg-white rounded-lg shadow-sm border hover:shadow-md transition-all duration-200 overflow-hidden ${
+                          hasExtra ? 'cursor-pointer' : ''
+                        }`}
+                        onClick={() => hasExtra && toggleMatchExpand(match.id)}
+                      >
+                        {/* Result Indicator */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                          result.result === 'W' ? 'bg-green-500' : 
+                          result.result === 'L' ? 'bg-red-500' : 'bg-yellow-500'
+                        }`}></div>
+                        
+                        {/* Compact Match Card */}
+                        <div className="p-4">
+                          <div className="flex items-center justify-between">
+                            
+                            {/* Team Names - Left Side */}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="text-base font-bold text-gray-900">
+                                  {team.name}
                                 </div>
-                                
-                                <div className="hidden sm:flex items-center gap-4 text-sm text-white/70">
-                                  <span>{new Date(match.scheduledDate).toLocaleDateString()}</span>
-                                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                    match.isHomeMatch 
-                                      ? 'bg-blue-400/20 text-blue-300' 
-                                      : 'bg-green-400/20 text-green-300'
-                                  }`}>
-                                    {match.isHomeMatch ? 'H' : 'A'}
-                                  </span>
-                                  <span>{match.matchType}</span>
+                                <span className="text-gray-400 text-sm">vs</span>
+                                <div className="text-base font-bold text-gray-900">
+                                  {match.opponent}
                                 </div>
                               </div>
+                              
+                              <div className="flex items-center gap-2 text-xs text-gray-600">
+                                <span>{new Date(match.scheduledDate).toLocaleDateString()}</span>
+                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  match.isHomeMatch 
+                                    ? 'bg-green-100 text-green-700' 
+                                    : 'bg-blue-100 text-blue-700'
+                                }`}>
+                                  {match.isHomeMatch ? 'HOME' : 'AWAY'}
+                                </span>
+                                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                                  {match.matchType}
+                                </span>
+                              </div>
+                            </div>
 
-                              {/* Clean Score Display */}
-                              <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-4">
-                                  <span className={`text-4xl font-black ${
-                                    result.teamScore > result.opponentScore ? 'text-green-400' : 'text-white'
+                            {/* Score - Right Side */}
+                            <div className="flex items-center gap-3">
+                              <div className="text-right">
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-2xl font-black ${
+                                    result.teamScore > result.opponentScore ? 'text-green-600' : 'text-gray-700'
                                   }`}>
                                     {result.teamScore}
                                   </span>
-                                  <span className="text-white/40 text-3xl font-bold">-</span>
-                                  <span className={`text-4xl font-black ${
-                                    result.opponentScore > result.teamScore ? 'text-green-400' : 'text-white'
+                                  <span className="text-gray-400 text-xl font-bold">-</span>
+                                  <span className={`text-2xl font-black ${
+                                    result.opponentScore > result.teamScore ? 'text-green-600' : 'text-gray-700'
                                   }`}>
                                     {result.opponentScore}
                                   </span>
                                 </div>
-                                
-                                {/* Expand Indicator - Far Right */}
-                                {hasExtra && (
-                                  <motion.div
-                                    animate={{ rotate: isExpanded ? 180 : 0 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="text-white/60 group-hover:text-white/80 transition-colors ml-4"
-                                  >
-                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                    </svg>
-                                  </motion.div>
-                                )}
+                                <div className={`text-center mt-1 px-2 py-1 rounded text-xs font-bold ${
+                                  result.result === 'W' ? 'bg-green-100 text-green-700' :
+                                  result.result === 'L' ? 'bg-red-100 text-red-700' :
+                                  'bg-yellow-100 text-yellow-700'
+                                }`}>
+                                  {result.result === 'W' ? 'WIN' : result.result === 'L' ? 'LOSS' : 'DRAW'}
+                                </div>
                               </div>
+                              
+                              {/* Expand Arrow */}
+                              {hasExtra && (
+                                <motion.div
+                                  animate={{ rotate: isExpanded ? 180 : 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                                >
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                  </svg>
+                                </motion.div>
+                              )}
                             </div>
                           </div>
+                        </div>
 
-                          {/* Compact Expanded Details */}
-                          {hasExtra && (
-                            <motion.div
-                              initial={false}
-                              animate={{ 
-                                height: isExpanded ? 'auto' : 0,
-                                opacity: isExpanded ? 1 : 0
-                              }}
-                              transition={{ duration: 0.25, ease: "easeOut" }}
-                              className="overflow-hidden"
-                            >
-                              <div className="border-t border-white/10 bg-black/10 px-4 pb-4">
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-                                  
-                                  {match.playerOfTheMatch && (
-                                    <div className="text-center">
-                                      <div className="text-lg mb-1">⭐</div>
-                                      <div className="text-xs text-white/60">Player of Match</div>
-                                      <div className="text-sm font-medium text-yellow-300">{match.playerOfTheMatch}</div>
-                                    </div>
-                                  )}
-                                  
-                                  {match.attendance && match.attendance > 0 && (
-                                    <div className="text-center">
-                                      <div className="text-lg mb-1">👥</div>
-                                      <div className="text-xs text-white/60">Attendance</div>
-                                      <div className="text-sm font-medium text-blue-300">{match.attendance}</div>
-                                    </div>
-                                  )}
-
-                                  {match.yellowCards && (
-                                    <div className="text-center">
-                                      <div className="text-lg mb-1">🟨</div>
-                                      <div className="text-xs text-white/60">Yellow Cards</div>
-                                      <div className="text-sm font-medium text-yellow-300">{match.yellowCards}</div>
-                                    </div>
-                                  )}
-
-                                  {match.redCards && (
-                                    <div className="text-center">
-                                      <div className="text-lg mb-1">🟥</div>
-                                      <div className="text-xs text-white/60">Red Cards</div>
-                                      <div className="text-sm font-medium text-red-300">{match.redCards}</div>
-                                    </div>
-                                  )}
-
-                                  {match.referee && (
-                                    <div className="text-center">
-                                      <div className="text-lg mb-1">👨‍⚖️</div>
-                                      <div className="text-xs text-white/60">Referee</div>
-                                      <div className="text-sm font-medium text-green-300">{match.referee}</div>
-                                    </div>
-                                  )}
-
-                                  {match.weather && (
-                                    <div className="text-center">
-                                      <div className="text-lg mb-1">🌤️</div>
-                                      <div className="text-xs text-white/60">Weather</div>
-                                      <div className="text-sm font-medium text-blue-300">{match.weather}</div>
-                                    </div>
-                                  )}
-
-                                  {match.veoRecording && match.veoUrl && (
-                                    <div className="text-center">
-                                      <div className="text-lg mb-1">📹</div>
-                                      <div className="text-xs text-white/60">Video</div>
-                                      <a 
-                                        href={match.veoUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-sm font-medium text-blue-300 hover:text-blue-200 transition-colors"
-                                      >
-                                        Watch
-                                      </a>
-                                    </div>
-                                  )}
-
-                                  {match.pitchCond && (
-                                    <div className="text-center">
-                                      <div className="text-lg mb-1">🏟️</div>
-                                      <div className="text-xs text-white/60">Pitch</div>
-                                      <div className={`text-sm font-medium ${
-                                        match.pitchCond === 'Excellent' ? 'text-green-300' :
-                                        match.pitchCond === 'Good' ? 'text-blue-300' :
-                                        match.pitchCond === 'Fair' ? 'text-yellow-300' : 'text-red-300'
-                                      }`}>{match.pitchCond}</div>
-                                    </div>
-                                  )}
-                                </div>
+                        {/* Expandable Extra Details */}
+                        {hasExtra && (
+                          <motion.div
+                            initial={false}
+                            animate={{ 
+                              height: isExpanded ? 'auto' : 0,
+                              opacity: isExpanded ? 1 : 0
+                            }}
+                            transition={{ duration: 0.25, ease: "easeOut" }}
+                            className="overflow-hidden"
+                          >
+                            <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 
-                                {match.notes && (
-                                  <div className="mt-4 pt-4 border-t border-white/10">
-                                    <div className="text-xs text-white/60 mb-2">📝 Match Notes</div>
-                                    <div className="text-sm text-white/80 leading-relaxed">{match.notes}</div>
+                                {match.playerOfTheMatch && (
+                                  <div className="text-center p-2 bg-yellow-100/80 backdrop-blur-sm border border-yellow-300/50 rounded-lg">
+                                    <div className="text-lg mb-1">⭐</div>
+                                    <div className="text-xs text-gray-600">Player of Match</div>
+                                    <div className="text-xs font-bold text-gray-900">{match.playerOfTheMatch}</div>
+                                  </div>
+                                )}
+                                
+                                {match.attendance && match.attendance > 0 && (
+                                  <div className="text-center p-2 bg-blue-50 border border-blue-200 rounded">
+                                    <div className="text-lg mb-1">👥</div>
+                                    <div className="text-xs text-gray-600">Attendance</div>
+                                    <div className="text-xs font-bold text-gray-900">{match.attendance}</div>
+                                  </div>
+                                )}
+
+                                {match.yellowCards && (
+                                  <div className="text-center p-2 bg-yellow-100/80 backdrop-blur-sm border border-yellow-300/50 rounded-lg">
+                                    <div className="text-lg mb-1">🟨</div>
+                                    <div className="text-xs text-gray-600">Yellow Cards</div>
+                                    <div className="text-xs font-bold text-gray-900">{match.yellowCards}</div>
+                                  </div>
+                                )}
+
+                                {match.redCards && (
+                                  <div className="text-center p-2 bg-red-50 border border-red-200 rounded">
+                                    <div className="text-lg mb-1">🟥</div>
+                                    <div className="text-xs text-gray-600">Red Cards</div>
+                                    <div className="text-xs font-bold text-gray-900">{match.redCards}</div>
+                                  </div>
+                                )}
+
+                                {match.referee && (
+                                  <div className="text-center p-2 bg-gray-50 border border-gray-200 rounded">
+                                    <div className="text-lg mb-1">👨‍⚖️</div>
+                                    <div className="text-xs text-gray-600">Referee</div>
+                                    <div className="text-xs font-bold text-gray-900">{match.referee}</div>
+                                  </div>
+                                )}
+
+                                {match.weather && (
+                                  <div className="text-center p-2 bg-blue-50 border border-blue-200 rounded">
+                                    <div className="text-lg mb-1">🌤️</div>
+                                    <div className="text-xs text-gray-600">Weather</div>
+                                    <div className="text-xs font-bold text-gray-900">{match.weather}</div>
                                   </div>
                                 )}
                               </div>
-                            </motion.div>
-                          )}
-                        </motion.div>
-                      );
-                    })}
-                  </div>
+                              
+                              {match.notes && (
+                                <div className="mt-3 p-3 bg-white border border-gray-200 rounded">
+                                  <div className="text-xs text-gray-600 font-medium mb-1">📝 Match Notes</div>
+                                  <div className="text-xs text-gray-700">{match.notes}</div>
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    );
+                  })
                 )}
               </div>
-
-            </div>
+              </div>
             </motion.div>
           )}
 

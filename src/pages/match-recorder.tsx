@@ -1,15 +1,11 @@
 /**
- * Match Control Center - Dashboard Interface
+ * Match Recorder - Complete Recording Interface
  * 
  * © 2025 OneZeroNine Premium Football Club Template
  * Developer: OneZeroNine (onezeronine@gmail.com)
  * AI Collaboration: Claude (Anthropic)
  * 
- * Central command dashboard for all match operations:
- * - Quick action buttons for common tasks
- * - Live match status monitoring
- * - Recent activity feed
- * - System status indicators
+ * Full match recording system with team setup, venue management, and recording modes
  */
 
 import React, { useState, useEffect } from "react";
@@ -19,17 +15,15 @@ import StandardLayout from "../components/StandardLayout";
 import { storage } from "../lib/match-tracker-storage";
 import { Match, Team } from "../types/match-tracker";
 
-type DashboardMode = 'record' | 'new' | 'admin';
 type RecordingMode = 'live' | 'post-match' | 'edit' | 'view-results';
+type SetupStep = 'mode' | 'match-selection' | 'team-setup' | 'venue' | 'recording';
 
-export default function MatchControlCenter() {
+export default function MatchRecorder() {
   const router = useRouter();
   const [matches, setMatches] = useState<Match[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
-  const [liveMatches, setLiveMatches] = useState<Match[]>([]);
-  const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
-  const [recentResults, setRecentResults] = useState<Match[]>([]);
+  const [currentStep, setCurrentStep] = useState<SetupStep>('mode');
   const [selectedMode, setSelectedMode] = useState<RecordingMode | ''>('');
   const [selectedMatch, setSelectedMatch] = useState<string>('');
 
@@ -45,19 +39,6 @@ export default function MatchControlCenter() {
       
       setMatches(loadedMatches);
       setTeams(loadedTeams);
-      
-      // Categorize matches
-      setLiveMatches(loadedMatches.filter(m => m.status === 'Live'));
-      setUpcomingMatches(loadedMatches
-        .filter(m => m.status === 'Scheduled')
-        .sort((a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime())
-        .slice(0, 3)
-      );
-      setRecentResults(loadedMatches
-        .filter(m => m.status === 'Finished')
-        .sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime())
-        .slice(0, 5)
-      );
     } catch (error) {
       console.error('Error loading match data:', error);
     } finally {
@@ -67,11 +48,12 @@ export default function MatchControlCenter() {
 
   const handleModeSelection = (mode: RecordingMode) => {
     setSelectedMode(mode);
-    setSelectedMatch(''); // Reset match selection
+    setCurrentStep('match-selection');
   };
 
   const handleMatchSelection = (matchId: string) => {
     setSelectedMatch(matchId);
+    setCurrentStep('team-setup');
   };
 
   const startRecording = () => {
@@ -85,7 +67,7 @@ export default function MatchControlCenter() {
         router.push(`/matches/${selectedMatch}/post-match`);
         break;
       case 'edit':
-        router.push(`/match-admin#matches`); // Go to admin to edit
+        router.push(`/match-admin#matches`);
         break;
       case 'view-results':
         router.push(`/match-central#overview`);
@@ -100,7 +82,7 @@ export default function MatchControlCenter() {
       case 'post-match':
         return matches.filter(m => m.status === 'Scheduled' || m.status === 'Live' || m.status === 'Finished');
       case 'edit':
-        return matches; // All matches can be edited
+        return matches;
       case 'view-results':
         return matches.filter(m => m.status === 'Finished');
       default:
@@ -108,49 +90,7 @@ export default function MatchControlCenter() {
     }
   };
 
-  const getMatchResult = (match: Match) => {
-    if (match.homeScore === undefined || match.awayScore === undefined) {
-      return { result: 'TBD', teamScore: 0, opponentScore: 0 };
-    }
-    
-    const teamScore = match.isHomeMatch ? match.homeScore : match.awayScore;
-    const opponentScore = match.isHomeMatch ? match.awayScore : match.homeScore;
-    
-    let result = 'D';
-    if (teamScore > opponentScore) result = 'W';
-    if (teamScore < opponentScore) result = 'L';
-    
-    return { result, teamScore, opponentScore };
-  };
-
-  const quickActions = [
-    {
-      id: 'record',
-      title: 'Record Match',
-      description: 'Start recording a live match in real-time',
-      icon: '🔴',
-      color: 'from-red-500 to-red-600',
-      action: () => router.push('/match-recorder')
-    },
-    {
-      id: 'new',
-      title: 'New Match',
-      description: 'Schedule a new match for your team',
-      icon: '➕',
-      color: 'from-green-500 to-green-600', 
-      action: () => router.push('/match-admin#matches')
-    },
-    {
-      id: 'admin',
-      title: 'Admin',
-      description: 'Manage teams, players, and settings',
-      icon: '⚙️',
-      color: 'from-slate-600 to-slate-700',
-      action: () => router.push('/match-admin')
-    }
-  ];
-
-  const recordingOptions = [
+  const recordingModes = [
     {
       id: 'live' as RecordingMode,
       title: 'Live Recording',
@@ -174,7 +114,7 @@ export default function MatchControlCenter() {
     {
       id: 'edit' as RecordingMode,
       title: 'Edit Match',
-      description: 'Modify match details, teams, or scheduling',
+      description: 'Modify existing match details or scheduling',
       icon: '✏️',
       color: 'from-green-500 to-green-600',
       textColor: 'text-green-700',
@@ -196,15 +136,15 @@ export default function MatchControlCenter() {
   if (loading) {
     return (
       <StandardLayout>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/40 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mx-auto mb-6"></div>
-            <p className="text-xl font-medium text-gray-600">Loading Match Recorder...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-club-primary border-t-transparent mx-auto mb-4"></div>
+            <p className="text-lg font-medium text-gray-600">Loading Match Recorder...</p>
           </motion.div>
         </div>
       </StandardLayout>
@@ -214,7 +154,7 @@ export default function MatchControlCenter() {
   return (
     <StandardLayout>
       <div className="min-h-screen bg-gray-50">
-        {/* Page Header with Integrated Navigation */}
+        {/* Page Header */}
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-between">
@@ -229,290 +169,491 @@ export default function MatchControlCenter() {
               </div>
               
               <div className="flex items-center space-x-3">
-                {/* Quick Navigation */}
-                <nav className="flex space-x-2">
-                  <a
-                    href="/match-central"
-                    className="flex items-center space-x-2 py-2 px-3 rounded-lg font-medium text-sm transition-all text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                  >
-                    <span className="text-base">📊</span>
-                    <span className="hidden sm:inline">Overview</span>
-                  </a>
-                  <a
-                    href="/match-central#fixtures"
-                    className="flex items-center space-x-2 py-2 px-3 rounded-lg font-medium text-sm transition-all text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                  >
-                    <span className="text-base">📅</span>
-                    <span className="hidden sm:inline">Fixtures</span>
-                  </a>
-                </nav>
-                
-                {/* Divider */}
-                <div className="h-8 w-px bg-gray-300"></div>
-                
-                {/* Action Buttons */}
-                <div className="flex items-center space-x-3">
-                  <a
-                    href="/match-central"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
-                  >
-                    <span className="text-lg">📊</span>
-                    <span className="hidden sm:inline">Central</span>
-                  </a>
-                  <a
-                    href="/match-admin"
-                    className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
-                  >
-                    <span className="text-lg">⚙️</span>
-                    <span className="hidden sm:inline">Admin</span>
-                  </a>
-                </div>
+                <a
+                  href="/match-central"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
+                >
+                  <span className="text-lg">📊</span>
+                  <span className="hidden sm:inline">View Results</span>
+                </a>
+                <a
+                  href="/match-admin"
+                  className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
+                >
+                  <span className="text-lg">⚙️</span>
+                  <span className="hidden sm:inline">Admin</span>
+                </a>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="relative min-h-screen">
-          {/* Hero Background Image with Blur Effect */}
-          <div className="absolute inset-0 rounded-3xl overflow-hidden">
-            <img 
-              src="/images/homepg-image3.jpg" 
-              alt="Match recording background"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/60"></div>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Quick Action Buttons */}
+          {/* Step Indicator */}
+          <div className="mb-8">
+            <nav className="flex justify-center">
+              <ol className="flex items-center space-x-4">
+                {[
+                  { id: 'mode', name: 'Recording Mode', icon: '🎯' },
+                  { id: 'match-selection', name: 'Select Match', icon: '⚽' },
+                  { id: 'team-setup', name: 'Team Setup', icon: '👥' },
+                  { id: 'venue', name: 'Venue & Details', icon: '🏟️' },
+                  { id: 'recording', name: 'Start Recording', icon: '🔴' }
+                ].map((step, index) => (
+                  <li key={step.id} className="flex items-center">
+                    {index > 0 && (
+                      <div className="hidden sm:block w-8 h-px bg-gray-300 mx-2"></div>
+                    )}
+                    <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium ${
+                      currentStep === step.id 
+                        ? 'bg-club-primary text-white shadow-lg' 
+                        : index < ['mode', 'match-selection', 'team-setup', 'venue', 'recording'].indexOf(currentStep)
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      <span className="text-lg">{step.icon}</span>
+                      <span className="hidden sm:inline">{step.name}</span>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </div>
+
+          {/* Step Content */}
+          
+          {/* Step 1: Recording Mode Selection */}
+          {currentStep === 'mode' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="grid md:grid-cols-3 gap-6 mb-8"
+              className="max-w-4xl mx-auto"
             >
-              {quickActions.map((action, index) => (
-                <motion.button
-                  key={action.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={action.action}
-                  className={`relative overflow-hidden bg-gradient-to-br ${action.color} text-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group`}
-                >
-                  <div className="flex items-center space-x-4">
-                    <motion.div 
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      className="text-4xl"
-                    >
-                      {action.icon}
-                    </motion.div>
-                    <div className="text-left">
-                      <h3 className="text-xl font-bold mb-2">{action.title}</h3>
-                      <p className="text-white/80 text-sm">{action.description}</p>
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Choose Recording Mode</h2>
+                <p className="text-gray-600">Select how you want to record or manage your match</p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {recordingModes.map((mode, index) => (
+                  <motion.button
+                    key={mode.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleModeSelection(mode.id)}
+                    className={`p-6 rounded-xl border-2 ${mode.borderColor} ${mode.bgColor} hover:shadow-lg transition-all duration-300 text-left`}
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className="text-4xl">{mode.icon}</div>
+                      <div className="flex-1">
+                        <h3 className={`text-xl font-bold mb-2 ${mode.textColor}`}>{mode.title}</h3>
+                        <p className="text-gray-600 text-sm">{mode.description}</p>
+                      </div>
+                      <div className="text-gray-400">
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
                     </div>
-                  </div>
-                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </motion.button>
-              ))}
+                  </motion.button>
+                ))}
+              </div>
             </motion.div>
+          )}
 
-            {/* Dashboard Grid */}
-            <div className="grid lg:grid-cols-3 gap-8">
-              
-              {/* Live Matches */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl overflow-hidden"
-              >
-                <div className="p-6 border-b border-white/10 bg-red-500/20 backdrop-blur-sm">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-white flex items-center">
-                      <span className="mr-2">🔴</span>
-                      Live Matches
-                    </h3>
-                    <span className="bg-red-500/30 border border-red-400/30 px-2 py-1 rounded-full text-xs font-bold text-red-200">
-                      {liveMatches.length} Active
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  {liveMatches.length === 0 ? (
-                    <div className="text-center py-8 text-white/70">
-                      <div className="text-4xl mb-4">⚽</div>
-                      <p className="text-sm">No live matches</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {liveMatches.map(match => {
-                        const team = teams.find(t => t.id === match.teamId);
-                        return (
-                          <div key={match.id} className="p-4 bg-red-500/20 border border-red-400/30 rounded-lg backdrop-blur-sm">
-                            <div className="font-medium text-white mb-1">
-                              {team?.name} vs {match.opponent}
-                            </div>
-                            <div className="text-sm text-red-300 font-medium flex items-center">
-                              <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse mr-2"></div>
-                              LIVE - {match.matchType}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              {/* Upcoming Matches */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl overflow-hidden"
-              >
-                <div className="p-6 border-b border-white/10 bg-blue-500/20 backdrop-blur-sm">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-white flex items-center">
-                      <span className="mr-2">📅</span>
-                      Next Up
-                    </h3>
-                    <span className="bg-blue-500/30 border border-blue-400/30 px-2 py-1 rounded-full text-xs font-bold text-blue-200">
-                      {upcomingMatches.length} Scheduled
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  {upcomingMatches.length === 0 ? (
-                    <div className="text-center py-8 text-white/70">
-                      <div className="text-4xl mb-4">📅</div>
-                      <p className="text-sm">No upcoming matches</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {upcomingMatches.map(match => {
-                        const team = teams.find(t => t.id === match.teamId);
-                        const daysAway = Math.ceil((match.scheduledDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-                        return (
-                          <div key={match.id} className="p-4 bg-blue-500/20 border border-blue-400/30 rounded-lg backdrop-blur-sm">
-                            <div className="font-medium text-white mb-1">
-                              {team?.name} vs {match.opponent}
-                            </div>
-                            <div className="text-sm text-blue-300 mb-1">
-                              {match.scheduledDate.toLocaleDateString()} - {match.matchType}
-                            </div>
-                            <div className="text-xs text-white/60">
-                              {daysAway <= 0 ? 'Today' : daysAway === 1 ? 'Tomorrow' : `${daysAway} days away`}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              {/* Recent Results */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl overflow-hidden"
-              >
-                <div className="p-6 border-b border-white/10 bg-gray-500/20 backdrop-blur-sm">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-white flex items-center">
-                      <span className="mr-2">📊</span>
-                      Recent Results
-                    </h3>
-                    <span className="bg-gray-500/30 border border-gray-400/30 px-2 py-1 rounded-full text-xs font-bold text-gray-200">
-                      {recentResults.length} Completed
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  {recentResults.length === 0 ? (
-                    <div className="text-center py-8 text-white/70">
-                      <div className="text-4xl mb-4">🏆</div>
-                      <p className="text-sm">No recent results</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {recentResults.map(match => {
-                        const team = teams.find(t => t.id === match.teamId);
-                        const result = getMatchResult(match);
-                        return (
-                          <div key={match.id} className="p-4 bg-gray-500/20 border border-gray-400/30 rounded-lg backdrop-blur-sm">
-                            <div className="font-medium text-white mb-1">
-                              {team?.name} vs {match.opponent}
-                            </div>
-                            {result && (
-                              <div className="flex items-center justify-between mb-1">
-                                <div className="text-lg font-bold">
-                                  <span className={`${result.teamScore > result.opponentScore ? 'text-green-400' : 'text-white'}`}>
-                                    {result.teamScore}
-                                  </span>
-                                  <span className="text-white/40 mx-2">-</span>
-                                  <span className={`${result.opponentScore > result.teamScore ? 'text-green-400' : 'text-white'}`}>
-                                    {result.opponentScore}
-                                  </span>
-                                </div>
-                                <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                  result.result === 'W' ? 'bg-green-500/30 text-green-300 border border-green-400/30' :
-                                  result.result === 'L' ? 'bg-red-500/30 text-red-300 border border-red-400/30' :
-                                  'bg-yellow-500/30 text-yellow-300 border border-yellow-400/30'
-                                }`}>
-                                  {result.result === 'W' ? 'Won' : result.result === 'L' ? 'Lost' : 'Drew'}
-                                </span>
-                              </div>
-                            )}
-                            <div className="text-xs text-white/60">
-                              {match.scheduledDate.toLocaleDateString()} - {match.matchType}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-            </motion.div>
-            </div>
-
-            {/* System Status */}
+          {/* Step 2: Match Selection */}
+          {currentStep === 'match-selection' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              className="mt-8 bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl p-6"
+              transition={{ duration: 0.5 }}
+              className="max-w-4xl mx-auto"
             >
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                <span className="mr-2">📊</span>
-                System Overview
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-400">{teams.filter(t => !t.isOpponent).length}</div>
-                  <div className="text-sm text-white/70">Active Teams</div>
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Select Match</h2>
+                <p className="text-gray-600">
+                  Choose the match you want to {selectedMode === 'live' ? 'record live' : 
+                                                selectedMode === 'post-match' ? 'enter results for' :
+                                                selectedMode === 'edit' ? 'edit' : 'view results for'}
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                {getMatchesForMode().map((match) => {
+                  const team = teams.find(t => t.id === match.teamId);
+                  return (
+                    <motion.button
+                      key={match.id}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => handleMatchSelection(match.id)}
+                      className={`w-full p-6 rounded-xl border-2 transition-all duration-300 text-left ${
+                        selectedMatch === match.id 
+                          ? 'border-club-primary bg-club-primary/5 shadow-lg' 
+                          : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-4 mb-2">
+                            <h3 className="text-xl font-bold text-gray-900">
+                              {team?.name || 'Unknown Team'} vs {match.opponent}
+                            </h3>
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              match.status === 'Scheduled' ? 'bg-blue-100 text-blue-700' :
+                              match.status === 'Live' ? 'bg-red-100 text-red-700' :
+                              match.status === 'Finished' ? 'bg-green-100 text-green-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {match.status}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center space-x-6 text-sm text-gray-600">
+                            <span>📅 {match.scheduledDate.toLocaleDateString()}</span>
+                            <span>⏰ {match.scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span>{match.isHomeMatch ? '🏠 Home' : '✈️ Away'}</span>
+                            <span>🏆 {match.matchType}</span>
+                            {match.venue && <span>🏟️ {match.venue}</span>}
+                          </div>
+                        </div>
+                        
+                        <div className="text-gray-400">
+                          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              <div className="flex justify-between">
+                <button
+                  onClick={() => setCurrentStep('mode')}
+                  className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  ← Back to Mode Selection
+                </button>
+                
+                {selectedMatch && (
+                  <button
+                    onClick={() => setCurrentStep('team-setup')}
+                    className="px-6 py-3 bg-club-primary hover:bg-club-primary-dark text-white rounded-lg font-semibold transition-colors"
+                  >
+                    Continue to Team Setup →
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 3: Team Setup */}
+          {currentStep === 'team-setup' && selectedMatch && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="max-w-4xl mx-auto"
+            >
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Team Setup & Squad Selection</h2>
+                <p className="text-gray-600">Configure team details and select your squad</p>
+              </div>
+
+              {(() => {
+                const match = matches.find(m => m.id === selectedMatch);
+                const team = teams.find(t => t.id === match?.teamId);
+                return (
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {/* Our Team */}
+                    <div className="bg-white rounded-xl shadow-sm border p-6">
+                      <div className="flex items-center space-x-4 mb-6">
+                        <div className="w-16 h-16 bg-club-primary rounded-xl flex items-center justify-center">
+                          <span className="text-2xl text-white">🏠</span>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">{team?.name || 'Our Team'}</h3>
+                          <p className="text-gray-600">{match?.isHomeMatch ? 'Home Team' : 'Away Team'}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Formation</label>
+                          <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary">
+                            <option>4-4-2</option>
+                            <option>4-3-3</option>
+                            <option>3-5-2</option>
+                            <option>4-5-1</option>
+                            <option>5-3-2</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Kit Color</label>
+                          <div className="flex space-x-3">
+                            <button className="w-10 h-10 rounded-full bg-red-600 border-2 border-gray-300 hover:border-gray-400"></button>
+                            <button className="w-10 h-10 rounded-full bg-blue-600 border-2 border-gray-300 hover:border-gray-400"></button>
+                            <button className="w-10 h-10 rounded-full bg-white border-2 border-gray-300 hover:border-gray-400"></button>
+                            <button className="w-10 h-10 rounded-full bg-yellow-500 border-2 border-gray-300 hover:border-gray-400"></button>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Captain</label>
+                          <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary">
+                            <option>Select Captain...</option>
+                            <option>John Smith</option>
+                            <option>Michael Jones</option>
+                            <option>David Brown</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Opposition Team */}
+                    <div className="bg-white rounded-xl shadow-sm border p-6">
+                      <div className="flex items-center space-x-4 mb-6">
+                        <div className="w-16 h-16 bg-gray-600 rounded-xl flex items-center justify-center">
+                          <span className="text-2xl text-white">⚽</span>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">{match?.opponent}</h3>
+                          <p className="text-gray-600">{match?.isHomeMatch ? 'Away Team' : 'Home Team'}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Opposition Formation</label>
+                          <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary">
+                            <option>Unknown</option>
+                            <option>4-4-2</option>
+                            <option>4-3-3</option>
+                            <option>3-5-2</option>
+                            <option>4-5-1</option>
+                            <option>5-3-2</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Opposition Kit</label>
+                          <div className="flex space-x-3">
+                            <button className="w-10 h-10 rounded-full bg-blue-600 border-2 border-gray-300 hover:border-gray-400"></button>
+                            <button className="w-10 h-10 rounded-full bg-red-600 border-2 border-gray-300 hover:border-gray-400"></button>
+                            <button className="w-10 h-10 rounded-full bg-green-600 border-2 border-gray-300 hover:border-gray-400"></button>
+                            <button className="w-10 h-10 rounded-full bg-black border-2 border-gray-300 hover:border-gray-400"></button>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Key Players</label>
+                          <textarea 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                            rows={3}
+                            placeholder="Note any key players to watch..."
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="flex justify-between mt-8">
+                <button
+                  onClick={() => setCurrentStep('match-selection')}
+                  className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  ← Back to Match Selection
+                </button>
+                
+                <button
+                  onClick={() => setCurrentStep('venue')}
+                  className="px-6 py-3 bg-club-primary hover:bg-club-primary-dark text-white rounded-lg font-semibold transition-colors"
+                >
+                  Continue to Venue →
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 4: Venue & Match Details */}
+          {currentStep === 'venue' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="max-w-4xl mx-auto"
+            >
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Venue & Match Details</h2>
+                <p className="text-gray-600">Confirm venue details and match conditions</p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <div className="grid md:grid-cols-2 gap-8">
+                  
+                  {/* Left Column */}
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Match Venue</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                        placeholder="Stadium name or location..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Referee</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                        placeholder="Referee name..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Assistant Referees</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                        placeholder="Assistant referee names..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Weather Conditions</label>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary">
+                        <option>Clear/Sunny</option>
+                        <option>Partly Cloudy</option>
+                        <option>Overcast</option>
+                        <option>Light Rain</option>
+                        <option>Heavy Rain</option>
+                        <option>Windy</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {/* Right Column */}
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Pitch Condition</label>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary">
+                        <option>Excellent</option>
+                        <option>Good</option>
+                        <option>Fair</option>
+                        <option>Poor</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Expected Attendance</label>
+                      <input 
+                        type="number" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                        placeholder="0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Competition</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                        placeholder="League, Cup, Friendly..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Match Notes</label>
+                      <textarea 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                        rows={3}
+                        placeholder="Pre-match notes, tactics, or special considerations..."
+                      ></textarea>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-400">{matches.length}</div>
-                  <div className="text-sm text-white/70">Total Matches</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-400">{liveMatches.length}</div>
-                  <div className="text-sm text-white/70">Live Now</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-400">{upcomingMatches.length}</div>
-                  <div className="text-sm text-white/70">Next 3 Days</div>
+              </div>
+
+              <div className="flex justify-between mt-8">
+                <button
+                  onClick={() => setCurrentStep('team-setup')}
+                  className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  ← Back to Team Setup
+                </button>
+                
+                <button
+                  onClick={() => setCurrentStep('recording')}
+                  className="px-6 py-3 bg-club-primary hover:bg-club-primary-dark text-white rounded-lg font-semibold transition-colors"
+                >
+                  Ready to Record →
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 5: Start Recording */}
+          {currentStep === 'recording' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="max-w-4xl mx-auto text-center"
+            >
+              <div className="bg-white rounded-xl shadow-sm border p-8">
+                <div className="text-6xl mb-6">🎬</div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to Start Recording!</h2>
+                <p className="text-gray-600 text-lg mb-8">
+                  Everything is set up. Click the button below to begin 
+                  {selectedMode === 'live' ? ' live recording' : 
+                   selectedMode === 'post-match' ? ' entering results' : 
+                   selectedMode === 'edit' ? ' editing the match' : ' viewing results'}.
+                </p>
+                
+                <div className="flex justify-center space-x-4">
+                  <button
+                    onClick={() => setCurrentStep('venue')}
+                    className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    ← Back to Review
+                  </button>
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={startRecording}
+                    className={`px-8 py-4 rounded-xl font-bold text-white shadow-xl hover:shadow-2xl transition-all ${
+                      selectedMode === 'live' ? 'bg-gradient-to-r from-red-600 to-red-700' :
+                      selectedMode === 'post-match' ? 'bg-gradient-to-r from-blue-600 to-blue-700' :
+                      selectedMode === 'edit' ? 'bg-gradient-to-r from-green-600 to-green-700' :
+                      'bg-gradient-to-r from-purple-600 to-purple-700'
+                    }`}
+                  >
+                    <span className="text-2xl mr-3">
+                      {selectedMode === 'live' ? '🔴' : 
+                       selectedMode === 'post-match' ? '📝' : 
+                       selectedMode === 'edit' ? '✏️' : '📊'}
+                    </span>
+                    Start {selectedMode === 'live' ? 'Live Recording' : 
+                           selectedMode === 'post-match' ? 'Post-Match Entry' : 
+                           selectedMode === 'edit' ? 'Match Editing' : 'Results Review'}
+                  </motion.button>
                 </div>
               </div>
             </motion.div>
-          </div>
+          )}
+
         </div>
       </div>
     </StandardLayout>
