@@ -42,32 +42,55 @@ export default function StandardHomepage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h1 className="text-2xl font-bold mb-2">Building Community</h1>
-              <p className="text-lg font-medium text-green-200 mb-6">Through Football Since 1981</p>
+              <motion.h1 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, delay: 0.2 }}
+                className="text-3xl font-bold mb-3 text-shadow-lg"
+              >
+                Building Community
+              </motion.h1>
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.4 }}
+                className="text-lg font-medium text-green-200 mb-4"
+              >
+                Through Football Since 1981
+              </motion.p>
               
-              {/* Primary Mobile Actions - Glass Effect */}
-              <div className="space-y-3">
-                <motion.div 
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-4 text-center"
-                >
-                  <div className="text-2xl mb-2">⚽</div>
-                  <h3 className="font-bold mb-2">Join Our Club</h3>
-                  <Link href="/join/trials" className="inline-block bg-club-primary hover:bg-club-secondary text-white font-bold py-2 px-4 rounded-lg text-sm">
-                    Register Now
-                  </Link>
-                </motion.div>
-              </div>
+              {/* Floating Action Button */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.6, type: "spring", stiffness: 200 }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
+                className="inline-block"
+              >
+                <Link href="/join/trials" className="bg-white/20 backdrop-blur-lg border-2 border-white/40 text-white font-bold py-3 px-6 rounded-full text-sm shadow-2xl hover:bg-white/30 transition-all duration-300">
+                  ⚽ Join Rangers
+                </Link>
+              </motion.div>
             </motion.div>
           </div>
         </section>
 
         {/* Mobile Quick Actions - Glass Cards */}
-        <section className="p-4 bg-gray-50">
-          <div className="grid grid-cols-2 gap-3 mb-4">
+        <section className="p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="grid grid-cols-2 gap-3 mb-6"
+          >
             <motion.div 
-              whileHover={{ scale: 1.02 }}
-              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-club-primary/80 to-club-secondary/80"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 1.0 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-club-primary/90 to-club-secondary/90 hover:shadow-2xl transition-all duration-300"
             >
               <div className="text-2xl mb-2 text-white">📅</div>
               <h3 className="text-sm font-bold mb-1 text-white">Fixtures</h3>
@@ -77,8 +100,12 @@ export default function StandardHomepage() {
             </motion.div>
 
             <motion.div 
-              whileHover={{ scale: 1.02 }}
-              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-purple-600/80 to-purple-700/80"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 1.2 }}
+              whileHover={{ scale: 1.05, rotateY: -5 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-purple-600/90 to-purple-700/90 hover:shadow-2xl transition-all duration-300"
             >
               <div className="text-2xl mb-2 text-white">🏆</div>
               <h3 className="text-sm font-bold mb-1 text-white">Results</h3>
@@ -88,8 +115,12 @@ export default function StandardHomepage() {
             </motion.div>
 
             <motion.div 
-              whileHover={{ scale: 1.02 }}
-              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-teal-600/80 to-teal-700/80"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 1.4 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-teal-600/90 to-teal-700/90 hover:shadow-2xl transition-all duration-300"
             >
               <div className="text-2xl mb-2 text-white">👥</div>
               <h3 className="text-sm font-bold mb-1 text-white">Teams</h3>
@@ -99,8 +130,12 @@ export default function StandardHomepage() {
             </motion.div>
 
             <motion.div 
-              whileHover={{ scale: 1.02 }}
-              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-orange-600/80 to-orange-700/80"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 1.6 }}
+              whileHover={{ scale: 1.05, rotateY: -5 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-orange-600/90 to-orange-700/90 hover:shadow-2xl transition-all duration-300"
             >
               <div className="text-2xl mb-2 text-white">📞</div>
               <h3 className="text-sm font-bold mb-1 text-white">Contact</h3>
@@ -110,8 +145,12 @@ export default function StandardHomepage() {
             </motion.div>
 
             <motion.div 
-              whileHover={{ scale: 1.02 }}
-              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-red-600/80 to-red-700/80"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 1.8 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-red-600/90 to-red-700/90 hover:shadow-2xl transition-all duration-300"
             >
               <div className="text-2xl mb-2 text-white">📰</div>
               <h3 className="text-sm font-bold mb-1 text-white">News</h3>
@@ -121,8 +160,12 @@ export default function StandardHomepage() {
             </motion.div>
 
             <motion.div 
-              whileHover={{ scale: 1.02 }}
-              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-indigo-600/80 to-indigo-700/80"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 2.0 }}
+              whileHover={{ scale: 1.05, rotateY: -5 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-indigo-600/90 to-indigo-700/90 hover:shadow-2xl transition-all duration-300"
             >
               <div className="text-2xl mb-2 text-white">🎉</div>
               <h3 className="text-sm font-bold mb-1 text-white">Events</h3>
@@ -133,12 +176,36 @@ export default function StandardHomepage() {
           </div>
 
           {/* Upcoming Events Section - Instagram Style */}
-          <div className="space-y-3">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">📅 What's Coming Up</h2>
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 2.2 }}
+            className="space-y-3"
+          >
+            <motion.h2 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 2.4 }}
+              className="text-lg font-bold text-gray-900 mb-4 flex items-center"
+            >
+              <span className="mr-2">📅</span>
+              <span>What's Coming Up</span>
+              <motion.span
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 3 }}
+                className="ml-2"
+              >
+                ✨
+              </motion.span>
+            </motion.h2>
             
             <motion.div 
-              whileHover={{ scale: 1.01 }}
-              className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-4 shadow-lg bg-gradient-to-br from-green-600/20 to-blue-600/20"
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 2.6 }}
+              whileHover={{ scale: 1.02, rotateX: 2 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/40 backdrop-blur-lg border border-white/50 rounded-xl p-4 shadow-xl bg-gradient-to-br from-green-600/30 to-blue-600/30 hover:shadow-2xl transition-all duration-300"
             >
               <div className="flex items-center mb-2">
                 <span className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">MATCH DAY</span>
@@ -150,41 +217,104 @@ export default function StandardHomepage() {
             </motion.div>
 
             <motion.div 
-              whileHover={{ scale: 1.01 }}
-              className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-4 shadow-lg bg-gradient-to-br from-purple-600/20 to-pink-600/20"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 2.8 }}
+              whileHover={{ scale: 1.02, rotateX: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/40 backdrop-blur-lg border border-white/50 rounded-xl p-4 shadow-xl bg-gradient-to-br from-purple-600/30 to-pink-600/30 hover:shadow-2xl transition-all duration-300"
             >
               <div className="flex items-center mb-2">
-                <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">FUNDRAISER</span>
-                <span className="text-gray-700 text-xs">Next Friday</span>
+                <motion.span 
+                  animate={{ pulse: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold mr-2"
+                >
+                  FUNDRAISER
+                </motion.span>
+                <span className="text-gray-800 text-xs font-medium">Next Friday</span>
               </div>
               <h3 className="font-bold text-gray-900 mb-1 text-sm">Quiz Night</h3>
-              <p className="text-gray-700 text-xs mb-2">Club House • 7:30pm • €10 per team</p>
-              <p className="text-club-primary text-xs font-semibold">Prizes & craic guaranteed! 🎯</p>
+              <p className="text-gray-800 text-xs mb-2">Club House • 7:30pm • €10 per team</p>
+              <p className="text-purple-700 text-xs font-semibold">Prizes & craic guaranteed! 🎯</p>
             </motion.div>
 
             <motion.div 
-              whileHover={{ scale: 1.01 }}
-              className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-4 shadow-lg bg-gradient-to-br from-orange-600/20 to-red-600/20"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 3.0 }}
+              whileHover={{ scale: 1.02, rotateX: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/40 backdrop-blur-lg border border-white/50 rounded-xl p-4 shadow-xl bg-gradient-to-br from-orange-600/30 to-red-600/30 hover:shadow-2xl transition-all duration-300"
             >
               <div className="flex items-center mb-2">
-                <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">TRAINING</span>
-                <span className="text-gray-700 text-xs">Every Tuesday</span>
+                <motion.span 
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold mr-2"
+                >
+                  TRAINING
+                </motion.span>
+                <span className="text-gray-800 text-xs font-medium">Every Tuesday</span>
               </div>
               <h3 className="font-bold text-gray-900 mb-1 text-sm">Youth Development Programme</h3>
-              <p className="text-gray-700 text-xs mb-2">Ages 8-16 • 6:00-7:30pm • New players welcome</p>
-              <p className="text-club-primary text-xs font-semibold">First session free! ⚽</p>
+              <p className="text-gray-800 text-xs mb-2">Ages 8-16 • 6:00-7:30pm • New players welcome</p>
+              <p className="text-orange-700 text-xs font-semibold">First session free! ⚽</p>
             </motion.div>
-          </div>
 
-          {/* Minimal Footer Links */}
-          <div className="mt-6 text-center">
-            <div className="space-y-2">
-              <Link href="/about" className="block text-club-primary text-sm font-medium">About Club</Link>
-              <Link href="/join" className="block text-club-primary text-sm font-medium">Join Us</Link>
-              <Link href="/volunteering" className="block text-club-primary text-sm font-medium">Volunteer</Link>
+            {/* Add more Instagram-style events */}
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 3.2 }}
+              whileHover={{ scale: 1.02, rotateX: 2 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/40 backdrop-blur-lg border border-white/50 rounded-xl p-4 shadow-xl bg-gradient-to-br from-blue-600/30 to-cyan-600/30 hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="flex items-center mb-2">
+                <motion.span 
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold mr-2"
+                >
+                  PROGRAMME
+                </motion.span>
+                <span className="text-gray-800 text-xs font-medium">Starting Soon</span>
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm">Summer Football Camp</h3>
+              <p className="text-gray-800 text-xs mb-2">July 1-5 • Ages 6-14 • €50 for the week</p>
+              <p className="text-blue-700 text-xs font-semibold">Early bird discount available! 🏕️</p>
+            </motion.div>
+          </motion.div>
+
+          {/* Enhanced Footer - Glass Effect */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 3.4 }}
+            className="mt-8"
+          >
+            <div className="bg-white/30 backdrop-blur-lg border border-white/40 rounded-xl p-4 shadow-xl">
+              <div className="flex justify-center space-x-6 mb-3">
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <Link href="/about" className="text-club-primary text-sm font-medium hover:text-club-secondary transition-colors">About</Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <Link href="/join" className="text-club-primary text-sm font-medium hover:text-club-secondary transition-colors">Join</Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <Link href="/volunteering" className="text-club-primary text-sm font-medium hover:text-club-secondary transition-colors">Volunteer</Link>
+                </motion.div>
+              </div>
+              <motion.p 
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="text-xs text-gray-600 text-center"
+              >
+                © 2025 Rivervalley Rangers AFC
+              </motion.p>
             </div>
-            <p className="text-xs text-gray-500 mt-4">© 2025 Rivervalley Rangers AFC</p>
-          </div>
+          </motion.div>
         </section>
       </div>
 
