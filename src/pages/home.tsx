@@ -67,59 +67,113 @@ export default function StandardHomepage() {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <motion.div 
               whileHover={{ scale: 1.02 }}
-              className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-3 text-center shadow-lg"
+              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-club-primary/80 to-club-secondary/80"
             >
-              <div className="text-2xl mb-2">📅</div>
-              <h3 className="text-sm font-bold mb-1">Fixtures</h3>
-              <Link href="/match-central" className="text-club-primary text-xs font-semibold">
+              <div className="text-2xl mb-2 text-white">📅</div>
+              <h3 className="text-sm font-bold mb-1 text-white">Fixtures</h3>
+              <Link href="/match-central" className="text-white text-xs font-semibold underline">
                 View →
               </Link>
             </motion.div>
 
             <motion.div 
               whileHover={{ scale: 1.02 }}
-              className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-3 text-center shadow-lg"
+              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-purple-600/80 to-purple-700/80"
             >
-              <div className="text-2xl mb-2">🏆</div>
-              <h3 className="text-sm font-bold mb-1">Results</h3>
-              <Link href="/match-central" className="text-club-primary text-xs font-semibold">
+              <div className="text-2xl mb-2 text-white">🏆</div>
+              <h3 className="text-sm font-bold mb-1 text-white">Results</h3>
+              <Link href="/match-central" className="text-white text-xs font-semibold underline">
                 View →
               </Link>
             </motion.div>
 
             <motion.div 
               whileHover={{ scale: 1.02 }}
-              className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-3 text-center shadow-lg"
+              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-teal-600/80 to-teal-700/80"
             >
-              <div className="text-2xl mb-2">👥</div>
-              <h3 className="text-sm font-bold mb-1">Teams</h3>
-              <Link href="/teams" className="text-club-primary text-xs font-semibold">
+              <div className="text-2xl mb-2 text-white">👥</div>
+              <h3 className="text-sm font-bold mb-1 text-white">Teams</h3>
+              <Link href="/teams" className="text-white text-xs font-semibold underline">
                 View →
               </Link>
             </motion.div>
 
             <motion.div 
               whileHover={{ scale: 1.02 }}
-              className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-3 text-center shadow-lg"
+              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-orange-600/80 to-orange-700/80"
             >
-              <div className="text-2xl mb-2">📞</div>
-              <h3 className="text-sm font-bold mb-1">Contact</h3>
-              <Link href="/contact" className="text-club-primary text-xs font-semibold">
+              <div className="text-2xl mb-2 text-white">📞</div>
+              <h3 className="text-sm font-bold mb-1 text-white">Contact</h3>
+              <Link href="/contact" className="text-white text-xs font-semibold underline">
+                View →
+              </Link>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-red-600/80 to-red-700/80"
+            >
+              <div className="text-2xl mb-2 text-white">📰</div>
+              <h3 className="text-sm font-bold mb-1 text-white">News</h3>
+              <Link href="/news" className="text-white text-xs font-semibold underline">
+                View →
+              </Link>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center shadow-lg bg-gradient-to-br from-indigo-600/80 to-indigo-700/80"
+            >
+              <div className="text-2xl mb-2 text-white">🎉</div>
+              <h3 className="text-sm font-bold mb-1 text-white">Events</h3>
+              <Link href="/get-involved/events" className="text-white text-xs font-semibold underline">
                 View →
               </Link>
             </motion.div>
           </div>
 
-          {/* Featured News - Mobile */}
-          <div className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl p-4 shadow-lg">
-            <div className="flex items-center mb-3">
-              <span className="bg-club-primary text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST</span>
-            </div>
-            <h3 className="font-bold text-gray-900 mb-2 text-sm">U16 Boys Reach County Cup Final</h3>
-            <p className="text-gray-600 text-xs mb-3">Thrilling 3-2 victory secures final place...</p>
-            <Link href="/news" className="text-club-primary text-xs font-semibold">
-              Read More →
-            </Link>
+          {/* Upcoming Events Section - Instagram Style */}
+          <div className="space-y-3">
+            <h2 className="text-lg font-bold text-gray-900 mb-3">📅 What's Coming Up</h2>
+            
+            <motion.div 
+              whileHover={{ scale: 1.01 }}
+              className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-4 shadow-lg bg-gradient-to-br from-green-600/20 to-blue-600/20"
+            >
+              <div className="flex items-center mb-2">
+                <span className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">MATCH DAY</span>
+                <span className="text-gray-700 text-xs">This Saturday</span>
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm">U16 County Cup Final</h3>
+              <p className="text-gray-700 text-xs mb-2">vs Milltown FC • 2pm • Aviva Stadium</p>
+              <p className="text-club-primary text-xs font-semibold">Come support the lads! 🏆</p>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.01 }}
+              className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-4 shadow-lg bg-gradient-to-br from-purple-600/20 to-pink-600/20"
+            >
+              <div className="flex items-center mb-2">
+                <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">FUNDRAISER</span>
+                <span className="text-gray-700 text-xs">Next Friday</span>
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm">Quiz Night</h3>
+              <p className="text-gray-700 text-xs mb-2">Club House • 7:30pm • €10 per team</p>
+              <p className="text-club-primary text-xs font-semibold">Prizes & craic guaranteed! 🎯</p>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.01 }}
+              className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-4 shadow-lg bg-gradient-to-br from-orange-600/20 to-red-600/20"
+            >
+              <div className="flex items-center mb-2">
+                <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">TRAINING</span>
+                <span className="text-gray-700 text-xs">Every Tuesday</span>
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm">Youth Development Programme</h3>
+              <p className="text-gray-700 text-xs mb-2">Ages 8-16 • 6:00-7:30pm • New players welcome</p>
+              <p className="text-club-primary text-xs font-semibold">First session free! ⚽</p>
+            </motion.div>
           </div>
 
           {/* Minimal Footer Links */}
