@@ -36,7 +36,7 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
       <header className="bg-club-primary text-white shadow-lg sticky top-0 z-50 border-b-4 border-club-accent">
         <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;utf8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 fill=%22white%22%3e%3ccircle cx=%2220%22 cy=%2220%22 r=%222%22/%3e%3ccircle cx=%2280%22 cy=%2240%22 r=%221%22/%3e%3ccircle cx=%2240%22 cy=%2270%22 r=%221.5%22/%3e%3ccircle cx=%2290%22 cy=%2280%22 r=%221%22/%3e%3ccircle cx=%2210%22 cy=%2260%22 r=%221%22/%3e%3c/svg%3e')] bg-repeat"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="flex justify-between items-center h-24">
+          <div className="flex justify-between items-center h-16 md:h-24">
             
             {/* Logo Section */}
             <div className="flex items-center space-x-4 cursor-pointer group" onClick={handleLogoClick}>
@@ -46,7 +46,7 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                   alt="Rivervalley Rangers AFC Logo" 
                   width={64}
                   height={64}
-                  className="drop-shadow-lg group-hover:scale-105 transition-transform duration-200"
+                  className="drop-shadow-lg group-hover:scale-105 transition-transform duration-200 md:w-16 md:h-16 w-10 h-10"
                 />
                 <div className="absolute -top-2 -right-2 group/indicator">
                   <div className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg relative cursor-help">
@@ -64,13 +64,13 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                 </div>
               </div>
               <div>
-                <h1 className="font-bold text-xl text-white group-hover:text-slate-200 transition-colors duration-200">
+                <h1 className="font-bold text-sm md:text-xl text-white group-hover:text-slate-200 transition-colors duration-200">
                   Rivervalley Rangers
                 </h1>
-                <p className="text-slate-300 text-sm font-medium flex items-center space-x-2">
+                <p className="text-slate-300 text-xs md:text-sm font-medium flex items-center space-x-2">
                   <span>AFC</span>
                   <span className="text-green-400">⚽</span>
-                  <span className="text-xs bg-slate-700 px-2 py-1 rounded-full">EST. 1981</span>
+                  <span className="text-xs bg-slate-700 px-1 md:px-2 py-1 rounded-full">EST. 1981</span>
                 </p>
               </div>
             </div>

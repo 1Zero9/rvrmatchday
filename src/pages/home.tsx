@@ -5,7 +5,138 @@ import StandardLayout from "../components/StandardLayout";
 
 export default function StandardHomepage() {
   return (
-    <StandardLayout>
+    <div className="min-h-screen">
+      {/* Mobile-Only Design */}
+      <div className="block md:hidden">
+        {/* Mobile Header - Simplified */}
+        <div className="bg-club-primary text-white p-3">
+          <div className="flex items-center justify-center">
+            <Image 
+              src="/images/logo.png" 
+              alt="Rivervalley Rangers AFC Logo" 
+              width={40}
+              height={40}
+              className="mr-3"
+            />
+            <div>
+              <h1 className="font-bold text-lg">Rivervalley Rangers</h1>
+              <p className="text-xs text-green-200">AFC • Est. 1981</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Hero - Compact */}
+        <section className="relative h-[50vh] min-h-[300px] flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0">
+            <img 
+              src="/images/hero/halftime2.jpg" 
+              alt="Rivervalley Rangers AFC"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/50"></div>
+          </div>
+          
+          <div className="relative z-10 text-center text-white px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h1 className="text-2xl font-bold mb-2">Building Community</h1>
+              <p className="text-lg font-medium text-green-200 mb-6">Through Football Since 1981</p>
+              
+              {/* Primary Mobile Actions - Glass Effect */}
+              <div className="space-y-3">
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-4 text-center"
+                >
+                  <div className="text-2xl mb-2">⚽</div>
+                  <h3 className="font-bold mb-2">Join Our Club</h3>
+                  <Link href="/join/trials" className="inline-block bg-club-primary hover:bg-club-secondary text-white font-bold py-2 px-4 rounded-lg text-sm">
+                    Register Now
+                  </Link>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Mobile Quick Actions - Glass Cards */}
+        <section className="p-4 bg-gray-50">
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-3 text-center shadow-lg"
+            >
+              <div className="text-2xl mb-2">📅</div>
+              <h3 className="text-sm font-bold mb-1">Fixtures</h3>
+              <Link href="/match-central" className="text-club-primary text-xs font-semibold">
+                View →
+              </Link>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-3 text-center shadow-lg"
+            >
+              <div className="text-2xl mb-2">🏆</div>
+              <h3 className="text-sm font-bold mb-1">Results</h3>
+              <Link href="/match-central" className="text-club-primary text-xs font-semibold">
+                View →
+              </Link>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-3 text-center shadow-lg"
+            >
+              <div className="text-2xl mb-2">👥</div>
+              <h3 className="text-sm font-bold mb-1">Teams</h3>
+              <Link href="/teams" className="text-club-primary text-xs font-semibold">
+                View →
+              </Link>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-3 text-center shadow-lg"
+            >
+              <div className="text-2xl mb-2">📞</div>
+              <h3 className="text-sm font-bold mb-1">Contact</h3>
+              <Link href="/contact" className="text-club-primary text-xs font-semibold">
+                View →
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* Featured News - Mobile */}
+          <div className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl p-4 shadow-lg">
+            <div className="flex items-center mb-3">
+              <span className="bg-club-primary text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST</span>
+            </div>
+            <h3 className="font-bold text-gray-900 mb-2 text-sm">U16 Boys Reach County Cup Final</h3>
+            <p className="text-gray-600 text-xs mb-3">Thrilling 3-2 victory secures final place...</p>
+            <Link href="/news" className="text-club-primary text-xs font-semibold">
+              Read More →
+            </Link>
+          </div>
+
+          {/* Minimal Footer Links */}
+          <div className="mt-6 text-center">
+            <div className="space-y-2">
+              <Link href="/about" className="block text-club-primary text-sm font-medium">About Club</Link>
+              <Link href="/join" className="block text-club-primary text-sm font-medium">Join Us</Link>
+              <Link href="/volunteering" className="block text-club-primary text-sm font-medium">Volunteer</Link>
+            </div>
+            <p className="text-xs text-gray-500 mt-4">© 2025 Rivervalley Rangers AFC</p>
+          </div>
+        </section>
+      </div>
+
+      {/* Desktop Version - Unchanged */}
+      <div className="hidden md:block">
+        <StandardLayout>
       <main>
         
         {/* Hero Section - Authentic Community Feel */}
@@ -537,7 +668,8 @@ export default function StandardHomepage() {
         </section>
 
       </main>
-      
-    </StandardLayout>
+        </StandardLayout>
+      </div>
+    </div>
   );
 }
