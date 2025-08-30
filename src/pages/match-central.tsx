@@ -354,41 +354,29 @@ export default function MatchCentral() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="relative min-h-screen"
             >
-              {/* Hero Background with Glass Effect */}
-              <div className="absolute inset-0 rounded-3xl overflow-hidden">
-                <img 
-                  src="/images/homepg-image3.jpg" 
-                  alt="Match background"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40"></div>
-              </div>
-              
-              <div className="relative z-10 p-3 md:p-8">
-                {/* Filter Bar */}
-                <div className="bg-white/90 backdrop-blur-md border border-white/30 rounded-xl p-3 md:p-4 mb-4 md:mb-6 shadow-xl">
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <h2 className="text-lg md:text-xl font-bold text-gray-900 flex items-center gap-2">
-                      <span>🏆</span>
-                      Match Results
-                    </h2>
-                    <div className="flex items-center gap-2 md:gap-3">
-                      <label className="text-sm font-medium text-gray-700">Filter:</label>
-                      <select
-                        value={overviewFilter}
-                        onChange={(e) => setOverviewFilter(e.target.value)}
-                        className="px-2 py-1 md:px-3 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900 text-sm"
-                      >
-                        <option value="all">All Teams</option>
-                        {teams.filter(team => !team.isOpponent).map(team => (
-                          <option key={team.id} value={team.id}>{team.name}</option>
-                        ))}
-                      </select>
-                    </div>
+              {/* Filter Bar - Clean Design */}
+              <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <span>🏆</span>
+                    Match Results
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm font-medium text-gray-700">Filter:</label>
+                    <select
+                      value={overviewFilter}
+                      onChange={(e) => setOverviewFilter(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900"
+                    >
+                      <option value="all">All Teams</option>
+                      {teams.filter(team => !team.isOpponent).map(team => (
+                        <option key={team.id} value={team.id}>{team.name}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
+              </div>
 
               {/* Results */}
               <div className="space-y-3">
@@ -425,66 +413,68 @@ export default function MatchCentral() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className={`bg-white rounded-lg shadow-sm border hover:shadow-md transition-all duration-200 overflow-hidden ${
+                        className={`bg-white rounded-lg shadow-sm border hover:shadow-md transition-all duration-200 overflow-hidden relative ${
                           hasExtra ? 'cursor-pointer' : ''
                         }`}
                         onClick={() => hasExtra && toggleMatchExpand(match.id)}
                       >
-                        {/* Result Indicator */}
+                        {/* Result Indicator Strip */}
                         <div className={`absolute left-0 top-0 bottom-0 w-1 ${
                           result.result === 'W' ? 'bg-green-500' : 
                           result.result === 'L' ? 'bg-red-500' : 'bg-yellow-500'
                         }`}></div>
                         
-                        {/* Compact Match Card */}
+                        {/* Main Card Content - Left/Right Layout */}
                         <div className="p-4">
                           <div className="flex items-center justify-between">
                             
-                            {/* Team Names - Left Side */}
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <div className="text-base font-bold text-gray-900">
+                            {/* Left Side - Match Info */}
+                            <div className="flex-1 pr-4">
+                              {/* Teams */}
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className="text-lg font-bold text-gray-900">
                                   {team.name}
                                 </div>
-                                <span className="text-gray-400 text-sm">vs</span>
-                                <div className="text-base font-bold text-gray-900">
+                                <span className="text-gray-400 font-medium">vs</span>
+                                <div className="text-lg font-bold text-gray-900">
                                   {match.opponent}
                                 </div>
                               </div>
                               
-                              <div className="flex items-center gap-2 text-xs text-gray-600">
-                                <span>{new Date(match.scheduledDate).toLocaleDateString()}</span>
-                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              {/* Match Details */}
+                              <div className="flex items-center gap-3 text-sm text-gray-600">
+                                <span className="font-medium">{new Date(match.scheduledDate).toLocaleDateString()}</span>
+                                <span className={`px-2 py-1 rounded font-medium ${
                                   match.isHomeMatch 
                                     ? 'bg-green-100 text-green-700' 
                                     : 'bg-blue-100 text-blue-700'
                                 }`}>
                                   {match.isHomeMatch ? 'HOME' : 'AWAY'}
                                 </span>
-                                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded font-medium">
                                   {match.matchType}
                                 </span>
                               </div>
                             </div>
 
-                            {/* Score - Right Side */}
-                            <div className="flex items-center gap-3">
-                              <div className="text-right">
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-2xl font-black ${
+                            {/* Right Side - Score & Actions */}
+                            <div className="flex items-center gap-4">
+                              {/* Score Display */}
+                              <div className="text-center">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`text-3xl font-black ${
                                     result.teamScore > result.opponentScore ? 'text-green-600' : 'text-gray-700'
                                   }`}>
                                     {result.teamScore}
                                   </span>
-                                  <span className="text-gray-400 text-xl font-bold">-</span>
-                                  <span className={`text-2xl font-black ${
+                                  <span className="text-gray-400 text-2xl font-bold">-</span>
+                                  <span className={`text-3xl font-black ${
                                     result.opponentScore > result.teamScore ? 'text-green-600' : 'text-gray-700'
                                   }`}>
                                     {result.opponentScore}
                                   </span>
                                 </div>
-                                <div className={`text-center mt-1 px-2 py-1 rounded text-xs font-bold ${
+                                <div className={`px-3 py-1 rounded-lg text-xs font-bold ${
                                   result.result === 'W' ? 'bg-green-100 text-green-700' :
                                   result.result === 'L' ? 'bg-red-100 text-red-700' :
                                   'bg-yellow-100 text-yellow-700'
@@ -498,9 +488,9 @@ export default function MatchCentral() {
                                 <motion.div
                                   animate={{ rotate: isExpanded ? 180 : 0 }}
                                   transition={{ duration: 0.2 }}
-                                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                                  className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
                                 >
-                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                                   </svg>
                                 </motion.div>
@@ -585,7 +575,6 @@ export default function MatchCentral() {
                     );
                   })
                 )}
-              </div>
               </div>
             </motion.div>
           )}

@@ -17,15 +17,43 @@ import { Match, Team } from "../types/match-tracker";
 
 type RecordingMode = 'live' | 'post-match' | 'edit' | 'view-results';
 type SetupStep = 'mode' | 'match-selection' | 'team-setup' | 'venue' | 'recording';
+type RecorderType = 'quick' | 'full';
 
 export default function MatchRecorder() {
   const router = useRouter();
   const [matches, setMatches] = useState<Match[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recorderType, setRecorderType] = useState<RecorderType | ''>('');
   const [currentStep, setCurrentStep] = useState<SetupStep>('mode');
   const [selectedMode, setSelectedMode] = useState<RecordingMode | ''>('');
   const [selectedMatch, setSelectedMatch] = useState<string>('');
+  
+  // Quick setup state
+  const [quickSetup, setQuickSetup] = useState({
+    homeTeam: '',
+    homeTeamCustom: '',
+    awayTeam: '',
+    awayTeamCustom: '',
+    venue: '',
+    venueCustom: '',
+    kickoffTime: ''
+  });
+  
+  // Get available teams for dropdowns
+  const getAvailableTeams = () => {
+    return teams.filter(team => !team.isOpponent);
+  };
+  
+  // Get existing venues from matches
+  const getAvailableVenues = () => {
+    const venues = matches
+      .map(match => match.venue)
+      .filter(venue => venue && venue.trim() !== '')
+      .filter((venue, index, self) => self.indexOf(venue) === index) // unique values
+      .sort();
+    return venues;
+  };
 
   useEffect(() => {
     loadData();
@@ -219,10 +247,11 @@ export default function MatchRecorder() {
 
         <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-8 py-4 md:py-8">
           
-          {/* Step Indicator - Mobile Optimized */}
-          <div className="mb-6 md:mb-8">
-            <nav className="flex justify-center px-2">
-              <ol className="flex items-center space-x-2 md:space-x-4">
+          {/* Step Indicator - Full Setup Only */}
+          {recorderType === 'full' && (
+            <div className="mb-6 md:mb-8">
+              <nav className="flex justify-center px-2">
+                <ol className="flex items-center space-x-2 md:space-x-4">
                 {[
                   { id: 'mode', name: 'Mode', icon: '🎯' },
                   { id: 'match-selection', name: 'Match', icon: '⚽' },
@@ -246,26 +275,255 @@ export default function MatchRecorder() {
                     </div>
                   </li>
                 ))}
-              </ol>
-            </nav>
-          </div>
+                </ol>
+              </nav>
+            </div>
+          )}
 
           {/* Step Content */}
           
-          {/* Step 1: Recording Mode Selection */}
-          {currentStep === 'mode' && (
+          {/* Step 1: Setup Type Selection */}
+          {currentStep === 'mode' && recorderType === '' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               className="max-w-4xl mx-auto"
             >
-              <div className="text-center mb-6 md:mb-8">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-4">Choose Recording Mode</h2>
-                <p className="text-gray-600 text-sm md:text-base">Select how you want to record or manage your match</p>
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">How do you want to set up your match?</h2>
+                <p className="text-gray-600">Choose between quick setup for immediate recording or full setup for detailed match management</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Quick Setup */}
+                <motion.button
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setRecorderType('quick')}
+                  className="p-6 rounded-xl border-2 border-green-200 bg-green-50 hover:shadow-lg transition-all duration-300 text-left"
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className="text-4xl">⚡</div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold mb-2 text-green-700">Quick Setup</h3>
+                      <p className="text-gray-600 text-sm mb-3">Start recording immediately with minimal setup. Perfect for when the match is about to begin.</p>
+                      <div className="text-xs text-green-600 font-medium">
+                        ✓ 30 second setup • ✓ Record now • ✓ Add details later
+                      </div>
+                    </div>
+                    <div className="text-gray-400">
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                </motion.button>
+
+                {/* Full Setup */}
+                <motion.button
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setRecorderType('full')}
+                  className="p-6 rounded-xl border-2 border-blue-200 bg-blue-50 hover:shadow-lg transition-all duration-300 text-left"
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className="text-4xl">🎯</div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold mb-2 text-blue-700">Full Setup</h3>
+                      <p className="text-gray-600 text-sm mb-3">Complete match setup with team details, venues, and full configuration options.</p>
+                      <div className="text-xs text-blue-600 font-medium">
+                        ✓ Detailed setup • ✓ Team management • ✓ Venue details
+                      </div>
+                    </div>
+                    <div className="text-gray-400">
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Quick Setup Flow */}
+          {recorderType === 'quick' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="max-w-2xl mx-auto"
+            >
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">⚡</div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Quick Match Setup</h2>
+                  <p className="text-gray-600">Enter basic details and start recording immediately</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* Home Team - Dropdown + Custom */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Home Team</label>
+                      <select
+                        value={quickSetup.homeTeam}
+                        onChange={(e) => setQuickSetup(prev => ({ ...prev, homeTeam: e.target.value, homeTeamCustom: e.target.value === 'custom' ? prev.homeTeamCustom : '' }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary mb-2"
+                      >
+                        <option value="">Select home team...</option>
+                        {getAvailableTeams().map(team => (
+                          <option key={team.id} value={team.name}>{team.name}</option>
+                        ))}
+                        <option value="custom">➕ Add new team manually</option>
+                      </select>
+                      {quickSetup.homeTeam === 'custom' && (
+                        <input
+                          type="text"
+                          value={quickSetup.homeTeamCustom}
+                          onChange={(e) => setQuickSetup(prev => ({ ...prev, homeTeamCustom: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                          placeholder="Enter team name..."
+                        />
+                      )}
+                    </div>
+                    
+                    {/* Away Team - Dropdown + Custom */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Away Team</label>
+                      <select
+                        value={quickSetup.awayTeam}
+                        onChange={(e) => setQuickSetup(prev => ({ ...prev, awayTeam: e.target.value, awayTeamCustom: e.target.value === 'custom' ? prev.awayTeamCustom : '' }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary mb-2"
+                      >
+                        <option value="">Select away team...</option>
+                        {getAvailableTeams().map(team => (
+                          <option key={team.id} value={team.name}>{team.name}</option>
+                        ))}
+                        <option value="custom">➕ Add new team manually</option>
+                      </select>
+                      {quickSetup.awayTeam === 'custom' && (
+                        <input
+                          type="text"
+                          value={quickSetup.awayTeamCustom}
+                          onChange={(e) => setQuickSetup(prev => ({ ...prev, awayTeamCustom: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                          placeholder="Enter opposition team name..."
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* Venue - Dropdown + Custom */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Venue</label>
+                      <select
+                        value={quickSetup.venue}
+                        onChange={(e) => setQuickSetup(prev => ({ ...prev, venue: e.target.value, venueCustom: e.target.value === 'custom' ? prev.venueCustom : '' }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary mb-2"
+                      >
+                        <option value="">Select venue...</option>
+                        {getAvailableVenues().map(venue => (
+                          <option key={venue} value={venue}>{venue}</option>
+                        ))}
+                        <option value="custom">➕ Add new venue manually</option>
+                      </select>
+                      {quickSetup.venue === 'custom' && (
+                        <input
+                          type="text"
+                          value={quickSetup.venueCustom}
+                          onChange={(e) => setQuickSetup(prev => ({ ...prev, venueCustom: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                          placeholder="Enter venue name..."
+                        />
+                      )}
+                    </div>
+                    
+                    {/* Kickoff Time */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Kickoff Time</label>
+                      <input
+                        type="time"
+                        value={quickSetup.kickoffTime}
+                        onChange={(e) => setQuickSetup(prev => ({ ...prev, kickoffTime: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+                    <button
+                      onClick={() => setRecorderType('')}
+                      className="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      ← Back
+                    </button>
+                    
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          // Save teams/venue to system
+                          console.log('Saving to system:', quickSetup);
+                          // TODO: Add save functionality
+                        }}
+                        disabled={!(quickSetup.homeTeam && quickSetup.homeTeam !== 'custom' || quickSetup.homeTeamCustom) || !(quickSetup.awayTeam && quickSetup.awayTeam !== 'custom' || quickSetup.awayTeamCustom)}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                      >
+                        <span>💾</span>
+                        Save & Add to System
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          // Start recording immediately
+                          console.log('Quick recording started:', quickSetup);
+                          router.push('/matches/quick/record');
+                        }}
+                        disabled={!(quickSetup.homeTeam && quickSetup.homeTeam !== 'custom' || quickSetup.homeTeamCustom) || !(quickSetup.awayTeam && quickSetup.awayTeam !== 'custom' || quickSetup.awayTeamCustom)}
+                        className="px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
+                      >
+                        <span>🔴</span>
+                        Start Recording Now
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Quick Info Notice */}
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <span className="text-yellow-600">💡</span>
+                      <div className="text-sm text-yellow-800">
+                        <strong>Quick Tip:</strong> You can start recording immediately and add detailed team information, venues, and player details to the system later using the "Save & Add to System" option.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Full Setup - Recording Mode Selection */}
+          {recorderType === 'full' && currentStep === 'mode' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="max-w-4xl mx-auto"
+            >
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Choose Recording Mode</h2>
+                <p className="text-gray-600 text-sm">Select how you want to record or manage your match</p>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {recordingModes.map((mode, index) => (
                   <motion.button
                     key={mode.id}
@@ -275,28 +533,28 @@ export default function MatchRecorder() {
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleModeSelection(mode.id)}
-                    className={`p-6 rounded-xl border-2 ${mode.borderColor} ${mode.bgColor} hover:shadow-lg transition-all duration-300 text-left`}
+                    className={`p-4 rounded-xl border-2 ${mode.borderColor} ${mode.bgColor} hover:shadow-lg transition-all duration-300 text-center`}
                   >
-                    <div className="flex items-start space-x-4">
-                      <div className="text-4xl">{mode.icon}</div>
-                      <div className="flex-1">
-                        <h3 className={`text-xl font-bold mb-2 ${mode.textColor}`}>{mode.title}</h3>
-                        <p className="text-gray-600 text-sm">{mode.description}</p>
-                      </div>
-                      <div className="text-gray-400">
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    </div>
+                    <div className="text-3xl mb-2">{mode.icon}</div>
+                    <h3 className={`text-sm font-bold mb-1 ${mode.textColor}`}>{mode.title}</h3>
+                    <p className="text-gray-600 text-xs">{mode.description}</p>
                   </motion.button>
                 ))}
+              </div>
+              
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => setRecorderType('')}
+                  className="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  ← Back to Setup Options
+                </button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 2: Match Selection */}
-          {currentStep === 'match-selection' && (
+          {/* Step 2: Match Selection - Full Setup Only */}
+          {recorderType === 'full' && currentStep === 'match-selection' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -383,8 +641,8 @@ export default function MatchRecorder() {
             </motion.div>
           )}
 
-          {/* Step 3: Team Setup */}
-          {currentStep === 'team-setup' && selectedMatch && (
+          {/* Step 3: Team Setup - Full Setup Only */}
+          {recorderType === 'full' && currentStep === 'team-setup' && selectedMatch && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -514,8 +772,8 @@ export default function MatchRecorder() {
             </motion.div>
           )}
 
-          {/* Step 4: Venue & Match Details */}
-          {currentStep === 'venue' && (
+          {/* Step 4: Venue & Match Details - Full Setup Only */}
+          {recorderType === 'full' && currentStep === 'venue' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -632,8 +890,8 @@ export default function MatchRecorder() {
             </motion.div>
           )}
 
-          {/* Step 5: Start Recording */}
-          {currentStep === 'recording' && (
+          {/* Step 5: Start Recording - Full Setup Only */}
+          {recorderType === 'full' && currentStep === 'recording' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
