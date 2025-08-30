@@ -154,10 +154,39 @@ export default function MatchRecorder() {
   return (
     <StandardLayout>
       <div className="min-h-screen bg-gray-50">
-        {/* Page Header */}
+        {/* Simplified Mobile Header */}
         <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
+            {/* Mobile Layout */}
+            <div className="block md:hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-club-primary rounded-xl flex items-center justify-center">
+                    <span className="text-xl text-white">⚽</span>
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900">Match Recorder</h1>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <a
+                    href="/match-central"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold transition-all flex items-center space-x-1 shadow-lg text-sm"
+                  >
+                    <span>📊</span>
+                  </a>
+                  <a
+                    href="/match-admin"
+                    className="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg font-semibold transition-all flex items-center space-x-1 shadow-lg text-sm"
+                  >
+                    <span>⚙️</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            {/* Desktop Layout */}
+            <div className="hidden md:flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-club-primary rounded-xl flex items-center justify-center">
                   <span className="text-2xl text-white">⚽</span>
@@ -188,32 +217,32 @@ export default function MatchRecorder() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-8 py-4 md:py-8">
           
-          {/* Step Indicator */}
-          <div className="mb-8">
-            <nav className="flex justify-center">
-              <ol className="flex items-center space-x-4">
+          {/* Step Indicator - Mobile Optimized */}
+          <div className="mb-6 md:mb-8">
+            <nav className="flex justify-center px-2">
+              <ol className="flex items-center space-x-2 md:space-x-4">
                 {[
-                  { id: 'mode', name: 'Recording Mode', icon: '🎯' },
-                  { id: 'match-selection', name: 'Select Match', icon: '⚽' },
-                  { id: 'team-setup', name: 'Team Setup', icon: '👥' },
-                  { id: 'venue', name: 'Venue & Details', icon: '🏟️' },
-                  { id: 'recording', name: 'Start Recording', icon: '🔴' }
+                  { id: 'mode', name: 'Mode', icon: '🎯' },
+                  { id: 'match-selection', name: 'Match', icon: '⚽' },
+                  { id: 'team-setup', name: 'Teams', icon: '👥' },
+                  { id: 'venue', name: 'Venue', icon: '🏟️' },
+                  { id: 'recording', name: 'Record', icon: '🔴' }
                 ].map((step, index) => (
                   <li key={step.id} className="flex items-center">
                     {index > 0 && (
-                      <div className="hidden sm:block w-8 h-px bg-gray-300 mx-2"></div>
+                      <div className="hidden sm:block w-4 md:w-8 h-px bg-gray-300 mx-1 md:mx-2"></div>
                     )}
-                    <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium ${
+                    <div className={`flex items-center space-x-1 md:space-x-2 px-2 md:px-3 py-2 rounded-lg text-xs md:text-sm font-medium ${
                       currentStep === step.id 
                         ? 'bg-club-primary text-white shadow-lg' 
                         : index < ['mode', 'match-selection', 'team-setup', 'venue', 'recording'].indexOf(currentStep)
                         ? 'bg-green-100 text-green-700'
                         : 'bg-gray-100 text-gray-500'
                     }`}>
-                      <span className="text-lg">{step.icon}</span>
-                      <span className="hidden sm:inline">{step.name}</span>
+                      <span className="text-sm md:text-lg">{step.icon}</span>
+                      <span className="hidden sm:inline text-xs md:text-sm">{step.name}</span>
                     </div>
                   </li>
                 ))}
@@ -231,12 +260,12 @@ export default function MatchRecorder() {
               transition={{ duration: 0.5 }}
               className="max-w-4xl mx-auto"
             >
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Choose Recording Mode</h2>
-                <p className="text-gray-600">Select how you want to record or manage your match</p>
+              <div className="text-center mb-6 md:mb-8">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-4">Choose Recording Mode</h2>
+                <p className="text-gray-600 text-sm md:text-base">Select how you want to record or manage your match</p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                 {recordingModes.map((mode, index) => (
                   <motion.button
                     key={mode.id}

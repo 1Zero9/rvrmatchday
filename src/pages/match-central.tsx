@@ -226,10 +226,50 @@ export default function MatchCentral() {
   return (
     <StandardLayout>
       <div className="min-h-screen bg-gray-50">
-        {/* Page Header with Integrated Navigation */}
+        {/* Simplified Mobile Header */}
         <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
+            {/* Mobile Layout */}
+            <div className="block md:hidden">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-club-primary rounded-xl flex items-center justify-center">
+                    <span className="text-xl text-white">⚽</span>
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900">Match Central</h1>
+                  </div>
+                </div>
+                <a
+                  href="/match-recorder"
+                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-semibold transition-all flex items-center space-x-1 shadow-lg"
+                >
+                  <span className="text-lg">🔴</span>
+                  <span className="text-sm">Record</span>
+                </a>
+              </div>
+              
+              {/* Mobile Tabs - Horizontal Scroll */}
+              <nav className="flex space-x-2 overflow-x-auto pb-2">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleTabChange(tab.id)}
+                    className={`flex items-center space-x-2 py-2 px-4 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
+                      activeTab === tab.id
+                        ? 'bg-club-primary text-white shadow-md'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <span className="text-base">{tab.icon}</span>
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+            
+            {/* Desktop Layout */}
+            <div className="hidden md:flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-club-primary rounded-xl flex items-center justify-center">
                   <span className="text-2xl text-white">⚽</span>
@@ -284,7 +324,7 @@ export default function MatchCentral() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-8 py-4 md:py-8">
 
         {/* Team Filter (for management) */}
         {(activeTab === 'management') && (
@@ -326,20 +366,20 @@ export default function MatchCentral() {
                 <div className="absolute inset-0 bg-black/40"></div>
               </div>
               
-              <div className="relative z-10 p-4 md:p-8">
+              <div className="relative z-10 p-3 md:p-8">
                 {/* Filter Bar */}
-                <div className="bg-white/90 backdrop-blur-md border border-white/30 rounded-xl p-4 mb-6 shadow-xl">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <div className="bg-white/90 backdrop-blur-md border border-white/30 rounded-xl p-3 md:p-4 mb-4 md:mb-6 shadow-xl">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <h2 className="text-lg md:text-xl font-bold text-gray-900 flex items-center gap-2">
                       <span>🏆</span>
                       Match Results
                     </h2>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 md:gap-3">
                       <label className="text-sm font-medium text-gray-700">Filter:</label>
                       <select
                         value={overviewFilter}
                         onChange={(e) => setOverviewFilter(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900"
+                        className="px-2 py-1 md:px-3 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900 text-sm"
                       >
                         <option value="all">All Teams</option>
                         {teams.filter(team => !team.isOpponent).map(team => (

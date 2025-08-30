@@ -246,21 +246,40 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
             exit={{ opacity: 0, y: -20 }}
             className="lg:hidden bg-club-primary border-t-2 border-club-accent"
           >
-            <nav className="px-4 py-4 space-y-2">
-              <Link href="/home" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>🏠 Home</Link>
-              <Link href="/about" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>🏛️ About</Link>
-              <Link href="/club/history" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>📜 Club History</Link>
-              <Link href="/teams" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>👥 Teams</Link>
-              <Link href="/teams/boys" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>⚽ Boys Teams</Link>
-              <Link href="/teams/girls" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>🌟 Girls Teams</Link>
-              <Link href="/match-recorder" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>📱 Record Match</Link>
-              <Link href="/match-central" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>📊 Match Central</Link>
-              <Link href="/match-admin" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>⚙️ Admin</Link>
-              <Link href="/volunteering" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>🤝 Volunteer</Link>
-              <Link href="/contact" className="block py-3 text-white hover:bg-club-primary-light rounded px-2" onClick={() => setMobileMenuOpen(false)}>📞 Contact</Link>
-              <Link href="/join" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>🎯 Join the Club</Link>
-              <Link href="/join/trials" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>⚽ Trials</Link>
-              <Link href="/coach" className="block py-3 text-white hover:bg-club-primary-light rounded px-2 pl-6 text-sm" onClick={() => setMobileMenuOpen(false)}>🧑‍🏫 Become a Coach</Link>
+            <nav className="px-4 py-4 space-y-1 max-h-96 overflow-y-auto">
+              {/* Core Navigation - Simplified */}
+              <Link href="/home" className="block py-3 text-white hover:bg-club-primary-light rounded px-3 font-medium" onClick={() => setMobileMenuOpen(false)}>
+                🏠 Home
+              </Link>
+              <Link href="/about" className="block py-3 text-white hover:bg-club-primary-light rounded px-3 font-medium" onClick={() => setMobileMenuOpen(false)}>
+                🏛️ About
+              </Link>
+              <Link href="/teams" className="block py-3 text-white hover:bg-club-primary-light rounded px-3 font-medium" onClick={() => setMobileMenuOpen(false)}>
+                👥 Teams
+              </Link>
+              
+              {/* Match System - Priority Items */}
+              <div className="border-t border-club-primary-light mt-3 pt-3">
+                <Link href="/match-recorder" className="block py-3 text-white hover:bg-red-600 rounded px-3 font-medium bg-red-500/20" onClick={() => setMobileMenuOpen(false)}>
+                  🔴 Record Match
+                </Link>
+                <Link href="/match-central" className="block py-3 text-white hover:bg-blue-600 rounded px-3 font-medium bg-blue-500/20" onClick={() => setMobileMenuOpen(false)}>
+                  📊 Match Central
+                </Link>
+              </div>
+              
+              {/* Secondary Items */}
+              <div className="border-t border-club-primary-light mt-3 pt-3">
+                <Link href="/contact" className="block py-3 text-white hover:bg-club-primary-light rounded px-3" onClick={() => setMobileMenuOpen(false)}>
+                  📞 Contact
+                </Link>
+                <Link href="/join" className="block py-3 text-white hover:bg-club-primary-light rounded px-3" onClick={() => setMobileMenuOpen(false)}>
+                  🎯 Join Club
+                </Link>
+                <Link href="/volunteering" className="block py-3 text-white hover:bg-club-primary-light rounded px-3" onClick={() => setMobileMenuOpen(false)}>
+                  🤝 Volunteer
+                </Link>
+              </div>
             </nav>
           </motion.div>
         )}
