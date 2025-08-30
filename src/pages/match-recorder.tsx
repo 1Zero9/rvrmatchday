@@ -397,9 +397,6 @@ export default function MatchRecorder() {
             <div className="bg-white border-b border-gray-200">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="flex items-center justify-between">
-            
-            {/* Desktop Layout */}
-            <div className="hidden md:flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-club-primary rounded-xl flex items-center justify-center">
                   <span className="text-2xl text-white">⚽</span>
@@ -1126,6 +1123,7 @@ export default function MatchRecorder() {
             </motion.div>
           )}
 
+        </div>
           </div>
         </StandardLayout>
       </div>

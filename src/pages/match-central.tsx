@@ -833,8 +833,8 @@ export default function MatchCentral() {
             </motion.div>
           )}
 
-
-
+        </div>
+        </div>
           </div>
         </StandardLayout>
       </div>
