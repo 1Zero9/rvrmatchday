@@ -447,12 +447,12 @@ export default function StandardHomepage() {
 
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="bg-club-secondary/20 backdrop-blur-md border border-club-accent/30 rounded-xl p-4 text-center text-white hover:bg-club-secondary/30 transition-all duration-300 shadow-xl"
+                    className="bg-indigo-600/20 backdrop-blur-md border border-indigo-300/30 rounded-xl p-4 text-center text-white hover:bg-indigo-600/30 transition-all duration-300 shadow-xl"
                   >
-                    <div className="text-3xl mb-3">📅</div>
-                    <h3 className="text-lg font-bold mb-2">Fixtures</h3>
-                    <Link href="/match-central/fixtures" className="inline-block bg-club-accent hover:bg-club-primary text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
-                      View Schedule
+                    <div className="text-3xl mb-3">🎉</div>
+                    <h3 className="text-lg font-bold mb-2">Events</h3>
+                    <Link href="/get-involved/events" className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                      What's On
                     </Link>
                   </motion.div>
 

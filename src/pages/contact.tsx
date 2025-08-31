@@ -131,7 +131,7 @@ export default function Contact() {
       heroTitle="Contact Us"
       heroSubtitle="Get in touch with Rivervalley Rangers AFC - we're here to help with any questions or inquiries"
       heroIcon="📞"
-      backgroundImage="/images/contact-hero.jpg"
+      backgroundImage="/images/hero/sunset-hero.jpg"
       quickActions={quickActions}
       sectionName="CONTACT"
       imageSpecs="1920x1080px minimum, club facilities and contact activities preferred"

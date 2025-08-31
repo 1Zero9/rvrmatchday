@@ -235,6 +235,7 @@ export default function MatchRecorder() {
                     </div>
                   </div>
                 </button>
+
               </div>
             </div>
           )}
@@ -386,6 +387,7 @@ export default function MatchRecorder() {
               </button>
             </div>
           )}
+
         </div>
       </div>
 
@@ -1122,6 +1124,7 @@ export default function MatchRecorder() {
               </div>
             </motion.div>
           )}
+
 
         </div>
           </div>

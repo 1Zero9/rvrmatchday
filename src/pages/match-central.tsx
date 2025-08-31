@@ -15,7 +15,7 @@ import CelebrationResultCard from "../components/CelebrationResultCard";
 import { storage } from "../lib/match-tracker-storage";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
 
-type TabType = 'overview' | 'fixtures' | 'management';
+type TabType = 'overview' | 'fixtures' | 'management' | 'statistics';
 
 export default function MatchCentral() {
   const router = useRouter();
@@ -67,7 +67,7 @@ export default function MatchCentral() {
 
     // Handle hash routing
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['overview', 'fixtures', 'management'].includes(hash)) {
+    if (hash && ['overview', 'fixtures', 'management', 'statistics'].includes(hash)) {
       setActiveTab(hash as TabType);
     }
   }, []);
@@ -220,6 +220,7 @@ export default function MatchCentral() {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '📊', public: true },
     { id: 'fixtures', label: 'Fixtures', icon: '📅', public: true },
+    { id: 'statistics', label: 'Statistics', icon: '📈', public: true },
     { id: 'management', label: 'Management', icon: '⚙️', public: false }
   ];
 
@@ -263,6 +264,16 @@ export default function MatchCentral() {
               }`}
             >
               Fixtures
+            </button>
+            <button
+              onClick={() => handleTabChange('statistics')}
+              className={`py-3 px-4 font-medium text-sm transition-all ${
+                activeTab === 'statistics'
+                  ? 'border-b-2 border-club-primary text-club-primary'
+                  : 'text-gray-500'
+              }`}
+            >
+              📊 Stats
             </button>
           </nav>
         </div>
@@ -401,6 +412,89 @@ export default function MatchCentral() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Mobile Statistics */}
+          {activeTab === 'statistics' && (
+            <div>
+              {/* Team Selector */}
+              <div className="mb-4">
+                <select className="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm">
+                  <option value="">Select Team</option>
+                  <option value="u16-boys">U16 Boys</option>
+                  <option value="u14-girls">U14 Girls</option>
+                  <option value="seniors">Senior Team</option>
+                  <option value="u12-mixed">U12 Mixed</option>
+                </select>
+              </div>
+
+              {/* Mobile Stats Grid */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                  <div className="text-xl font-bold text-green-600">12</div>
+                  <div className="text-xs text-gray-600">Played</div>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+                  <div className="text-xl font-bold text-blue-600">8</div>
+                  <div className="text-xs text-gray-600">Wins</div>
+                </div>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
+                  <div className="text-xl font-bold text-yellow-600">2</div>
+                  <div className="text-xs text-gray-600">Draws</div>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                  <div className="text-xl font-bold text-red-600">2</div>
+                  <div className="text-xs text-gray-600">Losses</div>
+                </div>
+              </div>
+
+              {/* Goals & Performance */}
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center">
+                  <div className="text-lg font-bold text-gray-900">32</div>
+                  <div className="text-xs text-gray-600">Goals For</div>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center">
+                  <div className="text-lg font-bold text-gray-900">18</div>
+                  <div className="text-xs text-gray-600">Against</div>
+                </div>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-2 text-center">
+                  <div className="text-lg font-bold text-green-600">+14</div>
+                  <div className="text-xs text-gray-600">Difference</div>
+                </div>
+              </div>
+
+              {/* Recent Form */}
+              <div className="bg-white border border-gray-200 rounded-lg p-3 mb-4">
+                <h3 className="font-bold text-gray-900 mb-2 text-sm">📈 Recent Form</h3>
+                <div className="flex space-x-1 justify-center">
+                  <span className="w-8 h-8 bg-green-500 rounded text-white text-xs flex items-center justify-center">W</span>
+                  <span className="w-8 h-8 bg-green-500 rounded text-white text-xs flex items-center justify-center">W</span>
+                  <span className="w-8 h-8 bg-yellow-500 rounded text-white text-xs flex items-center justify-center">D</span>
+                  <span className="w-8 h-8 bg-green-500 rounded text-white text-xs flex items-center justify-center">W</span>
+                  <span className="w-8 h-8 bg-green-500 rounded text-white text-xs flex items-center justify-center">W</span>
+                </div>
+              </div>
+
+              {/* Top Performers */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                <h3 className="font-bold text-gray-900 mb-2 text-sm">⭐ Top Performers</h3>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span>Most POTM:</span>
+                    <span className="font-medium">Jamie O'Brien (3)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Top Scorer:</span>
+                    <span className="font-medium">Alex Murphy (8)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Avg Attendance:</span>
+                    <span className="font-medium">450</span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -827,6 +921,134 @@ export default function MatchCentral() {
                         );
                       })
                     )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Statistics Tab */}
+          {activeTab === 'statistics' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                      <span className="text-white text-xl">📊</span>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Season Statistics</h2>
+                      <p className="text-sm text-gray-600">Team performance analytics</p>
+                    </div>
+                  </div>
+                  
+                  {/* Team Selector for Stats */}
+                  <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <option value="">Select Team</option>
+                    <option value="u16-boys">U16 Boys</option>
+                    <option value="u14-girls">U14 Girls</option>
+                    <option value="seniors">Senior Team</option>
+                    <option value="u12-mixed">U12 Mixed</option>
+                  </select>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-green-600">12</div>
+                    <div className="text-xs text-gray-600">Matches Played</div>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-blue-600">8</div>
+                    <div className="text-xs text-gray-600">Wins</div>
+                  </div>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-yellow-600">2</div>
+                    <div className="text-xs text-gray-600">Draws</div>
+                  </div>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-red-600">2</div>
+                    <div className="text-xs text-gray-600">Losses</div>
+                  </div>
+                </div>
+
+                {/* Detailed Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
+                    <div className="text-lg font-bold text-gray-900">32</div>
+                    <div className="text-xs text-gray-600">Goals For</div>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
+                    <div className="text-lg font-bold text-gray-900">18</div>
+                    <div className="text-xs text-gray-600">Goals Against</div>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
+                    <div className="text-lg font-bold text-green-600">+14</div>
+                    <div className="text-xs text-gray-600">Goal Difference</div>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
+                    <div className="text-lg font-bold text-gray-900">450</div>
+                    <div className="text-xs text-gray-600">Avg Attendance</div>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
+                    <div className="text-lg font-bold text-yellow-600">15</div>
+                    <div className="text-xs text-gray-600">Total Cards</div>
+                  </div>
+                </div>
+
+                {/* Top Performers */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h3 className="font-bold text-gray-900 mb-2 flex items-center">
+                      <span className="mr-2">⭐</span>
+                      Top Performers
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Most POTM:</span>
+                        <span className="font-medium">Jamie O'Brien (3)</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Top Scorer:</span>
+                        <span className="font-medium">Alex Murphy (8 goals)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="font-bold text-gray-900 mb-2 flex items-center">
+                      <span className="mr-2">🏠</span>
+                      Home vs Away
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Home Record:</span>
+                        <span className="font-medium text-green-600">6W-1D-0L</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Away Record:</span>
+                        <span className="font-medium text-blue-600">2W-1D-2L</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h3 className="font-bold text-gray-900 mb-2 flex items-center">
+                      <span className="mr-2">📈</span>
+                      Recent Form
+                    </h3>
+                    <div className="flex space-x-1 mb-2">
+                      <span className="w-6 h-6 bg-green-500 rounded text-white text-xs flex items-center justify-center">W</span>
+                      <span className="w-6 h-6 bg-green-500 rounded text-white text-xs flex items-center justify-center">W</span>
+                      <span className="w-6 h-6 bg-yellow-500 rounded text-white text-xs flex items-center justify-center">D</span>
+                      <span className="w-6 h-6 bg-green-500 rounded text-white text-xs flex items-center justify-center">W</span>
+                      <span className="w-6 h-6 bg-green-500 rounded text-white text-xs flex items-center justify-center">W</span>
+                    </div>
+                    <p className="text-xs text-gray-600">Last 5 matches</p>
                   </div>
                 </div>
               </div>
