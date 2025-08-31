@@ -12,7 +12,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
-import { storage } from "../lib/match-tracker-storage";
+import { storageV2 as storage } from "../lib/match-tracker-storage-v2";
 import { Match, Team } from "../types/match-tracker";
 
 type RecordingMode = 'live' | 'post-match' | 'edit' | 'view-results';
@@ -59,11 +59,11 @@ export default function MatchRecorder() {
     loadData();
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
     try {
       storage.initializeSampleData();
-      const loadedMatches = storage.getMatches();
-      const loadedTeams = storage.getTeams();
+      const loadedMatches = await storage.getMatches();
+      const loadedTeams = await storage.getTeams();
       
       setMatches(loadedMatches);
       setTeams(loadedTeams);

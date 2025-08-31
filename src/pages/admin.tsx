@@ -25,6 +25,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const clearLocalStorageData = () => {
+    const keys = [
+      'rvr_match_tracker_teams',
+      'rvr_match_tracker_players', 
+      'rvr_match_tracker_matches',
+      'rvr_match_tracker_match_events',
+      'rvr_match_tracker_match_stats',
+      'rvr_match_tracker_users'
+    ];
+    
+    keys.forEach(key => localStorage.removeItem(key));
+    alert('Test data cleared from localStorage');
+  };
+
   const siteStatus = {
     lastUpdated: '2025-01-21 14:30:00',
     totalPages: 42,
@@ -358,6 +372,12 @@ export default function AdminDashboard() {
                 </button>
                 <button className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
                   🛡️ Security Scan
+                </button>
+                <button 
+                  onClick={clearLocalStorageData}
+                  className="w-full text-left px-3 py-2 text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  🗑️ Clear Test Data
                 </button>
                 <hr className="my-2" />
                 <Link href="/home" className="block w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">

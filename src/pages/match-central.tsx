@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
 import CelebrationResultCard from "../components/CelebrationResultCard";
-import { storage } from "../lib/match-tracker-storage";
+import { storageV2 as storage } from "../lib/match-tracker-storage-v2";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
 
 type TabType = 'overview' | 'fixtures' | 'management' | 'statistics';
@@ -26,6 +26,7 @@ export default function MatchCentral() {
   const [overviewFilter, setOverviewFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
+  const [allMatches, setAllMatches] = useState<Match[]>([]);
 
   const toggleMatchExpand = (matchId: string) => {
     setExpandedResults(prev => ({
@@ -45,21 +46,30 @@ export default function MatchCentral() {
            (match.attendance && match.attendance > 0);
   };
 
-  const loadData = () => {
-    // Initialize sample data
-    storage.initializeSampleData();
-    
-    // Load teams
-    const loadedTeams = storage.getTeams();
-    setTeams(loadedTeams);
-    
-    // Load team summaries
-    const summaries = loadedTeams
-      .map(team => storage.getTeamSummary(team.id))
-      .filter(Boolean) as TeamSummary[];
-    
-    setTeamSummaries(summaries);
-    setLoading(false);
+  const loadData = async () => {
+    try {
+      // Initialize sample data
+      storage.initializeSampleData();
+      
+      // Load teams
+      const loadedTeams = await storage.getTeams();
+      setTeams(loadedTeams);
+      
+      // Load all matches
+      const loadedMatches = await storage.getMatches();
+      setAllMatches(loadedMatches);
+      
+      // Load team summaries
+      const summaries = await Promise.all(
+        loadedTeams.map(async team => await storage.getTeamSummary(team.id))
+      );
+      
+      setTeamSummaries(summaries.filter(Boolean) as TeamSummary[]);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -74,7 +84,6 @@ export default function MatchCentral() {
 
   // Get actual match data for fixtures and results
   const getUpcomingMatches = () => {
-    const allMatches = storage.getMatches();
     const upcoming = allMatches
       .filter(match => match.status === 'Scheduled')
       .sort((a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime())
@@ -88,7 +97,6 @@ export default function MatchCentral() {
   };
 
   const getRecentResults = () => {
-    const allMatches = storage.getMatches();
     const finished = allMatches
       .filter(match => match.status === 'Finished')
       .sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime())
@@ -102,12 +110,11 @@ export default function MatchCentral() {
   };
 
   // Recalculate data when selectedTeam changes
-  const upcomingMatches = React.useMemo(() => getUpcomingMatches(), [selectedTeam, teams]);
-  const recentResults = React.useMemo(() => getRecentResults(), [selectedTeam, teams]);
+  const upcomingMatches = React.useMemo(() => getUpcomingMatches(), [selectedTeam, allMatches]);
+  const recentResults = React.useMemo(() => getRecentResults(), [selectedTeam, allMatches]);
 
   // Get filtered results for overview
   const getFilteredOverviewResults = () => {
-    const allMatches = storage.getMatches();
     const finished = allMatches
       .filter(match => match.status === 'Finished')
       .sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime());
@@ -119,7 +126,7 @@ export default function MatchCentral() {
     return finished.filter(match => match.teamId === overviewFilter);
   };
 
-  const filteredOverviewResults = React.useMemo(() => getFilteredOverviewResults(), [overviewFilter, teams]);
+  const filteredOverviewResults = React.useMemo(() => getFilteredOverviewResults(), [overviewFilter, allMatches]);
 
   // Generate league table from match results
   const getLeagueTable = () => {
@@ -143,7 +150,7 @@ export default function MatchCentral() {
     });
 
     // Process finished matches
-    const finishedMatches = storage.getMatches().filter(match => match.status === 'Finished');
+    const finishedMatches = allMatches.filter(match => match.status === 'Finished');
     
     finishedMatches.forEach(match => {
       if (match.homeScore !== undefined && match.awayScore !== undefined) {
