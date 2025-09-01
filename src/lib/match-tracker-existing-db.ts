@@ -351,37 +351,60 @@ export class MatchTrackerExistingDB {
       .slice(0, 10);
   }
 
-  // Placeholder methods for compatibility (not implemented for existing DB)
+  // Write operations for existing database structure
   async saveTeam(team: Team): Promise<void> {
-    console.warn('saveTeam not implemented for existing database structure');
+    throw new Error('Team creation not available in quick setup. Please use the club management system to add teams.');
   }
 
   async deleteTeam(id: string): Promise<void> {
-    console.warn('deleteTeam not implemented for existing database structure');
+    throw new Error('Team deletion not available. Please use the club management system.');
   }
 
   async savePlayer(player: Player): Promise<void> {
-    console.warn('savePlayer not implemented for existing database structure');
+    throw new Error('Player management not available in match recorder. Please use the club management system.');
   }
 
   async deletePlayer(id: string): Promise<void> {
-    console.warn('deletePlayer not implemented for existing database structure');
+    throw new Error('Player deletion not available. Please use the club management system.');
   }
 
   async saveMatch(match: Match): Promise<void> {
-    console.warn('saveMatch not implemented for existing database structure');
+    throw new Error('Match creation not available in quick setup. Please use the proper match scheduling system.');
   }
 
   async deleteMatch(id: string): Promise<void> {
-    console.warn('deleteMatch not implemented for existing database structure');
+    throw new Error('Match deletion not available. Please use the match management system.');
   }
 
   async saveMatchEvent(event: MatchEvent): Promise<void> {
-    console.warn('saveMatchEvent not implemented for existing database structure');
+    // This could be implemented for live match recording
+    const { error } = await supabase
+      .from('match_events')
+      .insert({
+        match_id: event.matchId,
+        player_id: event.playerId,
+        event_type: event.eventType,
+        event_minute: event.minute,
+        event_half: event.half,
+        description: event.notes,
+        is_our_team: true,
+        created_by: event.recordedBy
+      });
+
+    if (error) {
+      throw new Error(`Failed to save match event: ${error.message}`);
+    }
   }
 
   async deleteMatchEvent(id: string): Promise<void> {
-    console.warn('deleteMatchEvent not implemented for existing database structure');
+    const { error } = await supabase
+      .from('match_events')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw new Error(`Failed to delete match event: ${error.message}`);
+    }
   }
 
   async getMatchStats(matchId: string): Promise<MatchStats | null> {

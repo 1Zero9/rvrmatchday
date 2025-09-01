@@ -654,9 +654,25 @@ export default function MatchRecorder() {
                     <div className="flex gap-3">
                       <button
                         onClick={() => {
-                          // Save teams/venue to system
-                          console.log('Saving to system:', quickSetup);
-                          // TODO: Add save functionality
+                          try {
+                            console.log('Quick setup data:', quickSetup);
+                            
+                            // In production mode, just proceed to recording with existing data
+                            // Teams and matches are managed through the proper club management system
+                            if (storage.isUsingSupabase()) {
+                              alert('Production mode: Please use club management system to create teams and schedule matches. Quick setup is for development only.');
+                              return;
+                            }
+                            
+                            // For development mode, create temporary match
+                            setCurrentStep('recording');
+                            setSelectedMode('live');
+                            alert('Starting quick recording session...');
+                            
+                          } catch (error) {
+                            console.error('Error in quick setup:', error);
+                            alert('Error in quick setup. Please try again.');
+                          }
                         }}
                         disabled={!(quickSetup.homeTeam && quickSetup.homeTeam !== 'custom' || quickSetup.homeTeamCustom) || !(quickSetup.awayTeam && quickSetup.awayTeam !== 'custom' || quickSetup.awayTeamCustom)}
                         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2"
