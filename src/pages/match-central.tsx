@@ -601,19 +601,24 @@ export default function MatchCentral() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Filter Bar - Clean Design */}
-              <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <span>🏆</span>
-                    Match Results
-                  </h2>
+              {/* Filter Bar - Enhanced Features Style */}
+              <div className="bg-gradient-to-r from-white to-blue-50 rounded-xl shadow-lg border border-blue-100 p-6 mb-8">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                      <span className="text-white text-2xl">🏆</span>
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Match Results</h2>
+                      <p className="text-sm text-gray-600">Track your team's performance</p>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-3">
                     <label className="text-sm font-medium text-gray-700">Filter:</label>
                     <select
                       value={overviewFilter}
                       onChange={(e) => setOverviewFilter(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900"
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 shadow-sm"
                     >
                       <option value="all">All Teams</option>
                       {teams.filter(team => !team.isOpponent).map(team => (
@@ -627,10 +632,12 @@ export default function MatchCentral() {
               {/* Results */}
               <div className="space-y-3">
                 {filteredOverviewResults.length === 0 ? (
-                  <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-                    <div className="text-4xl mb-4">⚽</div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">No Results Yet!</h3>
-                    <p className="text-gray-600 mb-6">
+                  <div className="bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-xl shadow-lg border border-gray-100 p-8 text-center">
+                    <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                      <span className="text-white text-3xl">⚽</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">No Results Yet!</h3>
+                    <p className="text-gray-600 mb-8 max-w-md mx-auto">
                       {overviewFilter === 'all' 
                         ? 'Play some matches and results will appear here!' 
                         : `No results yet for ${teams.find(t => t.id === overviewFilter)?.name || 'this team'}`
@@ -638,9 +645,9 @@ export default function MatchCentral() {
                     </p>
                     <a
                       href="/match-recorder"
-                      className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                      className="inline-flex items-center gap-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
                     >
-                      <span>🔴</span>
+                      <span className="text-xl">🔴</span>
                       <span>Record Your First Match</span>
                     </a>
                   </div>
@@ -659,45 +666,48 @@ export default function MatchCentral() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className={`bg-white rounded-lg shadow-sm border hover:shadow-md transition-all duration-200 overflow-hidden relative ${
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        className={`bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-blue-200 transition-all duration-300 overflow-hidden relative ${
                           hasExtra ? 'cursor-pointer' : ''
                         }`}
                         onClick={() => hasExtra && toggleMatchExpand(match.id)}
                       >
-                        {/* Result Indicator Strip */}
-                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${
-                          result.result === 'W' ? 'bg-green-500' : 
-                          result.result === 'L' ? 'bg-red-500' : 'bg-yellow-500'
+                        {/* Result Indicator Strip - Enhanced */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-2 rounded-l-xl ${
+                          result.result === 'W' ? 'bg-gradient-to-b from-green-400 to-green-600' : 
+                          result.result === 'L' ? 'bg-gradient-to-b from-red-400 to-red-600' : 'bg-gradient-to-b from-yellow-400 to-yellow-600'
                         }`}></div>
                         
-                        {/* Main Card Content - Left/Right Layout */}
-                        <div className="p-4">
+                        {/* Main Card Content - Enhanced Layout */}
+                        <div className="p-6">
                           <div className="flex items-center justify-between">
                             
                             {/* Left Side - Match Info */}
                             <div className="flex-1 pr-4">
                               {/* Teams */}
-                              <div className="flex items-center gap-3 mb-2">
-                                <div className="text-lg font-bold text-gray-900">
+                              <div className="flex items-center gap-4 mb-3">
+                                <div className="text-xl font-bold text-gray-900">
                                   {team.name}
                                 </div>
-                                <span className="text-gray-400 font-medium">vs</span>
-                                <div className="text-lg font-bold text-gray-900">
+                                <span className="text-gray-400 font-bold text-lg">vs</span>
+                                <div className="text-xl font-bold text-gray-900">
                                   {match.opponent}
                                 </div>
                               </div>
                               
                               {/* Match Details */}
                               <div className="flex items-center gap-3 text-sm text-gray-600">
-                                <span className="font-medium">{new Date(match.scheduledDate).toLocaleDateString()}</span>
-                                <span className={`px-2 py-1 rounded font-medium ${
-                                  match.isHomeMatch 
-                                    ? 'bg-green-100 text-green-700' 
-                                    : 'bg-blue-100 text-blue-700'
-                                }`}>
-                                  {match.isHomeMatch ? 'HOME' : 'AWAY'}
+                                <span className="font-semibold bg-white/70 px-2 py-1 rounded-lg">
+                                  {new Date(match.scheduledDate).toLocaleDateString()}
                                 </span>
-                                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded font-medium">
+                                <span className={`px-3 py-1 rounded-lg font-semibold shadow-sm ${
+                                  match.isHomeMatch 
+                                    ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-700' 
+                                    : 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700'
+                                }`}>
+                                  {match.isHomeMatch ? '🏠 HOME' : '✈️ AWAY'}
+                                </span>
+                                <span className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 px-3 py-1 rounded-lg font-semibold shadow-sm">
                                   {match.matchType}
                                 </span>
                               </div>
@@ -705,27 +715,54 @@ export default function MatchCentral() {
 
                             {/* Right Side - Score & Actions */}
                             <div className="flex items-center gap-4">
+                              {/* Edit Button */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(`/match-recorder?edit=${match.id}`);
+                                }}
+                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-3 rounded-xl transition-all shadow-sm hover:shadow-md transform hover:scale-110"
+                                title="Edit match"
+                              >
+                                ✏️
+                              </button>
+                              
+                              {/* Delete Button */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm('Are you sure you want to delete this match result?')) {
+                                    storage.deleteMatch(match.id);
+                                    loadData();
+                                  }
+                                }}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-3 rounded-xl transition-all shadow-sm hover:shadow-md transform hover:scale-110"
+                                title="Delete match"
+                              >
+                                🗑️
+                              </button>
+                              
                               {/* Score Display */}
-                              <div className="text-center">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className={`text-3xl font-black ${
+                              <div className="text-center bg-white/70 rounded-xl p-4 shadow-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <span className={`text-4xl font-black ${
                                     result.teamScore > result.opponentScore ? 'text-green-600' : 'text-gray-700'
                                   }`}>
                                     {result.teamScore}
                                   </span>
-                                  <span className="text-gray-400 text-2xl font-bold">-</span>
-                                  <span className={`text-3xl font-black ${
+                                  <span className="text-gray-400 text-3xl font-bold">-</span>
+                                  <span className={`text-4xl font-black ${
                                     result.opponentScore > result.teamScore ? 'text-green-600' : 'text-gray-700'
                                   }`}>
                                     {result.opponentScore}
                                   </span>
                                 </div>
-                                <div className={`px-3 py-1 rounded-lg text-xs font-bold ${
-                                  result.result === 'W' ? 'bg-green-100 text-green-700' :
-                                  result.result === 'L' ? 'bg-red-100 text-red-700' :
-                                  'bg-yellow-100 text-yellow-700'
+                                <div className={`px-4 py-2 rounded-xl text-sm font-bold shadow-sm ${
+                                  result.result === 'W' ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-700' :
+                                  result.result === 'L' ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-700' :
+                                  'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-700'
                                 }`}>
-                                  {result.result === 'W' ? 'WIN' : result.result === 'L' ? 'LOSS' : 'DRAW'}
+                                  {result.result === 'W' ? '🏆 WIN' : result.result === 'L' ? '💔 LOSS' : '🤝 DRAW'}
                                 </div>
                               </div>
                               
@@ -734,9 +771,9 @@ export default function MatchCentral() {
                                 <motion.div
                                   animate={{ rotate: isExpanded ? 180 : 0 }}
                                   transition={{ duration: 0.2 }}
-                                  className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
+                                  className="text-gray-400 hover:text-blue-600 transition-colors p-3 rounded-xl hover:bg-blue-50 shadow-sm hover:shadow-md"
                                 >
-                                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                                   </svg>
                                 </motion.div>
@@ -756,62 +793,65 @@ export default function MatchCentral() {
                             transition={{ duration: 0.25, ease: "easeOut" }}
                             className="overflow-hidden"
                           >
-                            <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div className="border-t border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4">
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 
                                 {match.playerOfTheMatch && (
-                                  <div className="text-center p-2 bg-yellow-100/80 backdrop-blur-sm border border-yellow-300/50 rounded-lg">
-                                    <div className="text-lg mb-1">⭐</div>
-                                    <div className="text-xs text-gray-600">Player of Match</div>
-                                    <div className="text-xs font-bold text-gray-900">{match.playerOfTheMatch}</div>
+                                  <div className="text-center p-3 bg-gradient-to-br from-yellow-100 to-yellow-200 backdrop-blur-sm border border-yellow-300 rounded-xl shadow-sm">
+                                    <div className="text-xl mb-2">⭐</div>
+                                    <div className="text-xs text-gray-600 font-medium">Player of Match</div>
+                                    <div className="text-sm font-bold text-gray-900">{match.playerOfTheMatch}</div>
                                   </div>
                                 )}
                                 
                                 {match.attendance && match.attendance > 0 && (
-                                  <div className="text-center p-2 bg-blue-50 border border-blue-200 rounded">
-                                    <div className="text-lg mb-1">👥</div>
-                                    <div className="text-xs text-gray-600">Attendance</div>
-                                    <div className="text-xs font-bold text-gray-900">{match.attendance}</div>
+                                  <div className="text-center p-3 bg-gradient-to-br from-blue-100 to-blue-200 border border-blue-300 rounded-xl shadow-sm">
+                                    <div className="text-xl mb-2">👥</div>
+                                    <div className="text-xs text-gray-600 font-medium">Attendance</div>
+                                    <div className="text-sm font-bold text-gray-900">{match.attendance}</div>
                                   </div>
                                 )}
 
                                 {match.yellowCards && (
-                                  <div className="text-center p-2 bg-yellow-100/80 backdrop-blur-sm border border-yellow-300/50 rounded-lg">
-                                    <div className="text-lg mb-1">🟨</div>
-                                    <div className="text-xs text-gray-600">Yellow Cards</div>
-                                    <div className="text-xs font-bold text-gray-900">{match.yellowCards}</div>
+                                  <div className="text-center p-3 bg-gradient-to-br from-yellow-100 to-yellow-200 backdrop-blur-sm border border-yellow-300 rounded-xl shadow-sm">
+                                    <div className="text-xl mb-2">🟨</div>
+                                    <div className="text-xs text-gray-600 font-medium">Yellow Cards</div>
+                                    <div className="text-sm font-bold text-gray-900">{match.yellowCards}</div>
                                   </div>
                                 )}
 
                                 {match.redCards && (
-                                  <div className="text-center p-2 bg-red-50 border border-red-200 rounded">
-                                    <div className="text-lg mb-1">🟥</div>
-                                    <div className="text-xs text-gray-600">Red Cards</div>
-                                    <div className="text-xs font-bold text-gray-900">{match.redCards}</div>
+                                  <div className="text-center p-3 bg-gradient-to-br from-red-100 to-red-200 border border-red-300 rounded-xl shadow-sm">
+                                    <div className="text-xl mb-2">🟥</div>
+                                    <div className="text-xs text-gray-600 font-medium">Red Cards</div>
+                                    <div className="text-sm font-bold text-gray-900">{match.redCards}</div>
                                   </div>
                                 )}
 
                                 {match.referee && (
-                                  <div className="text-center p-2 bg-gray-50 border border-gray-200 rounded">
-                                    <div className="text-lg mb-1">👨‍⚖️</div>
-                                    <div className="text-xs text-gray-600">Referee</div>
-                                    <div className="text-xs font-bold text-gray-900">{match.referee}</div>
+                                  <div className="text-center p-3 bg-gradient-to-br from-gray-100 to-gray-200 border border-gray-300 rounded-xl shadow-sm">
+                                    <div className="text-xl mb-2">👨‍⚖️</div>
+                                    <div className="text-xs text-gray-600 font-medium">Referee</div>
+                                    <div className="text-sm font-bold text-gray-900">{match.referee}</div>
                                   </div>
                                 )}
 
                                 {match.weather && (
-                                  <div className="text-center p-2 bg-blue-50 border border-blue-200 rounded">
-                                    <div className="text-lg mb-1">🌤️</div>
-                                    <div className="text-xs text-gray-600">Weather</div>
-                                    <div className="text-xs font-bold text-gray-900">{match.weather}</div>
+                                  <div className="text-center p-3 bg-gradient-to-br from-blue-100 to-blue-200 border border-blue-300 rounded-xl shadow-sm">
+                                    <div className="text-xl mb-2">🌤️</div>
+                                    <div className="text-xs text-gray-600 font-medium">Weather</div>
+                                    <div className="text-sm font-bold text-gray-900">{match.weather}</div>
                                   </div>
                                 )}
                               </div>
                               
                               {match.notes && (
-                                <div className="mt-3 p-3 bg-white border border-gray-200 rounded">
-                                  <div className="text-xs text-gray-600 font-medium mb-1">📝 Match Notes</div>
-                                  <div className="text-xs text-gray-700">{match.notes}</div>
+                                <div className="mt-4 p-4 bg-white/80 border border-gray-300 rounded-xl shadow-sm">
+                                  <div className="text-sm text-gray-600 font-semibold mb-2 flex items-center gap-2">
+                                    <span>📝</span>
+                                    Match Notes
+                                  </div>
+                                  <div className="text-sm text-gray-700">{match.notes}</div>
                                 </div>
                               )}
                             </div>
@@ -883,54 +923,140 @@ export default function MatchCentral() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="bg-white rounded-xl shadow-sm border">
-                <div className="p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                    <span className="mr-3">📅</span>
-                    Upcoming Fixtures
-                    <span className="ml-2 text-sm font-normal text-gray-500">
-                      ({upcomingMatches.length} matches)
-                    </span>
-                  </h2>
+              <div className="bg-gradient-to-r from-white to-blue-50 rounded-xl shadow-lg border border-blue-100 p-6 mb-8">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="text-white text-2xl">📅</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Upcoming Fixtures</h2>
+                    <p className="text-sm text-gray-600">
+                      {upcomingMatches.length} match{upcomingMatches.length !== 1 ? 'es' : ''} scheduled
+                    </p>
+                  </div>
+                </div>
                   
                   <div className="space-y-4">
                     {upcomingMatches.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        {selectedTeam === 'all' ? 'No upcoming fixtures scheduled' : 'No upcoming fixtures for selected team'}
+                      <div className="bg-gradient-to-br from-white via-gray-50 to-purple-50 rounded-xl p-8 text-center shadow-lg border border-purple-100">
+                        <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                          <span className="text-white text-3xl">📅</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-3">No Fixtures Scheduled</h3>
+                        <p className="text-gray-600 mb-6">
+                          {selectedTeam === 'all' ? 'Schedule upcoming matches to see them here' : 'No upcoming fixtures for selected team'}
+                        </p>
+                        <a
+                          href="/match-recorder"
+                          className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
+                        >
+                          <span className="text-xl">📅</span>
+                          <span>Schedule a Match</span>
+                        </a>
                       </div>
                     ) : (
-                      upcomingMatches.map((match) => {
+                      upcomingMatches.map((match, index) => {
                         const team = teams.find(t => t.id === match.teamId);
                         return (
-                          <div key={match.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-                            <div className="flex-1">
-                              <div className="font-medium text-gray-900">{team?.name || 'Unknown Team'}</div>
-                              <div className="text-sm text-gray-600">vs {match.opponent}</div>
-                              <div className="text-xs text-club-primary">{match.matchType} • {team?.league}</div>
+                          <motion.div 
+                            key={match.id} 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: index * 0.05 }}
+                            whileHover={{ scale: 1.02, y: -2 }}
+                            className="bg-gradient-to-br from-white via-gray-50 to-purple-50 rounded-xl shadow-lg border border-purple-100 hover:shadow-xl hover:border-purple-200 transition-all duration-300 overflow-hidden relative"
+                          >
+                            {/* Future Match Indicator Strip */}
+                            <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-blue-400 to-purple-600 rounded-l-xl"></div>
+                            
+                            {/* Card Content */}
+                            <div className="p-6">
+                              <div className="flex items-center justify-between">
+                                
+                                {/* Left Side - Match Info */}
+                                <div className="flex-1 pr-4">
+                                  {/* Teams */}
+                                  <div className="flex items-center gap-4 mb-3">
+                                    <div className="text-xl font-bold text-gray-900">
+                                      {team.name}
+                                    </div>
+                                    <span className="text-gray-400 font-bold text-lg">vs</span>
+                                    <div className="text-xl font-bold text-gray-900">
+                                      {match.opponent}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Match Details */}
+                                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                                    <span className="font-semibold bg-white/70 px-2 py-1 rounded-lg">
+                                      {match.scheduledDate.toLocaleDateString()}
+                                    </span>
+                                    <span className="font-semibold bg-white/70 px-2 py-1 rounded-lg">
+                                      {match.scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                    <span className={`px-3 py-1 rounded-lg font-semibold shadow-sm ${
+                                      match.isHomeMatch 
+                                        ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-700' 
+                                        : 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700'
+                                    }`}>
+                                      {match.isHomeMatch ? '🏠 HOME' : '✈️ AWAY'}
+                                    </span>
+                                    <span className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 px-3 py-1 rounded-lg font-semibold shadow-sm">
+                                      {match.matchType}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Right Side - Actions */}
+                                <div className="flex items-center gap-4">
+                                  {/* Edit Button */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      router.push(`/match-recorder?edit=${match.id}`);
+                                    }}
+                                    className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-3 rounded-xl transition-all shadow-sm hover:shadow-md transform hover:scale-110"
+                                    title="Edit fixture"
+                                  >
+                                    ✏️
+                                  </button>
+                                  
+                                  {/* Delete Button */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (confirm('Are you sure you want to delete this fixture?')) {
+                                        storage.deleteMatch(match.id);
+                                        loadData();
+                                      }
+                                    }}
+                                    className="text-red-500 hover:text-red-700 hover:bg-red-50 p-3 rounded-xl transition-all shadow-sm hover:shadow-md transform hover:scale-110"
+                                    title="Delete fixture"
+                                  >
+                                    🗑️
+                                  </button>
+                                  
+                                  {/* Action Button */}
+                                  <a
+                                    href={`/matches/${match.id}/record`}
+                                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                                  >
+                                    📱 Record
+                                  </a>
+                                  
+                                  {/* Fixture Badge */}
+                                  <div className="px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-200 text-blue-700 rounded-xl text-sm font-bold shadow-sm">
+                                    📅 FIXTURE
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-center mx-4">
-                              <div className="font-medium text-gray-900">{match.scheduledDate.toLocaleDateString()}</div>
-                              <div className="text-sm text-gray-600">{match.scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                            </div>
-                            <div className="text-center mx-4">
-                              <div className="text-sm font-medium text-gray-700">{match.isHomeMatch ? 'Home' : 'Away'}</div>
-                              <div className="text-xs text-gray-500">{match.venue || (match.isHomeMatch ? 'Home Ground' : 'Away Ground')}</div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <a
-                                href={`/matches/${match.id}/record`}
-                                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                              >
-                                Start Recording
-                              </a>
-                            </div>
-                          </div>
+                          </motion.div>
                         );
                       })
                     )}
                   </div>
                 </div>
-              </div>
             </motion.div>
           )}
 
@@ -941,20 +1067,20 @@ export default function MatchCentral() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
+              <div className="bg-gradient-to-r from-white to-purple-50 rounded-xl shadow-lg border border-purple-100 p-6 mb-8">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-                      <span className="text-white text-xl">📊</span>
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                      <span className="text-white text-2xl">📊</span>
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900">Season Statistics</h2>
+                      <h2 className="text-2xl font-bold text-gray-900">Season Statistics</h2>
                       <p className="text-sm text-gray-600">Team performance analytics</p>
                     </div>
                   </div>
                   
                   {/* Team Selector for Stats */}
-                  <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                  <select className="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                     <option value="">Select Team</option>
                     <option value="u16-boys">U16 Boys</option>
                     <option value="u14-girls">U14 Girls</option>
@@ -963,24 +1089,40 @@ export default function MatchCentral() {
                   </select>
                 </div>
 
-                {/* Stats Grid */}
+                {/* Stats Grid - Enhanced */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="text-2xl mb-2">⚽</div>
                     <div className="text-2xl font-bold text-green-600">12</div>
-                    <div className="text-xs text-gray-600">Matches Played</div>
-                  </div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                    <div className="text-xs text-gray-600 font-medium">Matches Played</div>
+                  </motion.div>
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="text-2xl mb-2">🏆</div>
                     <div className="text-2xl font-bold text-blue-600">8</div>
-                    <div className="text-xs text-gray-600">Wins</div>
-                  </div>
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                    <div className="text-xs text-gray-600 font-medium">Wins</div>
+                  </motion.div>
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="text-2xl mb-2">🤝</div>
                     <div className="text-2xl font-bold text-yellow-600">2</div>
-                    <div className="text-xs text-gray-600">Draws</div>
-                  </div>
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                    <div className="text-xs text-gray-600 font-medium">Draws</div>
+                  </motion.div>
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="text-2xl mb-2">💔</div>
                     <div className="text-2xl font-bold text-red-600">2</div>
-                    <div className="text-xs text-gray-600">Losses</div>
-                  </div>
+                    <div className="text-xs text-gray-600 font-medium">Losses</div>
+                  </motion.div>
                 </div>
 
                 {/* Detailed Stats */}

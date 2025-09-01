@@ -1,11 +1,6 @@
 /**
- * Match Recorder - Complete Recording Interface
- * 
- * © 2025 OneZeroNine Premium Football Club Template
- * Developer: OneZeroNine (onezeronine@gmail.com)
- * AI Collaboration: Claude (Anthropic)
- * 
- * Full match recording system with team setup, venue management, and recording modes
+ * Match Recorder - Simplified UX
+ * Simple 3-step process: Log Result → Add Details (optional) → Done
  */
 
 import React, { useState, useEffect } from "react";
@@ -15,1137 +10,739 @@ import StandardLayout from "../components/StandardLayout";
 import { storageV2 as storage } from "../lib/match-tracker-storage-v2";
 import { Match, Team } from "../types/match-tracker";
 
-type RecordingMode = 'live' | 'post-match' | 'edit' | 'view-results';
-type SetupStep = 'mode' | 'match-selection' | 'team-setup' | 'venue' | 'recording';
-type RecorderType = 'quick' | 'full';
+type Step = 'result' | 'details' | 'done';
 
-export default function MatchRecorder() {
+interface QuickResult {
+  homeTeam: string;
+  homeTeamCustom: string;
+  awayTeam: string;
+  awayTeamCustom: string;
+  homeScore: number;
+  awayScore: number;
+  matchDate: string;
+  isHomeMatch: boolean;
+}
+
+interface MatchDetails {
+  venue: string;
+  referee: boolean;
+  weather: string;
+  notes: string;
+  goalScorers: { playerId: string; playerName: string; assistedBy?: string; minute?: number }[];
+}
+
+export default function MatchRecorderSimple() {
   const router = useRouter();
-  const [matches, setMatches] = useState<Match[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
-  const [recorderType, setRecorderType] = useState<RecorderType | ''>('');
-  const [currentStep, setCurrentStep] = useState<SetupStep>('mode');
-  const [selectedMode, setSelectedMode] = useState<RecordingMode | ''>('');
-  const [selectedMatch, setSelectedMatch] = useState<string>('');
+  const [step, setStep] = useState<Step>('result');
+  const [savedMatchId, setSavedMatchId] = useState<string>('');
+  const [editingMatch, setEditingMatch] = useState<Match | null>(null);
   
-  // Quick setup state
-  const [quickSetup, setQuickSetup] = useState({
+  const [quickResult, setQuickResult] = useState<QuickResult>({
     homeTeam: '',
     homeTeamCustom: '',
     awayTeam: '',
     awayTeamCustom: '',
-    venue: '',
-    venueCustom: '',
-    kickoffTime: ''
+    homeScore: 0,
+    awayScore: 0,
+    matchDate: new Date().toISOString().split('T')[0],
+    isHomeMatch: true
   });
-  
-  // Get available teams for dropdowns
-  const getAvailableTeams = () => {
-    return teams.filter(team => !team.isOpponent);
-  };
-  
-  // Get existing venues from matches
+
+  const [details, setDetails] = useState<MatchDetails>({
+    venue: 'Home Ground',
+    referee: false,
+    weather: '',
+    notes: '',
+    goalScorers: []
+  });
+
+  const [players, setPlayers] = useState<any[]>([]);
+
+  // Get available venues from matches
   const getAvailableVenues = () => {
-    const venues = matches
-      .map(match => match.venue)
-      .filter(venue => venue && venue.trim() !== '')
-      .filter((venue, index, self) => self.indexOf(venue) === index) // unique values
-      .sort();
+    const venues = ['Home Ground', 'Phoenix Park', 'Away Ground', 'Training Ground'];
     return venues;
   };
 
+  // Calculate RVR goals to determine goal scorer slots
+  const getRVRGoals = () => {
+    return quickResult.isHomeMatch ? quickResult.homeScore : quickResult.awayScore;
+  };
+
+  // Check if match is in the future (fixture)
+  const isFutureMatch = () => {
+    const matchDate = new Date(quickResult.matchDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    matchDate.setHours(0, 0, 0, 0);
+    return matchDate > today;
+  };
+
+  // Auto-update goal scorers when score changes (only for past/today matches)
+  useEffect(() => {
+    if (!isFutureMatch()) {
+      const rvrGoals = getRVRGoals();
+      const currentScorers = details.goalScorers.length;
+      
+      if (rvrGoals !== currentScorers) {
+        const newScorers = [];
+        for (let i = 0; i < rvrGoals; i++) {
+          newScorers.push(details.goalScorers[i] || { playerId: '', playerName: '', assistedBy: '' });
+        }
+        setDetails(prev => ({ ...prev, goalScorers: newScorers }));
+      }
+    }
+  }, [quickResult.homeScore, quickResult.awayScore, quickResult.isHomeMatch, quickResult.matchDate]);
+
   useEffect(() => {
     loadData();
-  }, []);
+    
+    // Check for edit mode
+    const editId = router.query.edit as string;
+    if (editId) {
+      loadMatchForEdit(editId);
+    }
+  }, [router.query]);
 
   const loadData = async () => {
     try {
       storage.initializeSampleData();
-      const loadedMatches = await storage.getMatches();
       const loadedTeams = await storage.getTeams();
-      
-      setMatches(loadedMatches);
       setTeams(loadedTeams);
     } catch (error) {
-      console.error('Error loading match data:', error);
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleModeSelection = (mode: RecordingMode) => {
-    setSelectedMode(mode);
-    setCurrentStep('match-selection');
-  };
-
-  const handleMatchSelection = (matchId: string) => {
-    setSelectedMatch(matchId);
-    setCurrentStep('team-setup');
-  };
-
-  const startRecording = () => {
-    if (!selectedMatch || !selectedMode) return;
-
-    switch (selectedMode) {
-      case 'live':
-        router.push(`/matches/${selectedMatch}/record`);
-        break;
-      case 'post-match':
-        router.push(`/matches/${selectedMatch}/post-match`);
-        break;
-      case 'edit':
-        router.push(`/match-admin#matches`);
-        break;
-      case 'view-results':
-        router.push(`/match-central#overview`);
-        break;
+  const loadMatchForEdit = async (matchId: string) => {
+    try {
+      const matches = await storage.getMatches();
+      const matchToEdit = matches.find(m => m.id === matchId);
+      
+      if (matchToEdit) {
+        setEditingMatch(matchToEdit);
+        setSavedMatchId(matchId);
+        
+        // Find team names
+        const homeTeam = teams.find(t => t.id === matchToEdit.teamId);
+        const awayTeamName = matchToEdit.opponent;
+        const awayTeam = teams.find(t => t.name === awayTeamName);
+        
+        // Populate form with match data
+        setQuickResult({
+          homeTeam: matchToEdit.isHomeMatch ? matchToEdit.teamId : (awayTeam?.id || 'custom'),
+          homeTeamCustom: matchToEdit.isHomeMatch ? '' : (!awayTeam ? awayTeamName : ''),
+          awayTeam: matchToEdit.isHomeMatch ? (awayTeam?.id || 'custom') : matchToEdit.teamId,
+          awayTeamCustom: matchToEdit.isHomeMatch ? (!awayTeam ? awayTeamName : '') : '',
+          homeScore: matchToEdit.homeScore || 0,
+          awayScore: matchToEdit.awayScore || 0,
+          matchDate: matchToEdit.scheduledDate.toISOString().split('T')[0],
+          isHomeMatch: matchToEdit.isHomeMatch
+        });
+        
+        setDetails({
+          venue: matchToEdit.venue || 'Home Ground',
+          referee: matchToEdit.referee === 'Yes',
+          weather: matchToEdit.weather || '',
+          notes: matchToEdit.notes || '',
+          goalScorers: [] // TODO: Load goal scorers from match events
+        });
+      }
+    } catch (error) {
+      console.error('Error loading match for edit:', error);
     }
   };
 
-  const getMatchesForMode = () => {
-    switch (selectedMode) {
-      case 'live':
-        return matches.filter(m => m.status === 'Scheduled' || m.status === 'Live');
-      case 'post-match':
-        return matches.filter(m => m.status === 'Scheduled' || m.status === 'Live' || m.status === 'Finished');
-      case 'edit':
-        return matches;
-      case 'view-results':
-        return matches.filter(m => m.status === 'Finished');
-      default:
-        return [];
+  const saveResult = async () => {
+    try {
+      // Create teams if custom
+      let homeTeamId = quickResult.homeTeam;
+      let awayTeamName = quickResult.awayTeam;
+
+      if (quickResult.homeTeam === 'custom' && quickResult.homeTeamCustom) {
+        const homeTeam: Team = {
+          id: `team-${Date.now()}-home`,
+          name: quickResult.homeTeamCustom,
+          ageGroup: 'Unknown',
+          season: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1).toString().slice(-2),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        await storage.saveTeam(homeTeam);
+        homeTeamId = homeTeam.id;
+      }
+
+      if (quickResult.awayTeam === 'custom' && quickResult.awayTeamCustom) {
+        const awayTeam: Team = {
+          id: `team-${Date.now()}-away`,
+          name: quickResult.awayTeamCustom,
+          ageGroup: 'Unknown',
+          isOpponent: true,
+          season: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1).toString().slice(-2),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        await storage.saveTeam(awayTeam);
+        awayTeamName = awayTeam.name;
+      } else {
+        const awayTeamObj = teams.find(t => t.id === quickResult.awayTeam);
+        awayTeamName = awayTeamObj?.name || 'Unknown';
+      }
+
+      // Create or update the match
+      const newMatch: Match = {
+        id: editingMatch ? editingMatch.id : `match-${Date.now()}`,
+        teamId: homeTeamId,
+        opponent: awayTeamName,
+        matchType: 'League',
+        isHomeMatch: quickResult.isHomeMatch,
+        venue: details.venue,
+        scheduledDate: new Date(quickResult.matchDate),
+        status: isFutureMatch() ? 'Scheduled' : 'Finished',
+        homeScore: isFutureMatch() ? undefined : (quickResult.isHomeMatch ? quickResult.homeScore : quickResult.awayScore),
+        awayScore: isFutureMatch() ? undefined : (quickResult.isHomeMatch ? quickResult.awayScore : quickResult.homeScore),
+        referee: details.referee ? 'Yes' : 'No',
+        weather: details.weather,
+        pitchCond: 'Good',
+        notes: details.notes,
+        recordedBy: 'match-recorder',
+        createdAt: editingMatch ? editingMatch.createdAt : new Date(),
+        updatedAt: new Date()
+      };
+
+      await storage.saveMatch(newMatch);
+      
+      // Save goal events (only for completed matches)
+      if (!isFutureMatch()) {
+        for (let i = 0; i < details.goalScorers.length; i++) {
+          const scorer = details.goalScorers[i];
+          if (scorer.playerName) {
+            const goalEvent = {
+              id: `event-${Date.now()}-${i}`,
+              matchId: newMatch.id,
+              playerId: scorer.playerId,
+              playerName: scorer.playerName,
+              eventType: 'Goal' as const,
+              minute: scorer.minute || (i * 10 + 15), // Default minutes if not specified
+              half: 1 as const,
+              eventData: scorer.assistedBy ? { assistPlayerName: scorer.assistedBy } : {},
+              recordedAt: new Date(),
+              recordedBy: 'match-recorder'
+            };
+            await storage.saveMatchEvent(goalEvent);
+          }
+        }
+      }
+      
+      setSavedMatchId(newMatch.id);
+      setStep('done');
+
+    } catch (error) {
+      console.error('Error saving result:', error);
+      alert('Error saving result. Please try again.');
     }
   };
 
-  const recordingModes = [
-    {
-      id: 'live' as RecordingMode,
-      title: 'Live Recording',
-      description: 'Record match events as they happen in real-time',
-      icon: '🔴',
-      color: 'from-red-500 to-red-600',
-      textColor: 'text-red-700',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200'
-    },
-    {
-      id: 'post-match' as RecordingMode,
-      title: 'Post-Match Entry',
-      description: 'Enter final results and details after the match',
-      icon: '📝',
-      color: 'from-blue-500 to-blue-600',
-      textColor: 'text-blue-700',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200'
-    },
-    {
-      id: 'edit' as RecordingMode,
-      title: 'Edit Match',
-      description: 'Modify existing match details or scheduling',
-      icon: '✏️',
-      color: 'from-green-500 to-green-600',
-      textColor: 'text-green-700',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200'
-    },
-    {
-      id: 'view-results' as RecordingMode,
-      title: 'View Results',
-      description: 'Review completed match results and statistics',
-      icon: '📊',
-      color: 'from-purple-500 to-purple-600',
-      textColor: 'text-purple-700',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200'
+  const editMatch = () => {
+    setStep('result');
+  };
+
+  const deleteMatch = async () => {
+    if (confirm('Are you sure you want to delete this match result?')) {
+      try {
+        await storage.deleteMatch(savedMatchId);
+        router.push('/match-central');
+      } catch (error) {
+        console.error('Error deleting match:', error);
+        alert('Error deleting match.');
+      }
     }
-  ];
+  };
+
+  const getTeamName = (teamId: string, customName: string) => {
+    if (teamId === 'custom') return customName;
+    return teams.find(t => t.id === teamId)?.name || 'Unknown';
+  };
+
+  const isResultValid = () => {
+    const teamsValid = (quickResult.homeTeam && (quickResult.homeTeam !== 'custom' || quickResult.homeTeamCustom)) &&
+                      (quickResult.awayTeam && (quickResult.awayTeam !== 'custom' || quickResult.awayTeamCustom));
+    const dateValid = quickResult.matchDate;
+    
+    // For fixtures (future dates), teams and date are enough
+    // For results (past/today), we also need scores if they were entered
+    return teamsValid && dateValid;
+  };
 
   if (loading) {
     return (
       <StandardLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-club-primary border-t-transparent mx-auto mb-4"></div>
-            <p className="text-lg font-medium text-gray-600">Loading Match Recorder...</p>
-          </motion.div>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
       </StandardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Mobile-Only Design */}
-      <div className="block md:hidden bg-white">
-        {/* Simple Mobile Header */}
-        <div className="bg-club-primary text-white p-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg font-bold">Match Recorder</h1>
-            <a
-              href="/match-central"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1"
-            >
-              <span>📊</span>
-              <span className="text-sm">Results</span>
-            </a>
-          </div>
-        </div>
+    <StandardLayout>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8">
+        <div className="max-w-2xl mx-auto px-4">
 
-        {/* Mobile Content */}
-        <div className="p-4">
-          {/* Mobile Setup Selection */}
-          {recorderType === '' && (
-            <div>
-              <div className="text-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Record a Match</h2>
-                <p className="text-gray-600 text-sm">How do you want to set up?</p>
-              </div>
+          {/* Header */}
+          <motion.div 
+            className="text-center mb-8"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              {editingMatch ? '✏️ Edit Match' : 'Match Recorder'}
+            </h1>
+            <p className="text-gray-600">
+              {editingMatch 
+                ? 'Update match details and results' 
+                : isFutureMatch() 
+                  ? 'Schedule upcoming fixtures' 
+                  : 'Simple 3-step process to log match results'
+              }
+            </p>
+          </motion.div>
 
-              <div className="space-y-4">
-                {/* Quick Setup - Mobile */}
-                <button
-                  onClick={() => setRecorderType('quick')}
-                  className="w-full p-4 bg-green-50 border-2 border-green-200 rounded-xl text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">⚡</span>
-                    <div>
-                      <h3 className="font-bold text-green-700">Quick Setup</h3>
-                      <p className="text-xs text-gray-600">Record now, add details later</p>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Full Setup - Mobile */}
-                <button
-                  onClick={() => setRecorderType('full')}
-                  className="w-full p-4 bg-blue-50 border-2 border-blue-200 rounded-xl text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🎯</span>
-                    <div>
-                      <h3 className="font-bold text-blue-700">Full Setup</h3>
-                      <p className="text-xs text-gray-600">Complete configuration</p>
-                    </div>
-                  </div>
-                </button>
-
-              </div>
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <span className={`text-sm font-medium ${step === 'result' ? 'text-blue-600' : step === 'details' || step === 'done' ? 'text-green-600' : 'text-gray-500'}`}>
+                1. {isFutureMatch() ? 'Match Info' : 'Result'}
+              </span>
+              <span className={`text-sm font-medium ${step === 'details' ? 'text-blue-600' : step === 'done' ? 'text-green-600' : 'text-gray-500'}`}>
+                2. Details (Optional)
+              </span>
+              <span className={`text-sm font-medium ${step === 'done' ? 'text-blue-600' : 'text-gray-500'}`}>
+                3. Done
+              </span>
             </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ 
+                  width: step === 'result' ? '33%' : step === 'details' ? '66%' : '100%' 
+                }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Step 1: Log Result */}
+          {step === 'result' && (
+            <motion.div
+              className="bg-white rounded-lg shadow-lg p-6"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                {isFutureMatch() ? '📅 Schedule Match' : '📝 Log Match Result'}
+              </h2>
+              
+              <div className="space-y-4">
+                {/* Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Match Date</label>
+                  <input
+                    type="date"
+                    value={quickResult.matchDate}
+                    onChange={(e) => setQuickResult(prev => ({ ...prev, matchDate: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {isFutureMatch() && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+                      📅 <strong>Future Date Detected:</strong> This will be saved as a fixture until match details are added.
+                    </div>
+                  )}
+                </div>
+
+                {/* Teams */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Home Team</label>
+                    <select
+                      value={quickResult.homeTeam}
+                      onChange={(e) => setQuickResult(prev => ({ ...prev, homeTeam: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select Team</option>
+                      {teams.filter(t => !t.isOpponent).map(team => (
+                        <option key={team.id} value={team.id}>{team.name}</option>
+                      ))}
+                      <option value="custom">+ Add Custom Team</option>
+                    </select>
+                    {quickResult.homeTeam === 'custom' && (
+                      <input
+                        type="text"
+                        placeholder="Enter team name"
+                        value={quickResult.homeTeamCustom}
+                        onChange={(e) => setQuickResult(prev => ({ ...prev, homeTeamCustom: e.target.value }))}
+                        className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Away Team</label>
+                    <select
+                      value={quickResult.awayTeam}
+                      onChange={(e) => setQuickResult(prev => ({ ...prev, awayTeam: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select Opponent</option>
+                      {teams.map(team => (
+                        <option key={team.id} value={team.id}>{team.name}</option>
+                      ))}
+                      <option value="custom">+ Add Custom Opponent</option>
+                    </select>
+                    {quickResult.awayTeam === 'custom' && (
+                      <input
+                        type="text"
+                        placeholder="Enter opponent name"
+                        value={quickResult.awayTeamCustom}
+                        onChange={(e) => setQuickResult(prev => ({ ...prev, awayTeamCustom: e.target.value }))}
+                        className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Score - only show for past/today matches */}
+                {!isFutureMatch() && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Final Score</label>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1">
+                        {getTeamName(quickResult.homeTeam, quickResult.homeTeamCustom) || 'Home Team'}
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={quickResult.homeScore}
+                        onChange={(e) => setQuickResult(prev => ({ ...prev, homeScore: parseInt(e.target.value) || 0 }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl font-bold"
+                      />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-400">-</div>
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1">
+                        {getTeamName(quickResult.awayTeam, quickResult.awayTeamCustom) || 'Away Team'}
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={quickResult.awayScore}
+                        onChange={(e) => setQuickResult(prev => ({ ...prev, awayScore: parseInt(e.target.value) || 0 }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl font-bold"
+                      />
+                    </div>
+                  </div>
+                </div>
+                )}
+
+                {/* Home/Away Toggle */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Match Location</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setQuickResult(prev => ({ ...prev, isHomeMatch: true }))}
+                      className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        quickResult.isHomeMatch
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      🏠 Home Match
+                    </button>
+                    <button
+                      onClick={() => setQuickResult(prev => ({ ...prev, isHomeMatch: false }))}
+                      className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        !quickResult.isHomeMatch
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      ✈️ Away Match
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-between mt-8">
+                <button
+                  onClick={() => router.push('/match-central')}
+                  className="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                >
+                  Cancel
+                </button>
+                
+                <div className="flex gap-3">
+                  <button
+                    onClick={async () => {
+                      await saveResult();
+                      setStep('done');
+                    }}
+                    disabled={!isResultValid()}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-lg font-medium transition-colors"
+                  >
+                    {isFutureMatch() ? '📅 Save Fixture' : '✅ Save Result'}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      if (isResultValid()) {
+                        setStep('details');
+                      } else {
+                        alert('Please complete the required fields first');
+                      }
+                    }}
+                    disabled={!isResultValid()}
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg font-medium transition-colors"
+                  >
+                    {isFutureMatch() ? '➡️ Add Match Info' : '➡️ Add Details'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           )}
 
-          {/* Mobile Quick Setup */}
-          {recorderType === 'quick' && (
-            <div>
-              <div className="text-center mb-4">
-                <h2 className="text-lg font-bold text-gray-900 mb-1">Quick Setup</h2>
-                <p className="text-gray-600 text-sm">Just the essentials</p>
-              </div>
-
+          {/* Step 2: Optional Details */}
+          {step === 'details' && (
+            <motion.div
+              className="bg-white rounded-lg shadow-lg p-6"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                {isFutureMatch() ? '📅 Match Details (Optional)' : '📋 Additional Details (Optional)'}
+              </h2>
+              
               <div className="space-y-4">
-                {/* Teams */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Home Team</label>
-                  <select
-                    value={quickSetup.homeTeam}
-                    onChange={(e) => setQuickSetup(prev => ({ ...prev, homeTeam: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  >
-                    <option value="">Select or add team...</option>
-                    {getAvailableTeams().map(team => (
-                      <option key={team.id} value={team.name}>{team.name}</option>
-                    ))}
-                    <option value="custom">Add New Team</option>
-                  </select>
-                  {quickSetup.homeTeam === 'custom' && (
-                    <input
-                      type="text"
-                      value={quickSetup.homeTeamCustom}
-                      onChange={(e) => setQuickSetup(prev => ({ ...prev, homeTeamCustom: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg mt-2"
-                      placeholder="Team name..."
-                    />
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Away Team</label>
-                  <select
-                    value={quickSetup.awayTeam}
-                    onChange={(e) => setQuickSetup(prev => ({ ...prev, awayTeam: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  >
-                    <option value="">Select or add team...</option>
-                    {getAvailableTeams().map(team => (
-                      <option key={team.id} value={team.name}>{team.name}</option>
-                    ))}
-                    <option value="custom">Add New Team</option>
-                  </select>
-                  {quickSetup.awayTeam === 'custom' && (
-                    <input
-                      type="text"
-                      value={quickSetup.awayTeamCustom}
-                      onChange={(e) => setQuickSetup(prev => ({ ...prev, awayTeamCustom: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg mt-2"
-                      placeholder="Opposition team..."
-                    />
-                  )}
-                </div>
-
-                {/* Venue & Time */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Venue</label>
                     <select
-                      value={quickSetup.venue}
-                      onChange={(e) => setQuickSetup(prev => ({ ...prev, venue: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      value={details.venue}
+                      onChange={(e) => setDetails(prev => ({ ...prev, venue: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="">Where?</option>
                       {getAvailableVenues().map(venue => (
                         <option key={venue} value={venue}>{venue}</option>
                       ))}
-                      <option value="custom">New Venue</option>
                     </select>
-                    {quickSetup.venue === 'custom' && (
-                      <input
-                        type="text"
-                        value={quickSetup.venueCustom}
-                        onChange={(e) => setQuickSetup(prev => ({ ...prev, venueCustom: e.target.value }))}
-                        className="w-full px-2 py-2 border border-gray-300 rounded-lg mt-2 text-sm"
-                        placeholder="Venue..."
-                      />
-                    )}
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Kickoff</label>
-                    <input
-                      type="time"
-                      value={quickSetup.kickoffTime}
-                      onChange={(e) => setQuickSetup(prev => ({ ...prev, kickoffTime: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Referee Present</label>
+                    <div className="flex gap-4 mt-2">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="referee"
+                          checked={details.referee === true}
+                          onChange={() => setDetails(prev => ({ ...prev, referee: true }))}
+                          className="mr-2"
+                        />
+                        Yes
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="referee"
+                          checked={details.referee === false}
+                          onChange={() => setDetails(prev => ({ ...prev, referee: false }))}
+                          className="mr-2"
+                        />
+                        No
+                      </label>
+                    </div>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-2 pt-4">
-                  <button
-                    onClick={() => setRecorderType('')}
-                    className="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 text-sm"
-                  >
-                    Back
-                  </button>
-                  <button
-                    onClick={() => {
-                      console.log('Quick recording started:', quickSetup);
-                      router.push('/matches/quick/record');
-                    }}
-                    disabled={!(quickSetup.homeTeam && quickSetup.homeTeam !== 'custom' || quickSetup.homeTeamCustom) || !(quickSetup.awayTeam && quickSetup.awayTeam !== 'custom' || quickSetup.awayTeamCustom)}
-                    className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white rounded-lg font-medium text-sm flex items-center justify-center gap-2"
-                  >
-                    <span>🔴</span>
-                    Start Recording
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Mobile Full Setup Navigation */}
-          {recorderType === 'full' && (
-            <div>
-              <div className="text-center mb-4">
-                <h2 className="text-lg font-bold text-gray-900 mb-1">Full Setup</h2>
-                <p className="text-gray-600 text-sm">Complete match configuration</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                {recordingModes.map((mode) => (
-                  <button
-                    key={mode.id}
-                    onClick={() => handleModeSelection(mode.id)}
-                    className={`p-3 rounded-lg border-2 ${mode.borderColor} ${mode.bgColor} text-center`}
-                  >
-                    <div className="text-2xl mb-1">{mode.icon}</div>
-                    <div className={`text-xs font-bold ${mode.textColor}`}>{mode.title}</div>
-                  </button>
-                ))}
-              </div>
-              
-              <button
-                onClick={() => setRecorderType('')}
-                className="w-full mt-4 px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 text-sm"
-              >
-                ← Back to Options
-              </button>
-            </div>
-          )}
-
-        </div>
-      </div>
-
-      {/* Desktop Design - Hidden on Mobile */}
-      <div className="hidden md:block">
-        <StandardLayout>
-          <div className="min-h-screen bg-gray-50">
-            {/* Desktop Header */}
-            <div className="bg-white border-b border-gray-200">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-club-primary rounded-xl flex items-center justify-center">
-                  <span className="text-2xl text-white">⚽</span>
-                </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">Match Recorder</h1>
-                  <p className="text-gray-600 mt-1">Professional match recording and management system</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-3">
-                <a
-                  href="/match-central"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
-                >
-                  <span className="text-lg">📊</span>
-                  <span className="hidden sm:inline">View Results</span>
-                </a>
-                <a
-                  href="/match-admin"
-                  className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
-                >
-                  <span className="text-lg">⚙️</span>
-                  <span className="hidden sm:inline">Admin</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-8 py-4 md:py-8">
-          
-          {/* Step Indicator - Full Setup Only */}
-          {recorderType === 'full' && (
-            <div className="mb-6 md:mb-8">
-              <nav className="flex justify-center px-2">
-                <ol className="flex items-center space-x-2 md:space-x-4">
-                {[
-                  { id: 'mode', name: 'Mode', icon: '🎯' },
-                  { id: 'match-selection', name: 'Match', icon: '⚽' },
-                  { id: 'team-setup', name: 'Teams', icon: '👥' },
-                  { id: 'venue', name: 'Venue', icon: '🏟️' },
-                  { id: 'recording', name: 'Record', icon: '🔴' }
-                ].map((step, index) => (
-                  <li key={step.id} className="flex items-center">
-                    {index > 0 && (
-                      <div className="hidden sm:block w-4 md:w-8 h-px bg-gray-300 mx-1 md:mx-2"></div>
-                    )}
-                    <div className={`flex items-center space-x-1 md:space-x-2 px-2 md:px-3 py-2 rounded-lg text-xs md:text-sm font-medium ${
-                      currentStep === step.id 
-                        ? 'bg-club-primary text-white shadow-lg' 
-                        : index < ['mode', 'match-selection', 'team-setup', 'venue', 'recording'].indexOf(currentStep)
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      <span className="text-sm md:text-lg">{step.icon}</span>
-                      <span className="hidden sm:inline text-xs md:text-sm">{step.name}</span>
-                    </div>
-                  </li>
-                ))}
-                </ol>
-              </nav>
-            </div>
-          )}
-
-          {/* Step Content */}
-          
-          {/* Step 1: Setup Type Selection */}
-          {currentStep === 'mode' && recorderType === '' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-4xl mx-auto"
-            >
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">How do you want to set up your match?</h2>
-                <p className="text-gray-600">Choose between quick setup for immediate recording or full setup for detailed match management</p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Quick Setup */}
-                <motion.button
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setRecorderType('quick')}
-                  className="p-6 rounded-xl border-2 border-green-200 bg-green-50 hover:shadow-lg transition-all duration-300 text-left"
-                >
-                  <div className="flex items-start space-x-4">
-                    <div className="text-4xl">⚡</div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold mb-2 text-green-700">Quick Setup</h3>
-                      <p className="text-gray-600 text-sm mb-3">Start recording immediately with minimal setup. Perfect for when the match is about to begin.</p>
-                      <div className="text-xs text-green-600 font-medium">
-                        ✓ 30 second setup • ✓ Record now • ✓ Add details later
-                      </div>
-                    </div>
-                    <div className="text-gray-400">
-                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  </div>
-                </motion.button>
-
-                {/* Full Setup */}
-                <motion.button
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setRecorderType('full')}
-                  className="p-6 rounded-xl border-2 border-blue-200 bg-blue-50 hover:shadow-lg transition-all duration-300 text-left"
-                >
-                  <div className="flex items-start space-x-4">
-                    <div className="text-4xl">🎯</div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold mb-2 text-blue-700">Full Setup</h3>
-                      <p className="text-gray-600 text-sm mb-3">Complete match setup with team details, venues, and full configuration options.</p>
-                      <div className="text-xs text-blue-600 font-medium">
-                        ✓ Detailed setup • ✓ Team management • ✓ Venue details
-                      </div>
-                    </div>
-                    <div className="text-gray-400">
-                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  </div>
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Quick Setup Flow */}
-          {recorderType === 'quick' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-2xl mx-auto"
-            >
-              <div className="bg-white rounded-xl shadow-sm border p-6">
-                <div className="text-center mb-6">
-                  <div className="text-4xl mb-3">⚡</div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Quick Match Setup</h2>
-                  <p className="text-gray-600">Enter basic details and start recording immediately</p>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {/* Home Team - Dropdown + Custom */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Home Team</label>
-                      <select
-                        value={quickSetup.homeTeam}
-                        onChange={(e) => setQuickSetup(prev => ({ ...prev, homeTeam: e.target.value, homeTeamCustom: e.target.value === 'custom' ? prev.homeTeamCustom : '' }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary mb-2"
-                      >
-                        <option value="">Select home team...</option>
-                        {getAvailableTeams().map(team => (
-                          <option key={team.id} value={team.name}>{team.name}</option>
-                        ))}
-                        <option value="custom">➕ Add new team manually</option>
-                      </select>
-                      {quickSetup.homeTeam === 'custom' && (
-                        <input
-                          type="text"
-                          value={quickSetup.homeTeamCustom}
-                          onChange={(e) => setQuickSetup(prev => ({ ...prev, homeTeamCustom: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
-                          placeholder="Enter team name..."
-                        />
-                      )}
-                    </div>
-                    
-                    {/* Away Team - Dropdown + Custom */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Away Team</label>
-                      <select
-                        value={quickSetup.awayTeam}
-                        onChange={(e) => setQuickSetup(prev => ({ ...prev, awayTeam: e.target.value, awayTeamCustom: e.target.value === 'custom' ? prev.awayTeamCustom : '' }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary mb-2"
-                      >
-                        <option value="">Select away team...</option>
-                        {getAvailableTeams().map(team => (
-                          <option key={team.id} value={team.name}>{team.name}</option>
-                        ))}
-                        <option value="custom">➕ Add new team manually</option>
-                      </select>
-                      {quickSetup.awayTeam === 'custom' && (
-                        <input
-                          type="text"
-                          value={quickSetup.awayTeamCustom}
-                          onChange={(e) => setQuickSetup(prev => ({ ...prev, awayTeamCustom: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
-                          placeholder="Enter opposition team name..."
-                        />
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {/* Venue - Dropdown + Custom */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Venue</label>
-                      <select
-                        value={quickSetup.venue}
-                        onChange={(e) => setQuickSetup(prev => ({ ...prev, venue: e.target.value, venueCustom: e.target.value === 'custom' ? prev.venueCustom : '' }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary mb-2"
-                      >
-                        <option value="">Select venue...</option>
-                        {getAvailableVenues().map(venue => (
-                          <option key={venue} value={venue}>{venue}</option>
-                        ))}
-                        <option value="custom">➕ Add new venue manually</option>
-                      </select>
-                      {quickSetup.venue === 'custom' && (
-                        <input
-                          type="text"
-                          value={quickSetup.venueCustom}
-                          onChange={(e) => setQuickSetup(prev => ({ ...prev, venueCustom: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
-                          placeholder="Enter venue name..."
-                        />
-                      )}
-                    </div>
-                    
-                    {/* Kickoff Time */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Kickoff Time</label>
-                      <input
-                        type="time"
-                        value={quickSetup.kickoffTime}
-                        onChange={(e) => setQuickSetup(prev => ({ ...prev, kickoffTime: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-                    <button
-                      onClick={() => setRecorderType('')}
-                      className="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      ← Back
-                    </button>
-                    
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => {
-                          try {
-                            console.log('Quick setup data:', quickSetup);
-                            
-                            // In production mode, just proceed to recording with existing data
-                            // Teams and matches are managed through the proper club management system
-                            if (storage.isUsingSupabase()) {
-                              alert('Production mode: Please use club management system to create teams and schedule matches. Quick setup is for development only.');
-                              return;
-                            }
-                            
-                            // For development mode, create temporary match
-                            setCurrentStep('recording');
-                            setSelectedMode('live');
-                            alert('Starting quick recording session...');
-                            
-                          } catch (error) {
-                            console.error('Error in quick setup:', error);
-                            alert('Error in quick setup. Please try again.');
-                          }
-                        }}
-                        disabled={!(quickSetup.homeTeam && quickSetup.homeTeam !== 'custom' || quickSetup.homeTeamCustom) || !(quickSetup.awayTeam && quickSetup.awayTeam !== 'custom' || quickSetup.awayTeamCustom)}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-                      >
-                        <span>💾</span>
-                        Save & Add to System
-                      </button>
-                      
-                      <button
-                        onClick={() => {
-                          // Start recording immediately
-                          console.log('Quick recording started:', quickSetup);
-                          router.push('/matches/quick/record');
-                        }}
-                        disabled={!(quickSetup.homeTeam && quickSetup.homeTeam !== 'custom' || quickSetup.homeTeamCustom) || !(quickSetup.awayTeam && quickSetup.awayTeam !== 'custom' || quickSetup.awayTeamCustom)}
-                        className="px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
-                      >
-                        <span>🔴</span>
-                        Start Recording Now
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Quick Info Notice */}
-                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <span className="text-yellow-600">💡</span>
-                      <div className="text-sm text-yellow-800">
-                        <strong>Quick Tip:</strong> You can start recording immediately and add detailed team information, venues, and player details to the system later using the "Save & Add to System" option.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Full Setup - Recording Mode Selection */}
-          {recorderType === 'full' && currentStep === 'mode' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-4xl mx-auto"
-            >
-              <div className="text-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Choose Recording Mode</h2>
-                <p className="text-gray-600 text-sm">Select how you want to record or manage your match</p>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {recordingModes.map((mode, index) => (
-                  <motion.button
-                    key={mode.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleModeSelection(mode.id)}
-                    className={`p-4 rounded-xl border-2 ${mode.borderColor} ${mode.bgColor} hover:shadow-lg transition-all duration-300 text-center`}
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Weather Conditions</label>
+                  <select
+                    value={details.weather}
+                    onChange={(e) => setDetails(prev => ({ ...prev, weather: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <div className="text-3xl mb-2">{mode.icon}</div>
-                    <h3 className={`text-sm font-bold mb-1 ${mode.textColor}`}>{mode.title}</h3>
-                    <p className="text-gray-600 text-xs">{mode.description}</p>
-                  </motion.button>
-                ))}
-              </div>
-              
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={() => setRecorderType('')}
-                  className="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  ← Back to Setup Options
-                </button>
-              </div>
-            </motion.div>
-          )}
+                    <option value="">Select...</option>
+                    <option value="Sunny">☀️ Sunny</option>
+                    <option value="Partly Cloudy">⛅ Partly Cloudy</option>
+                    <option value="Cloudy">☁️ Cloudy</option>
+                    <option value="Light Rain">🌦️ Light Rain</option>
+                    <option value="Heavy Rain">🌧️ Heavy Rain</option>
+                    <option value="Windy">💨 Windy</option>
+                    <option value="Foggy">🌫️ Foggy</option>
+                  </select>
+                </div>
 
-          {/* Step 2: Match Selection - Full Setup Only */}
-          {recorderType === 'full' && currentStep === 'match-selection' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-4xl mx-auto"
-            >
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Select Match</h2>
-                <p className="text-gray-600">
-                  Choose the match you want to {selectedMode === 'live' ? 'record live' : 
-                                                selectedMode === 'post-match' ? 'enter results for' :
-                                                selectedMode === 'edit' ? 'edit' : 'view results for'}
-                </p>
-              </div>
-
-              <div className="space-y-4 mb-8">
-                {getMatchesForMode().map((match) => {
-                  const team = teams.find(t => t.id === match.teamId);
-                  return (
-                    <motion.button
-                      key={match.id}
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      onClick={() => handleMatchSelection(match.id)}
-                      className={`w-full p-6 rounded-xl border-2 transition-all duration-300 text-left ${
-                        selectedMatch === match.id 
-                          ? 'border-club-primary bg-club-primary/5 shadow-lg' 
-                          : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-4 mb-2">
-                            <h3 className="text-xl font-bold text-gray-900">
-                              {team?.name || 'Unknown Team'} vs {match.opponent}
-                            </h3>
-                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                              match.status === 'Scheduled' ? 'bg-blue-100 text-blue-700' :
-                              match.status === 'Live' ? 'bg-red-100 text-red-700' :
-                              match.status === 'Finished' ? 'bg-green-100 text-green-700' :
-                              'bg-gray-100 text-gray-700'
-                            }`}>
-                              {match.status}
-                            </span>
+                {/* Goal Scorers */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Goal Scorers ({getRVRGoals()} goal{getRVRGoals() !== 1 ? 's' : ''})
+                  </label>
+                  <div className="space-y-3">
+                    {Array.from({ length: getRVRGoals() }, (_, index) => {
+                      const scorer = details.goalScorers[index] || { playerId: '', playerName: '', assistedBy: '' };
+                      return (
+                        <div key={index} className="flex gap-2 items-center p-3 bg-green-50 rounded-lg">
+                          <div className="text-sm font-medium text-gray-600 w-12">
+                            Goal {index + 1}:
                           </div>
-                          
-                          <div className="flex items-center space-x-6 text-sm text-gray-600">
-                            <span>📅 {match.scheduledDate.toLocaleDateString()}</span>
-                            <span>⏰ {match.scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            <span>{match.isHomeMatch ? '🏠 Home' : '✈️ Away'}</span>
-                            <span>🏆 {match.matchType}</span>
-                            {match.venue && <span>🏟️ {match.venue}</span>}
-                          </div>
+                          <input
+                            type="text"
+                            placeholder="Player name"
+                            value={scorer.playerName}
+                            onChange={(e) => {
+                              const newScorers = [...details.goalScorers];
+                              while (newScorers.length <= index) {
+                                newScorers.push({ playerId: '', playerName: '', assistedBy: '' });
+                              }
+                              newScorers[index] = { ...newScorers[index], playerName: e.target.value };
+                              setDetails(prev => ({ ...prev, goalScorers: newScorers }));
+                            }}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Assisted by (optional)"
+                            value={scorer.assistedBy || ''}
+                            onChange={(e) => {
+                              const newScorers = [...details.goalScorers];
+                              while (newScorers.length <= index) {
+                                newScorers.push({ playerId: '', playerName: '', assistedBy: '' });
+                              }
+                              newScorers[index] = { ...newScorers[index], assistedBy: e.target.value };
+                              setDetails(prev => ({ ...prev, goalScorers: newScorers }));
+                            }}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                          />
                         </div>
-                        
-                        <div className="text-gray-400">
-                          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      </div>
-                    </motion.button>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Match Notes</label>
+                  <textarea
+                    value={details.notes}
+                    onChange={(e) => setDetails(prev => ({ ...prev, notes: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={3}
+                    placeholder="Key moments, player performances, etc."
+                  />
+                </div>
               </div>
 
-              <div className="flex justify-between">
+              {/* Actions */}
+              <div className="flex justify-between mt-8">
                 <button
-                  onClick={() => setCurrentStep('mode')}
-                  className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={() => setStep('result')}
+                  className="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium"
                 >
-                  ← Back to Mode Selection
+                  ← Back
                 </button>
                 
-                {selectedMatch && (
-                  <button
-                    onClick={() => setCurrentStep('team-setup')}
-                    className="px-6 py-3 bg-club-primary hover:bg-club-primary-dark text-white rounded-lg font-semibold transition-colors"
-                  >
-                    Continue to Team Setup →
-                  </button>
+                <button
+                  onClick={async () => {
+                    await saveResult();
+                  }}
+                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  ✅ Save Match
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 3: Done */}
+          {step === 'done' && (
+            <motion.div
+              className="bg-white rounded-lg shadow-lg p-6 text-center"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {isFutureMatch() ? 'Fixture Scheduled!' : 'Match Result Saved!'}
+              </h2>
+              <p className="text-gray-600 mb-8">
+                {isFutureMatch() ? (
+                  `${getTeamName(quickResult.homeTeam, quickResult.homeTeamCustom)} vs ${getTeamName(quickResult.awayTeam, quickResult.awayTeamCustom)} - ${new Date(quickResult.matchDate).toLocaleDateString()}`
+                ) : (
+                  `${getTeamName(quickResult.homeTeam, quickResult.homeTeamCustom)} ${quickResult.homeScore} - ${quickResult.awayScore} ${getTeamName(quickResult.awayTeam, quickResult.awayTeamCustom)}`
                 )}
-              </div>
-            </motion.div>
-          )}
+              </p>
 
-          {/* Step 3: Team Setup - Full Setup Only */}
-          {recorderType === 'full' && currentStep === 'team-setup' && selectedMatch && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-4xl mx-auto"
-            >
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Team Setup & Squad Selection</h2>
-                <p className="text-gray-600">Configure team details and select your squad</p>
-              </div>
-
-              {(() => {
-                const match = matches.find(m => m.id === selectedMatch);
-                const team = teams.find(t => t.id === match?.teamId);
-                return (
-                  <div className="grid md:grid-cols-2 gap-8">
-                    {/* Our Team */}
-                    <div className="bg-white rounded-xl shadow-sm border p-6">
-                      <div className="flex items-center space-x-4 mb-6">
-                        <div className="w-16 h-16 bg-club-primary rounded-xl flex items-center justify-center">
-                          <span className="text-2xl text-white">🏠</span>
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900">{team?.name || 'Our Team'}</h3>
-                          <p className="text-gray-600">{match?.isHomeMatch ? 'Home Team' : 'Away Team'}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Formation</label>
-                          <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary">
-                            <option>4-4-2</option>
-                            <option>4-3-3</option>
-                            <option>3-5-2</option>
-                            <option>4-5-1</option>
-                            <option>5-3-2</option>
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Kit Color</label>
-                          <div className="flex space-x-3">
-                            <button className="w-10 h-10 rounded-full bg-red-600 border-2 border-gray-300 hover:border-gray-400"></button>
-                            <button className="w-10 h-10 rounded-full bg-blue-600 border-2 border-gray-300 hover:border-gray-400"></button>
-                            <button className="w-10 h-10 rounded-full bg-white border-2 border-gray-300 hover:border-gray-400"></button>
-                            <button className="w-10 h-10 rounded-full bg-yellow-500 border-2 border-gray-300 hover:border-gray-400"></button>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Captain</label>
-                          <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary">
-                            <option>Select Captain...</option>
-                            <option>John Smith</option>
-                            <option>Michael Jones</option>
-                            <option>David Brown</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Opposition Team */}
-                    <div className="bg-white rounded-xl shadow-sm border p-6">
-                      <div className="flex items-center space-x-4 mb-6">
-                        <div className="w-16 h-16 bg-gray-600 rounded-xl flex items-center justify-center">
-                          <span className="text-2xl text-white">⚽</span>
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900">{match?.opponent}</h3>
-                          <p className="text-gray-600">{match?.isHomeMatch ? 'Away Team' : 'Home Team'}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Opposition Formation</label>
-                          <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary">
-                            <option>Unknown</option>
-                            <option>4-4-2</option>
-                            <option>4-3-3</option>
-                            <option>3-5-2</option>
-                            <option>4-5-1</option>
-                            <option>5-3-2</option>
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Opposition Kit</label>
-                          <div className="flex space-x-3">
-                            <button className="w-10 h-10 rounded-full bg-blue-600 border-2 border-gray-300 hover:border-gray-400"></button>
-                            <button className="w-10 h-10 rounded-full bg-red-600 border-2 border-gray-300 hover:border-gray-400"></button>
-                            <button className="w-10 h-10 rounded-full bg-green-600 border-2 border-gray-300 hover:border-gray-400"></button>
-                            <button className="w-10 h-10 rounded-full bg-black border-2 border-gray-300 hover:border-gray-400"></button>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Key Players</label>
-                          <textarea 
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
-                            rows={3}
-                            placeholder="Note any key players to watch..."
-                          ></textarea>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              <div className="flex justify-between mt-8">
+              <div className="flex justify-center gap-4">
                 <button
-                  onClick={() => setCurrentStep('match-selection')}
-                  className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={editMatch}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  ← Back to Match Selection
+                  ✏️ Edit
                 </button>
                 
                 <button
-                  onClick={() => setCurrentStep('venue')}
-                  className="px-6 py-3 bg-club-primary hover:bg-club-primary-dark text-white rounded-lg font-semibold transition-colors"
+                  onClick={deleteMatch}
+                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Continue to Venue →
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 4: Venue & Match Details - Full Setup Only */}
-          {recorderType === 'full' && currentStep === 'venue' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-4xl mx-auto"
-            >
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Venue & Match Details</h2>
-                <p className="text-gray-600">Confirm venue details and match conditions</p>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm border p-6">
-                <div className="grid md:grid-cols-2 gap-8">
-                  
-                  {/* Left Column */}
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Match Venue</label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
-                        placeholder="Stadium name or location..."
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Referee</label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
-                        placeholder="Referee name..."
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Assistant Referees</label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
-                        placeholder="Assistant referee names..."
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Weather Conditions</label>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary">
-                        <option>Clear/Sunny</option>
-                        <option>Partly Cloudy</option>
-                        <option>Overcast</option>
-                        <option>Light Rain</option>
-                        <option>Heavy Rain</option>
-                        <option>Windy</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-                  {/* Right Column */}
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Pitch Condition</label>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary">
-                        <option>Excellent</option>
-                        <option>Good</option>
-                        <option>Fair</option>
-                        <option>Poor</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Expected Attendance</label>
-                      <input 
-                        type="number" 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
-                        placeholder="0"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Competition</label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
-                        placeholder="League, Cup, Friendly..."
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Match Notes</label>
-                      <textarea 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
-                        rows={3}
-                        placeholder="Pre-match notes, tactics, or special considerations..."
-                      ></textarea>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-between mt-8">
-                <button
-                  onClick={() => setCurrentStep('team-setup')}
-                  className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  ← Back to Team Setup
+                  🗑️ Delete
                 </button>
                 
                 <button
-                  onClick={() => setCurrentStep('recording')}
-                  className="px-6 py-3 bg-club-primary hover:bg-club-primary-dark text-white rounded-lg font-semibold transition-colors"
+                  onClick={() => router.push('/match-central')}
+                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Ready to Record →
+                  {isFutureMatch() ? '📅 View Fixtures' : '📊 View Results'}
+                </button>
+              </div>
+
+              <div className="mt-6 pt-6 border-t">
+                <button
+                  onClick={() => {
+                    setStep('result');
+                    setQuickResult({
+                      homeTeam: '',
+                      homeTeamCustom: '',
+                      awayTeam: '',
+                      awayTeamCustom: '',
+                      homeScore: 0,
+                      awayScore: 0,
+                      matchDate: new Date().toISOString().split('T')[0],
+                      isHomeMatch: true
+                    });
+                    setDetails({
+                      venue: 'Home Ground',
+                      referee: false,
+                      weather: '',
+                      notes: '',
+                      goalScorers: []
+                    });
+                  }}
+                  className="px-6 py-2 text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  ➕ Record Another Match
                 </button>
               </div>
             </motion.div>
           )}
-
-          {/* Step 5: Start Recording - Full Setup Only */}
-          {recorderType === 'full' && currentStep === 'recording' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-4xl mx-auto text-center"
-            >
-              <div className="bg-white rounded-xl shadow-sm border p-8">
-                <div className="text-6xl mb-6">🎬</div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to Start Recording!</h2>
-                <p className="text-gray-600 text-lg mb-8">
-                  Everything is set up. Click the button below to begin 
-                  {selectedMode === 'live' ? ' live recording' : 
-                   selectedMode === 'post-match' ? ' entering results' : 
-                   selectedMode === 'edit' ? ' editing the match' : ' viewing results'}.
-                </p>
-                
-                <div className="flex justify-center space-x-4">
-                  <button
-                    onClick={() => setCurrentStep('venue')}
-                    className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    ← Back to Review
-                  </button>
-                  
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={startRecording}
-                    className={`px-8 py-4 rounded-xl font-bold text-white shadow-xl hover:shadow-2xl transition-all ${
-                      selectedMode === 'live' ? 'bg-gradient-to-r from-red-600 to-red-700' :
-                      selectedMode === 'post-match' ? 'bg-gradient-to-r from-blue-600 to-blue-700' :
-                      selectedMode === 'edit' ? 'bg-gradient-to-r from-green-600 to-green-700' :
-                      'bg-gradient-to-r from-purple-600 to-purple-700'
-                    }`}
-                  >
-                    <span className="text-2xl mr-3">
-                      {selectedMode === 'live' ? '🔴' : 
-                       selectedMode === 'post-match' ? '📝' : 
-                       selectedMode === 'edit' ? '✏️' : '📊'}
-                    </span>
-                    Start {selectedMode === 'live' ? 'Live Recording' : 
-                           selectedMode === 'post-match' ? 'Post-Match Entry' : 
-                           selectedMode === 'edit' ? 'Match Editing' : 'Results Review'}
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
 
         </div>
-          </div>
-        </StandardLayout>
       </div>
-    </div>
+    </StandardLayout>
   );
 }
