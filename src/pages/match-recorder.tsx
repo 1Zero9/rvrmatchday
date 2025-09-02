@@ -21,6 +21,7 @@ interface QuickResult {
   awayScore: number;
   matchDate: string;
   isHomeMatch: boolean;
+  matchType: string;
 }
 
 interface MatchDetails {
@@ -29,6 +30,7 @@ interface MatchDetails {
   weather: string;
   notes: string;
   goalScorers: { playerId: string; playerName: string; assistedBy?: string; minute?: number }[];
+  selectedSquad: string[];
 }
 
 export default function MatchRecorderSimple() {
@@ -47,7 +49,8 @@ export default function MatchRecorderSimple() {
     homeScore: 0,
     awayScore: 0,
     matchDate: new Date().toISOString().split('T')[0],
-    isHomeMatch: true
+    isHomeMatch: true,
+    matchType: 'League'
   });
 
   const [details, setDetails] = useState<MatchDetails>({
@@ -55,7 +58,8 @@ export default function MatchRecorderSimple() {
     referee: false,
     weather: '',
     notes: '',
-    goalScorers: []
+    goalScorers: [],
+    selectedSquad: []
   });
 
   const [players, setPlayers] = useState<any[]>([]);
@@ -118,6 +122,13 @@ export default function MatchRecorderSimple() {
     }
   };
 
+  // Get players from the selected RVR team
+  const getAvailablePlayers = () => {
+    const selectedTeamId = quickResult.isHomeMatch ? quickResult.homeTeam : quickResult.awayTeam;
+    const selectedTeam = teams.find(t => t.id === selectedTeamId && !t.isOpponent);
+    return selectedTeam?.players || [];
+  };
+
   const loadMatchForEdit = async (matchId: string) => {
     try {
       const matches = await storage.getMatches();
@@ -141,16 +152,37 @@ export default function MatchRecorderSimple() {
           homeScore: matchToEdit.homeScore || 0,
           awayScore: matchToEdit.awayScore || 0,
           matchDate: matchToEdit.scheduledDate.toISOString().split('T')[0],
-          isHomeMatch: matchToEdit.isHomeMatch
+          isHomeMatch: matchToEdit.isHomeMatch,
+          matchType: matchToEdit.matchType || 'League'
         });
         
+        // Load goal events for this match
+        const goalEvents = await storage.getMatchEvents(matchToEdit.id);
+        const goalScorers = goalEvents
+          .filter(e => e.eventType === 'Goal')
+          .map(event => ({
+            playerId: event.playerId || '',
+            playerName: event.playerName || '',
+            assistedBy: event.eventData?.assistPlayerName || '',
+            minute: event.minute || 0
+          }));
+
         setDetails({
           venue: matchToEdit.venue || 'Home Ground',
           referee: matchToEdit.referee === 'Yes',
           weather: matchToEdit.weather || '',
           notes: matchToEdit.notes || '',
-          goalScorers: [] // TODO: Load goal scorers from match events
+          goalScorers: goalScorers,
+          selectedSquad: matchToEdit.selectedSquad || []
         });
+
+        // If match has details or goal scorers, go directly to details step
+        const hasDetails = matchToEdit.venue || matchToEdit.referee || matchToEdit.weather || 
+                          matchToEdit.notes || goalScorers.length > 0;
+        
+        if (hasDetails) {
+          setStep('details');
+        }
       }
     } catch (error) {
       console.error('Error loading match for edit:', error);
@@ -198,7 +230,7 @@ export default function MatchRecorderSimple() {
         id: editingMatch ? editingMatch.id : `match-${Date.now()}`,
         teamId: homeTeamId,
         opponent: awayTeamName,
-        matchType: 'League',
+        matchType: quickResult.matchType,
         isHomeMatch: quickResult.isHomeMatch,
         venue: details.venue,
         scheduledDate: new Date(quickResult.matchDate),
@@ -209,6 +241,7 @@ export default function MatchRecorderSimple() {
         weather: details.weather,
         pitchCond: 'Good',
         notes: details.notes,
+        selectedSquad: details.selectedSquad,
         recordedBy: 'match-recorder',
         createdAt: editingMatch ? editingMatch.createdAt : new Date(),
         updatedAt: new Date()
@@ -218,8 +251,10 @@ export default function MatchRecorderSimple() {
       
       // Save goal events (only for completed matches)
       if (!isFutureMatch()) {
+        console.log('Saving goal events, goalScorers:', details.goalScorers);
         for (let i = 0; i < details.goalScorers.length; i++) {
           const scorer = details.goalScorers[i];
+          console.log('Processing scorer:', scorer);
           if (scorer.playerName) {
             const goalEvent = {
               id: `event-${Date.now()}-${i}`,
@@ -364,6 +399,22 @@ export default function MatchRecorderSimple() {
                       📅 <strong>Future Date Detected:</strong> This will be saved as a fixture until match details are added.
                     </div>
                   )}
+                </div>
+
+                {/* Match Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Match Type</label>
+                  <select
+                    value={quickResult.matchType}
+                    onChange={(e) => setQuickResult(prev => ({ ...prev, matchType: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="League">🏆 League</option>
+                    <option value="Cup">🏅 Cup</option>
+                    <option value="Friendly">🤝 Friendly</option>
+                    <option value="Tournament">🎯 Tournament</option>
+                    <option value="Training">⚽ Training Match</option>
+                  </select>
                 </div>
 
                 {/* Teams */}
@@ -589,6 +640,48 @@ export default function MatchRecorderSimple() {
                   </select>
                 </div>
 
+                {/* Squad Selection - Only show if not future match and RVR team selected */}
+                {!isFutureMatch() && getAvailablePlayers().length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Match Squad (Select players who played)
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto bg-gray-50 p-4 rounded-lg">
+                      {getAvailablePlayers().map((player) => (
+                        <label key={player.id} className="flex items-center space-x-2 cursor-pointer hover:bg-white p-2 rounded">
+                          <input
+                            type="checkbox"
+                            checked={details.selectedSquad.includes(player.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setDetails(prev => ({
+                                  ...prev,
+                                  selectedSquad: [...prev.selectedSquad, player.id]
+                                }));
+                              } else {
+                                setDetails(prev => ({
+                                  ...prev,
+                                  selectedSquad: prev.selectedSquad.filter(id => id !== player.id)
+                                }));
+                              }
+                            }}
+                            className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                          />
+                          <span className="text-sm font-medium text-gray-700">
+                            {player.name}
+                            {player.position && <span className="text-gray-500 ml-1">({player.position})</span>}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    {details.selectedSquad.length > 0 && (
+                      <p className="text-sm text-green-600 mt-2">
+                        ✅ {details.selectedSquad.length} player{details.selectedSquad.length !== 1 ? 's' : ''} selected
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Goal Scorers */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -602,23 +695,42 @@ export default function MatchRecorderSimple() {
                           <div className="text-sm font-medium text-gray-600 w-12">
                             Goal {index + 1}:
                           </div>
-                          <input
-                            type="text"
-                            placeholder="Player name"
-                            value={scorer.playerName}
+                          <select
+                            value={scorer.playerId}
                             onChange={(e) => {
+                              const selectedPlayer = getAvailablePlayers().find(p => p.id === e.target.value);
                               const newScorers = [...details.goalScorers];
                               while (newScorers.length <= index) {
                                 newScorers.push({ playerId: '', playerName: '', assistedBy: '' });
                               }
-                              newScorers[index] = { ...newScorers[index], playerName: e.target.value };
+                              newScorers[index] = { 
+                                ...newScorers[index], 
+                                playerId: e.target.value,
+                                playerName: selectedPlayer?.name || ''
+                              };
                               setDetails(prev => ({ ...prev, goalScorers: newScorers }));
                             }}
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                          />
-                          <input
-                            type="text"
-                            placeholder="Assisted by (optional)"
+                          >
+                            <option value="">Select player...</option>
+                            {details.selectedSquad.length > 0 ? (
+                              details.selectedSquad.map(playerId => {
+                                const player = getAvailablePlayers().find(p => p.id === playerId);
+                                return player ? (
+                                  <option key={player.id} value={player.id}>
+                                    {player.name} {player.position && `(${player.position})`}
+                                  </option>
+                                ) : null;
+                              })
+                            ) : (
+                              getAvailablePlayers().map(player => (
+                                <option key={player.id} value={player.id}>
+                                  {player.name} {player.position && `(${player.position})`}
+                                </option>
+                              ))
+                            )}
+                          </select>
+                          <select
                             value={scorer.assistedBy || ''}
                             onChange={(e) => {
                               const newScorers = [...details.goalScorers];
@@ -629,7 +741,27 @@ export default function MatchRecorderSimple() {
                               setDetails(prev => ({ ...prev, goalScorers: newScorers }));
                             }}
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                          />
+                          >
+                            <option value="">Assisted by...</option>
+                            {details.selectedSquad.length > 0 ? (
+                              details.selectedSquad.map(playerId => {
+                                const player = getAvailablePlayers().find(p => p.id === playerId);
+                                return player && player.id !== scorer.playerId ? (
+                                  <option key={player.id} value={player.name}>
+                                    {player.name} {player.position && `(${player.position})`}
+                                  </option>
+                                ) : null;
+                              })
+                            ) : (
+                              getAvailablePlayers()
+                                .filter(player => player.id !== scorer.playerId)
+                                .map(player => (
+                                  <option key={player.id} value={player.name}>
+                                    {player.name} {player.position && `(${player.position})`}
+                                  </option>
+                                ))
+                            )}
+                          </select>
                         </div>
                       );
                     })}
@@ -723,14 +855,16 @@ export default function MatchRecorderSimple() {
                       homeScore: 0,
                       awayScore: 0,
                       matchDate: new Date().toISOString().split('T')[0],
-                      isHomeMatch: true
+                      isHomeMatch: true,
+                      matchType: 'League'
                     });
                     setDetails({
                       venue: 'Home Ground',
                       referee: false,
                       weather: '',
                       notes: '',
-                      goalScorers: []
+                      goalScorers: [],
+                      selectedSquad: []
                     });
                   }}
                   className="px-6 py-2 text-blue-600 hover:text-blue-800 font-medium"

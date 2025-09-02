@@ -109,7 +109,7 @@ export default function StandardHomepage() {
             >
               <div className="text-2xl mb-2 text-white">🏆</div>
               <h3 className="text-sm font-bold mb-1 text-white">Results</h3>
-              <Link href="/match-central" className="text-white text-xs font-semibold underline">
+              <Link href="/matchday" className="text-white text-xs font-semibold underline">
                 View →
               </Link>
             </motion.div>
@@ -462,7 +462,7 @@ export default function StandardHomepage() {
                   >
                     <div className="text-3xl mb-3">🏆</div>
                     <h3 className="text-lg font-bold mb-2">Results</h3>
-                    <Link href="/match-central/results" className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                    <Link href="/matchday" className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
                       Latest Scores
                     </Link>
                   </motion.div>
@@ -690,7 +690,7 @@ export default function StandardHomepage() {
                   </div>
                   <h4 className="font-bold text-gray-900 mb-2">RVR FC 2-1 Millbrook FC</h4>
                   <p className="text-gray-600 text-sm mb-3">Great performance from the seniors on Saturday!</p>
-                  <Link href="/match-central/results" className="text-blue-600 text-sm font-semibold">
+                  <Link href="/matchday" className="text-blue-600 text-sm font-semibold">
                     View All Results →
                   </Link>
                 </div>

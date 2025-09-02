@@ -142,24 +142,14 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
                 </div>
               </div>
 
-              <div className="relative group">
-                <button className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base flex items-center space-x-1">
-                  <span>⚽ Matches</span>
-                  <span className="text-xs">▼</span>
-                </button>
-                {/* Dropdown */}
-                <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                  <Link href="/match-recorder" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium">
-                    📱 Record Match
-                  </Link>
-                  <Link href="/match-central" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100">
-                    📊 Match Central
-                  </Link>
-                  <Link href="/match-admin" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary">
-                    ⚙️ Administration
-                  </Link>
-                </div>
-              </div>
+              <Link href="/matchday" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base">
+                ⚽ MatchDay
+              </Link>
+
+              <Link href="/match-central" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base flex items-center space-x-2">
+                <span>🔒</span>
+                <span>Match Central</span>
+              </Link>
 
               <div className="relative group">
                 <button className="px-4 py-3 text-white hover:bg-club-primary-dark rounded-lg transition-all duration-200 font-medium flex items-center text-base">
@@ -260,11 +250,12 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
               
               {/* Match System - Priority Items */}
               <div className="border-t border-club-primary-light mt-3 pt-3">
-                <Link href="/match-recorder" className="block py-3 text-white hover:bg-red-600 rounded px-3 font-medium bg-red-500/20" onClick={() => setMobileMenuOpen(false)}>
-                  🔴 Record Match
+                <Link href="/matchday" className="block py-3 text-white hover:bg-green-600 rounded px-3 font-medium bg-green-500/20" onClick={() => setMobileMenuOpen(false)}>
+                  ⚽ MatchDay
                 </Link>
-                <Link href="/match-central" className="block py-3 text-white hover:bg-blue-600 rounded px-3 font-medium bg-blue-500/20" onClick={() => setMobileMenuOpen(false)}>
-                  📊 Match Central
+                <Link href="/match-central" className="block py-3 text-white hover:bg-blue-600 rounded px-3 font-medium bg-blue-500/20 flex items-center space-x-2" onClick={() => setMobileMenuOpen(false)}>
+                  <span>🔒</span>
+                  <span>Match Central</span>
                 </Link>
               </div>
               
