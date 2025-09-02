@@ -33,9 +33,16 @@ export default function AuthLogin() {
       } else {
         setError('Invalid email or password. Please try again.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      setError('Login failed. Please try again.');
+      
+      if (error?.message?.includes('Email not confirmed')) {
+        setError('Email not confirmed. Please check your email for a confirmation link, or contact the administrator.');
+      } else if (error?.message?.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please try again.');
+      } else {
+        setError('Login failed. Please try again or use the temporary access code below.');
+      }
     } finally {
       setLoading(false);
     }
