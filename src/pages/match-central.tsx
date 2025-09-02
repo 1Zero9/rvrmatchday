@@ -561,26 +561,25 @@ export default function MatchCentral() {
             </div>
 
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Access Password
-                </label>
-                <input
-                  type="password"
-                  value={authPassword}
-                  onChange={(e) => setAuthPassword(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter password..."
-                />
-              </div>
-
-              <button
-                onClick={handleAuth}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              <a
+                href="/auth-login"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center"
               >
-                🔓 Access Match Central
-              </button>
+                🔓 Login to Match Central
+              </a>
+
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-3">
+                  Don't have an account?
+                </p>
+                <a
+                  href="/account-request"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  <span>📝</span>
+                  <span>Request Access</span>
+                </a>
+              </div>
 
               <div className="text-center pt-4 border-t border-gray-200">
                 <p className="text-sm text-gray-500 mb-4">

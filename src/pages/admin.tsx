@@ -364,6 +364,12 @@ export default function AdminDashboard() {
                   📝 Change Log
                 </button>
                 <hr className="my-2" />
+                <a 
+                  href="/account-admin"
+                  className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors block"
+                >
+                  👥 Account Requests
+                </a>
                 <button className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
                   🔄 Refresh Cache
                 </button>
