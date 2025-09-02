@@ -119,12 +119,12 @@ export default function MatchAdmin() {
       };
 
       if (editingTeam) {
-        storage.saveTeam(newTeam);
+        await storage.saveTeam(newTeam);
         setTeams(teams.map(t => t.id === editingTeam.id ? newTeam : t));
         setEditingTeam(null);
         alert(`${setupType === 'rvr-team' ? 'Team' : 'Opponent'} updated successfully!`);
       } else {
-        storage.saveTeam(newTeam);
+        await storage.saveTeam(newTeam);
         setTeams([...teams, newTeam]);
         alert(`${setupType === 'rvr-team' ? 'Team' : 'Opponent'} created successfully!`);
       }
