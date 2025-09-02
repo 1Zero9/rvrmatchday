@@ -423,20 +423,17 @@ export default function MatchAdmin() {
                       + Add New
                     </button>
                   </label>
-                  <input
-                    type="text"
+                  <select
                     required
-                    list="age-groups-datalist"
                     value={teamSetup.ageGroup}
                     onChange={(e) => setTeamSetup(prev => ({ ...prev, ageGroup: e.target.value }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g. U12, U14, Senior"
-                  />
-                  <datalist id="age-groups-datalist">
+                  >
+                    <option value="">Select Age Group</option>
                     {ageGroups.map(age => (
                       <option key={age} value={age}>{age}</option>
                     ))}
-                  </datalist>
+                  </select>
                 </div>
 
                 {/* Gender */}
@@ -478,19 +475,16 @@ export default function MatchAdmin() {
                       + Add New
                     </button>
                   </label>
-                  <input
-                    type="text"
-                    list="leagues-datalist"
+                  <select
                     value={teamSetup.league}
                     onChange={(e) => setTeamSetup(prev => ({ ...prev, league: e.target.value }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g. Dublin & District League"
-                  />
-                  <datalist id="leagues-datalist">
+                  >
+                    <option value="">Select League</option>
                     {leagues.map(league => (
                       <option key={league} value={league}>{league}</option>
                     ))}
-                  </datalist>
+                  </select>
                 </div>
 
                 {/* Home Venue */}
