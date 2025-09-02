@@ -404,6 +404,24 @@ export default function MatchAdmin() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Age Group *
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const newAge = prompt('Enter new age group (e.g. U19):');
+                        if (newAge) {
+                          const { error } = await supabase.from('age_groups').insert({ name: newAge });
+                          if (!error) {
+                            setAgeGroups([...ageGroups, newAge]);
+                            setTeamSetup(prev => ({ ...prev, ageGroup: newAge }));
+                          } else {
+                            alert('Error adding age group: ' + error.message);
+                          }
+                        }
+                      }}
+                      className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      + Add New
+                    </button>
                   </label>
                   <input
                     type="text"
@@ -441,6 +459,24 @@ export default function MatchAdmin() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     League/Competition
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const newLeague = prompt('Enter new league/competition:');
+                        if (newLeague) {
+                          const { error } = await supabase.from('leagues').insert({ name: newLeague });
+                          if (!error) {
+                            setLeagues([...leagues, newLeague]);
+                            setTeamSetup(prev => ({ ...prev, league: newLeague }));
+                          } else {
+                            alert('Error adding league: ' + error.message);
+                          }
+                        }
+                      }}
+                      className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      + Add New
+                    </button>
                   </label>
                   <input
                     type="text"
@@ -540,6 +576,23 @@ export default function MatchAdmin() {
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Squad Players (First Names Only - GDPR Compliant)
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const newPosition = prompt('Enter new player position:');
+                          if (newPosition) {
+                            const { error } = await supabase.from('player_positions').insert({ name: newPosition });
+                            if (!error) {
+                              setPositions([...positions, newPosition]);
+                            } else {
+                              alert('Error adding position: ' + error.message);
+                            }
+                          }
+                        }}
+                        className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        + Add Position
+                      </button>
                     </label>
                     <div className="space-y-3">
                       {teamSetup.squad.map((player, index) => (
