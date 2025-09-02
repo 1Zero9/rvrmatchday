@@ -379,7 +379,30 @@ export class MatchTrackerExistingDB {
 
   // Write operations for existing database structure
   async saveTeam(team: Team): Promise<void> {
-    throw new Error('Team creation not available in quick setup. Please use the club management system to add teams.');
+    const { error } = await supabase
+      .from('teams')
+      .upsert({
+        id: team.id,
+        name: team.name,
+        short_name: team.name,
+        season: team.season || '2024-25',
+        home_colors: team.homeKit,
+        away_colors: team.awayKit,
+        is_opponent: team.isOpponent || false,
+        age_group: team.ageGroup,
+        gender: team.gender,
+        league: team.league,
+        home_venue: team.homeVenue,
+        contact_email: team.contactEmail,
+        contact_phone: team.contactPhone,
+        notes: team.notes,
+        is_active: true,
+        is_public: true
+      }, { onConflict: 'id' });
+
+    if (error) {
+      throw new Error(`Failed to save team: ${error.message}`);
+    }
   }
 
   async deleteTeam(id: string): Promise<void> {
@@ -395,7 +418,36 @@ export class MatchTrackerExistingDB {
   }
 
   async saveMatch(match: Match): Promise<void> {
-    throw new Error('Match creation not available in quick setup. Please use the proper match scheduling system.');
+    const { error } = await supabase
+      .from('matches')
+      .upsert({
+        id: match.id,
+        team_id: match.teamId,
+        opponent: match.opponent,
+        match_type: match.matchType || 'League',
+        is_home_match: match.isHomeMatch,
+        venue: match.venue,
+        scheduled_date: match.scheduledDate.toISOString(),
+        actual_kick_off: match.actualKickOff?.toISOString(),
+        status: match.status,
+        home_score: match.homeScore || 0,
+        away_score: match.awayScore || 0,
+        referee: match.referee,
+        weather: match.weather,
+        temperature: match.temperature,
+        pitch_condition: match.pitchCond || 'Good',
+        player_of_match: match.playerOfTheMatch,
+        yellow_cards: match.yellowCards,
+        red_cards: match.redCards,
+        attendance: match.attendance,
+        notes: match.notes,
+        selected_squad: match.selectedSquad || [],
+        recorded_by: match.recordedBy || 'system'
+      }, { onConflict: 'id' });
+
+    if (error) {
+      throw new Error(`Failed to save match: ${error.message}`);
+    }
   }
 
   async deleteMatch(id: string): Promise<void> {
