@@ -184,9 +184,9 @@ export default function MigrateData() {
             <div className="mb-4 p-4 bg-gray-50 rounded-lg">
               <h3 className="font-medium text-gray-900 mb-2">Current localStorage Data:</h3>
               <div className="text-sm text-gray-600 space-y-1">
-                <div>Teams: {JSON.parse(localStorage.getItem('teams') || '[]').length}</div>
-                <div>Matches: {JSON.parse(localStorage.getItem('matches') || '[]').length}</div>
-                <div>Events: {JSON.parse(localStorage.getItem('match_events') || '[]').length}</div>
+                <div>Teams: {typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('teams') || '[]').length : 'Loading...'}</div>
+                <div>Matches: {typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('matches') || '[]').length : 'Loading...'}</div>
+                <div>Events: {typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('match_events') || '[]').length : 'Loading...'}</div>
               </div>
             </div>
 

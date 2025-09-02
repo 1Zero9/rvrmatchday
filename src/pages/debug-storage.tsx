@@ -9,6 +9,9 @@ export default function DebugStorage() {
   const nodeEnv = process.env.NODE_ENV;
   const useSupabase = process.env.NEXT_PUBLIC_USE_SUPABASE;
   const shouldUseSupabase = nodeEnv === 'production' || useSupabase === 'true';
+  
+  // Check if we're on client side
+  const isClient = typeof window !== 'undefined';
 
   return (
     <StandardLayout>
