@@ -379,7 +379,8 @@ export class MatchTrackerExistingDB {
 
   // Write operations for existing database structure
   async saveTeam(team: Team): Promise<void> {
-    const { error } = await supabase
+    // Save team first
+    const { error: teamError } = await supabase
       .from('teams')
       .upsert({
         id: team.id,
@@ -400,8 +401,28 @@ export class MatchTrackerExistingDB {
         is_public: true
       }, { onConflict: 'id' });
 
-    if (error) {
-      throw new Error(`Failed to save team: ${error.message}`);
+    if (teamError) {
+      throw new Error(`Failed to save team: ${teamError.message}`);
+    }
+
+    // Save players if they exist
+    if (team.players && team.players.length > 0) {
+      const playersToSave = team.players.map(player => ({
+        id: player.id,
+        team_id: team.id,
+        first_name: player.name,
+        jersey_number: player.number,
+        position: player.position,
+        is_active: player.isActive !== false
+      }));
+
+      const { error: playersError } = await supabase
+        .from('players')
+        .upsert(playersToSave, { onConflict: 'id' });
+
+      if (playersError) {
+        throw new Error(`Failed to save players: ${playersError.message}`);
+      }
     }
   }
 
@@ -410,7 +431,20 @@ export class MatchTrackerExistingDB {
   }
 
   async savePlayer(player: Player): Promise<void> {
-    throw new Error('Player management not available in match recorder. Please use the club management system.');
+    const { error } = await supabase
+      .from('players')
+      .upsert({
+        id: player.id,
+        team_id: player.teamId,
+        first_name: player.name,
+        jersey_number: player.number,
+        position: player.position,
+        is_active: player.isActive !== false
+      }, { onConflict: 'id' });
+
+    if (error) {
+      throw new Error(`Failed to save player: ${error.message}`);
+    }
   }
 
   async deletePlayer(id: string): Promise<void> {
@@ -455,16 +489,16 @@ export class MatchTrackerExistingDB {
   }
 
   async saveMatchEvent(event: MatchEvent): Promise<void> {
-    // This could be implemented for live match recording
     const { error } = await supabase
       .from('match_events')
       .insert({
         match_id: event.matchId,
         player_id: event.playerId,
+        player_name: event.playerName,
         event_type: event.eventType,
         event_minute: event.minute,
         event_half: event.half,
-        description: event.notes,
+        notes: event.notes,
         is_our_team: true,
         created_by: event.recordedBy
       });

@@ -118,13 +118,17 @@ export default function MatchAdmin() {
         updatedAt: new Date()
       };
 
+      console.log('Saving team to database:', newTeam);
+      
       if (editingTeam) {
         await storage.saveTeam(newTeam);
+        console.log('Team updated successfully in database');
         setTeams(teams.map(t => t.id === editingTeam.id ? newTeam : t));
         setEditingTeam(null);
         alert(`${setupType === 'rvr-team' ? 'Team' : 'Opponent'} updated successfully!`);
       } else {
         await storage.saveTeam(newTeam);
+        console.log('Team created successfully in database');
         setTeams([...teams, newTeam]);
         alert(`${setupType === 'rvr-team' ? 'Team' : 'Opponent'} created successfully!`);
       }
@@ -132,6 +136,7 @@ export default function MatchAdmin() {
       resetForm();
     } catch (error) {
       console.error('Error saving team:', error);
+      alert(`Error saving team: ${error.message}`);
       alert('Error saving. Please try again.');
     } finally {
       setSaving(false);
