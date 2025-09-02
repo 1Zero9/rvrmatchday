@@ -37,6 +37,12 @@ export default function MatchAdmin() {
   const [saving, setSaving] = useState(false);
   const [setupType, setSetupType] = useState<SetupType>('rvr-team');
   
+  // Reference data from database
+  const [positions, setPositions] = useState<string[]>([]);
+  const [ageGroups, setAgeGroups] = useState<string[]>([]);
+  const [leagues, setLeagues] = useState<string[]>([]);
+  const [venues, setVenues] = useState<string[]>([]);
+  
   // Filtering state
   const [searchTerm, setSearchTerm] = useState("");
   const [ageGroupFilter, setAgeGroupFilter] = useState("all");
@@ -61,16 +67,45 @@ export default function MatchAdmin() {
   // Edit mode
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
 
+  // Load reference data from database
+  const loadReferenceData = async () => {
+    try {
+      const [positionsData, ageGroupsData, leaguesData, venuesData] = await Promise.all([
+        supabase.from('player_positions').select('name').eq('is_active', true).order('name'),
+        supabase.from('age_groups').select('name').eq('is_active', true).order('name'),
+        supabase.from('leagues').select('name').order('name'),
+        supabase.from('venues').select('name').order('name')
+      ]);
+
+      setPositions(positionsData.data?.map(p => p.name) || ['Goalkeeper', 'Defender', 'Midfielder', 'Forward']);
+      setAgeGroups(ageGroupsData.data?.map(a => a.name) || ['U6', 'U7', 'U8', 'U9', 'U10', 'U11', 'U12', 'U13']);
+      setLeagues(leaguesData.data?.map(l => l.name) || ['Cork Schoolboys League', 'Friendly']);
+      setVenues(venuesData.data?.map(v => v.name) || ['Riverstown Park']);
+    } catch (error) {
+      console.error('Error loading reference data:', error);
+      // Fallback to hardcoded values
+      setPositions(['Goalkeeper', 'Defender', 'Midfielder', 'Forward']);
+      setAgeGroups(['U6', 'U7', 'U8', 'U9', 'U10', 'U11', 'U12', 'U13']);
+      setLeagues(['Cork Schoolboys League', 'Friendly']);
+      setVenues(['Riverstown Park']);
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
     try {
-      const loadedTeams = storage.getTeams();
-      const loadedMatches = storage.getMatches();
-      setTeams(loadedTeams);
-      setMatches(loadedMatches);
+      const [teamsData, matchesData] = await Promise.all([
+        storage.getTeams(),
+        storage.getMatches()
+      ]);
+      setTeams(teamsData);
+      setMatches(matchesData);
+      
+      // Load reference data
+      await loadReferenceData();
     } catch (error) {
       console.error('Error loading admin data:', error);
     } finally {
@@ -88,7 +123,7 @@ export default function MatchAdmin() {
     setSaving(true);
 
     try {
-      const teamId = editingTeam ? editingTeam.id : `${setupType === 'rvr-team' ? 'team' : 'opponent'}-${Date.now()}`;
+      const teamId = editingTeam ? editingTeam.id : crypto.randomUUID();
       
       const newTeam: Team = {
         id: teamId,
@@ -107,7 +142,7 @@ export default function MatchAdmin() {
         coachIds: [],
         assistantCoachIds: [],
         players: teamSetup.squad.map((player, index) => ({
-          id: `player-${Date.now()}-${index}`,
+          id: crypto.randomUUID(),
           teamId: teamId,
           name: player.firstName,
           position: player.position,
@@ -380,7 +415,7 @@ export default function MatchAdmin() {
                     placeholder="e.g. U12, U14, Senior"
                   />
                   <datalist id="age-groups-datalist">
-                    {getUniqueValues('ageGroup').map(age => (
+                    {ageGroups.map(age => (
                       <option key={age} value={age}>{age}</option>
                     ))}
                   </datalist>
@@ -416,7 +451,7 @@ export default function MatchAdmin() {
                     placeholder="e.g. Dublin & District League"
                   />
                   <datalist id="leagues-datalist">
-                    {getUniqueValues('league').map(league => (
+                    {leagues.map(league => (
                       <option key={league} value={league}>{league}</option>
                     ))}
                   </datalist>
@@ -530,10 +565,9 @@ export default function MatchAdmin() {
                             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="">Position</option>
-                            <option value="Goalkeeper">Goalkeeper</option>
-                            <option value="Defender">Defender</option>
-                            <option value="Midfielder">Midfielder</option>
-                            <option value="Forward">Forward</option>
+                            {positions.map(position => (
+                              <option key={position} value={position}>{position}</option>
+                            ))}
                           </select>
                           <button
                             type="button"
