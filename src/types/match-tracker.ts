@@ -113,6 +113,7 @@ export interface Match {
   redCards?: string; // Comma-separated player names
   attendance?: number;
   notes?: string;
+  selectedSquad?: string[]; // Player IDs who played this match
   
   // Match Events will be in separate MatchEvent table
   createdAt: Date;

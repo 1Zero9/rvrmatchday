@@ -133,6 +133,14 @@ export class MatchTrackerStorageV2 {
     }
   }
 
+  async getAllMatchEvents(): Promise<MatchEvent[]> {
+    if (USE_SUPABASE) {
+      return await existingDbStorage.getAllMatchEvents();
+    } else {
+      return legacyStorage.getAllMatchEvents();
+    }
+  }
+
   async saveMatchEvent(event: MatchEvent): Promise<void> {
     if (USE_SUPABASE) {
       await existingDbStorage.saveMatchEvent(event);

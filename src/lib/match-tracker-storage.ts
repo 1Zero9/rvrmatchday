@@ -161,6 +161,13 @@ class MatchTrackerStorage {
     return events.filter(event => event.matchId === matchId);
   }
 
+  getAllMatchEvents(): MatchEvent[] {
+    return this.getFromStorage<MatchEvent>('match_events').map(event => ({
+      ...event,
+      recordedAt: new Date(event.recordedAt)
+    }));
+  }
+
   saveMatchEvent(event: MatchEvent): void {
     const events = this.getFromStorage<MatchEvent>('match_events');
     const existingIndex = events.findIndex(e => e.id === event.id);

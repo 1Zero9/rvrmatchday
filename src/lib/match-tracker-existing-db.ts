@@ -256,6 +256,32 @@ export class MatchTrackerExistingDB {
     return (data || []).map(this.mapMatchEventFromExistingDB);
   }
 
+  async getAllMatchEvents(): Promise<MatchEvent[]> {
+    const { data, error } = await supabase
+      .from('match_events')
+      .select(`
+        id,
+        match_id,
+        player_id,
+        event_type,
+        event_minute,
+        event_half,
+        description,
+        is_our_team,
+        created_at,
+        created_by,
+        players(first_name, last_name)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching all match events:', error);
+      return [];
+    }
+
+    return (data || []).map(this.mapMatchEventFromExistingDB);
+  }
+
   // Team Summary - calculated from existing data
   async getTeamSummary(teamId: string): Promise<TeamSummary | null> {
     const team = await this.getTeam(teamId);
