@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
+import { supabase } from "../lib/supabase";
 import { storage } from "../lib/match-tracker-storage";
 import { Team, Match } from "../types/match-tracker";
 
@@ -120,15 +121,62 @@ export default function MatchAdmin() {
 
       console.log('Saving team to database:', newTeam);
       
+      // Direct Supabase save (bypass storage layer)
+      const { data: savedTeam, error: teamError } = await supabase
+        .from('teams')
+        .upsert({
+          id: newTeam.id,
+          name: newTeam.name,
+          short_name: newTeam.name,
+          season: newTeam.season || '2024-25',
+          home_colors: newTeam.homeKit,
+          away_colors: newTeam.awayKit,
+          is_opponent: newTeam.isOpponent || false,
+          age_group: newTeam.ageGroup,
+          gender: newTeam.gender,
+          league: newTeam.league,
+          home_venue: newTeam.homeVenue,
+          contact_email: newTeam.contactEmail,
+          contact_phone: newTeam.contactPhone,
+          notes: newTeam.notes,
+          is_active: true,
+          is_public: true
+        }, { onConflict: 'id' })
+        .select();
+
+      if (teamError) {
+        throw new Error(`Database error: ${teamError.message}`);
+      }
+
+      console.log('Team saved to database:', savedTeam);
+
+      // Save players directly to database
+      if (newTeam.players && newTeam.players.length > 0) {
+        const playersToSave = newTeam.players.map(player => ({
+          id: player.id,
+          team_id: newTeam.id,
+          first_name: player.name,
+          jersey_number: player.number,
+          position: player.position,
+          is_active: player.isActive !== false
+        }));
+
+        const { error: playersError } = await supabase
+          .from('players')
+          .upsert(playersToSave, { onConflict: 'id' });
+
+        if (playersError) {
+          throw new Error(`Players save error: ${playersError.message}`);
+        }
+        
+        console.log('Players saved to database:', playersToSave.length);
+      }
+      
       if (editingTeam) {
-        await storage.saveTeam(newTeam);
-        console.log('Team updated successfully in database');
         setTeams(teams.map(t => t.id === editingTeam.id ? newTeam : t));
         setEditingTeam(null);
         alert(`${setupType === 'rvr-team' ? 'Team' : 'Opponent'} updated successfully!`);
       } else {
-        await storage.saveTeam(newTeam);
-        console.log('Team created successfully in database');
         setTeams([...teams, newTeam]);
         alert(`${setupType === 'rvr-team' ? 'Team' : 'Opponent'} created successfully!`);
       }
