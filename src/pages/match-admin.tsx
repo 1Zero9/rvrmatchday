@@ -461,7 +461,12 @@ export default function MatchAdmin() {
                       onClick={async () => {
                         const newLeague = prompt('Enter new league/competition:');
                         if (newLeague) {
-                          const { error } = await supabase.from('leagues').insert({ name: newLeague });
+                          // Generate a short_name from the full name
+                          const shortName = newLeague.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
+                          const { error } = await supabase.from('leagues').insert({ 
+                            name: newLeague,
+                            short_name: shortName
+                          });
                           if (!error) {
                             setLeagues([...leagues, newLeague]);
                             setTeamSetup(prev => ({ ...prev, league: newLeague }));
