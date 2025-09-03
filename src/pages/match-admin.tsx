@@ -767,7 +767,16 @@ export default function MatchAdmin() {
                         onClick={async () => {
                           const newCoach = prompt('Enter new coach name:');
                           if (newCoach) {
-                            const { error } = await supabase.from('coaches').insert({ name: newCoach });
+                            // Parse full name into first_name and last_name
+                            const nameParts = newCoach.trim().split(' ');
+                            const firstName = nameParts[0] || newCoach;
+                            const lastName = nameParts.slice(1).join(' ') || '';
+                            
+                            const { error } = await supabase.from('coaches').insert({ 
+                              first_name: firstName,
+                              last_name: lastName,
+                              name: newCoach // Include full name if column exists
+                            });
                             if (!error) {
                               setCoaches([...coaches, newCoach]);
                             } else {
@@ -803,8 +812,17 @@ export default function MatchAdmin() {
                                 e.preventDefault();
                                 const editedCoach = prompt('Edit coach name:', coach);
                                 if (editedCoach && editedCoach !== coach) {
+                                  // Parse full name into first_name and last_name
+                                  const nameParts = editedCoach.trim().split(' ');
+                                  const firstName = nameParts[0] || editedCoach;
+                                  const lastName = nameParts.slice(1).join(' ') || '';
+                                  
                                   const { error } = await supabase.from('coaches')
-                                    .update({ name: editedCoach })
+                                    .update({ 
+                                      first_name: firstName,
+                                      last_name: lastName,
+                                      name: editedCoach 
+                                    })
                                     .eq('name', coach);
                                   
                                   if (!error) {
