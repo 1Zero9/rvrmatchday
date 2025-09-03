@@ -70,6 +70,10 @@ export default function TeamManagement() {
           updatedAt: new Date(team.updated_at || team.created_at)
         }));
         
+        console.log('Loaded teams from database:', transformedTeams);
+        console.log('RVR teams:', transformedTeams.filter(team => !team.isOpponent));
+        console.log('Opponent teams:', transformedTeams.filter(team => team.isOpponent));
+        
         setTeams(transformedTeams);
       }
     } catch (error) {
