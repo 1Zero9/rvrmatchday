@@ -26,6 +26,7 @@ export interface Team {
   gender?: 'Boys' | 'Girls' | 'Mixed' | 'Male' | 'Female';
   coachIds?: string[];
   assistantCoachIds?: string[];
+  coaches?: string[]; // New multi-coach support
   season?: string; // e.g., "2024-25"
   league?: string;
   homeKit?: {
@@ -58,6 +59,8 @@ export interface Player {
   shirtNumber?: number;
   number?: number; // For compatibility with existing data
   position?: 'GK' | 'DEF' | 'MID' | 'FWD' | 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward' | string;
+  isCaptain?: boolean;
+  isViceCaptain?: boolean;
   dateOfBirth?: Date;
   parentContact?: {
     name: string;

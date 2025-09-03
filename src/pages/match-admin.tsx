@@ -144,13 +144,14 @@ export default function MatchAdmin() {
         contactEmail: teamSetup.contactEmail,
         contactPhone: teamSetup.contactPhone,
         notes: teamSetup.notes,
-        coachIds: [],
-        assistantCoachIds: [],
+        coaches: teamSetup.coaches,
         players: teamSetup.squad.map((player, index) => ({
           id: crypto.randomUUID(),
           teamId: teamId,
           name: player.firstName,
           position: player.position,
+          isCaptain: player.isCaptain || false,
+          isViceCaptain: player.isViceCaptain || false,
           isActive: true,
           createdAt: new Date(),
           updatedAt: new Date()
@@ -168,7 +169,7 @@ export default function MatchAdmin() {
           id: newTeam.id,
           name: newTeam.name,
           short_name: newTeam.name,
-          season: newTeam.season || '2024-25',
+          season: newTeam.season || '2024/25',
           home_colors: newTeam.homeKit,
           away_colors: newTeam.awayKit,
           is_opponent: newTeam.isOpponent || false,
@@ -198,6 +199,8 @@ export default function MatchAdmin() {
           first_name: player.name,
           jersey_number: player.number,
           position: player.position,
+          is_captain: player.isCaptain || false,
+          is_vice_captain: player.isViceCaptain || false,
           is_active: player.isActive !== false
         }));
 
@@ -210,6 +213,13 @@ export default function MatchAdmin() {
         }
         
         console.log('Players saved to database:', playersToSave.length);
+      }
+      
+      // Save coaches if any selected
+      if (newTeam.coaches && newTeam.coaches.length > 0) {
+        console.log('Team has coaches:', newTeam.coaches);
+        // Note: Coaches are already saved in the coaches table via the UI
+        // Here we could create a team_coaches junction table if needed
       }
       
       if (editingTeam) {
@@ -235,13 +245,13 @@ export default function MatchAdmin() {
     setTeamSetup({
       name: '',
       ageGroup: '',
-      gender: 'Mixed',
+      gender: 'Male',
       league: '',
       homeVenue: '',
-      season: '2024-25',
+      season: '2024/25',
       contactEmail: '',
       contactPhone: '',
-      coach: '',
+      coaches: [],
       notes: '',
       squad: []
     });
@@ -257,7 +267,7 @@ export default function MatchAdmin() {
       gender: team.gender || 'Mixed',
       league: team.league || '',
       homeVenue: team.homeVenue || '',
-      season: team.season || '2024-25',
+      season: team.season || '2024/25',
       contactEmail: team.contactEmail || '',
       contactPhone: team.contactPhone || '',
       coaches: Array.isArray(team.coaches) ? team.coaches : (team.coach ? [team.coach] : []),
