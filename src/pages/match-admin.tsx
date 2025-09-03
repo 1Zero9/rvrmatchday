@@ -275,9 +275,8 @@ export default function MatchAdmin() {
           first_name: player.name,
           jersey_number: player.number,
           position: player.position,
-          is_captain: player.isCaptain || false,
-          is_vice_captain: player.isViceCaptain || false,
-          is_active: player.isActive !== false
+          is_active: player.isActive !== false,
+          // Captain fields will be added after SQL script is run
         }));
 
         const { error: playersError } = await supabase
