@@ -463,9 +463,11 @@ export default function MatchAdmin() {
                         if (newLeague) {
                           // Generate a short_name from the full name
                           const shortName = newLeague.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
+                          const currentSeason = new Date().getFullYear() + '-' + (new Date().getFullYear() + 1);
                           const { error } = await supabase.from('leagues').insert({ 
                             name: newLeague,
-                            short_name: shortName
+                            short_name: shortName,
+                            season: currentSeason
                           });
                           if (!error) {
                             setLeagues([...leagues, newLeague]);
@@ -479,6 +481,34 @@ export default function MatchAdmin() {
                     >
                       + Add New
                     </button>
+                    {teamSetup.league && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const editedLeague = prompt('Edit league name:', teamSetup.league);
+                          if (editedLeague && editedLeague !== teamSetup.league) {
+                            const shortName = editedLeague.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
+                            const { error } = await supabase.from('leagues')
+                              .update({ 
+                                name: editedLeague,
+                                short_name: shortName
+                              })
+                              .eq('name', teamSetup.league);
+                            
+                            if (!error) {
+                              const updatedLeagues = leagues.map(l => l === teamSetup.league ? editedLeague : l);
+                              setLeagues(updatedLeagues);
+                              setTeamSetup(prev => ({ ...prev, league: editedLeague }));
+                            } else {
+                              alert('Error updating league: ' + error.message);
+                            }
+                          }
+                        }}
+                        className="ml-2 text-amber-600 hover:text-amber-800 text-sm"
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
                   </label>
                   <select
                     value={teamSetup.league}
