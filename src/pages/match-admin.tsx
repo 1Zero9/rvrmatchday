@@ -24,7 +24,7 @@ interface TeamSetup {
   season: string;
   contactEmail: string;
   contactPhone: string;
-  coach: string;
+  coaches: string[];
   notes: string;
   squad: { firstName: string; position: string; isCaptain?: boolean; isViceCaptain?: boolean; }[];
 }
@@ -61,7 +61,7 @@ export default function MatchAdmin() {
     season: '2024/25',
     contactEmail: '',
     contactPhone: '',
-    coach: '',
+    coaches: [],
     notes: '',
     squad: []
   });
@@ -77,14 +77,14 @@ export default function MatchAdmin() {
         supabase.from('age_groups').select('name').eq('is_active', true).order('name'),
         supabase.from('leagues').select('name').order('name'),
         supabase.from('venues').select('name').order('name'),
-        supabase.from('coaches').select('name').order('name')
+        supabase.from('coaches').select('*').order('id')
       ]);
 
       setPositions(positionsData.data?.map(p => p.name) || ['Goalkeeper', 'Defender', 'Midfielder', 'Forward']);
       setAgeGroups(ageGroupsData.data?.map(a => a.name) || ['U6', 'U7', 'U8', 'U9', 'U10', 'U11', 'U12', 'U13']);
       setLeagues(leaguesData.data?.map(l => l.name) || ['Cork Schoolboys League', 'Friendly']);
       setVenues(venuesData.data?.map(v => v.name) || ['Riverstown Park']);
-      setCoaches(coachesData.data?.map(c => c.name) || ['John Smith', 'Mary O\'Connor']);
+      setCoaches(coachesData.data?.map(c => c.name || c.full_name || c.first_name + ' ' + (c.last_name || '') || 'Coach') || ['John Smith', 'Mary O\'Connor']);
     } catch (error) {
       console.error('Error loading reference data:', error);
       // Fallback to hardcoded values
@@ -260,7 +260,7 @@ export default function MatchAdmin() {
       season: team.season || '2024-25',
       contactEmail: team.contactEmail || '',
       contactPhone: team.contactPhone || '',
-      coach: '',
+      coaches: Array.isArray(team.coaches) ? team.coaches : (team.coach ? [team.coach] : []),
       notes: team.notes || '',
       squad: team.players?.map(p => ({ firstName: p.name, position: p.position || '', isCaptain: p.isCaptain || false, isViceCaptain: p.isViceCaptain || false })) || []
     });
@@ -757,11 +757,11 @@ export default function MatchAdmin() {
                   />
                 </div>
 
-                {/* Coach (RVR teams only) */}
+                {/* Coaches (RVR teams only) */}
                 {setupType === 'rvr-team' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Coach
+                      Coaches (Select Multiple)
                       <button
                         type="button"
                         onClick={async () => {
@@ -770,7 +770,6 @@ export default function MatchAdmin() {
                             const { error } = await supabase.from('coaches').insert({ name: newCoach });
                             if (!error) {
                               setCoaches([...coaches, newCoach]);
-                              setTeamSetup(prev => ({ ...prev, coach: newCoach }));
                             } else {
                               alert('Error adding coach: ' + error.message);
                             }
@@ -780,61 +779,80 @@ export default function MatchAdmin() {
                       >
                         + Add New
                       </button>
-                      {teamSetup.coach && (
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const editedCoach = prompt('Edit coach name:', teamSetup.coach);
-                            if (editedCoach && editedCoach !== teamSetup.coach) {
-                              const { error } = await supabase.from('coaches')
-                                .update({ name: editedCoach })
-                                .eq('name', teamSetup.coach);
-                              
-                              if (!error) {
-                                const updatedCoaches = coaches.map(c => c === teamSetup.coach ? editedCoach : c);
-                                setCoaches(updatedCoaches);
-                                setTeamSetup(prev => ({ ...prev, coach: editedCoach }));
-                              } else {
-                                alert('Error updating coach: ' + error.message);
-                              }
-                            }
-                          }}
-                          className="ml-2 text-amber-600 hover:text-amber-800 text-sm"
-                        >
-                          ✏️ Edit
-                        </button>
-                      )}
-                      {teamSetup.coach && (
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (confirm(`Delete coach "${teamSetup.coach}"? This cannot be undone.`)) {
-                              const { error } = await supabase.from('coaches').delete().eq('name', teamSetup.coach);
-                              if (!error) {
-                                const updatedCoaches = coaches.filter(c => c !== teamSetup.coach);
-                                setCoaches(updatedCoaches);
-                                setTeamSetup(prev => ({ ...prev, coach: '' }));
-                              } else {
-                                alert('Error deleting coach: ' + error.message);
-                              }
-                            }
-                          }}
-                          className="ml-2 text-red-600 hover:text-red-800 text-sm"
-                        >
-                          🗑️ Delete
-                        </button>
-                      )}
                     </label>
-                    <select
-                      value={teamSetup.coach}
-                      onChange={(e) => setTeamSetup(prev => ({ ...prev, coach: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Select Coach</option>
+                    <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-gray-50">
                       {coaches.map(coach => (
-                        <option key={coach} value={coach}>{coach}</option>
+                        <label key={coach} className="flex items-center space-x-3 cursor-pointer hover:bg-white p-2 rounded">
+                          <input
+                            type="checkbox"
+                            checked={teamSetup.coaches.includes(coach)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setTeamSetup(prev => ({ ...prev, coaches: [...prev.coaches, coach] }));
+                              } else {
+                                setTeamSetup(prev => ({ ...prev, coaches: prev.coaches.filter(c => c !== coach) }));
+                              }
+                            }}
+                            className="rounded text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-gray-700 font-medium">{coach}</span>
+                          <div className="ml-auto flex space-x-1">
+                            <button
+                              type="button"
+                              onClick={async (e) => {
+                                e.preventDefault();
+                                const editedCoach = prompt('Edit coach name:', coach);
+                                if (editedCoach && editedCoach !== coach) {
+                                  const { error } = await supabase.from('coaches')
+                                    .update({ name: editedCoach })
+                                    .eq('name', coach);
+                                  
+                                  if (!error) {
+                                    const updatedCoaches = coaches.map(c => c === coach ? editedCoach : c);
+                                    setCoaches(updatedCoaches);
+                                    const updatedTeamCoaches = teamSetup.coaches.map(c => c === coach ? editedCoach : c);
+                                    setTeamSetup(prev => ({ ...prev, coaches: updatedTeamCoaches }));
+                                  } else {
+                                    alert('Error updating coach: ' + error.message);
+                                  }
+                                }
+                              }}
+                              className="text-xs text-amber-600 hover:text-amber-800"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async (e) => {
+                                e.preventDefault();
+                                if (confirm(`Delete coach "${coach}"? This cannot be undone.`)) {
+                                  const { error } = await supabase.from('coaches').delete().eq('name', coach);
+                                  if (!error) {
+                                    const updatedCoaches = coaches.filter(c => c !== coach);
+                                    setCoaches(updatedCoaches);
+                                    const updatedTeamCoaches = teamSetup.coaches.filter(c => c !== coach);
+                                    setTeamSetup(prev => ({ ...prev, coaches: updatedTeamCoaches }));
+                                  } else {
+                                    alert('Error deleting coach: ' + error.message);
+                                  }
+                                }
+                              }}
+                              className="text-xs text-red-600 hover:text-red-800"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </label>
                       ))}
-                    </select>
+                      {coaches.length === 0 && (
+                        <p className="text-gray-500 text-sm">No coaches available. Click "+ Add New" to add coaches.</p>
+                      )}
+                    </div>
+                    {teamSetup.coaches.length > 0 && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        Selected: {teamSetup.coaches.join(', ')}
+                      </p>
+                    )}
                   </div>
                 )}
 
