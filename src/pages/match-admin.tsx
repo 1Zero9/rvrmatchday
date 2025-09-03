@@ -775,7 +775,8 @@ export default function MatchAdmin() {
                             const { error } = await supabase.from('coaches').insert({ 
                               first_name: firstName,
                               last_name: lastName,
-                              name: newCoach // Include full name if column exists
+                              name: newCoach, // Include full name if column exists
+                              email: `${firstName.toLowerCase().replace(/\s+/g, '')}@example.com` // Generate default email
                             });
                             if (!error) {
                               setCoaches([...coaches, newCoach]);
