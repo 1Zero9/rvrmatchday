@@ -26,7 +26,7 @@ interface TeamSetup {
   contactPhone: string;
   coach: string;
   notes: string;
-  squad: { firstName: string; position: string; }[];
+  squad: { firstName: string; position: string; isCaptain?: boolean; isViceCaptain?: boolean; }[];
 }
 
 export default function MatchAdmin() {
@@ -42,6 +42,8 @@ export default function MatchAdmin() {
   const [ageGroups, setAgeGroups] = useState<string[]>([]);
   const [leagues, setLeagues] = useState<string[]>([]);
   const [venues, setVenues] = useState<string[]>([]);
+  const [coaches, setCoaches] = useState<string[]>([]);
+  const [seasons, setSeasons] = useState<string[]>(['2024/25', '2025/26', '2026/27']);
   
   // Filtering state
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,10 +55,10 @@ export default function MatchAdmin() {
   const [teamSetup, setTeamSetup] = useState<TeamSetup>({
     name: '',
     ageGroup: '',
-    gender: 'Mixed',
+    gender: 'Male',
     league: '',
     homeVenue: '',
-    season: '2024-25',
+    season: '2024/25',
     contactEmail: '',
     contactPhone: '',
     coach: '',
@@ -70,17 +72,19 @@ export default function MatchAdmin() {
   // Load reference data from database
   const loadReferenceData = async () => {
     try {
-      const [positionsData, ageGroupsData, leaguesData, venuesData] = await Promise.all([
+      const [positionsData, ageGroupsData, leaguesData, venuesData, coachesData] = await Promise.all([
         supabase.from('player_positions').select('name').eq('is_active', true).order('name'),
         supabase.from('age_groups').select('name').eq('is_active', true).order('name'),
         supabase.from('leagues').select('name').order('name'),
-        supabase.from('venues').select('name').order('name')
+        supabase.from('venues').select('name').order('name'),
+        supabase.from('coaches').select('name').order('name')
       ]);
 
       setPositions(positionsData.data?.map(p => p.name) || ['Goalkeeper', 'Defender', 'Midfielder', 'Forward']);
       setAgeGroups(ageGroupsData.data?.map(a => a.name) || ['U6', 'U7', 'U8', 'U9', 'U10', 'U11', 'U12', 'U13']);
       setLeagues(leaguesData.data?.map(l => l.name) || ['Cork Schoolboys League', 'Friendly']);
       setVenues(venuesData.data?.map(v => v.name) || ['Riverstown Park']);
+      setCoaches(coachesData.data?.map(c => c.name) || ['John Smith', 'Mary O\'Connor']);
     } catch (error) {
       console.error('Error loading reference data:', error);
       // Fallback to hardcoded values
@@ -88,6 +92,7 @@ export default function MatchAdmin() {
       setAgeGroups(['U6', 'U7', 'U8', 'U9', 'U10', 'U11', 'U12', 'U13']);
       setLeagues(['Cork Schoolboys League', 'Friendly']);
       setVenues(['Riverstown Park']);
+      setCoaches(['John Smith', 'Mary O\'Connor']);
     }
   };
 
@@ -257,7 +262,7 @@ export default function MatchAdmin() {
       contactPhone: team.contactPhone || '',
       coach: '',
       notes: team.notes || '',
-      squad: team.players?.map(p => ({ firstName: p.name, position: p.position || '' })) || []
+      squad: team.players?.map(p => ({ firstName: p.name, position: p.position || '', isCaptain: p.isCaptain || false, isViceCaptain: p.isViceCaptain || false })) || []
     });
     
     // Scroll to top and highlight the form
@@ -422,6 +427,47 @@ export default function MatchAdmin() {
                     >
                       + Add New
                     </button>
+                    {teamSetup.ageGroup && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const editedAge = prompt('Edit age group:', teamSetup.ageGroup);
+                          if (editedAge && editedAge !== teamSetup.ageGroup) {
+                            const { error } = await supabase.from('age_groups').update({ name: editedAge }).eq('name', teamSetup.ageGroup);
+                            if (!error) {
+                              const updatedAgeGroups = ageGroups.map(a => a === teamSetup.ageGroup ? editedAge : a);
+                              setAgeGroups(updatedAgeGroups);
+                              setTeamSetup(prev => ({ ...prev, ageGroup: editedAge }));
+                            } else {
+                              alert('Error updating age group: ' + error.message);
+                            }
+                          }
+                        }}
+                        className="ml-2 text-amber-600 hover:text-amber-800 text-sm"
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                    {teamSetup.ageGroup && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (confirm(`Delete age group "${teamSetup.ageGroup}"? This cannot be undone.`)) {
+                            const { error } = await supabase.from('age_groups').delete().eq('name', teamSetup.ageGroup);
+                            if (!error) {
+                              const updatedAgeGroups = ageGroups.filter(a => a !== teamSetup.ageGroup);
+                              setAgeGroups(updatedAgeGroups);
+                              setTeamSetup(prev => ({ ...prev, ageGroup: '' }));
+                            } else {
+                              alert('Error deleting age group: ' + error.message);
+                            }
+                          }
+                        }}
+                        className="ml-2 text-red-600 hover:text-red-800 text-sm"
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
                   </label>
                   <select
                     required
@@ -446,9 +492,10 @@ export default function MatchAdmin() {
                     onChange={(e) => setTeamSetup(prev => ({ ...prev, gender: e.target.value as 'Male' | 'Female' | 'Mixed' }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="Mixed">Mixed</option>
+                    <option value="">Select below</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
+                    <option value="Mixed">Mixed</option>
                   </select>
                 </div>
 
@@ -509,6 +556,26 @@ export default function MatchAdmin() {
                         ✏️ Edit
                       </button>
                     )}
+                    {teamSetup.league && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (confirm(`Delete league "${teamSetup.league}"? This cannot be undone.`)) {
+                            const { error } = await supabase.from('leagues').delete().eq('name', teamSetup.league);
+                            if (!error) {
+                              const updatedLeagues = leagues.filter(l => l !== teamSetup.league);
+                              setLeagues(updatedLeagues);
+                              setTeamSetup(prev => ({ ...prev, league: '' }));
+                            } else {
+                              alert('Error deleting league: ' + error.message);
+                            }
+                          }
+                        }}
+                        className="ml-2 text-red-600 hover:text-red-800 text-sm"
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
                   </label>
                   <select
                     value={teamSetup.league}
@@ -526,34 +593,140 @@ export default function MatchAdmin() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {setupType === 'rvr-team' ? 'Home Venue' : 'Their Home Venue'}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const newVenue = prompt('Enter new venue:');
+                        if (newVenue) {
+                          const { error } = await supabase.from('venues').insert({ name: newVenue });
+                          if (!error) {
+                            setVenues([...venues, newVenue]);
+                            setTeamSetup(prev => ({ ...prev, homeVenue: newVenue }));
+                          } else {
+                            alert('Error adding venue: ' + error.message);
+                          }
+                        }
+                      }}
+                      className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      + Add New
+                    </button>
+                    {teamSetup.homeVenue && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const editedVenue = prompt('Edit venue name:', teamSetup.homeVenue);
+                          if (editedVenue && editedVenue !== teamSetup.homeVenue) {
+                            const { error } = await supabase.from('venues')
+                              .update({ name: editedVenue })
+                              .eq('name', teamSetup.homeVenue);
+                            
+                            if (!error) {
+                              const updatedVenues = venues.map(v => v === teamSetup.homeVenue ? editedVenue : v);
+                              setVenues(updatedVenues);
+                              setTeamSetup(prev => ({ ...prev, homeVenue: editedVenue }));
+                            } else {
+                              alert('Error updating venue: ' + error.message);
+                            }
+                          }
+                        }}
+                        className="ml-2 text-amber-600 hover:text-amber-800 text-sm"
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                    {teamSetup.homeVenue && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (confirm(`Delete venue "${teamSetup.homeVenue}"? This cannot be undone.`)) {
+                            const { error } = await supabase.from('venues').delete().eq('name', teamSetup.homeVenue);
+                            if (!error) {
+                              const updatedVenues = venues.filter(v => v !== teamSetup.homeVenue);
+                              setVenues(updatedVenues);
+                              setTeamSetup(prev => ({ ...prev, homeVenue: '' }));
+                            } else {
+                              alert('Error deleting venue: ' + error.message);
+                            }
+                          }
+                        }}
+                        className="ml-2 text-red-600 hover:text-red-800 text-sm"
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
                   </label>
-                  <input
-                    type="text"
-                    list="venues-datalist"
+                  <select
                     value={teamSetup.homeVenue}
                     onChange={(e) => setTeamSetup(prev => ({ ...prev, homeVenue: e.target.value }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g. Phoenix Park"
-                  />
-                  <datalist id="venues-datalist">
-                    {getUniqueValues('homeVenue').map(venue => (
+                  >
+                    <option value="">Select Venue</option>
+                    {venues.map(venue => (
                       <option key={venue} value={venue}>{venue}</option>
                     ))}
-                  </datalist>
+                  </select>
                 </div>
 
                 {/* Season */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Season
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newSeason = prompt('Enter new season (e.g. 2027/28):');
+                        if (newSeason && !seasons.includes(newSeason)) {
+                          setSeasons([...seasons, newSeason]);
+                          setTeamSetup(prev => ({ ...prev, season: newSeason }));
+                        }
+                      }}
+                      className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      + Add New
+                    </button>
+                    {teamSetup.season && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const editedSeason = prompt('Edit season:', teamSetup.season);
+                          if (editedSeason && editedSeason !== teamSetup.season) {
+                            const updatedSeasons = seasons.map(s => s === teamSetup.season ? editedSeason : s);
+                            setSeasons(updatedSeasons);
+                            setTeamSetup(prev => ({ ...prev, season: editedSeason }));
+                          }
+                        }}
+                        className="ml-2 text-amber-600 hover:text-amber-800 text-sm"
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                    {teamSetup.season && seasons.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`Delete season "${teamSetup.season}"? This cannot be undone.`)) {
+                            const updatedSeasons = seasons.filter(s => s !== teamSetup.season);
+                            setSeasons(updatedSeasons);
+                            setTeamSetup(prev => ({ ...prev, season: '' }));
+                          }
+                        }}
+                        className="ml-2 text-red-600 hover:text-red-800 text-sm"
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={teamSetup.season}
                     onChange={(e) => setTeamSetup(prev => ({ ...prev, season: e.target.value }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g. 2024-25"
-                  />
+                  >
+                    <option value="">Select Season</option>
+                    {seasons.map(season => (
+                      <option key={season} value={season}>{season}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Contact Email */}
@@ -589,14 +762,79 @@ export default function MatchAdmin() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Coach
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const newCoach = prompt('Enter new coach name:');
+                          if (newCoach) {
+                            const { error } = await supabase.from('coaches').insert({ name: newCoach });
+                            if (!error) {
+                              setCoaches([...coaches, newCoach]);
+                              setTeamSetup(prev => ({ ...prev, coach: newCoach }));
+                            } else {
+                              alert('Error adding coach: ' + error.message);
+                            }
+                          }
+                        }}
+                        className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        + Add New
+                      </button>
+                      {teamSetup.coach && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const editedCoach = prompt('Edit coach name:', teamSetup.coach);
+                            if (editedCoach && editedCoach !== teamSetup.coach) {
+                              const { error } = await supabase.from('coaches')
+                                .update({ name: editedCoach })
+                                .eq('name', teamSetup.coach);
+                              
+                              if (!error) {
+                                const updatedCoaches = coaches.map(c => c === teamSetup.coach ? editedCoach : c);
+                                setCoaches(updatedCoaches);
+                                setTeamSetup(prev => ({ ...prev, coach: editedCoach }));
+                              } else {
+                                alert('Error updating coach: ' + error.message);
+                              }
+                            }
+                          }}
+                          className="ml-2 text-amber-600 hover:text-amber-800 text-sm"
+                        >
+                          ✏️ Edit
+                        </button>
+                      )}
+                      {teamSetup.coach && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (confirm(`Delete coach "${teamSetup.coach}"? This cannot be undone.`)) {
+                              const { error } = await supabase.from('coaches').delete().eq('name', teamSetup.coach);
+                              if (!error) {
+                                const updatedCoaches = coaches.filter(c => c !== teamSetup.coach);
+                                setCoaches(updatedCoaches);
+                                setTeamSetup(prev => ({ ...prev, coach: '' }));
+                              } else {
+                                alert('Error deleting coach: ' + error.message);
+                              }
+                            }
+                          }}
+                          className="ml-2 text-red-600 hover:text-red-800 text-sm"
+                        >
+                          🗑️ Delete
+                        </button>
+                      )}
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={teamSetup.coach}
                       onChange={(e) => setTeamSetup(prev => ({ ...prev, coach: e.target.value }))}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Coach name"
-                    />
+                    >
+                      <option value="">Select Coach</option>
+                      {coaches.map(coach => (
+                        <option key={coach} value={coach}>{coach}</option>
+                      ))}
+                    </select>
                   </div>
                 )}
 
@@ -605,62 +843,147 @@ export default function MatchAdmin() {
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Squad Players (First Names Only - GDPR Compliant)
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const newPosition = prompt('Enter new player position:');
-                          if (newPosition) {
-                            const { error } = await supabase.from('player_positions').insert({ name: newPosition });
-                            if (!error) {
-                              setPositions([...positions, newPosition]);
-                            } else {
-                              alert('Error adding position: ' + error.message);
+                      <div className="inline-flex items-center space-x-1">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const newPosition = prompt('Enter new player position:');
+                            if (newPosition) {
+                              const { error } = await supabase.from('player_positions').insert({ name: newPosition });
+                              if (!error) {
+                                setPositions([...positions, newPosition]);
+                              } else {
+                                alert('Error adding position: ' + error.message);
+                              }
                             }
-                          }
-                        }}
-                        className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
-                      >
-                        + Add Position
-                      </button>
+                          }}
+                          className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          + Add Position
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const positionToEdit = prompt('Which position to edit?', positions[0]);
+                            if (positionToEdit && positions.includes(positionToEdit)) {
+                              const editedPosition = prompt('Edit position name:', positionToEdit);
+                              if (editedPosition && editedPosition !== positionToEdit) {
+                                const { error } = await supabase.from('player_positions').update({ name: editedPosition }).eq('name', positionToEdit);
+                                if (!error) {
+                                  const updatedPositions = positions.map(p => p === positionToEdit ? editedPosition : p);
+                                  setPositions(updatedPositions);
+                                } else {
+                                  alert('Error updating position: ' + error.message);
+                                }
+                              }
+                            }
+                          }}
+                          className="ml-1 text-amber-600 hover:text-amber-800 text-sm"
+                        >
+                          ✏️ Edit Position
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const positionToDelete = prompt('Which position to delete?', positions[0]);
+                            if (positionToDelete && positions.includes(positionToDelete)) {
+                              if (confirm(`Delete position "${positionToDelete}"? This cannot be undone.`)) {
+                                const { error } = await supabase.from('player_positions').delete().eq('name', positionToDelete);
+                                if (!error) {
+                                  const updatedPositions = positions.filter(p => p !== positionToDelete);
+                                  setPositions(updatedPositions);
+                                } else {
+                                  alert('Error deleting position: ' + error.message);
+                                }
+                              }
+                            }
+                          }}
+                          className="ml-1 text-red-600 hover:text-red-800 text-sm"
+                        >
+                          🗑️ Delete Position
+                        </button>
+                      </div>
                     </label>
                     <div className="space-y-3">
                       {teamSetup.squad.map((player, index) => (
-                        <div key={index} className="flex gap-3 items-center bg-gray-50 p-3 rounded-lg">
-                          <input
-                            type="text"
-                            placeholder="First name"
-                            value={player.firstName}
-                            onChange={(e) => {
-                              const newSquad = [...teamSetup.squad];
-                              newSquad[index].firstName = e.target.value;
-                              setTeamSetup(prev => ({ ...prev, squad: newSquad }));
-                            }}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                          <select
-                            value={player.position}
-                            onChange={(e) => {
-                              const newSquad = [...teamSetup.squad];
-                              newSquad[index].position = e.target.value;
-                              setTeamSetup(prev => ({ ...prev, squad: newSquad }));
-                            }}
-                            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="">Position</option>
-                            {positions.map(position => (
-                              <option key={position} value={position}>{position}</option>
-                            ))}
-                          </select>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newSquad = teamSetup.squad.filter((_, i) => i !== index);
-                              setTeamSetup(prev => ({ ...prev, squad: newSquad }));
-                            }}
-                            className="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors"
-                          >
-                            🗑️
-                          </button>
+                        <div key={index} className="bg-gray-50 p-3 rounded-lg space-y-2">
+                          <div className="flex gap-3 items-center">
+                            <input
+                              type="text"
+                              placeholder="First name"
+                              value={player.firstName}
+                              onChange={(e) => {
+                                const newSquad = [...teamSetup.squad];
+                                newSquad[index].firstName = e.target.value;
+                                setTeamSetup(prev => ({ ...prev, squad: newSquad }));
+                              }}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <select
+                              value={player.position}
+                              onChange={(e) => {
+                                const newSquad = [...teamSetup.squad];
+                                newSquad[index].position = e.target.value;
+                                setTeamSetup(prev => ({ ...prev, squad: newSquad }));
+                              }}
+                              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Position</option>
+                              {positions.map(position => (
+                                <option key={position} value={position}>{position}</option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newSquad = teamSetup.squad.filter((_, i) => i !== index);
+                                setTeamSetup(prev => ({ ...prev, squad: newSquad }));
+                              }}
+                              className="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                          <div className="flex gap-4 text-sm">
+                            <label className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                checked={player.isCaptain || false}
+                                onChange={(e) => {
+                                  const newSquad = [...teamSetup.squad];
+                                  if (e.target.checked) {
+                                    // Only one captain allowed - uncheck others
+                                    newSquad.forEach((p, i) => {
+                                      if (i !== index) p.isCaptain = false;
+                                    });
+                                  }
+                                  newSquad[index].isCaptain = e.target.checked;
+                                  setTeamSetup(prev => ({ ...prev, squad: newSquad }));
+                                }}
+                                className="rounded text-blue-600"
+                              />
+                              <span className="text-blue-600 font-medium">Captain (C)</span>
+                            </label>
+                            <label className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                checked={player.isViceCaptain || false}
+                                onChange={(e) => {
+                                  const newSquad = [...teamSetup.squad];
+                                  if (e.target.checked) {
+                                    // Only one vice-captain allowed - uncheck others
+                                    newSquad.forEach((p, i) => {
+                                      if (i !== index) p.isViceCaptain = false;
+                                    });
+                                  }
+                                  newSquad[index].isViceCaptain = e.target.checked;
+                                  setTeamSetup(prev => ({ ...prev, squad: newSquad }));
+                                }}
+                                className="rounded text-amber-600"
+                              />
+                              <span className="text-amber-600 font-medium">Vice-Captain (VC)</span>
+                            </label>
+                          </div>
                         </div>
                       ))}
                       
@@ -669,7 +992,7 @@ export default function MatchAdmin() {
                         onClick={() => {
                           setTeamSetup(prev => ({
                             ...prev,
-                            squad: [...prev.squad, { firstName: '', position: '' }]
+                            squad: [...prev.squad, { firstName: '', position: '', isCaptain: false, isViceCaptain: false }]
                           }));
                         }}
                         className="w-full px-4 py-3 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2"
