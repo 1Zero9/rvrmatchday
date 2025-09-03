@@ -97,17 +97,93 @@ export default function MatchAdmin() {
   };
 
   useEffect(() => {
+    // Clear old localStorage data on page load to prevent cache issues
+    try {
+      const currentVersion = '2024-12-v2'; // Update this when major changes are made
+      const storedVersion = localStorage.getItem('match-admin-version');
+      
+      if (storedVersion !== currentVersion) {
+        // Clear all cached data if version doesn't match
+        localStorage.removeItem('match-tracker-teams');
+        localStorage.removeItem('match-tracker-matches');
+        localStorage.removeItem('match-tracker-version');
+        localStorage.removeItem('teamFilters');
+        localStorage.setItem('match-admin-version', currentVersion);
+        console.log('Cache cleared due to version update:', currentVersion);
+      }
+      
+      // Force page refresh if browser cache is detected
+      if (performance.navigation && performance.navigation.type === performance.navigation.TYPE_BACK_FORWARD) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.log('Cache clearing not needed');
+    }
+    
     loadData();
   }, []);
 
   const loadData = async () => {
     try {
-      const [teamsData, matchesData] = await Promise.all([
-        storage.getTeams(),
-        storage.getMatches()
-      ]);
-      setTeams(teamsData);
-      setMatches(matchesData);
+      // Load teams directly from database (bypass storage cache)
+      const { data: teamsData, error: teamsError } = await supabase
+        .from('teams')
+        .select(`
+          *,
+          players(*)
+        `)
+        .order('created_at', { ascending: false });
+        
+      if (teamsError) {
+        console.error('Error loading teams from database:', teamsError);
+        setTeams([]);
+      } else {
+        // Transform database data to match Team interface
+        const transformedTeams: Team[] = (teamsData || []).map(team => ({
+          id: team.id,
+          name: team.name,
+          ageGroup: team.age_group,
+          gender: team.gender,
+          season: team.season,
+          league: team.league,
+          homeKit: team.home_colors || { primary: '#00A651', secondary: '#FFFFFF' },
+          awayKit: team.away_colors || { primary: '#001F3F', secondary: '#FFFFFF' },
+          isOpponent: team.is_opponent || false,
+          homeVenue: team.home_venue,
+          contactEmail: team.contact_email,
+          contactPhone: team.contact_phone,
+          coaches: team.coaches || [], // Handle coaches array
+          notes: team.notes,
+          players: (team.players || []).map(p => ({
+            id: p.id,
+            teamId: team.id,
+            name: p.first_name,
+            position: p.position,
+            isCaptain: p.is_captain || false,
+            isViceCaptain: p.is_vice_captain || false,
+            isActive: p.is_active !== false,
+            createdAt: new Date(p.created_at),
+            updatedAt: new Date(p.updated_at || p.created_at)
+          })),
+          createdAt: new Date(team.created_at),
+          updatedAt: new Date(team.updated_at || team.created_at)
+        }));
+        
+        setTeams(transformedTeams);
+      }
+      
+      // Load matches from database (bypass storage cache)
+      const { data: matchesData, error: matchesError } = await supabase
+        .from('matches')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (matchesError) {
+        console.error('Error loading matches from database:', matchesError);
+        setMatches([]);
+      } else {
+        setMatches(matchesData || []);
+      }
       
       // Load reference data
       await loadReferenceData();
@@ -333,12 +409,21 @@ export default function MatchAdmin() {
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Match Administration</h1>
             <p className="text-gray-600">Simple setup for teams and opponents</p>
-            <Link
-              href="/match-central"
-              className="inline-flex items-center mt-4 text-gray-600 hover:text-gray-800"
-            >
-              ← Back to Match Central
-            </Link>
+            <div className="flex justify-center items-center gap-4 mt-4">
+              <Link
+                href="/match-central"
+                className="inline-flex items-center text-gray-600 hover:text-gray-800"
+              >
+                ← Back to Match Central
+              </Link>
+              <button
+                onClick={loadData}
+                disabled={loading}
+                className="inline-flex items-center px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {loading ? '🔄 Loading...' : '🔄 Refresh from Database'}
+              </button>
+            </div>
           </div>
 
           {/* Setup Type Selector */}
