@@ -123,6 +123,17 @@ export default function MatchAdmin() {
     loadData();
   }, []);
 
+  // Handle edit query parameter
+  useEffect(() => {
+    const editTeamId = router.query.edit as string;
+    if (editTeamId && teams.length > 0) {
+      const teamToEdit = teams.find(t => t.id === editTeamId);
+      if (teamToEdit) {
+        editTeam(teamToEdit);
+      }
+    }
+  }, [router.query.edit, teams]);
+
   const loadData = async () => {
     try {
       // Load teams directly from database (bypass storage cache)
@@ -410,6 +421,12 @@ export default function MatchAdmin() {
             <p className="text-gray-600">Simple setup for teams and opponents</p>
             <div className="flex justify-center items-center gap-4 mt-4">
               <Link
+                href="/team-management"
+                className="inline-flex items-center px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+              >
+                👥 View All Teams
+              </Link>
+              <Link
                 href="/match-central"
                 className="inline-flex items-center text-gray-600 hover:text-gray-800"
               >
@@ -418,9 +435,9 @@ export default function MatchAdmin() {
               <button
                 onClick={loadData}
                 disabled={loading}
-                className="inline-flex items-center px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50"
               >
-                {loading ? '🔄 Loading...' : '🔄 Refresh from Database'}
+                {loading ? '🔄 Loading...' : '🔄 Refresh'}
               </button>
             </div>
           </div>
@@ -1179,311 +1196,33 @@ export default function MatchAdmin() {
             </form>
           </div>
 
-          {/* Filters Section */}
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-              <span className="mr-3 text-xl">🔍</span>
-              Filter Teams
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Search */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Search Teams
-                </label>
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Search by name..."
-                />
-              </div>
-
-              {/* Age Group Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Age Group
-                </label>
-                <select
-                  value={ageGroupFilter}
-                  onChange={(e) => setAgeGroupFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          {/* Navigation to Team Management */}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="text-center">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Team Created Successfully!</h2>
+              <p className="text-gray-600 mb-6">What would you like to do next?</p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/team-management"
+                  className="inline-flex items-center px-6 py-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors font-medium"
                 >
-                  <option value="all">All Age Groups</option>
-                  {uniqueAgeGroups.map(age => (
-                    <option key={age} value={age}>{age}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* League Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  League
-                </label>
-                <select
-                  value={leagueFilter}
-                  onChange={(e) => setLeagueFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  👥 View All Teams
+                </Link>
+                <button
+                  onClick={() => {
+                    resetForm();
+                    setEditingTeam(null);
+                  }}
+                  className="inline-flex items-center px-6 py-3 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors font-medium"
                 >
-                  <option value="all">All Leagues</option>
-                  {uniqueLeagues.map(league => (
-                    <option key={league} value={league}>{league}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Gender Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Gender
-                </label>
-                <select
-                  value={genderFilter}
-                  onChange={(e) => setGenderFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  ➕ Create Another Team
+                </button>
+                <Link
+                  href="/match-central"
+                  className="inline-flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
                 >
-                  <option value="all">All Genders</option>
-                  {uniqueGenders.map(gender => (
-                    <option key={gender} value={gender}>{gender}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Filter Results Summary */}
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                Showing <span className="font-semibold">{rvrTeams.length}</span> RVR teams and <span className="font-semibold">{opponentTeams.length}</span> opponents
-                {(searchTerm || ageGroupFilter !== "all" || leagueFilter !== "all" || genderFilter !== "all") && 
-                  ` (filtered from ${teams.length} total teams)`
-                }
-              </p>
-            </div>
-          </div>
-
-          {/* Teams Lists */}
-          <div className="grid md:grid-cols-2 gap-8">
-            
-            {/* RVR Teams */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                <span className="mr-3 text-2xl">⚽</span>
-                RVR Teams ({rvrTeams.length})
-              </h2>
-              
-              {rvrTeams.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-4xl mb-2">⚽</div>
-                  <p className="text-gray-500 text-sm">
-                    {teams.filter(t => !t.isOpponent).length === 0 
-                      ? "No RVR teams yet"
-                      : "No teams match your filters"
-                    }
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {rvrTeams.map((team) => (
-                    <div key={team.id} className="border border-gray-200 rounded-lg p-4 hover:border-green-300 hover:shadow-md transition-all">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 text-lg">{team.name}</h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                              RVR Team
-                            </span>
-                            {team.season && (
-                              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                {team.season}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => editTeam(team)}
-                            className="text-blue-500 hover:text-blue-700 p-1"
-                            title="Edit Team"
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            onClick={() => deleteTeam(team.id)}
-                            className="text-red-500 hover:text-red-700 p-1"
-                            title="Delete Team"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2 text-sm text-gray-600">
-                        {team.ageGroup && (
-                          <div className="flex items-center">
-                            <span className="font-medium mr-2">🎯</span>
-                            {team.ageGroup} • {team.gender || 'Mixed'}
-                          </div>
-                        )}
-                        {team.league && (
-                          <div className="flex items-center">
-                            <span className="font-medium mr-2">🏆</span>
-                            {team.league}
-                          </div>
-                        )}
-                        {team.homeVenue && (
-                          <div className="flex items-center">
-                            <span className="font-medium mr-2">🏠</span>
-                            {team.homeVenue}
-                          </div>
-                        )}
-                        {team.players && team.players.length > 0 && (
-                          <div className="flex items-center">
-                            <span className="font-medium mr-2">👥</span>
-                            {team.players.length} players
-                          </div>
-                        )}
-                        {team.contactEmail && (
-                          <div className="flex items-center">
-                            <span className="font-medium mr-2">📧</span>
-                            {team.contactEmail}
-                          </div>
-                        )}
-                      </div>
-
-                      {team.notes && (
-                        <div className="mt-3 p-2 bg-gray-50 rounded text-xs text-gray-600">
-                          {team.notes}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Opponent Teams */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                <span className="mr-3 text-2xl">🏟️</span>
-                Opponents ({opponentTeams.length})
-              </h2>
-              
-              {opponentTeams.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-4xl mb-2">🏟️</div>
-                  <p className="text-gray-500 text-sm">
-                    {teams.filter(t => t.isOpponent).length === 0 
-                      ? "No opponents yet"
-                      : "No opponents match your filters"
-                    }
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {opponentTeams.map((team) => (
-                    <div key={team.id} className="border border-gray-200 rounded-lg p-4 hover:border-orange-300 hover:shadow-md transition-all">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 text-lg">{team.name}</h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
-                              Opponent
-                            </span>
-                            {team.season && (
-                              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                {team.season}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => editTeam(team)}
-                            className="text-blue-500 hover:text-blue-700 p-1"
-                            title="Edit Team"
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            onClick={() => deleteTeam(team.id)}
-                            className="text-red-500 hover:text-red-700 p-1"
-                            title="Delete Team"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2 text-sm text-gray-600">
-                        {team.ageGroup && (
-                          <div className="flex items-center">
-                            <span className="font-medium mr-2">🎯</span>
-                            {team.ageGroup} • {team.gender || 'Mixed'}
-                          </div>
-                        )}
-                        {team.league && (
-                          <div className="flex items-center">
-                            <span className="font-medium mr-2">🏆</span>
-                            {team.league}
-                          </div>
-                        )}
-                        {team.homeVenue && (
-                          <div className="flex items-center">
-                            <span className="font-medium mr-2">🏠</span>
-                            {team.homeVenue}
-                          </div>
-                        )}
-                        {team.contactEmail && (
-                          <div className="flex items-center">
-                            <span className="font-medium mr-2">📧</span>
-                            {team.contactEmail}
-                          </div>
-                        )}
-                        {team.contactPhone && (
-                          <div className="flex items-center">
-                            <span className="font-medium mr-2">📞</span>
-                            {team.contactPhone}
-                          </div>
-                        )}
-                      </div>
-
-                      {team.notes && (
-                        <div className="mt-3 p-2 bg-gray-50 rounded text-xs text-gray-600">
-                          {team.notes}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-          </div>
-
-          {/* Quick Stats */}
-          <div className="mt-8 mb-16 bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">📊 Quick Stats</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-green-600">{rvrTeams.length}</div>
-                <div className="text-sm text-gray-600">RVR Teams</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-orange-600">{opponentTeams.length}</div>
-                <div className="text-sm text-gray-600">Opponents</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-600">{getUniqueValues('league').length}</div>
-                <div className="text-sm text-gray-600">Leagues</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-purple-600">
-                  {teams.reduce((sum, team) => sum + (team.players?.length || 0), 0)}
-                </div>
-                <div className="text-sm text-gray-600">Total Players</div>
+                  🎯 Start Recording Matches
+                </Link>
               </div>
             </div>
           </div>
