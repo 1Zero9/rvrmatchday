@@ -122,7 +122,7 @@ function MatchExpandedDetails({ match }: { match: Match }) {
   );
 }
 
-// Collapsible Team Card Component
+// Compact Team Line Item Component
 function CollapsibleTeamCard({ team, onEdit, onDelete }: { 
   team: Team, 
   onEdit: () => void, 
@@ -131,75 +131,68 @@ function CollapsibleTeamCard({ team, onEdit, onDelete }: {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow">
-      {/* Card Header - Always Visible */}
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h4 className="text-xl font-bold text-gray-900">{team.name}</h4>
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                {isExpanded ? '📖' : '📋'}
-              </button>
+    <div className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+      {/* Compact Line Item - Always Visible */}
+      <div className="p-4">
+        <div className="flex items-center justify-between">
+          {/* Left Side - Team Info */}
+          <div className="flex items-center gap-4 flex-1">
+            {/* Expand Button */}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+            >
+              {isExpanded ? '▼' : '▶'}
+            </button>
+            
+            {/* Team Icon */}
+            <div className="text-2xl">{!team.isOpponent ? '⚽' : '🏃'}</div>
+            
+            {/* Team Details */}
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <h4 className="text-lg font-semibold text-gray-900">{team.name}</h4>
+                <div className="flex items-center gap-1">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    !team.isOpponent 
+                      ? 'bg-green-100 text-green-700' 
+                      : 'bg-orange-100 text-orange-700'
+                  }`}>
+                    {!team.isOpponent ? 'RVR' : 'OPP'}
+                  </span>
+                  {team.ageGroup && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                      {team.ageGroup}
+                    </span>
+                  )}
+                  {team.gender && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                      {team.gender}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="text-sm text-gray-500 mt-1">
+                {team.players?.length || 0} players • {team.league || 'No league'} • {team.season || 'No season'}
+              </div>
             </div>
-            <div className="flex items-center gap-2 mt-2">
-              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                !team.isOpponent 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-orange-100 text-orange-800'
-              }`}>
-                {!team.isOpponent ? 'RVR Team' : 'Opponent'}
-              </span>
-              {team.ageGroup && (
-                <span className="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                  {team.ageGroup}
-                </span>
-              )}
-              {team.gender && (
-                <span className="px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
-                  {team.gender}
-                </span>
-              )}
-            </div>
           </div>
-          <div className="text-3xl">{!team.isOpponent ? '⚽' : '🏃'}</div>
-        </div>
 
-        {/* Quick Info - Always Visible */}
-        <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-          <div>
-            <span className="text-gray-500">Players:</span>
-            <span className="ml-1 font-semibold text-gray-900">{team.players?.length || 0}</span>
+          {/* Right Side - Action Buttons */}
+          <div className="flex items-center gap-2 ml-4">
+            <button 
+              onClick={onEdit}
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm font-medium transition-colors"
+            >
+              Edit
+            </button>
+            <button 
+              onClick={onDelete}
+              className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded text-sm font-medium transition-colors"
+            >
+              Delete
+            </button>
           </div>
-          <div>
-            <span className="text-gray-500">League:</span>
-            <span className="ml-1 font-semibold text-gray-900">{team.league || 'N/A'}</span>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-          <button 
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
-          >
-            {isExpanded ? '👁️ Hide Details' : '👁️ View Details'}
-          </button>
-          <button 
-            onClick={onEdit}
-            className="bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-          >
-            ✏️ Edit
-          </button>
-          <button 
-            onClick={onDelete}
-            className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-          >
-            🗑️ Delete
-          </button>
         </div>
       </div>
 
@@ -210,120 +203,113 @@ function CollapsibleTeamCard({ team, onEdit, onDelete }: {
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.3 }}
-          className="border-t border-gray-200"
+          className="border-t border-gray-200 bg-gray-50"
         >
-          <div className="p-6 bg-gray-50">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
-              {/* Team Details */}
-              <div className="space-y-4">
-                <h5 className="font-semibold text-gray-900 flex items-center">
-                  <span className="mr-2">ℹ️</span>
-                  Team Information
-                </h5>
-                
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <span className="text-gray-500 block">Season:</span>
+              {/* Team Information */}
+              <div className="space-y-3">
+                <h5 className="font-medium text-gray-900 text-sm uppercase tracking-wide">Team Info</h5>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Season:</span>
                     <span className="font-medium text-gray-900">{team.season || 'N/A'}</span>
                   </div>
-                  
-                  <div>
-                    <span className="text-gray-500 block">Home Venue:</span>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Home Venue:</span>
                     <span className="font-medium text-gray-900">{team.homeVenue || 'N/A'}</span>
                   </div>
-                  
                   {team.contactEmail && (
-                    <div>
-                      <span className="text-gray-500 block">Contact Email:</span>
-                      <a href={`mailto:${team.contactEmail}`} className="font-medium text-blue-600 hover:text-blue-800">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Email:</span>
+                      <a href={`mailto:${team.contactEmail}`} className="font-medium text-blue-600 hover:text-blue-800 truncate max-w-32">
                         {team.contactEmail}
                       </a>
                     </div>
                   )}
-                  
                   {team.contactPhone && (
-                    <div>
-                      <span className="text-gray-500 block">Contact Phone:</span>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Phone:</span>
                       <a href={`tel:${team.contactPhone}`} className="font-medium text-blue-600 hover:text-blue-800">
                         {team.contactPhone}
                       </a>
                     </div>
                   )}
-                  
                   {team.coaches && team.coaches.length > 0 && (
                     <div>
-                      <span className="text-gray-500 block">Coaches:</span>
-                      <div className="space-y-1">
+                      <span className="text-gray-500 text-sm">Coaches:</span>
+                      <div className="mt-1 flex flex-wrap gap-1">
                         {team.coaches.map((coach, index) => (
-                          <span key={index} className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mr-1">
-                            👨‍🏫 {coach}
+                          <span key={index} className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                            {coach}
                           </span>
                         ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {team.notes && (
-                    <div>
-                      <span className="text-gray-500 block">Notes:</span>
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-1">
-                        <p className="text-gray-700">{team.notes}</p>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Players List */}
-              <div className="space-y-4">
-                <h5 className="font-semibold text-gray-900 flex items-center">
-                  <span className="mr-2">👥</span>
-                  Squad ({team.players?.length || 0} players)
+              {/* Squad Overview */}
+              <div className="space-y-3">
+                <h5 className="font-medium text-gray-900 text-sm uppercase tracking-wide">
+                  Squad ({team.players?.length || 0})
                 </h5>
-                
                 {team.players && team.players.length > 0 ? (
-                  <div className="max-h-64 overflow-y-auto space-y-2">
+                  <div className="max-h-48 overflow-y-auto space-y-1">
                     {team.players.map(player => (
-                      <div key={player.id} className="bg-white rounded-lg p-3 shadow-sm border">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-gray-900">{player.name}</span>
-                              {player.isCaptain && (
-                                <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
-                                  👑 Captain
-                                </span>
-                              )}
-                              {player.isViceCaptain && (
-                                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                  🔹 Vice Captain
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-sm text-gray-500 flex items-center gap-4">
-                              <span>Position: {player.position || 'Not specified'}</span>
-                              {!player.isActive && (
-                                <span className="text-red-500">⚠️ Inactive</span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-2xl">
+                      <div key={player.id} className="flex items-center justify-between bg-white rounded p-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">
                             {player.position?.toLowerCase().includes('goalkeeper') ? '🥅' : 
                              player.position?.toLowerCase().includes('defender') ? '🛡️' : 
                              player.position?.toLowerCase().includes('midfielder') ? '⚙️' : 
                              player.position?.toLowerCase().includes('forward') ? '⚽' : '👤'}
-                          </div>
+                          </span>
+                          <span className="font-medium">{player.name}</span>
+                          {player.isCaptain && <span className="text-xs">👑</span>}
+                          {player.isViceCaptain && <span className="text-xs">🔹</span>}
+                        </div>
+                        <div className="text-xs text-gray-500 truncate ml-2">
+                          {player.position || 'No position'}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="text-4xl mb-2">👥</div>
-                    <p>No players added yet</p>
+                  <div className="text-center py-4 text-gray-500">
+                    <div className="text-2xl mb-1">👥</div>
+                    <p className="text-xs">No players</p>
                   </div>
                 )}
+              </div>
+
+              {/* Notes & Actions */}
+              <div className="space-y-3">
+                <h5 className="font-medium text-gray-900 text-sm uppercase tracking-wide">Notes & Actions</h5>
+                {team.notes ? (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                    <p className="text-sm text-gray-700">{team.notes}</p>
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-500">No notes</div>
+                )}
+                
+                <div className="pt-2 space-y-2">
+                  <button 
+                    onClick={onEdit}
+                    className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded text-sm font-medium transition-colors"
+                  >
+                    ✏️ Edit Team
+                  </button>
+                  <button 
+                    onClick={() => setIsExpanded(false)}
+                    className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm font-medium transition-colors"
+                  >
+                    ▲ Collapse
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1557,8 +1543,8 @@ export default function MatchCentral() {
                   </div>
                 </div>
 
-                {/* Teams Grid */}
-                <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                {/* Teams List */}
+                <div className="space-y-4">
                   {teams.filter(team => {
                     // Team type filter
                     if (selectedTeam === 'rvr' && team.isOpponent) return false;
