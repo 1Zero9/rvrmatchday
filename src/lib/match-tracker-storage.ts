@@ -312,12 +312,13 @@ class MatchTrackerStorage {
     });
   }
 
-  // Initialize with sample data for development
+  // Initialize with sample data for development - DISABLED FOR PRODUCTION
   initializeSampleData(): void {
-    const teams = this.getTeams();
-    if (teams.length === 0) {
-      this.createSampleData();
-    }
+    // Disabled - using real database data only
+    // const teams = this.getTeams();
+    // if (teams.length === 0) {
+    //   this.createSampleData();
+    // }
   }
 
   private createSampleData(): void {
