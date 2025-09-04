@@ -77,17 +77,14 @@ export default function MatchAdminNew() {
     loadTeams();
   }, []);
 
-  // Handle edit query parameter
+  // Handle edit query parameter - only run once when teams load
   useEffect(() => {
     const editTeamId = router.query.edit as string;
-    console.log('Edit useEffect triggered:', { editTeamId, teamsLength: teams.length, currentStep });
     
-    if (editTeamId && teams.length > 0 && currentStep !== 'complete') {
+    if (editTeamId && teams.length > 0) {
       const teamToEdit = teams.find(t => t.id === editTeamId);
-      console.log('Team to edit:', teamToEdit);
       
-      if (teamToEdit) {
-        console.log('Setting wizard data for editing:', teamToEdit);
+      if (teamToEdit && currentStep === 'type') {
         setWizardData({
           teamType: teamToEdit.isOpponent ? 'opponent' : 'rvr',
           teamName: teamToEdit.name,
@@ -108,11 +105,9 @@ export default function MatchAdminNew() {
           })) || []
         });
         setCurrentStep('basic');
-      } else {
-        console.log('Team not found for editing:', editTeamId);
       }
     }
-  }, [router.query.edit, teams, currentStep]);
+  }, [router.query.edit, teams]);
 
   const loadReferenceData = async () => {
     try {
@@ -212,19 +207,15 @@ export default function MatchAdminNew() {
   };
 
   const nextStep = () => {
-    console.log('nextStep called, currentStep:', currentStep, 'wizardData:', wizardData);
     const steps: WizardStep[] = ['type', 'basic', 'details', 'coaches', 'squad', 'review'];
     const currentIndex = steps.indexOf(currentStep);
-    console.log('currentIndex:', currentIndex, 'next would be:', steps[currentIndex + 1]);
     
     if (currentIndex < steps.length - 1) {
       const nextStepName = steps[currentIndex + 1];
       // Skip coaches and squad steps for opponent teams
       if ((nextStepName === 'coaches' || nextStepName === 'squad') && wizardData.teamType === 'opponent') {
-        console.log('Skipping to review for opponent team');
         setCurrentStep('review');
       } else {
-        console.log('Moving to next step:', nextStepName);
         setCurrentStep(nextStepName);
       }
     }
@@ -507,12 +498,6 @@ export default function MatchAdminNew() {
                 </h2>
                 
                 <div className="max-w-2xl mx-auto space-y-6">
-                  {/* Debug Info */}
-                  <div className="bg-gray-100 p-3 rounded-lg text-xs">
-                    <strong>Debug:</strong> teamName: "{wizardData.teamName}", ageGroup: "{wizardData.ageGroup}", 
-                    canContinue: {(!wizardData.teamName || !wizardData.ageGroup) ? 'false' : 'true'}
-                  </div>
-                  
                   {/* Team Name */}
                   <div>
                     <label className="block text-lg font-medium text-gray-700 mb-3">
@@ -522,10 +507,7 @@ export default function MatchAdminNew() {
                     <input
                       type="text"
                       value={wizardData.teamName}
-                      onChange={(e) => {
-                        console.log('Team name changed to:', e.target.value);
-                        setWizardData(prev => ({ ...prev, teamName: e.target.value }));
-                      }}
+                      onChange={(e) => setWizardData(prev => ({ ...prev, teamName: e.target.value }))}
                       className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                       placeholder="e.g., RVR U14 Boys"
                     />
@@ -539,10 +521,7 @@ export default function MatchAdminNew() {
                     </label>
                     <select
                       value={wizardData.ageGroup}
-                      onChange={(e) => {
-                        console.log('Age group changed to:', e.target.value);
-                        setWizardData(prev => ({ ...prev, ageGroup: e.target.value }));
-                      }}
+                      onChange={(e) => setWizardData(prev => ({ ...prev, ageGroup: e.target.value })))
                       className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
                       <option value="">Select Age Group</option>
@@ -581,21 +560,16 @@ export default function MatchAdminNew() {
 
                 <div className="flex justify-center mt-8 space-x-4">
                   <button
+                    type="button"
                     onClick={prevStep}
                     className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
                   >
                     ← Back
                   </button>
                   <button
-                    onClick={() => {
-                      console.log('Continue button clicked, validation:', {
-                        teamName: wizardData.teamName,
-                        ageGroup: wizardData.ageGroup,
-                        isValid: !(!wizardData.teamName || !wizardData.ageGroup)
-                      });
-                      nextStep();
-                    }}
-                    disabled={false}
+                    type="button"
+                    onClick={nextStep}
+                    disabled={!wizardData.teamName || !wizardData.ageGroup}
                     className={`px-8 py-3 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium ${
                       wizardData.teamType === 'rvr' 
                         ? 'bg-green-600 hover:bg-green-700' 
