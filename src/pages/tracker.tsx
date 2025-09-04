@@ -59,7 +59,7 @@ function TrackerContent({ user }: { user: SupabaseTrackerUser }) {
       } else {
         const allTeams: Team[] = teamsData?.map(team => ({
           id: team.id,
-          name: team.team_name,
+          name: team.name,
           category: team.age_group || 'Unknown',
           ageGroup: team.age_group || 'Open',
           gender: team.gender || 'Mixed',
@@ -72,11 +72,11 @@ function TrackerContent({ user }: { user: SupabaseTrackerUser }) {
           notes: team.notes || '',
           homeKit: { primary: '#009639', secondary: '#FFFFFF' },
           awayKit: { primary: '#FFFFFF', secondary: '#009639' },
-          isOpponent: team.team_type === 'opponent',
+          isOpponent: team.is_opponent || false,
           players: team.players?.map((p: any) => ({
             id: p.id,
             teamId: team.id,
-            name: p.player_name,
+            name: p.first_name,
             position: p.position || 'Field Player',
             isCaptain: p.is_captain || false,
             isViceCaptain: p.is_vice_captain || false,

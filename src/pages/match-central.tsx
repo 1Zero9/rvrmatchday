@@ -180,7 +180,7 @@ export default function MatchCentral() {
       } else {
         loadedTeams = (teamsData || []).map(team => ({
           id: team.id,
-          name: team.team_name,
+          name: team.name,
           category: team.age_group || 'Unknown',
           ageGroup: team.age_group,
           gender: team.gender,
@@ -193,11 +193,11 @@ export default function MatchCentral() {
           notes: team.notes,
           homeKit: { primary: '#009639', secondary: '#FFFFFF' },
           awayKit: { primary: '#FFFFFF', secondary: '#009639' },
-          isOpponent: team.team_type === 'opponent',
+          isOpponent: team.is_opponent || false,
           players: (team.players || []).map(p => ({
             id: p.id,
             teamId: team.id,
-            name: p.player_name,
+            name: p.first_name,
             position: p.position,
             isCaptain: p.is_captain || false,
             isViceCaptain: p.is_vice_captain || false,
@@ -227,7 +227,7 @@ export default function MatchCentral() {
       // Team summaries will be calculated from database data
       const teamSummaries = loadedTeams.map(team => ({
         id: team.id,
-        name: team.team_name,
+        name: team.name,
         totalPlayers: team.players?.length || 0,
         gamesPlayed: 0,
         wins: 0,
@@ -1062,8 +1062,8 @@ export default function MatchCentral() {
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
                 >
                   <option value="all">All RVR Teams</option>
-                  {teams.filter(team => team.team_type === 'rvr').map(team => (
-                    <option key={team.id} value={team.id}>{team.team_name}</option>
+                  {teams.filter(team => !team.isOpponent).map(team => (
+                    <option key={team.id} value={team.id}>{team.name}</option>
                   ))}
                 </select>
               </div>
@@ -1345,19 +1345,19 @@ export default function MatchCentral() {
                     <div key={team.id} className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-shadow">
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h4 className="text-xl font-bold text-gray-900">{team.team_name}</h4>
+                          <h4 className="text-xl font-bold text-gray-900">{team.name}</h4>
                           <div className="flex items-center gap-2 mt-1">
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              team.team_type === 'rvr' 
+                              !team.isOpponent 
                                 ? 'bg-green-100 text-green-800' 
                                 : 'bg-orange-100 text-orange-800'
                             }`}>
-                              {team.team_type === 'rvr' ? 'RVR Team' : 'Opponent'}
+                              {!team.isOpponent ? 'RVR Team' : 'Opponent'}
                             </span>
-                            <span className="text-gray-500 text-sm">{team.age_group}</span>
+                            <span className="text-gray-500 text-sm">{team.ageGroup}</span>
                           </div>
                         </div>
-                        <div className="text-2xl">{team.team_type === 'rvr' ? '⚽' : '🏃'}</div>
+                        <div className="text-2xl">{!team.isOpponent ? '⚽' : '🏃'}</div>
                       </div>
 
                       <div className="space-y-3">

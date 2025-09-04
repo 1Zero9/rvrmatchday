@@ -145,7 +145,7 @@ export default function MatchAdminNew() {
       } else {
         const transformedTeams: Team[] = (teamsData || []).map(team => ({
           id: team.id,
-          name: team.team_name,
+          name: team.name,
           category: team.age_group || 'Unknown',
           ageGroup: team.age_group,
           gender: team.gender,
@@ -158,11 +158,11 @@ export default function MatchAdminNew() {
           notes: team.notes,
           homeKit: { primary: '#009639', secondary: '#FFFFFF' },
           awayKit: { primary: '#FFFFFF', secondary: '#009639' },
-          isOpponent: team.team_type === 'opponent',
+          isOpponent: team.is_opponent || false,
           players: (team.players || []).map(p => ({
             id: p.id,
             teamId: team.id,
-            name: p.player_name,
+            name: p.first_name,
             position: p.position,
             isCaptain: p.is_captain || false,
             isViceCaptain: p.is_vice_captain || false,
@@ -217,12 +217,39 @@ export default function MatchAdminNew() {
   };
 
   const updatePlayer = (index: number, field: keyof WizardData['players'][0], value: any) => {
-    setWizardData(prev => ({
-      ...prev,
-      players: prev.players.map((player, i) => 
-        i === index ? { ...player, [field]: value } : player
-      )
-    }));
+    setWizardData(prev => {
+      const updatedPlayers = prev.players.map((player, i) => {
+        if (i === index) {
+          const updatedPlayer = { ...player, [field]: value };
+          
+          // Captain/Vice-Captain validation
+          if (field === 'isCaptain' && value === true) {
+            // If making captain, cannot be vice-captain and remove captain from others
+            updatedPlayer.isViceCaptain = false;
+            return updatedPlayer;
+          } else if (field === 'isViceCaptain' && value === true) {
+            // If making vice-captain, cannot be captain and remove vice-captain from others  
+            updatedPlayer.isCaptain = false;
+            return updatedPlayer;
+          }
+          
+          return updatedPlayer;
+        } else {
+          // Remove captain/vice-captain from other players when assigning to current player
+          if (field === 'isCaptain' && value === true) {
+            return { ...player, isCaptain: false };
+          } else if (field === 'isViceCaptain' && value === true) {
+            return { ...player, isViceCaptain: false };
+          }
+          return player;
+        }
+      });
+      
+      return {
+        ...prev,
+        players: updatedPlayers
+      };
+    });
   };
 
   const removePlayer = (index: number) => {
@@ -242,7 +269,7 @@ export default function MatchAdminNew() {
       // Create team record with coaches
       const teamData = {
         id: teamId,
-        team_name: wizardData.teamName,
+        name: wizardData.teamName,
         age_group: wizardData.ageGroup,
         gender: wizardData.gender,
         league: wizardData.league,
@@ -252,7 +279,7 @@ export default function MatchAdminNew() {
         contact_phone: wizardData.contactPhone,
         coaches: wizardData.coaches,
         notes: wizardData.notes,
-        team_type: wizardData.teamType
+        is_opponent: wizardData.teamType === 'opponent'
       };
 
       const { error: teamError } = isEditing 
@@ -273,7 +300,7 @@ export default function MatchAdminNew() {
         const playersData = wizardData.players.map(player => ({
           id: crypto.randomUUID(),
           team_id: teamId,
-          player_name: player.name,
+          first_name: player.name,
           position: player.position,
           is_active: true
           // TODO: Add is_captain and is_vice_captain after running SQL migration
