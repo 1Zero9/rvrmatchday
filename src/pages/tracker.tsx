@@ -61,20 +61,31 @@ function TrackerContent({ user }: { user: SupabaseTrackerUser }) {
           id: team.id,
           name: team.team_name,
           category: team.age_group || 'Unknown',
-          isOpponent: team.team_type === 'opponent',
-          homeVenue: team.home_venue || 'St. Finian\'s GAA',
+          ageGroup: team.age_group || 'Open',
+          gender: team.gender || 'Mixed',
+          season: team.season || '2024/25',
           league: team.league || 'Local',
-          players: team.players?.map((p: any) => ({
-            id: p.id,
-            name: p.player_name,
-            position: p.position || 'Field Player'
-          })) || [],
-          createdAt: new Date(team.created_at),
-          updatedAt: new Date(team.updated_at || team.created_at),
+          homeVenue: team.home_venue || 'St. Finian\'s GAA',
+          contactEmail: team.contact_email || '',
+          contactPhone: team.contact_phone || '',
+          coaches: team.coaches || [],
+          notes: team.notes || '',
           homeKit: { primary: '#009639', secondary: '#FFFFFF' },
           awayKit: { primary: '#FFFFFF', secondary: '#009639' },
-          ageGroup: team.age_group || 'Open',
-          gender: 'Mixed'
+          isOpponent: team.team_type === 'opponent',
+          players: team.players?.map((p: any) => ({
+            id: p.id,
+            teamId: team.id,
+            name: p.player_name,
+            position: p.position || 'Field Player',
+            isCaptain: p.is_captain || false,
+            isViceCaptain: p.is_vice_captain || false,
+            isActive: p.is_active !== false,
+            createdAt: new Date(p.created_at),
+            updatedAt: new Date(p.updated_at || p.created_at)
+          })) || [],
+          createdAt: new Date(team.created_at),
+          updatedAt: new Date(team.updated_at || team.created_at)
         })) || [];
         
         const accessibleTeams = user.teams.includes('*') 

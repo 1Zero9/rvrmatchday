@@ -180,7 +180,8 @@ export default function MatchCentral() {
       } else {
         loadedTeams = (teamsData || []).map(team => ({
           id: team.id,
-          name: team.name,
+          name: team.team_name,
+          category: team.age_group || 'Unknown',
           ageGroup: team.age_group,
           gender: team.gender,
           season: team.season,
@@ -190,12 +191,16 @@ export default function MatchCentral() {
           contactPhone: team.contact_phone,
           coaches: team.coaches || [],
           notes: team.notes,
-          isOpponent: team.is_opponent || false,
+          homeKit: { primary: '#009639', secondary: '#FFFFFF' },
+          awayKit: { primary: '#FFFFFF', secondary: '#009639' },
+          isOpponent: team.team_type === 'opponent',
           players: (team.players || []).map(p => ({
             id: p.id,
             teamId: team.id,
-            name: p.first_name,
+            name: p.player_name,
             position: p.position,
+            isCaptain: p.is_captain || false,
+            isViceCaptain: p.is_vice_captain || false,
             isActive: p.is_active !== false,
             createdAt: new Date(p.created_at),
             updatedAt: new Date(p.updated_at || p.created_at)
@@ -1378,7 +1383,10 @@ export default function MatchCentral() {
                           <button className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
                             View Details
                           </button>
-                          <button className="bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                          <button 
+                            onClick={() => router.push(`/match-admin?edit=${team.id}`)}
+                            className="bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                          >
                             Edit
                           </button>
                         </div>

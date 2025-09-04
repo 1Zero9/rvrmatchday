@@ -77,6 +77,36 @@ export default function MatchAdminNew() {
     loadTeams();
   }, []);
 
+  // Handle edit query parameter
+  useEffect(() => {
+    const editTeamId = router.query.edit as string;
+    if (editTeamId && teams.length > 0) {
+      const teamToEdit = teams.find(t => t.id === editTeamId);
+      if (teamToEdit) {
+        setWizardData({
+          teamType: teamToEdit.isOpponent ? 'opponent' : 'rvr',
+          teamName: teamToEdit.name,
+          ageGroup: teamToEdit.ageGroup || '',
+          gender: teamToEdit.gender || 'Mixed',
+          league: teamToEdit.league || '',
+          season: teamToEdit.season || '2024/25',
+          homeVenue: teamToEdit.homeVenue || '',
+          coaches: Array.isArray(teamToEdit.coaches) ? teamToEdit.coaches : [],
+          contactEmail: teamToEdit.contactEmail || '',
+          contactPhone: teamToEdit.contactPhone || '',
+          notes: teamToEdit.notes || '',
+          players: teamToEdit.players?.map(p => ({
+            name: p.name,
+            position: p.position,
+            isCaptain: p.isCaptain || false,
+            isViceCaptain: p.isViceCaptain || false
+          })) || []
+        });
+        setCurrentStep('basic');
+      }
+    }
+  }, [router.query.edit, teams]);
+
   const loadReferenceData = async () => {
     try {
       const [ageGroupsData, leaguesData, venuesData, coachesData, positionsData, playersData] = await Promise.all([
@@ -115,7 +145,8 @@ export default function MatchAdminNew() {
       } else {
         const transformedTeams: Team[] = (teamsData || []).map(team => ({
           id: team.id,
-          name: team.name,
+          name: team.team_name,
+          category: team.age_group || 'Unknown',
           ageGroup: team.age_group,
           gender: team.gender,
           season: team.season,
@@ -125,11 +156,13 @@ export default function MatchAdminNew() {
           contactPhone: team.contact_phone,
           coaches: team.coaches || [],
           notes: team.notes,
-          isOpponent: team.is_opponent || false,
+          homeKit: { primary: '#009639', secondary: '#FFFFFF' },
+          awayKit: { primary: '#FFFFFF', secondary: '#009639' },
+          isOpponent: team.team_type === 'opponent',
           players: (team.players || []).map(p => ({
             id: p.id,
             teamId: team.id,
-            name: p.first_name,
+            name: p.player_name,
             position: p.position,
             isCaptain: p.is_captain || false,
             isViceCaptain: p.is_vice_captain || false,
@@ -202,12 +235,14 @@ export default function MatchAdminNew() {
   const saveTeam = async () => {
     setSaving(true);
     try {
-      const teamId = crypto.randomUUID();
+      const editTeamId = router.query.edit as string;
+      const isEditing = Boolean(editTeamId);
+      const teamId = isEditing ? editTeamId : crypto.randomUUID();
       
       // Create team record with coaches
       const teamData = {
         id: teamId,
-        name: wizardData.teamName,
+        team_name: wizardData.teamName,
         age_group: wizardData.ageGroup,
         gender: wizardData.gender,
         league: wizardData.league,
@@ -217,10 +252,12 @@ export default function MatchAdminNew() {
         contact_phone: wizardData.contactPhone,
         coaches: wizardData.coaches,
         notes: wizardData.notes,
-        is_opponent: wizardData.teamType === 'opponent'
+        team_type: wizardData.teamType
       };
 
-      const { error: teamError } = await supabase.from('teams').insert(teamData);
+      const { error: teamError } = isEditing 
+        ? await supabase.from('teams').update(teamData).eq('id', teamId)
+        : await supabase.from('teams').insert(teamData);
       
       if (teamError) {
         throw new Error(`Team save error: ${teamError.message}`);
@@ -228,10 +265,15 @@ export default function MatchAdminNew() {
 
       // Save players for RVR teams
       if (wizardData.teamType === 'rvr' && wizardData.players.length > 0) {
+        if (isEditing) {
+          // Delete existing players and re-add (simpler than complex update logic)
+          await supabase.from('players').delete().eq('team_id', teamId);
+        }
+        
         const playersData = wizardData.players.map(player => ({
           id: crypto.randomUUID(),
           team_id: teamId,
-          first_name: player.name,
+          player_name: player.name,
           position: player.position,
           is_active: true
           // TODO: Add is_captain and is_vice_captain after running SQL migration
@@ -1102,7 +1144,7 @@ export default function MatchAdminNew() {
                         : 'bg-orange-600 hover:bg-orange-700'
                     }`}
                   >
-                    {saving ? 'Creating Team...' : `Create ${wizardData.teamType === 'rvr' ? 'RVR Team' : 'Opponent'}`}
+                    {saving ? (router.query.edit ? 'Updating Team...' : 'Creating Team...') : (router.query.edit ? `Update ${wizardData.teamType === 'rvr' ? 'RVR Team' : 'Opponent'}` : `Create ${wizardData.teamType === 'rvr' ? 'RVR Team' : 'Opponent'}`)}
                   </button>
                 </div>
               </motion.div>
@@ -1118,9 +1160,11 @@ export default function MatchAdminNew() {
               >
                 <div className="text-center">
                   <div className="text-6xl mb-4">✅</div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Team Created Successfully!</h2>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                    {router.query.edit ? 'Team Updated Successfully!' : 'Team Created Successfully!'}
+                  </h2>
                   <p className="text-xl text-gray-600 mb-8">
-                    {wizardData.teamName} has been added to the system
+                    {router.query.edit ? `${wizardData.teamName} has been updated` : `${wizardData.teamName} has been added to the system`}
                   </p>
                   
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
