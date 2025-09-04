@@ -507,15 +507,25 @@ export default function MatchAdminNew() {
                 </h2>
                 
                 <div className="max-w-2xl mx-auto space-y-6">
+                  {/* Debug Info */}
+                  <div className="bg-gray-100 p-3 rounded-lg text-xs">
+                    <strong>Debug:</strong> teamName: "{wizardData.teamName}", ageGroup: "{wizardData.ageGroup}", 
+                    canContinue: {(!wizardData.teamName || !wizardData.ageGroup) ? 'false' : 'true'}
+                  </div>
+                  
                   {/* Team Name */}
                   <div>
                     <label className="block text-lg font-medium text-gray-700 mb-3">
                       Team Name *
+                      {!wizardData.teamName && <span className="text-red-500 ml-2">(Required)</span>}
                     </label>
                     <input
                       type="text"
                       value={wizardData.teamName}
-                      onChange={(e) => setWizardData(prev => ({ ...prev, teamName: e.target.value }))}
+                      onChange={(e) => {
+                        console.log('Team name changed to:', e.target.value);
+                        setWizardData(prev => ({ ...prev, teamName: e.target.value }));
+                      }}
                       className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                       placeholder="e.g., RVR U14 Boys"
                     />
@@ -525,10 +535,14 @@ export default function MatchAdminNew() {
                   <div>
                     <label className="block text-lg font-medium text-gray-700 mb-3">
                       Age Group *
+                      {!wizardData.ageGroup && <span className="text-red-500 ml-2">(Required)</span>}
                     </label>
                     <select
                       value={wizardData.ageGroup}
-                      onChange={(e) => setWizardData(prev => ({ ...prev, ageGroup: e.target.value }))}
+                      onChange={(e) => {
+                        console.log('Age group changed to:', e.target.value);
+                        setWizardData(prev => ({ ...prev, ageGroup: e.target.value }));
+                      }}
                       className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
                       <option value="">Select Age Group</option>
@@ -536,6 +550,9 @@ export default function MatchAdminNew() {
                         <option key={age} value={age}>{age}</option>
                       ))}
                     </select>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Options available: {ageGroups.length} ({ageGroups.slice(0,3).join(', ')}...)
+                    </div>
                   </div>
 
                   {/* Gender */}
@@ -570,9 +587,16 @@ export default function MatchAdminNew() {
                     ← Back
                   </button>
                   <button
-                    onClick={nextStep}
+                    onClick={() => {
+                      console.log('Continue button clicked, validation:', {
+                        teamName: wizardData.teamName,
+                        ageGroup: wizardData.ageGroup,
+                        isValid: !(!wizardData.teamName || !wizardData.ageGroup)
+                      });
+                      nextStep();
+                    }}
                     disabled={!wizardData.teamName || !wizardData.ageGroup}
-                    className={`px-8 py-3 disabled:bg-gray-300 text-white rounded-lg transition-colors font-medium ${
+                    className={`px-8 py-3 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium ${
                       wizardData.teamType === 'rvr' 
                         ? 'bg-green-600 hover:bg-green-700' 
                         : 'bg-orange-600 hover:bg-orange-700'
