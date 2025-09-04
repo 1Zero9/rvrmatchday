@@ -14,6 +14,7 @@ import StandardLayout from "../components/StandardLayout";
 import CelebrationResultCard from "../components/CelebrationResultCard";
 import { supabase } from "../lib/supabase";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
+import { VERSION_CONFIG } from "../config/version";
 
 type TabType = 'overview' | 'fixtures' | 'management' | 'statistics';
 
@@ -1168,7 +1169,12 @@ export default function MatchCentral() {
                   <span className="text-2xl text-white">⚽</span>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">Match Central</h1>
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-gray-900">Match Central</h1>
+                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                      v{VERSION_CONFIG.current.version}
+                    </span>
+                  </div>
                   <p className="text-gray-600 mt-1">Complete football match management system</p>
                 </div>
               </div>
