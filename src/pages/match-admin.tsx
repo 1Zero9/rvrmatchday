@@ -521,7 +521,7 @@ export default function MatchAdminNew() {
                     </label>
                     <select
                       value={wizardData.ageGroup}
-                      onChange={(e) => setWizardData(prev => ({ ...prev, ageGroup: e.target.value }))})
+                      onChange={(e) => setWizardData(prev => ({ ...prev, ageGroup: e.target.value }))}
                       className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
                       <option value="">Select Age Group</option>
