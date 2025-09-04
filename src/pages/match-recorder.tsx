@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
 import { storageV2 as storage } from "../lib/match-tracker-storage-v2";
+import { supabase } from "../lib/supabase";
 import { Match, Team } from "../types/match-tracker";
 
 type Step = 'result' | 'details' | 'done';
@@ -40,6 +41,7 @@ export default function MatchRecorderSimple() {
   const [step, setStep] = useState<Step>('result');
   const [savedMatchId, setSavedMatchId] = useState<string>('');
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
+  const [mode, setMode] = useState<'record' | 'schedule'>('record');
   
   const [quickResult, setQuickResult] = useState<QuickResult>({
     homeTeam: '',
@@ -103,6 +105,12 @@ export default function MatchRecorderSimple() {
   useEffect(() => {
     loadData();
     
+    // Check for mode parameter
+    const modeParam = router.query.mode as string;
+    if (modeParam === 'schedule' || modeParam === 'record') {
+      setMode(modeParam);
+    }
+    
     // Check for edit mode
     const editId = router.query.edit as string;
     if (editId) {
@@ -112,9 +120,33 @@ export default function MatchRecorderSimple() {
 
   const loadData = async () => {
     try {
-      storage.initializeSampleData();
-      const loadedTeams = await storage.getTeams();
-      setTeams(loadedTeams);
+      // Load teams directly from database
+      const { data: teamsData, error } = await supabase
+        .from('teams')
+        .select(`*, players(*)`)
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error('Error loading teams:', error);
+        setTeams([]);
+      } else {
+        const loadedTeams: Team[] = teamsData?.map(team => ({
+          id: team.id,
+          name: team.team_name,
+          category: team.age_group || 'Unknown',
+          isOpponent: team.team_type === 'opponent',
+          homeVenue: team.home_venue || 'St. Finian\'s GAA',
+          league: team.league || 'Local',
+          players: team.players?.map((p: any) => ({
+            id: p.id,
+            name: p.player_name,
+            position: p.position || 'Field Player'
+          })) || [],
+          createdAt: new Date(team.created_at),
+          updatedAt: new Date(team.updated_at || team.created_at)
+        })) || [];
+        setTeams(loadedTeams);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -337,15 +369,22 @@ export default function MatchRecorderSimple() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {editingMatch ? '✏️ Edit Match' : 'Match Recorder'}
+            <h1 className={`text-3xl font-bold mb-2 ${
+              editingMatch ? 'text-gray-900' : mode === 'record' ? 'text-red-900' : 'text-blue-900'
+            }`}>
+              {editingMatch 
+                ? '✏️ Edit Match' 
+                : mode === 'record' 
+                  ? '📝 Record Match' 
+                  : '📅 Schedule Match'
+              }
             </h1>
             <p className="text-gray-600">
               {editingMatch 
                 ? 'Update match details and results' 
-                : isFutureMatch() 
-                  ? 'Schedule upcoming fixtures' 
-                  : 'Simple 3-step process to log match results'
+                : mode === 'record'
+                  ? 'Record results for completed matches (today or earlier)'
+                  : 'Schedule upcoming fixtures (today or future dates)'
               }
             </p>
           </motion.div>
@@ -380,19 +419,29 @@ export default function MatchRecorderSimple() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
             >
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
-                {isFutureMatch() ? '📅 Schedule Match' : '📝 Log Match Result'}
+              <h2 className={`text-xl font-bold mb-6 ${
+                mode === 'record' ? 'text-red-900' : 'text-blue-900'
+              }`}>
+                {mode === 'record' ? '📝 Record Match Result' : '📅 Schedule Fixture'}
               </h2>
               
               <div className="space-y-4">
                 {/* Date */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Match Date</label>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    mode === 'record' ? 'text-red-700' : 'text-blue-700'
+                  }`}>
+                    Match Date {mode === 'record' ? '(Today or Earlier)' : '(Today or Later)'}
+                  </label>
                   <input
                     type="date"
                     value={quickResult.matchDate}
                     onChange={(e) => setQuickResult(prev => ({ ...prev, matchDate: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    max={mode === 'record' ? new Date().toISOString().split('T')[0] : undefined}
+                    min={mode === 'schedule' ? new Date().toISOString().split('T')[0] : undefined}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${
+                      mode === 'record' ? 'focus:ring-red-500' : 'focus:ring-blue-500'
+                    }`}
                   />
                   {isFutureMatch() && (
                     <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">

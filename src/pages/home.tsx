@@ -470,12 +470,12 @@ export default function StandardHomepage() {
                   {/* Row 2: Four Regular Boxes */}
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="bg-orange-600/20 backdrop-blur-md border border-orange-300/30 rounded-xl p-4 text-center text-white hover:bg-orange-600/30 transition-all duration-300 shadow-xl"
+                    className="bg-green-600/20 backdrop-blur-md border border-green-300/30 rounded-xl p-4 text-center text-white hover:bg-green-600/30 transition-all duration-300 shadow-xl"
                   >
-                    <div className="text-3xl mb-3">📞</div>
-                    <h3 className="text-lg font-bold mb-2">Contact</h3>
-                    <Link href="/contact" className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
-                      Get in Touch
+                    <div className="text-3xl mb-3">🏟️</div>
+                    <h3 className="text-lg font-bold mb-2">Book Astro</h3>
+                    <Link href="/book-astro" className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">
+                      Reserve Pitch
                     </Link>
                   </motion.div>
 
@@ -611,7 +611,7 @@ export default function StandardHomepage() {
         <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">What's Happening at Rangers</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">What's Happening at Rivervalley Rangers</h2>
               <p className="text-lg text-gray-600">Latest news, results, and community stories</p>
             </div>
             

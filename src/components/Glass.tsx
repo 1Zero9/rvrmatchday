@@ -26,15 +26,15 @@ export function GlassCard({
   };
 
   const gradientStyles = {
-    blue: 'bg-blue-600/20 border-blue-300/30',
-    green: 'bg-green-600/20 border-green-300/30',
-    purple: 'bg-purple-600/20 border-purple-300/30',
-    orange: 'bg-orange-600/20 border-orange-300/30',
+    blue: 'bg-blue-800/70 border-blue-300/30',
+    green: 'bg-green-800/70 border-green-300/30',
+    purple: 'bg-purple-800/70 border-purple-300/30',
+    orange: 'bg-orange-800/70 border-orange-300/30',
     white: intensityStyles[intensity],
-    dark: 'bg-black/20 backdrop-blur-md border-gray-400/30',
-    'club-primary': 'bg-club-primary/20 border-club-primary/30',
-    'club-secondary': 'bg-club-secondary/20 border-club-secondary/30', 
-    'club-accent': 'bg-club-accent/20 border-club-accent/30'
+    dark: 'bg-black/70 backdrop-blur-md border-gray-400/30',
+    'club-primary': 'bg-club-primary/70 border-club-primary/30',
+    'club-secondary': 'bg-club-secondary/70 border-club-secondary/30', 
+    'club-accent': 'bg-club-accent/70 border-club-accent/30'
   };
 
   const hoverStyles = hover ? 'hover:bg-white/30 hover:scale-[1.02] transition-all duration-300' : '';

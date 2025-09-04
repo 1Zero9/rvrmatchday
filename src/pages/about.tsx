@@ -56,6 +56,7 @@ export default function About() {
       imageSpecs="1920x1080px minimum, club heritage and community activities preferred"
     >
 
+      <div className="pb-16">
       {/* Navigation Links to Related Sections */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -244,6 +245,7 @@ export default function About() {
         </div>
       </motion.div>
 
+      </div>
     </GlassPageTemplate>
   );
 }

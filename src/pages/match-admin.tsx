@@ -1,155 +1,118 @@
 /**
- * Match Administration - Simple Wizard
- * Single record setup for RVR teams and opponents
+ * Match Administration - User-Friendly Team Setup Wizard
+ * Simple step-by-step process for creating RVR teams and opponents
  */
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
 import { supabase } from "../lib/supabase";
-import { storage } from "../lib/match-tracker-storage";
-import { Team, Match } from "../types/match-tracker";
+import { Team } from "../types/match-tracker";
 
-type SetupType = 'rvr-team' | 'opponent';
+type TeamType = 'rvr' | 'opponent';
+type WizardStep = 'type' | 'basic' | 'details' | 'coaches' | 'squad' | 'review' | 'complete';
 
-interface TeamSetup {
-  id?: string;
-  name: string;
+interface WizardData {
+  // Step 1: Team Type
+  teamType: TeamType;
+  
+  // Step 2: Basic Info
+  teamName: string;
   ageGroup: string;
   gender: 'Male' | 'Female' | 'Mixed';
+  
+  // Step 3: Details
   league: string;
-  homeVenue: string;
   season: string;
+  homeVenue: string;
+  coaches: string[];
   contactEmail: string;
   contactPhone: string;
-  coaches: string[];
   notes: string;
-  squad: { firstName: string; position: string; isCaptain?: boolean; isViceCaptain?: boolean; }[];
+  
+  // Step 4: Squad (RVR teams only)
+  players: Array<{
+    name: string;
+    position: string;
+    isCaptain: boolean;
+    isViceCaptain: boolean;
+  }>;
 }
 
-export default function MatchAdmin() {
+export default function MatchAdminNew() {
   const router = useRouter();
+  const [currentStep, setCurrentStep] = useState<WizardStep>('type');
   const [teams, setTeams] = useState<Team[]>([]);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [setupType, setSetupType] = useState<SetupType>('rvr-team');
   
-  // Reference data from database
-  const [positions, setPositions] = useState<string[]>([]);
+  // Reference data
   const [ageGroups, setAgeGroups] = useState<string[]>([]);
   const [leagues, setLeagues] = useState<string[]>([]);
   const [venues, setVenues] = useState<string[]>([]);
   const [coaches, setCoaches] = useState<string[]>([]);
-  const [seasons, setSeasons] = useState<string[]>(['2024/25', '2025/26', '2026/27']);
+  const [positions, setPositions] = useState<string[]>([]);
+  const [existingPlayers, setExistingPlayers] = useState<{id: string, name: string, position: string}[]>([]);
   
-  // Filtering state
-  const [searchTerm, setSearchTerm] = useState("");
-  const [ageGroupFilter, setAgeGroupFilter] = useState("all");
-  const [leagueFilter, setLeagueFilter] = useState("all");
-  const [genderFilter, setGenderFilter] = useState("all");
-  
-  // Single setup form for both RVR teams and opponents
-  const [teamSetup, setTeamSetup] = useState<TeamSetup>({
-    name: '',
+  const [wizardData, setWizardData] = useState<WizardData>({
+    teamType: 'rvr',
+    teamName: '',
     ageGroup: '',
     gender: 'Male',
     league: '',
-    homeVenue: '',
     season: '2024/25',
+    homeVenue: '',
+    coaches: [],
     contactEmail: '',
     contactPhone: '',
-    coaches: [],
     notes: '',
-    squad: []
+    players: []
   });
 
-  // Edit mode
-  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  // Load reference data
+  useEffect(() => {
+    loadReferenceData();
+    loadTeams();
+  }, []);
 
-  // Load reference data from database
   const loadReferenceData = async () => {
     try {
-      const [positionsData, ageGroupsData, leaguesData, venuesData, coachesData] = await Promise.all([
-        supabase.from('player_positions').select('name').eq('is_active', true).order('name'),
-        supabase.from('age_groups').select('name').eq('is_active', true).order('name'),
+      const [ageGroupsData, leaguesData, venuesData, coachesData, positionsData, playersData] = await Promise.all([
+        supabase.from('age_groups').select('name').order('name'),
         supabase.from('leagues').select('name').order('name'),
         supabase.from('venues').select('name').order('name'),
-        supabase.from('coaches').select('*').order('id')
+        supabase.from('coaches').select('first_name, last_name').order('first_name'),
+        supabase.from('positions').select('name').order('name'),
+        supabase.from('players').select('id, first_name, position').order('first_name')
       ]);
 
-      setPositions(positionsData.data?.map(p => p.name) || ['Goalkeeper', 'Defender', 'Midfielder', 'Forward']);
-      setAgeGroups(ageGroupsData.data?.map(a => a.name) || ['U6', 'U7', 'U8', 'U9', 'U10', 'U11', 'U12', 'U13']);
-      setLeagues(leaguesData.data?.map(l => l.name) || ['Cork Schoolboys League', 'Friendly']);
-      setVenues(venuesData.data?.map(v => v.name) || ['Riverstown Park']);
-      setCoaches(coachesData.data?.map(c => c.name || c.full_name || c.first_name + ' ' + (c.last_name || '') || 'Coach') || ['John Smith', 'Mary O\'Connor']);
+      setAgeGroups(ageGroupsData.data?.map(item => item.name) || []);
+      setLeagues(leaguesData.data?.map(item => item.name) || []);
+      setVenues(venuesData.data?.map(item => item.name) || []);
+      setCoaches(coachesData.data?.map(item => `${item.first_name} ${item.last_name}`) || []);
+      setPositions(positionsData.data?.map(item => item.name) || []);
+      setExistingPlayers(playersData.data?.map(item => ({
+        id: item.id,
+        name: item.first_name,
+        position: item.position || ''
+      })) || []);
     } catch (error) {
       console.error('Error loading reference data:', error);
-      // Fallback to hardcoded values
-      setPositions(['Goalkeeper', 'Defender', 'Midfielder', 'Forward']);
-      setAgeGroups(['U6', 'U7', 'U8', 'U9', 'U10', 'U11', 'U12', 'U13']);
-      setLeagues(['Cork Schoolboys League', 'Friendly']);
-      setVenues(['Riverstown Park']);
-      setCoaches(['John Smith', 'Mary O\'Connor']);
     }
   };
 
-  useEffect(() => {
-    // Clear old localStorage data on page load to prevent cache issues
+  const loadTeams = async () => {
     try {
-      const currentVersion = '2024-12-v2'; // Update this when major changes are made
-      const storedVersion = localStorage.getItem('match-admin-version');
-      
-      if (storedVersion !== currentVersion) {
-        // Clear all cached data if version doesn't match
-        localStorage.removeItem('match-tracker-teams');
-        localStorage.removeItem('match-tracker-matches');
-        localStorage.removeItem('match-tracker-version');
-        localStorage.removeItem('teamFilters');
-        localStorage.setItem('match-admin-version', currentVersion);
-        console.log('Cache cleared due to version update:', currentVersion);
-      }
-      
-      // Force page refresh if browser cache is detected
-      if (performance.navigation && performance.navigation.type === performance.navigation.TYPE_BACK_FORWARD) {
-        window.location.reload();
-      }
-    } catch (error) {
-      console.log('Cache clearing not needed');
-    }
-    
-    loadData();
-  }, []);
-
-  // Handle edit query parameter
-  useEffect(() => {
-    const editTeamId = router.query.edit as string;
-    if (editTeamId && teams.length > 0) {
-      const teamToEdit = teams.find(t => t.id === editTeamId);
-      if (teamToEdit) {
-        editTeam(teamToEdit);
-      }
-    }
-  }, [router.query.edit, teams]);
-
-  const loadData = async () => {
-    try {
-      // Load teams directly from database (bypass storage cache)
-      const { data: teamsData, error: teamsError } = await supabase
+      const { data: teamsData, error } = await supabase
         .from('teams')
-        .select(`
-          *,
-          players(*)
-        `)
+        .select(`*, players(*)`)
         .order('created_at', { ascending: false });
         
-      if (teamsError) {
-        console.error('Error loading teams from database:', teamsError);
-        setTeams([]);
+      if (error) {
+        console.error('Error loading teams:', error);
       } else {
-        // Transform database data to match Team interface
         const transformedTeams: Team[] = (teamsData || []).map(team => ({
           id: team.id,
           name: team.name,
@@ -157,14 +120,12 @@ export default function MatchAdmin() {
           gender: team.gender,
           season: team.season,
           league: team.league,
-          homeKit: team.home_colors || { primary: '#00A651', secondary: '#FFFFFF' },
-          awayKit: team.away_colors || { primary: '#001F3F', secondary: '#FFFFFF' },
-          isOpponent: team.is_opponent || false,
           homeVenue: team.home_venue,
           contactEmail: team.contact_email,
           contactPhone: team.contact_phone,
-          coaches: team.coaches || [], // Handle coaches array
+          coaches: team.coaches || [],
           notes: team.notes,
+          isOpponent: team.is_opponent || false,
           players: (team.players || []).map(p => ({
             id: p.id,
             teamId: team.id,
@@ -182,228 +143,163 @@ export default function MatchAdmin() {
         
         setTeams(transformedTeams);
       }
-      
-      // Load matches from database (bypass storage cache)
-      const { data: matchesData, error: matchesError } = await supabase
-        .from('matches')
-        .select('*')
-        .order('created_at', { ascending: false });
-        
-      if (matchesError) {
-        console.error('Error loading matches from database:', matchesError);
-        setMatches([]);
-      } else {
-        setMatches(matchesData || []);
-      }
-      
-      // Load reference data
-      await loadReferenceData();
     } catch (error) {
-      console.error('Error loading admin data:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error loading teams:', error);
     }
   };
 
-  // Get unique values for dropdowns from existing data
-  const getUniqueValues = (field: keyof Team) => {
-    return [...new Set(teams.map(t => t[field]).filter(Boolean))];
+  const nextStep = () => {
+    const steps: WizardStep[] = ['type', 'basic', 'details', 'coaches', 'squad', 'review'];
+    const currentIndex = steps.indexOf(currentStep);
+    if (currentIndex < steps.length - 1) {
+      const nextStepName = steps[currentIndex + 1];
+      // Skip coaches and squad steps for opponent teams
+      if ((nextStepName === 'coaches' || nextStepName === 'squad') && wizardData.teamType === 'opponent') {
+        setCurrentStep('review');
+      } else {
+        setCurrentStep(nextStepName);
+      }
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
+  const prevStep = () => {
+    const steps: WizardStep[] = ['type', 'basic', 'details', 'coaches', 'squad', 'review'];
+    const currentIndex = steps.indexOf(currentStep);
+    if (currentIndex > 0) {
+      const prevStepName = steps[currentIndex - 1];
+      // Skip coaches and squad steps for opponent teams going backwards
+      if ((currentStep === 'review' && wizardData.teamType === 'opponent')) {
+        setCurrentStep('details');
+      } else {
+        setCurrentStep(prevStepName);
+      }
+    }
+  };
 
+  const addPlayer = () => {
+    setWizardData(prev => ({
+      ...prev,
+      players: [...prev.players, { name: '', position: '', isCaptain: false, isViceCaptain: false }]
+    }));
+  };
+
+  const updatePlayer = (index: number, field: keyof WizardData['players'][0], value: any) => {
+    setWizardData(prev => ({
+      ...prev,
+      players: prev.players.map((player, i) => 
+        i === index ? { ...player, [field]: value } : player
+      )
+    }));
+  };
+
+  const removePlayer = (index: number) => {
+    setWizardData(prev => ({
+      ...prev,
+      players: prev.players.filter((_, i) => i !== index)
+    }));
+  };
+
+  const saveTeam = async () => {
+    setSaving(true);
     try {
-      const teamId = editingTeam ? editingTeam.id : crypto.randomUUID();
+      const teamId = crypto.randomUUID();
       
-      const newTeam: Team = {
+      // Create team record with coaches
+      const teamData = {
         id: teamId,
-        name: teamSetup.name,
-        ageGroup: teamSetup.ageGroup,
-        gender: teamSetup.gender,
-        season: teamSetup.season,
-        league: teamSetup.league,
-        homeKit: { primary: setupType === 'rvr-team' ? '#00A651' : '#FF0000', secondary: '#FFFFFF' },
-        awayKit: { primary: setupType === 'rvr-team' ? '#001F3F' : '#000000', secondary: '#FFFFFF' },
-        isOpponent: setupType === 'opponent',
-        homeVenue: teamSetup.homeVenue,
-        contactEmail: teamSetup.contactEmail,
-        contactPhone: teamSetup.contactPhone,
-        notes: teamSetup.notes,
-        coaches: teamSetup.coaches,
-        players: teamSetup.squad.map((player, index) => ({
-          id: crypto.randomUUID(),
-          teamId: teamId,
-          name: player.firstName,
-          position: player.position,
-          isCaptain: player.isCaptain || false,
-          isViceCaptain: player.isViceCaptain || false,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        })),
-        createdAt: editingTeam ? editingTeam.createdAt : new Date(),
-        updatedAt: new Date()
+        name: wizardData.teamName,
+        age_group: wizardData.ageGroup,
+        gender: wizardData.gender,
+        league: wizardData.league,
+        season: wizardData.season,
+        home_venue: wizardData.homeVenue,
+        contact_email: wizardData.contactEmail,
+        contact_phone: wizardData.contactPhone,
+        coaches: wizardData.coaches,
+        notes: wizardData.notes,
+        is_opponent: wizardData.teamType === 'opponent'
       };
 
-      console.log('Saving team to database:', newTeam);
+      const { error: teamError } = await supabase.from('teams').insert(teamData);
       
-      // Direct Supabase save (bypass storage layer)
-      const { data: savedTeam, error: teamError } = await supabase
-        .from('teams')
-        .upsert({
-          id: newTeam.id,
-          name: newTeam.name,
-          short_name: newTeam.name,
-          season: newTeam.season || '2024/25',
-          home_colors: newTeam.homeKit,
-          away_colors: newTeam.awayKit,
-          is_opponent: newTeam.isOpponent || false,
-          age_group: newTeam.ageGroup,
-          gender: newTeam.gender,
-          league: newTeam.league,
-          home_venue: newTeam.homeVenue,
-          contact_email: newTeam.contactEmail,
-          contact_phone: newTeam.contactPhone,
-          notes: newTeam.notes,
-          is_active: true,
-          is_public: true
-        }, { onConflict: 'id' })
-        .select();
-
       if (teamError) {
-        throw new Error(`Database error: ${teamError.message}`);
+        throw new Error(`Team save error: ${teamError.message}`);
       }
 
-      console.log('Team saved to database:', savedTeam);
-
-      // Save players directly to database
-      if (newTeam.players && newTeam.players.length > 0) {
-        const playersToSave = newTeam.players.map(player => ({
-          id: player.id,
-          team_id: newTeam.id,
+      // Save players for RVR teams
+      if (wizardData.teamType === 'rvr' && wizardData.players.length > 0) {
+        const playersData = wizardData.players.map(player => ({
+          id: crypto.randomUUID(),
+          team_id: teamId,
           first_name: player.name,
-          jersey_number: player.number,
           position: player.position,
-          is_active: player.isActive !== false,
-          // Captain fields will be added after SQL script is run
+          is_active: true
+          // TODO: Add is_captain and is_vice_captain after running SQL migration
         }));
 
-        const { error: playersError } = await supabase
-          .from('players')
-          .upsert(playersToSave, { onConflict: 'id' });
-
+        const { error: playersError } = await supabase.from('players').insert(playersData);
+        
         if (playersError) {
           throw new Error(`Players save error: ${playersError.message}`);
         }
-        
-        console.log('Players saved to database:', playersToSave.length);
       }
-      
-      // Save coaches if any selected
-      if (newTeam.coaches && newTeam.coaches.length > 0) {
-        console.log('Team has coaches:', newTeam.coaches);
-        // Note: Coaches are already saved in the coaches table via the UI
-        // Here we could create a team_coaches junction table if needed
-      }
-      
-      if (editingTeam) {
-        setTeams(teams.map(t => t.id === editingTeam.id ? newTeam : t));
-        setEditingTeam(null);
-        alert(`${setupType === 'rvr-team' ? 'Team' : 'Opponent'} updated successfully!`);
-      } else {
-        setTeams([...teams, newTeam]);
-        alert(`${setupType === 'rvr-team' ? 'Team' : 'Opponent'} created successfully!`);
-      }
-      
-      resetForm();
+
+      await loadTeams();
+      setCurrentStep('complete');
     } catch (error) {
       console.error('Error saving team:', error);
-      alert(`Error saving team: ${error.message}`);
-      alert('Error saving. Please try again.');
+      alert('Error saving team: ' + error);
     } finally {
       setSaving(false);
     }
   };
 
-  const resetForm = () => {
-    setTeamSetup({
-      name: '',
+  const resetWizard = () => {
+    setWizardData({
+      teamType: 'rvr',
+      teamName: '',
       ageGroup: '',
       gender: 'Male',
       league: '',
-      homeVenue: '',
       season: '2024/25',
+      homeVenue: '',
+      coaches: [],
       contactEmail: '',
       contactPhone: '',
-      coaches: [],
       notes: '',
-      squad: []
+      players: []
     });
+    setCurrentStep('type');
   };
 
-  const editTeam = (team: Team) => {
-    setEditingTeam(team);
-    setSetupType(team.isOpponent ? 'opponent' : 'rvr-team');
-    setTeamSetup({
-      id: team.id,
-      name: team.name,
-      ageGroup: team.ageGroup || '',
-      gender: team.gender || 'Mixed',
-      league: team.league || '',
-      homeVenue: team.homeVenue || '',
-      season: team.season || '2024/25',
-      contactEmail: team.contactEmail || '',
-      contactPhone: team.contactPhone || '',
-      coaches: Array.isArray(team.coaches) ? team.coaches : (team.coach ? [team.coach] : []),
-      notes: team.notes || '',
-      squad: team.players?.map(p => ({ firstName: p.name, position: p.position || '', isCaptain: p.isCaptain || false, isViceCaptain: p.isViceCaptain || false })) || []
-    });
-    
-    // Scroll to top and highlight the form
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100);
+  const stepNames = {
+    type: 'Team Type',
+    basic: 'Basic Info', 
+    details: 'Details',
+    coaches: 'Coaches',
+    squad: 'Squad',
+    review: 'Review',
+    complete: 'Complete'
   };
 
-  const cancelEdit = () => {
-    setEditingTeam(null);
-    resetForm();
+  const getStepNumber = (step: WizardStep): number => {
+    const steps = wizardData.teamType === 'rvr' 
+      ? ['type', 'basic', 'details', 'coaches', 'squad', 'review']
+      : ['type', 'basic', 'details', 'review'];
+    return steps.indexOf(step) + 1;
   };
 
-  const deleteTeam = (teamId: string) => {
-    if (confirm('Are you sure you want to delete this team?')) {
-      storage.deleteTeam(teamId);
-      setTeams(teams.filter(team => team.id !== teamId));
-    }
+  const getTotalSteps = (): number => {
+    return wizardData.teamType === 'rvr' ? 6 : 4;
   };
-
-  // Filter teams based on search and filters
-  const filteredTeams = teams.filter(team => {
-    const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesAgeGroup = ageGroupFilter === "all" || team.ageGroup === ageGroupFilter;
-    const matchesLeague = leagueFilter === "all" || team.league === leagueFilter;
-    const matchesGender = genderFilter === "all" || team.gender === genderFilter;
-    
-    return matchesSearch && matchesAgeGroup && matchesLeague && matchesGender;
-  });
-
-  const rvrTeams = filteredTeams.filter(team => !team.isOpponent);
-  const opponentTeams = filteredTeams.filter(team => team.isOpponent);
-  
-  // Get unique values for filters
-  const uniqueAgeGroups = [...new Set(teams.map(t => t.ageGroup).filter(Boolean))];
-  const uniqueLeagues = [...new Set(teams.map(t => t.league).filter(Boolean))];
-  const uniqueGenders = [...new Set(teams.map(t => t.gender).filter(Boolean))];
 
   if (loading) {
     return (
       <StandardLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-            <p className="text-lg font-medium text-gray-600">Loading Administration...</p>
+            <p className="text-gray-600">Loading...</p>
           </div>
         </div>
       </StandardLayout>
@@ -417,815 +313,881 @@ export default function MatchAdmin() {
 
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Match Administration</h1>
-            <p className="text-gray-600">Simple setup for teams and opponents</p>
-            <div className="flex justify-center items-center gap-4 mt-4">
-              <Link
-                href="/team-management"
-                className="inline-flex items-center px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
-              >
-                👥 View All Teams
-              </Link>
-              <Link
-                href="/match-central"
-                className="inline-flex items-center text-gray-600 hover:text-gray-800"
-              >
-                ← Back to Match Central
-              </Link>
-              <button
-                onClick={loadData}
-                disabled={loading}
-                className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {loading ? '🔄 Loading...' : '🔄 Refresh'}
-              </button>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Team Setup Wizard</h1>
+            <p className="text-xl text-gray-600">Simple 4-step process to add teams and opponents</p>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-medium text-gray-700">
+                Step {getStepNumber(currentStep)} of {getTotalSteps()}
+              </span>
+              <span className="text-sm text-gray-500">{stepNames[currentStep]}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div 
+                className={`h-3 rounded-full transition-all duration-300 ${
+                  wizardData.teamType === 'rvr' ? 'bg-green-600' : 'bg-orange-600'
+                }`}
+                style={{ width: `${(getStepNumber(currentStep) / getTotalSteps()) * 100}%` }}
+              />
             </div>
           </div>
 
-          {/* Setup Type Selector */}
-          <div className={`bg-white rounded-lg shadow-lg p-6 mb-8 transition-all duration-300 ${
-            editingTeam ? 'ring-4 ring-blue-200 bg-blue-50' : ''
-          }`}>
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-              {editingTeam ? (
-                <>
-                  <span className="mr-3 text-2xl">✏️</span>
-                  Editing: {editingTeam.name}
-                  <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                    {editingTeam.isOpponent ? 'Opponent' : 'RVR Team'}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="mr-3 text-2xl">➕</span>
-                  Add New Team
-                </>
-              )}
-            </h2>
-            
-            {/* Team Type Selector - always show to allow correction */}
-            <div className="flex gap-4 mb-6">
-              <button
-                type="button"
-                onClick={() => setSetupType('rvr-team')}
-                className={`flex-1 px-6 py-4 rounded-lg font-medium transition-colors ${
-                  setupType === 'rvr-team'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+          <AnimatePresence mode="wait">
+            {/* Step 1: Team Type Selection */}
+            {currentStep === 'type' && (
+              <motion.div
+                key="type"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="bg-white rounded-lg shadow-lg p-8"
               >
-                ⚽ RVR Team
-              </button>
-              <button
-                type="button"
-                onClick={() => setSetupType('opponent')}
-                className={`flex-1 px-6 py-4 rounded-lg font-medium transition-colors ${
-                  setupType === 'opponent'
-                    ? 'bg-orange-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                🏟️ Opponent Team
-              </button>
-            </div>
-            
-            {editingTeam && (
-              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  💡 <strong>Tip:</strong> Use the toggle above to change this team from {editingTeam.isOpponent ? 'Opponent' : 'RVR Team'} to {editingTeam.isOpponent ? 'RVR Team' : 'Opponent'} if needed.
-                </p>
-              </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                  What type of team are you adding?
+                </h2>
+                
+                <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                  <button
+                    onClick={() => {
+                      setWizardData(prev => ({ ...prev, teamType: 'rvr' }));
+                      nextStep();
+                    }}
+                    className={`p-8 border-2 rounded-lg transition-all hover:shadow-lg ${
+                      wizardData.teamType === 'rvr' 
+                        ? 'border-green-500 bg-green-50' 
+                        : 'border-gray-300 hover:border-green-300'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-4xl mb-4">⚽</div>
+                      <h3 className="text-xl font-bold text-green-700 mb-2">RVR Team</h3>
+                      <p className="text-gray-600">River Valley Rangers team with full squad management</p>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setWizardData(prev => ({ ...prev, teamType: 'opponent' }));
+                      nextStep();
+                    }}
+                    className={`p-8 border-2 rounded-lg transition-all hover:shadow-lg ${
+                      wizardData.teamType === 'opponent' 
+                        ? 'border-orange-500 bg-orange-50' 
+                        : 'border-gray-300 hover:border-orange-300'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-4xl mb-4">🏟️</div>
+                      <h3 className="text-xl font-bold text-orange-700 mb-2">Opponent Team</h3>
+                      <p className="text-gray-600">External team for match scheduling</p>
+                    </div>
+                  </button>
+                </div>
+              </motion.div>
             )}
 
-            {/* Single Team Setup Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Step 2: Basic Information */}
+            {currentStep === 'basic' && (
+              <motion.div
+                key="basic"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="bg-white rounded-lg shadow-lg p-8"
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                  Basic Team Information
+                </h2>
                 
-                {/* Team Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Team Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={teamSetup.name}
-                    onChange={(e) => setTeamSetup(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder={setupType === 'rvr-team' ? 'e.g. RVR U12 Boys' : 'e.g. Celtic Tigers FC'}
-                  />
-                </div>
-
-                {/* Age Group */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Age Group *
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const newAge = prompt('Enter new age group (e.g. U19):');
-                        if (newAge) {
-                          const { error } = await supabase.from('age_groups').insert({ name: newAge });
-                          if (!error) {
-                            setAgeGroups([...ageGroups, newAge]);
-                            setTeamSetup(prev => ({ ...prev, ageGroup: newAge }));
-                          } else {
-                            alert('Error adding age group: ' + error.message);
-                          }
-                        }
-                      }}
-                      className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      + Add New
-                    </button>
-                    {teamSetup.ageGroup && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const editedAge = prompt('Edit age group:', teamSetup.ageGroup);
-                          if (editedAge && editedAge !== teamSetup.ageGroup) {
-                            const { error } = await supabase.from('age_groups').update({ name: editedAge }).eq('name', teamSetup.ageGroup);
-                            if (!error) {
-                              const updatedAgeGroups = ageGroups.map(a => a === teamSetup.ageGroup ? editedAge : a);
-                              setAgeGroups(updatedAgeGroups);
-                              setTeamSetup(prev => ({ ...prev, ageGroup: editedAge }));
-                            } else {
-                              alert('Error updating age group: ' + error.message);
-                            }
-                          }
-                        }}
-                        className="ml-2 text-amber-600 hover:text-amber-800 text-sm"
-                      >
-                        ✏️ Edit
-                      </button>
-                    )}
-                    {teamSetup.ageGroup && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (confirm(`Delete age group "${teamSetup.ageGroup}"? This cannot be undone.`)) {
-                            const { error } = await supabase.from('age_groups').delete().eq('name', teamSetup.ageGroup);
-                            if (!error) {
-                              const updatedAgeGroups = ageGroups.filter(a => a !== teamSetup.ageGroup);
-                              setAgeGroups(updatedAgeGroups);
-                              setTeamSetup(prev => ({ ...prev, ageGroup: '' }));
-                            } else {
-                              alert('Error deleting age group: ' + error.message);
-                            }
-                          }
-                        }}
-                        className="ml-2 text-red-600 hover:text-red-800 text-sm"
-                      >
-                        🗑️ Delete
-                      </button>
-                    )}
-                  </label>
-                  <select
-                    required
-                    value={teamSetup.ageGroup}
-                    onChange={(e) => setTeamSetup(prev => ({ ...prev, ageGroup: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Age Group</option>
-                    {ageGroups.map(age => (
-                      <option key={age} value={age}>{age}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Gender */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Gender
-                  </label>
-                  <select
-                    value={teamSetup.gender}
-                    onChange={(e) => setTeamSetup(prev => ({ ...prev, gender: e.target.value as 'Male' | 'Female' | 'Mixed' }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select below</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Mixed">Mixed</option>
-                  </select>
-                </div>
-
-                {/* League */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    League/Competition
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const newLeague = prompt('Enter new league/competition:');
-                        if (newLeague) {
-                          // Generate a short_name from the full name
-                          const shortName = newLeague.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
-                          const currentSeason = new Date().getFullYear() + '-' + (new Date().getFullYear() + 1);
-                          const { error } = await supabase.from('leagues').insert({ 
-                            name: newLeague,
-                            short_name: shortName,
-                            season: currentSeason
-                          });
-                          if (!error) {
-                            setLeagues([...leagues, newLeague]);
-                            setTeamSetup(prev => ({ ...prev, league: newLeague }));
-                          } else {
-                            alert('Error adding league: ' + error.message);
-                          }
-                        }
-                      }}
-                      className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      + Add New
-                    </button>
-                    {teamSetup.league && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const editedLeague = prompt('Edit league name:', teamSetup.league);
-                          if (editedLeague && editedLeague !== teamSetup.league) {
-                            const shortName = editedLeague.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
-                            const { error } = await supabase.from('leagues')
-                              .update({ 
-                                name: editedLeague,
-                                short_name: shortName
-                              })
-                              .eq('name', teamSetup.league);
-                            
-                            if (!error) {
-                              const updatedLeagues = leagues.map(l => l === teamSetup.league ? editedLeague : l);
-                              setLeagues(updatedLeagues);
-                              setTeamSetup(prev => ({ ...prev, league: editedLeague }));
-                            } else {
-                              alert('Error updating league: ' + error.message);
-                            }
-                          }
-                        }}
-                        className="ml-2 text-amber-600 hover:text-amber-800 text-sm"
-                      >
-                        ✏️ Edit
-                      </button>
-                    )}
-                    {teamSetup.league && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (confirm(`Delete league "${teamSetup.league}"? This cannot be undone.`)) {
-                            const { error } = await supabase.from('leagues').delete().eq('name', teamSetup.league);
-                            if (!error) {
-                              const updatedLeagues = leagues.filter(l => l !== teamSetup.league);
-                              setLeagues(updatedLeagues);
-                              setTeamSetup(prev => ({ ...prev, league: '' }));
-                            } else {
-                              alert('Error deleting league: ' + error.message);
-                            }
-                          }
-                        }}
-                        className="ml-2 text-red-600 hover:text-red-800 text-sm"
-                      >
-                        🗑️ Delete
-                      </button>
-                    )}
-                  </label>
-                  <select
-                    value={teamSetup.league}
-                    onChange={(e) => setTeamSetup(prev => ({ ...prev, league: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select League</option>
-                    {leagues.map(league => (
-                      <option key={league} value={league}>{league}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Home Venue */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {setupType === 'rvr-team' ? 'Home Venue' : 'Their Home Venue'}
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const newVenue = prompt('Enter new venue:');
-                        if (newVenue) {
-                          const { error } = await supabase.from('venues').insert({ name: newVenue });
-                          if (!error) {
-                            setVenues([...venues, newVenue]);
-                            setTeamSetup(prev => ({ ...prev, homeVenue: newVenue }));
-                          } else {
-                            alert('Error adding venue: ' + error.message);
-                          }
-                        }
-                      }}
-                      className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      + Add New
-                    </button>
-                    {teamSetup.homeVenue && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const editedVenue = prompt('Edit venue name:', teamSetup.homeVenue);
-                          if (editedVenue && editedVenue !== teamSetup.homeVenue) {
-                            const { error } = await supabase.from('venues')
-                              .update({ name: editedVenue })
-                              .eq('name', teamSetup.homeVenue);
-                            
-                            if (!error) {
-                              const updatedVenues = venues.map(v => v === teamSetup.homeVenue ? editedVenue : v);
-                              setVenues(updatedVenues);
-                              setTeamSetup(prev => ({ ...prev, homeVenue: editedVenue }));
-                            } else {
-                              alert('Error updating venue: ' + error.message);
-                            }
-                          }
-                        }}
-                        className="ml-2 text-amber-600 hover:text-amber-800 text-sm"
-                      >
-                        ✏️ Edit
-                      </button>
-                    )}
-                    {teamSetup.homeVenue && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (confirm(`Delete venue "${teamSetup.homeVenue}"? This cannot be undone.`)) {
-                            const { error } = await supabase.from('venues').delete().eq('name', teamSetup.homeVenue);
-                            if (!error) {
-                              const updatedVenues = venues.filter(v => v !== teamSetup.homeVenue);
-                              setVenues(updatedVenues);
-                              setTeamSetup(prev => ({ ...prev, homeVenue: '' }));
-                            } else {
-                              alert('Error deleting venue: ' + error.message);
-                            }
-                          }
-                        }}
-                        className="ml-2 text-red-600 hover:text-red-800 text-sm"
-                      >
-                        🗑️ Delete
-                      </button>
-                    )}
-                  </label>
-                  <select
-                    value={teamSetup.homeVenue}
-                    onChange={(e) => setTeamSetup(prev => ({ ...prev, homeVenue: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Venue</option>
-                    {venues.map(venue => (
-                      <option key={venue} value={venue}>{venue}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Season */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Season
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newSeason = prompt('Enter new season (e.g. 2027/28):');
-                        if (newSeason && !seasons.includes(newSeason)) {
-                          setSeasons([...seasons, newSeason]);
-                          setTeamSetup(prev => ({ ...prev, season: newSeason }));
-                        }
-                      }}
-                      className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      + Add New
-                    </button>
-                    {teamSetup.season && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const editedSeason = prompt('Edit season:', teamSetup.season);
-                          if (editedSeason && editedSeason !== teamSetup.season) {
-                            const updatedSeasons = seasons.map(s => s === teamSetup.season ? editedSeason : s);
-                            setSeasons(updatedSeasons);
-                            setTeamSetup(prev => ({ ...prev, season: editedSeason }));
-                          }
-                        }}
-                        className="ml-2 text-amber-600 hover:text-amber-800 text-sm"
-                      >
-                        ✏️ Edit
-                      </button>
-                    )}
-                    {teamSetup.season && seasons.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (confirm(`Delete season "${teamSetup.season}"? This cannot be undone.`)) {
-                            const updatedSeasons = seasons.filter(s => s !== teamSetup.season);
-                            setSeasons(updatedSeasons);
-                            setTeamSetup(prev => ({ ...prev, season: '' }));
-                          }
-                        }}
-                        className="ml-2 text-red-600 hover:text-red-800 text-sm"
-                      >
-                        🗑️ Delete
-                      </button>
-                    )}
-                  </label>
-                  <select
-                    value={teamSetup.season}
-                    onChange={(e) => setTeamSetup(prev => ({ ...prev, season: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Season</option>
-                    {seasons.map(season => (
-                      <option key={season} value={season}>{season}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Contact Email */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Contact Email
-                  </label>
-                  <input
-                    type="email"
-                    value={teamSetup.contactEmail}
-                    onChange={(e) => setTeamSetup(prev => ({ ...prev, contactEmail: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="team@example.com"
-                  />
-                </div>
-
-                {/* Contact Phone */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Contact Phone
-                  </label>
-                  <input
-                    type="tel"
-                    value={teamSetup.contactPhone}
-                    onChange={(e) => setTeamSetup(prev => ({ ...prev, contactPhone: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="+353 xx xxx xxxx"
-                  />
-                </div>
-
-                {/* Coaches (RVR teams only) */}
-                {setupType === 'rvr-team' && (
+                <div className="max-w-2xl mx-auto space-y-6">
+                  {/* Team Name */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Coaches (Select Multiple)
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const newCoach = prompt('Enter new coach name:');
-                          if (newCoach) {
-                            // Parse full name into first_name and last_name
-                            const nameParts = newCoach.trim().split(' ');
-                            const firstName = nameParts[0] || newCoach;
-                            const lastName = nameParts.slice(1).join(' ') || '';
-                            
-                            const { error } = await supabase.from('coaches').insert({ 
-                              first_name: firstName,
-                              last_name: lastName,
-                              name: newCoach, // Include full name if column exists
-                              email: `${firstName.toLowerCase().replace(/\s+/g, '')}@example.com` // Generate default email
-                            });
-                            if (!error) {
-                              setCoaches([...coaches, newCoach]);
-                            } else {
-                              alert('Error adding coach: ' + error.message);
-                            }
-                          }
-                        }}
-                        className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
-                      >
-                        + Add New
-                      </button>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">
+                      Team Name *
                     </label>
-                    <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-gray-50">
-                      {coaches.map(coach => (
-                        <label key={coach} className="flex items-center space-x-3 cursor-pointer hover:bg-white p-2 rounded">
-                          <input
-                            type="checkbox"
-                            checked={teamSetup.coaches.includes(coach)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setTeamSetup(prev => ({ ...prev, coaches: [...prev.coaches, coach] }));
-                              } else {
-                                setTeamSetup(prev => ({ ...prev, coaches: prev.coaches.filter(c => c !== coach) }));
-                              }
-                            }}
-                            className="rounded text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-gray-700 font-medium">{coach}</span>
-                          <div className="ml-auto flex space-x-1">
-                            <button
-                              type="button"
-                              onClick={async (e) => {
-                                e.preventDefault();
-                                const editedCoach = prompt('Edit coach name:', coach);
-                                if (editedCoach && editedCoach !== coach) {
-                                  // Parse full name into first_name and last_name
-                                  const nameParts = editedCoach.trim().split(' ');
-                                  const firstName = nameParts[0] || editedCoach;
-                                  const lastName = nameParts.slice(1).join(' ') || '';
-                                  
-                                  const { error } = await supabase.from('coaches')
-                                    .update({ 
-                                      first_name: firstName,
-                                      last_name: lastName,
-                                      name: editedCoach 
-                                    })
-                                    .eq('name', coach);
-                                  
-                                  if (!error) {
-                                    const updatedCoaches = coaches.map(c => c === coach ? editedCoach : c);
-                                    setCoaches(updatedCoaches);
-                                    const updatedTeamCoaches = teamSetup.coaches.map(c => c === coach ? editedCoach : c);
-                                    setTeamSetup(prev => ({ ...prev, coaches: updatedTeamCoaches }));
-                                  } else {
-                                    alert('Error updating coach: ' + error.message);
-                                  }
-                                }
-                              }}
-                              className="text-xs text-amber-600 hover:text-amber-800"
-                            >
-                              ✏️
-                            </button>
-                            <button
-                              type="button"
-                              onClick={async (e) => {
-                                e.preventDefault();
-                                if (confirm(`Delete coach "${coach}"? This cannot be undone.`)) {
-                                  const { error } = await supabase.from('coaches').delete().eq('name', coach);
-                                  if (!error) {
-                                    const updatedCoaches = coaches.filter(c => c !== coach);
-                                    setCoaches(updatedCoaches);
-                                    const updatedTeamCoaches = teamSetup.coaches.filter(c => c !== coach);
-                                    setTeamSetup(prev => ({ ...prev, coaches: updatedTeamCoaches }));
-                                  } else {
-                                    alert('Error deleting coach: ' + error.message);
-                                  }
-                                }
-                              }}
-                              className="text-xs text-red-600 hover:text-red-800"
-                            >
-                              🗑️
-                            </button>
-                          </div>
-                        </label>
-                      ))}
-                      {coaches.length === 0 && (
-                        <p className="text-gray-500 text-sm">No coaches available. Click "+ Add New" to add coaches.</p>
-                      )}
-                    </div>
-                    {teamSetup.coaches.length > 0 && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        Selected: {teamSetup.coaches.join(', ')}
-                      </p>
-                    )}
+                    <input
+                      type="text"
+                      value={wizardData.teamName}
+                      onChange={(e) => setWizardData(prev => ({ ...prev, teamName: e.target.value }))}
+                      className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="e.g., RVR U14 Boys"
+                    />
                   </div>
-                )}
 
-                {/* Squad Setup - Only for RVR teams */}
-                {setupType === 'rvr-team' && (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Squad Players (First Names Only - GDPR Compliant)
-                      <div className="inline-flex items-center space-x-1">
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const newPosition = prompt('Enter new player position:');
-                            if (newPosition) {
-                              const { error } = await supabase.from('player_positions').insert({ name: newPosition });
-                              if (!error) {
-                                setPositions([...positions, newPosition]);
-                              } else {
-                                alert('Error adding position: ' + error.message);
-                              }
-                            }
-                          }}
-                          className="ml-2 text-blue-600 hover:text-blue-800 text-sm"
-                        >
-                          + Add Position
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const positionToEdit = prompt('Which position to edit?', positions[0]);
-                            if (positionToEdit && positions.includes(positionToEdit)) {
-                              const editedPosition = prompt('Edit position name:', positionToEdit);
-                              if (editedPosition && editedPosition !== positionToEdit) {
-                                const { error } = await supabase.from('player_positions').update({ name: editedPosition }).eq('name', positionToEdit);
-                                if (!error) {
-                                  const updatedPositions = positions.map(p => p === positionToEdit ? editedPosition : p);
-                                  setPositions(updatedPositions);
-                                } else {
-                                  alert('Error updating position: ' + error.message);
-                                }
-                              }
-                            }
-                          }}
-                          className="ml-1 text-amber-600 hover:text-amber-800 text-sm"
-                        >
-                          ✏️ Edit Position
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const positionToDelete = prompt('Which position to delete?', positions[0]);
-                            if (positionToDelete && positions.includes(positionToDelete)) {
-                              if (confirm(`Delete position "${positionToDelete}"? This cannot be undone.`)) {
-                                const { error } = await supabase.from('player_positions').delete().eq('name', positionToDelete);
-                                if (!error) {
-                                  const updatedPositions = positions.filter(p => p !== positionToDelete);
-                                  setPositions(updatedPositions);
-                                } else {
-                                  alert('Error deleting position: ' + error.message);
-                                }
-                              }
-                            }
-                          }}
-                          className="ml-1 text-red-600 hover:text-red-800 text-sm"
-                        >
-                          🗑️ Delete Position
-                        </button>
-                      </div>
+                  {/* Age Group */}
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">
+                      Age Group *
                     </label>
-                    <div className="space-y-3">
-                      {teamSetup.squad.map((player, index) => (
-                        <div key={index} className="bg-gray-50 p-3 rounded-lg space-y-2">
-                          <div className="flex gap-3 items-center">
+                    <select
+                      value={wizardData.ageGroup}
+                      onChange={(e) => setWizardData(prev => ({ ...prev, ageGroup: e.target.value }))}
+                      className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="">Select Age Group</option>
+                      {ageGroups.map(age => (
+                        <option key={age} value={age}>{age}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Gender */}
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">
+                      Gender *
+                    </label>
+                    <div className="grid grid-cols-3 gap-4">
+                      {['Male', 'Female', 'Mixed'].map(gender => (
+                        <button
+                          key={gender}
+                          type="button"
+                          onClick={() => setWizardData(prev => ({ ...prev, gender: gender as any }))}
+                          className={`py-3 px-4 rounded-lg border-2 transition-all ${
+                            wizardData.gender === gender
+                              ? 'border-green-500 bg-green-50 text-green-700'
+                              : 'border-gray-300 hover:border-green-300'
+                          }`}
+                        >
+                          {gender}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-center mt-8 space-x-4">
+                  <button
+                    onClick={prevStep}
+                    className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    disabled={!wizardData.teamName || !wizardData.ageGroup}
+                    className={`px-8 py-3 disabled:bg-gray-300 text-white rounded-lg transition-colors font-medium ${
+                      wizardData.teamType === 'rvr' 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-orange-600 hover:bg-orange-700'
+                    }`}
+                  >
+                    Continue →
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 3: Details */}
+            {currentStep === 'details' && (
+              <motion.div
+                key="details"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="bg-white rounded-lg shadow-lg p-8"
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                  Team Details
+                </h2>
+                
+                <div className="max-w-2xl mx-auto space-y-6">
+                  {/* League */}
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">
+                      League/Competition *
+                    </label>
+                    <select
+                      value={wizardData.league}
+                      onChange={(e) => setWizardData(prev => ({ ...prev, league: e.target.value }))}
+                      className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="">Select League</option>
+                      {leagues.map(league => (
+                        <option key={league} value={league}>{league}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Season */}
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">
+                      Season *
+                    </label>
+                    <select
+                      value={wizardData.season}
+                      onChange={(e) => setWizardData(prev => ({ ...prev, season: e.target.value }))}
+                      className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="2024/25">2024/25</option>
+                      <option value="2025/26">2025/26</option>
+                    </select>
+                  </div>
+
+                  {/* Home Venue */}
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">
+                      Home Venue
+                    </label>
+                    <select
+                      value={wizardData.homeVenue}
+                      onChange={(e) => setWizardData(prev => ({ ...prev, homeVenue: e.target.value }))}
+                      className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="">Select Venue</option>
+                      {venues.map(venue => (
+                        <option key={venue} value={venue}>{venue}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Contact Info */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-lg font-medium text-gray-700 mb-3">
+                        Contact Email
+                      </label>
+                      <input
+                        type="email"
+                        value={wizardData.contactEmail}
+                        onChange={(e) => setWizardData(prev => ({ ...prev, contactEmail: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="coach@email.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-lg font-medium text-gray-700 mb-3">
+                        Contact Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={wizardData.contactPhone}
+                        onChange={(e) => setWizardData(prev => ({ ...prev, contactPhone: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="087 123 4567"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-center mt-8 space-x-4">
+                  <button
+                    onClick={prevStep}
+                    className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    disabled={!wizardData.league}
+                    className="px-8 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-lg transition-colors font-medium"
+                  >
+                    Continue →
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Coaches (RVR teams only) */}
+            {currentStep === 'coaches' && wizardData.teamType === 'rvr' && (
+              <motion.div
+                key="coaches"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="bg-white rounded-lg shadow-lg overflow-hidden"
+              >
+                <h2 className="text-2xl font-bold text-gray-900 p-8 pb-6 text-center">
+                  Team Coaches
+                </h2>
+                
+                {/* Two Column Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 min-h-80">
+                  
+                  {/* Left: Add Coach Forms */}
+                  <div className="p-8 border-r border-gray-200">
+                    <div className="space-y-6">
+                      
+                      {/* Select Existing Coach */}
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                          👨‍🏫 Select Existing Coach
+                        </h3>
+                        <select
+                          value=""
+                          onChange={(e) => {
+                            if (e.target.value && !wizardData.coaches.includes(e.target.value)) {
+                              setWizardData(prev => ({
+                                ...prev,
+                                coaches: [...prev.coaches, e.target.value]
+                              }));
+                            }
+                          }}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Select a coach...</option>
+                          {coaches.filter(coach => !wizardData.coaches.includes(coach)).map(coach => (
+                            <option key={coach} value={coach}>{coach}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Add New Coach */}
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                          ➕ Add New Coach
+                        </h3>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
                             <input
                               type="text"
-                              placeholder="First name"
-                              value={player.firstName}
-                              onChange={(e) => {
-                                const newSquad = [...teamSetup.squad];
-                                newSquad[index].firstName = e.target.value;
-                                setTeamSetup(prev => ({ ...prev, squad: newSquad }));
+                              placeholder="First Name"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              id="newCoachFirst"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Last Name"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              id="newCoachLast"
+                            />
+                          </div>
+                          <button
+                            onClick={async () => {
+                              const firstName = (document.getElementById('newCoachFirst') as HTMLInputElement).value.trim();
+                              const lastName = (document.getElementById('newCoachLast') as HTMLInputElement).value.trim();
+                              
+                              if (firstName && lastName) {
+                                try {
+                                  const email = `${firstName.toLowerCase().replace(/\\s+/g, '')}@example.com`;
+                                  const { error } = await supabase.from('coaches').insert({
+                                    first_name: firstName,
+                                    last_name: lastName,
+                                    email: email
+                                  });
+                                  
+                                  if (!error) {
+                                    const fullName = `${firstName} ${lastName}`;
+                                    setCoaches([...coaches, fullName]);
+                                    setWizardData(prev => ({
+                                      ...prev,
+                                      coaches: [...prev.coaches, fullName]
+                                    }));
+                                    
+                                    (document.getElementById('newCoachFirst') as HTMLInputElement).value = '';
+                                    (document.getElementById('newCoachLast') as HTMLInputElement).value = '';
+                                  } else {
+                                    alert('Error adding coach: ' + error.message);
+                                  }
+                                } catch (error) {
+                                  alert('Error adding coach: ' + error);
+                                }
+                              }
+                            }}
+                            className="w-full py-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors border-2 border-dashed border-blue-300"
+                          >
+                            + Add New Coach to Database
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg">
+                        💡 <strong>Tip:</strong> Selected coaches will appear on the right sidebar where you can remove them if needed.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Coaches Sidebar */}
+                  <div className="bg-gray-50 p-6">
+                    <h4 className="font-semibold text-gray-800 mb-4 flex items-center">
+                      👨‍🏫 Selected Coaches ({wizardData.coaches.length})
+                    </h4>
+                    
+                    <div className="space-y-2 max-h-72 overflow-y-auto">
+                      {wizardData.coaches.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="text-3xl mb-2">👨‍🏫</div>
+                          <p className="text-gray-500 text-sm">No coaches selected yet</p>
+                          <p className="text-gray-400 text-xs mt-1">Select from dropdown or add new</p>
+                        </div>
+                      ) : (
+                        wizardData.coaches.map((coach, index) => (
+                          <div key={index} className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm">
+                            <span className="font-medium text-gray-800">{coach}</span>
+                            <button
+                              onClick={() => {
+                                setWizardData(prev => ({
+                                  ...prev,
+                                  coaches: prev.coaches.filter((_, i) => i !== index)
+                                }));
                               }}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="text-red-600 hover:text-red-800 transition-colors px-2 py-1 hover:bg-red-50 rounded"
+                              title="Remove coach"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-center p-8 pt-6 space-x-4 border-t border-gray-200">
+                  <button
+                    onClick={prevStep}
+                    className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    className={`px-8 py-3 text-white rounded-lg transition-colors font-medium ${
+                      wizardData.teamType === 'rvr' 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-orange-600 hover:bg-orange-700'
+                    }`}
+                  >
+                    Continue →
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 5: Squad (RVR teams only) */}
+            {currentStep === 'squad' && wizardData.teamType === 'rvr' && (
+              <motion.div
+                key="squad"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="bg-white rounded-lg shadow-lg overflow-hidden"
+              >
+                <h2 className="text-2xl font-bold text-gray-900 p-8 pb-6 text-center">
+                  Team Squad
+                </h2>
+                
+                {/* Two Column Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 min-h-96">
+                  
+                  {/* Left: Add Player Forms */}
+                  <div className="p-8 border-r border-gray-200">
+                    <div className="space-y-6">
+                      
+                      {/* Select Existing Player */}
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                          ⚽ Select Existing Player
+                        </h3>
+                        <select
+                          value=""
+                          onChange={(e) => {
+                            const selectedPlayer = existingPlayers.find(p => p.id === e.target.value);
+                            if (selectedPlayer && !wizardData.players.some(p => p.name === selectedPlayer.name)) {
+                              setWizardData(prev => ({
+                                ...prev,
+                                players: [...prev.players, {
+                                  name: selectedPlayer.name,
+                                  position: selectedPlayer.position,
+                                  isCaptain: false,
+                                  isViceCaptain: false
+                                }]
+                              }));
+                            }
+                          }}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        >
+                          <option value="">Select existing player...</option>
+                          {existingPlayers
+                            .filter(player => !wizardData.players.some(p => p.name === player.name))
+                            .map(player => (
+                              <option key={player.id} value={player.id}>
+                                {player.name} {player.position ? `(${player.position})` : ''}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+
+                      {/* Add New Player */}
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                          ➕ Add New Player
+                        </h3>
+                        <div className="space-y-4">
+                          <div className="space-y-4">
+                            <input
+                              type="text"
+                              placeholder="Player Name"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                              id="newPlayerName"
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  const target = e.target as HTMLInputElement;
+                                  if (target.value.trim()) {
+                                    setWizardData(prev => ({
+                                      ...prev,
+                                      players: [...prev.players, {
+                                        name: target.value.trim(),
+                                        position: '',
+                                        isCaptain: false,
+                                        isViceCaptain: false
+                                      }]
+                                    }));
+                                    target.value = '';
+                                  }
+                                }
+                              }}
                             />
                             <select
-                              value={player.position}
-                              onChange={(e) => {
-                                const newSquad = [...teamSetup.squad];
-                                newSquad[index].position = e.target.value;
-                                setTeamSetup(prev => ({ ...prev, squad: newSquad }));
-                              }}
-                              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                              id="newPlayerPosition"
                             >
-                              <option value="">Position</option>
-                              {positions.map(position => (
-                                <option key={position} value={position}>{position}</option>
+                              <option value="">Select Position (Optional)</option>
+                              {positions.map(pos => (
+                                <option key={pos} value={pos}>{pos}</option>
                               ))}
                             </select>
                             <button
-                              type="button"
                               onClick={() => {
-                                const newSquad = teamSetup.squad.filter((_, i) => i !== index);
-                                setTeamSetup(prev => ({ ...prev, squad: newSquad }));
+                                const nameInput = document.getElementById('newPlayerName') as HTMLInputElement;
+                                const positionSelect = document.getElementById('newPlayerPosition') as HTMLSelectElement;
+                                
+                                const playerName = nameInput.value.trim();
+                                const playerPosition = positionSelect.value;
+                                
+                                if (playerName) {
+                                  setWizardData(prev => ({
+                                    ...prev,
+                                    players: [...prev.players, {
+                                      name: playerName,
+                                      position: playerPosition,
+                                      isCaptain: false,
+                                      isViceCaptain: false
+                                    }]
+                                  }));
+                                  nameInput.value = '';
+                                  positionSelect.value = '';
+                                }
                               }}
-                              className="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors"
+                              className="w-full py-3 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors border-2 border-dashed border-green-300"
                             >
-                              🗑️
+                              + Add Player
                             </button>
                           </div>
-                          <div className="flex gap-4 text-sm">
-                            <label className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                checked={player.isCaptain || false}
-                                onChange={(e) => {
-                                  const newSquad = [...teamSetup.squad];
-                                  if (e.target.checked) {
-                                    // Only one captain allowed - uncheck others
-                                    newSquad.forEach((p, i) => {
-                                      if (i !== index) p.isCaptain = false;
-                                    });
-                                  }
-                                  newSquad[index].isCaptain = e.target.checked;
-                                  setTeamSetup(prev => ({ ...prev, squad: newSquad }));
-                                }}
-                                className="rounded text-blue-600"
-                              />
-                              <span className="text-blue-600 font-medium">Captain (C)</span>
-                            </label>
-                            <label className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                checked={player.isViceCaptain || false}
-                                onChange={(e) => {
-                                  const newSquad = [...teamSetup.squad];
-                                  if (e.target.checked) {
-                                    // Only one vice-captain allowed - uncheck others
-                                    newSquad.forEach((p, i) => {
-                                      if (i !== index) p.isViceCaptain = false;
-                                    });
-                                  }
-                                  newSquad[index].isViceCaptain = e.target.checked;
-                                  setTeamSetup(prev => ({ ...prev, squad: newSquad }));
-                                }}
-                                className="rounded text-amber-600"
-                              />
-                              <span className="text-amber-600 font-medium">Vice-Captain (VC)</span>
-                            </label>
+                          
+                          <div className="text-xs text-gray-500 bg-green-50 p-3 rounded-lg">
+                            💡 <strong>Tip:</strong> Enter name and press Enter, or use the button. Players appear on the right where you can edit details.
                           </div>
                         </div>
-                      ))}
-                      
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setTeamSetup(prev => ({
-                            ...prev,
-                            squad: [...prev.squad, { firstName: '', position: '', isCaptain: false, isViceCaptain: false }]
-                          }));
-                        }}
-                        className="w-full px-4 py-3 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2"
-                      >
-                        <span>➕</span>
-                        <span>Add Player</span>
-                      </button>
+                      </div>
+
+                      {/* Player Merge Tool */}
+                      <div className="border-t border-gray-200 pt-6">
+                        <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                          🔗 Merge Duplicate Players
+                        </h3>
+                        <p className="text-xs text-gray-500 mb-3">
+                          Found similar names? Select players to merge incorrect spellings.
+                        </p>
+                        <button
+                          onClick={() => {
+                            // Simple merge - show existing players that might be duplicates
+                            const playerNames = wizardData.players.map(p => p.name.toLowerCase());
+                            const possibleDuplicates = existingPlayers.filter(ep => 
+                              playerNames.some(pn => 
+                                pn.includes(ep.name.toLowerCase().split(' ')[0]) ||
+                                ep.name.toLowerCase().includes(pn.split(' ')[0])
+                              )
+                            );
+                            
+                            if (possibleDuplicates.length > 0) {
+                              alert(`Possible duplicates found: ${possibleDuplicates.map(p => p.name).join(', ')}\n\nUse the existing player dropdown to avoid duplicates.`);
+                            } else {
+                              alert('No obvious duplicates detected.');
+                            }
+                          }}
+                          className="w-full py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-lg transition-colors text-sm"
+                        >
+                          🔍 Check for Duplicates
+                        </button>
+                      </div>
                     </div>
                   </div>
-                )}
 
-                {/* Notes */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Notes
-                  </label>
-                  <textarea
-                    value={teamSetup.notes}
-                    onChange={(e) => setTeamSetup(prev => ({ ...prev, notes: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                    placeholder="Additional information..."
-                  />
+                  {/* Right: Players Sidebar */}
+                  <div className="bg-gray-50 p-6">
+                    <h4 className="font-semibold text-gray-800 mb-4 flex items-center">
+                      ⚽ Team Squad ({wizardData.players.length})
+                    </h4>
+                    
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-2" style={{scrollbarWidth: 'thin'}}>
+                      {wizardData.players.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="text-3xl mb-2">👥</div>
+                          <p className="text-gray-500 text-sm">No players added yet</p>
+                          <p className="text-gray-400 text-xs mt-1">Add players using the form on the left</p>
+                        </div>
+                      ) : (
+                        wizardData.players.map((player, index) => (
+                          <div key={index} className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex-1 mr-2">
+                                <input
+                                  type="text"
+                                  value={player.name}
+                                  onChange={(e) => updatePlayer(index, 'name', e.target.value)}
+                                  placeholder="Player Name"
+                                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+                                />
+                              </div>
+                              <button
+                                onClick={() => removePlayer(index)}
+                                className="text-red-600 hover:text-red-800 transition-colors px-2 py-1 hover:bg-red-50 rounded"
+                                title="Remove player"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                            
+                            <div className="flex gap-2 items-center">
+                              <select
+                                value={player.position}
+                                onChange={(e) => updatePlayer(index, 'position', e.target.value)}
+                                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+                              >
+                                <option value="">Position</option>
+                                {positions.map(pos => (
+                                  <option key={pos} value={pos}>{pos}</option>
+                                ))}
+                              </select>
+                              
+                              <div className="flex gap-1">
+                                <label className="flex items-center text-xs" title="Captain">
+                                  <input
+                                    type="checkbox"
+                                    checked={player.isCaptain}
+                                    onChange={(e) => updatePlayer(index, 'isCaptain', e.target.checked)}
+                                    className="mr-1 w-3 h-3"
+                                  />
+                                  C
+                                </label>
+                                <label className="flex items-center text-xs" title="Vice Captain">
+                                  <input
+                                    type="checkbox"
+                                    checked={player.isViceCaptain}
+                                    onChange={(e) => updatePlayer(index, 'isViceCaptain', e.target.checked)}
+                                    className="mr-1 w-3 h-3"
+                                  />
+                                  VC
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Actions */}
-              <div className="flex justify-between">
-                {editingTeam && (
+                <div className="flex justify-center p-8 pt-6 space-x-4 border-t border-gray-200">
                   <button
-                    type="button"
-                    onClick={cancelEdit}
-                    className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+                    onClick={prevStep}
+                    className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
                   >
-                    ❌ Cancel Edit
+                    ← Back
                   </button>
-                )}
+                  <button
+                    onClick={nextStep}
+                    className={`px-8 py-3 text-white rounded-lg transition-colors font-medium ${
+                      wizardData.teamType === 'rvr' 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-orange-600 hover:bg-orange-700'
+                    }`}
+                  >
+                    Continue →
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 5: Review */}
+            {currentStep === 'review' && (
+              <motion.div
+                key="review"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="bg-white rounded-lg shadow-lg p-8"
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                  Review & Confirm
+                </h2>
                 
-                <div className="flex gap-3 ml-auto">
+                <div className="max-w-3xl mx-auto">
+                  <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h3 className="text-xl font-bold mb-4 flex items-center">
+                      {wizardData.teamType === 'rvr' ? (
+                        <><span className="text-2xl mr-3">⚽</span>RVR Team</>
+                      ) : (
+                        <><span className="text-2xl mr-3">🏟️</span>Opponent Team</>
+                      )}
+                    </h3>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-semibold text-gray-700 mb-2">Basic Information</h4>
+                        <div className="space-y-2 text-sm">
+                          <p><strong>Name:</strong> {wizardData.teamName}</p>
+                          <p><strong>Age Group:</strong> {wizardData.ageGroup}</p>
+                          <p><strong>Gender:</strong> {wizardData.gender}</p>
+                          <p><strong>League:</strong> {wizardData.league}</p>
+                          <p><strong>Season:</strong> {wizardData.season}</p>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-semibold text-gray-700 mb-2">Contact & Venue</h4>
+                        <div className="space-y-2 text-sm">
+                          <p><strong>Home Venue:</strong> {wizardData.homeVenue || 'Not specified'}</p>
+                          <p><strong>Email:</strong> {wizardData.contactEmail || 'Not provided'}</p>
+                          <p><strong>Phone:</strong> {wizardData.contactPhone || 'Not provided'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {wizardData.teamType === 'rvr' && wizardData.coaches.length > 0 && (
+                      <div className="mt-6 pt-6 border-t border-gray-200">
+                        <h4 className="font-semibold text-gray-700 mb-3">Coaches ({wizardData.coaches.length})</h4>
+                        <div className="text-sm">
+                          <p>{wizardData.coaches.join(', ')}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {wizardData.teamType === 'rvr' && wizardData.players.length > 0 && (
+                      <div className="mt-6 pt-6 border-t border-gray-200">
+                        <h4 className="font-semibold text-gray-700 mb-3">Squad ({wizardData.players.length} players)</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                          {wizardData.players.map((player, index) => (
+                            <div key={index} className="flex justify-between">
+                              <span>
+                                {player.name}
+                                {player.isCaptain && <span className="text-blue-600 font-bold ml-1">(C)</span>}
+                                {player.isViceCaptain && <span className="text-amber-600 font-bold ml-1">(VC)</span>}
+                              </span>
+                              <span className="text-gray-500">{player.position}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex justify-center mt-8 space-x-4">
                   <button
-                    type="submit"
-                    disabled={saving || !teamSetup.name || !teamSetup.ageGroup}
-                    className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                      setupType === 'rvr-team'
-                        ? 'bg-green-600 hover:bg-green-700 disabled:bg-gray-300'
-                        : 'bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300'
-                    } text-white`}
+                    onClick={prevStep}
+                    className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
                   >
-                    {saving ? 'Saving...' : editingTeam ? 'Update' : 'Create'} {setupType === 'rvr-team' ? 'Team' : 'Opponent'}
+                    ← Back
+                  </button>
+                  <button
+                    onClick={saveTeam}
+                    disabled={saving}
+                    className={`px-8 py-3 disabled:bg-gray-400 text-white rounded-lg transition-colors font-medium ${
+                      wizardData.teamType === 'rvr' 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-orange-600 hover:bg-orange-700'
+                    }`}
+                  >
+                    {saving ? 'Creating Team...' : `Create ${wizardData.teamType === 'rvr' ? 'RVR Team' : 'Opponent'}`}
                   </button>
                 </div>
-              </div>
-            </form>
-          </div>
+              </motion.div>
+            )}
 
-          {/* Navigation to Team Management */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="text-center">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Team Created Successfully!</h2>
-              <p className="text-gray-600 mb-6">What would you like to do next?</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {/* Step 6: Complete */}
+            {currentStep === 'complete' && (
+              <motion.div
+                key="complete"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-lg shadow-lg p-8"
+              >
+                <div className="text-center">
+                  <div className="text-6xl mb-4">✅</div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Team Created Successfully!</h2>
+                  <p className="text-xl text-gray-600 mb-8">
+                    {wizardData.teamName} has been added to the system
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button
+                      onClick={resetWizard}
+                      className="px-8 py-3 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors font-medium text-lg"
+                    >
+                      ➕ Create Another Team
+                    </button>
+                    <Link
+                      href="/match-central"
+                      className="inline-flex items-center px-8 py-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors font-medium text-lg"
+                    >
+                      🎯 Start Recording Matches
+                    </Link>
+                  </div>
+                  
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    <p className="text-sm text-gray-500 mb-4">View and manage teams:</p>
+                    <Link
+                      href="/match-central#management"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Go to Team Management →
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Quick Teams View */}
+          {currentStep !== 'complete' && teams.length > 0 && (
+            <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-gray-900">
+                  Existing Teams ({teams.length})
+                </h3>
                 <Link
-                  href="/team-management"
-                  className="inline-flex items-center px-6 py-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors font-medium"
+                  href="/match-central#management"
+                  className="text-blue-600 hover:text-blue-800 text-sm underline"
                 >
-                  👥 View All Teams
+                  View All →
                 </Link>
-                <button
-                  onClick={() => {
-                    resetForm();
-                    setEditingTeam(null);
-                  }}
-                  className="inline-flex items-center px-6 py-3 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors font-medium"
-                >
-                  ➕ Create Another Team
-                </button>
-                <Link
-                  href="/match-central"
-                  className="inline-flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
-                >
-                  🎯 Start Recording Matches
-                </Link>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {teams.slice(0, 6).map(team => (
+                  <div key={team.id} className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-medium text-gray-900">{team.name}</h4>
+                        <p className="text-xs text-gray-600">{team.ageGroup} • {team.league}</p>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        team.isOpponent 
+                          ? 'bg-orange-100 text-orange-700' 
+                          : 'bg-green-100 text-green-700'
+                      }`}>
+                        {team.isOpponent ? 'Opponent' : 'RVR'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          )}
 
         </div>
       </div>

@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
 import CelebrationResultCard from "../components/CelebrationResultCard";
-import { storageV2 as storage } from "../lib/match-tracker-storage-v2";
+import { supabase } from "../lib/supabase";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
 
 type TabType = 'overview' | 'fixtures' | 'management' | 'statistics';
@@ -24,7 +24,8 @@ function GoalScorersInline({ match }: { match: Match }) {
   React.useEffect(() => {
     const loadGoalEvents = async () => {
       try {
-        const events = await storage.getMatchEvents(match.id);
+        // TODO: Load match events from database when events table is created
+        const events: any[] = [];
         setGoalEvents(events.filter(e => e.eventType === 'Goal'));
       } catch (error) {
         console.error('Error loading goal events:', error);
@@ -50,7 +51,8 @@ function MatchExpandedDetails({ match }: { match: Match }) {
   React.useEffect(() => {
     const loadGoalEvents = async () => {
       try {
-        const events = await storage.getMatchEvents(match.id);
+        // TODO: Load match events from database when events table is created
+        const events: any[] = [];
         setGoalEvents(events.filter(e => e.eventType === 'Goal'));
       } catch (error) {
         console.error('Error loading goal events:', error);
@@ -155,7 +157,8 @@ export default function MatchCentral() {
     
     // Check for goal events
     try {
-      const goalEvents = await storage.getMatchEvents(match.id);
+      // TODO: Load match events from database when events table is created
+      const goalEvents: any[] = [];
       const hasGoalEvents = goalEvents.length > 0;
       return hasBasicExtra || hasGoalEvents;
     } catch (error) {
@@ -165,23 +168,72 @@ export default function MatchCentral() {
 
   const loadData = async () => {
     try {
-      // Initialize sample data
-      storage.initializeSampleData();
-      
-      // Load teams
-      const loadedTeams = await storage.getTeams();
+      // Load teams directly from database
+      const { data: teamsData, error: teamsError } = await supabase
+        .from('teams')
+        .select(`*, players(*)`)
+        .order('created_at', { ascending: false });
+        
+      let loadedTeams: Team[] = [];
+      if (teamsError) {
+        console.error('Error loading teams from database:', teamsError);
+      } else {
+        loadedTeams = (teamsData || []).map(team => ({
+          id: team.id,
+          name: team.name,
+          ageGroup: team.age_group,
+          gender: team.gender,
+          season: team.season,
+          league: team.league,
+          homeVenue: team.home_venue,
+          contactEmail: team.contact_email,
+          contactPhone: team.contact_phone,
+          coaches: team.coaches || [],
+          notes: team.notes,
+          isOpponent: team.is_opponent || false,
+          players: (team.players || []).map(p => ({
+            id: p.id,
+            teamId: team.id,
+            name: p.first_name,
+            position: p.position,
+            isActive: p.is_active !== false,
+            createdAt: new Date(p.created_at),
+            updatedAt: new Date(p.updated_at || p.created_at)
+          })),
+          createdAt: new Date(team.created_at),
+          updatedAt: new Date(team.updated_at || team.created_at)
+        }));
+      }
       setTeams(loadedTeams);
       
-      // Load all matches
-      const loadedMatches = await storage.getMatches();
-      setAllMatches(loadedMatches);
+      // Load all matches from database
+      const { data: matchesData, error: matchesError } = await supabase
+        .from('matches')
+        .select('*')
+        .order('created_at', { ascending: false });
       
-      // Load team summaries
-      const summaries = await Promise.all(
-        loadedTeams.map(async team => await storage.getTeamSummary(team.id))
-      );
+      if (matchesError) {
+        console.error('Error loading matches:', matchesError);
+        setAllMatches([]);
+      } else {
+        setAllMatches(matchesData || []);
+      }
       
-      setTeamSummaries(summaries.filter(Boolean) as TeamSummary[]);
+      // Team summaries will be calculated from database data
+      const teamSummaries = loadedTeams.map(team => ({
+        id: team.id,
+        name: team.team_name,
+        totalPlayers: team.players?.length || 0,
+        gamesPlayed: 0,
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+        points: 0
+      }));
+      
+      setTeamSummaries(teamSummaries);
       setLoading(false);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -395,7 +447,8 @@ export default function MatchCentral() {
   // Calculate player statistics from match events
   const getPlayerStatistics = async (teamId: string) => {
     try {
-      const matchEvents = await storage.getAllMatchEvents();
+      // TODO: Load match events from database when events table is created
+      const matchEvents: any[] = [];
       console.log('All match events:', matchEvents);
       console.log('All matches for stats:', allMatches);
       
@@ -623,13 +676,24 @@ export default function MatchCentral() {
         <div className="bg-club-primary text-white p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-bold">Match Central</h1>
-            <a
-              href="/match-recorder"
-              className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1"
-            >
-              <span>🔴</span>
-              <span className="text-sm">Record</span>
-            </a>
+            <div className="flex gap-2">
+              <a
+                href="/match-recorder?mode=record"
+                className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1"
+                title="Record past or today's match"
+              >
+                <span>📝</span>
+                <span className="text-sm">Record</span>
+              </a>
+              <a
+                href="/match-recorder?mode=schedule"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1"
+                title="Schedule future match"
+              >
+                <span>📅</span>
+                <span className="text-sm">Schedule</span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -696,13 +760,24 @@ export default function MatchCentral() {
                   <div className="text-center py-8">
                     <div className="text-4xl mb-3">⚽</div>
                     <h3 className="text-lg font-bold text-gray-900 mb-3">No Results Yet</h3>
-                    <a
-                      href="/match-recorder"
-                      className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium"
-                    >
-                      <span>🔴</span>
-                      Record Match
-                    </a>
+                    <div className="flex gap-2">
+                      <a
+                        href="/match-recorder?mode=record"
+                        className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium"
+                        title="Record past or today's match"
+                      >
+                        <span>📝</span>
+                        Record Match
+                      </a>
+                      <a
+                        href="/match-recorder?mode=schedule"
+                        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+                        title="Schedule future match"
+                      >
+                        <span>📅</span>
+                        Schedule Match
+                      </a>
+                    </div>
                   </div>
                 ) : (
                   filteredOverviewResults.map((match) => {
@@ -782,7 +857,7 @@ export default function MatchCentral() {
                         href={`/matches/${match.id}/record`}
                         className="bg-green-600 text-white px-3 py-1 rounded text-xs font-medium"
                       >
-                        Record
+                        Log
                       </a>
                     </div>
                   </div>
@@ -919,13 +994,24 @@ export default function MatchCentral() {
                 
                 {/* Action Buttons */}
                 <div className="flex items-center space-x-3">
-                  <a
-                    href="/match-recorder"
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
-                  >
-                    <span className="text-lg">🔴</span>
-                    <span className="hidden sm:inline">Record</span>
-                  </a>
+                  <div className="flex gap-2">
+                    <a
+                      href="/match-recorder?mode=record"
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
+                      title="Record past or today's match"
+                    >
+                      <span className="text-lg">📝</span>
+                      <span className="hidden sm:inline">Record</span>
+                    </a>
+                    <a
+                      href="/match-recorder?mode=schedule"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
+                      title="Schedule future match"
+                    >
+                      <span className="text-lg">📅</span>
+                      <span className="hidden sm:inline">Schedule</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -937,18 +1023,45 @@ export default function MatchCentral() {
         {/* Team Filter (for management) */}
         {(activeTab === 'management') && (
           <div className="bg-white rounded-lg shadow-sm border p-4 mb-8">
-            <div className="flex items-center gap-4">
-              <label className="text-sm font-medium text-gray-700">Filter by team:</label>
-              <select
-                value={selectedTeam}
-                onChange={(e) => setSelectedTeam(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary text-gray-900"
-              >
-                <option value="all">All Teams</option>
-                {teams.filter(team => !team.isOpponent).map(team => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
-                ))}
-              </select>
+            <div className="flex items-center gap-4 flex-wrap">
+              {/* Team Type Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSelectedTeam('all')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    selectedTeam === 'all'
+                      ? 'bg-green-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  All Teams
+                </button>
+                <button
+                  onClick={() => setSelectedTeam('opponents')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    selectedTeam === 'opponents'
+                      ? 'bg-orange-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Opponents
+                </button>
+              </div>
+
+              {/* RVR Team Dropdown */}
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700">RVR Team:</label>
+                <select
+                  value={selectedTeam}
+                  onChange={(e) => setSelectedTeam(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                >
+                  <option value="all">All RVR Teams</option>
+                  {teams.filter(team => team.team_type === 'rvr').map(team => (
+                    <option key={team.id} value={team.id}>{team.team_name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         )}
@@ -1005,13 +1118,24 @@ export default function MatchCentral() {
                         : `No results yet for ${teams.find(t => t.id === overviewFilter)?.name || 'this team'}`
                       }
                     </p>
-                    <a
-                      href="/match-recorder"
-                      className="inline-flex items-center gap-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
-                    >
-                      <span className="text-xl">🔴</span>
-                      <span>Record Your First Match</span>
-                    </a>
+                    <div className="flex gap-4 justify-center">
+                      <a
+                        href="/match-recorder?mode=record"
+                        className="inline-flex items-center gap-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
+                        title="Record past or today's match"
+                      >
+                        <span className="text-xl">📝</span>
+                        <span>Record Match</span>
+                      </a>
+                      <a
+                        href="/match-recorder?mode=schedule"
+                        className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
+                        title="Schedule future match"
+                      >
+                        <span className="text-xl">📅</span>
+                        <span>Schedule Match</span>
+                      </a>
+                    </div>
                   </div>
                 ) : (
                   filteredOverviewResults.map((match, index) => {
@@ -1094,8 +1218,21 @@ export default function MatchCentral() {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (confirm('Are you sure you want to delete this match result?')) {
-                                    storage.deleteMatch(match.id);
-                                    loadData();
+                                    // Delete match from database
+                                    const deleteMatch = async () => {
+                                      const { error } = await supabase
+                                        .from('matches')
+                                        .delete()
+                                        .eq('id', match.id);
+                                      
+                                      if (error) {
+                                        console.error('Error deleting match:', error);
+                                        alert('Error deleting match');
+                                      } else {
+                                        loadData();
+                                      }
+                                    };
+                                    deleteMatch();
                                   }
                                 }}
                                 className="text-red-500 hover:text-red-700 hover:bg-red-50 p-3 rounded-xl transition-all shadow-sm hover:shadow-md transform hover:scale-110"
@@ -1175,46 +1312,100 @@ export default function MatchCentral() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="bg-white rounded-xl shadow-sm border p-8">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🔒</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Authentication Required</h3>
-                  <p className="text-gray-600 mb-6">
-                    Team management features require authentication. Please log in to access match creation, editing, and team management tools.
-                  </p>
-                  
-                  <div className="space-y-4">
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h4 className="font-semibold text-gray-900 mb-2">🎯 Management Features</h4>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• Create and schedule new matches</li>
-                        <li>• Edit match details and results</li>
-                        <li>• Manage team rosters and information</li>
-                        <li>• Access detailed match statistics</li>
-                        <li>• Admin tools for club management</li>
-                      </ul>
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="bg-white rounded-xl shadow-sm border p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Team Management</h3>
+                      <p className="text-gray-600">Manage River Valley Rangers teams</p>
                     </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                      <a
-                        href="/match-admin"
-                        className="bg-slate-800 hover:bg-slate-900 text-white px-8 py-4 rounded-xl font-bold transition-colors flex items-center justify-center shadow-xl hover:shadow-2xl"
-                      >
-                        <span className="mr-3 text-xl">🔑</span>
-                        <div>
-                          <div className="text-lg">Match Admin</div>
-                          <div className="text-xs opacity-90">Teams & Matches</div>
-                        </div>
-                      </a>
-                    </div>
-                    
-                    <div className="text-sm text-gray-500 border-t pt-4 mt-6">
-                      <p>Don't have an account? Contact the club administrator to request access.</p>
-                    </div>
+                    <a
+                      href="/match-admin"
+                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center"
+                    >
+                      <span className="mr-2">➕</span>
+                      Add New Team
+                    </a>
                   </div>
                 </div>
+
+                {/* Teams Grid */}
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {teams.filter(team => {
+                    if (selectedTeam === 'all') return true;
+                    if (selectedTeam === 'opponents') return team.team_type === 'opponent';
+                    return team.id === selectedTeam;
+                  }).map((team) => (
+                    <div key={team.id} className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h4 className="text-xl font-bold text-gray-900">{team.team_name}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              team.team_type === 'rvr' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-orange-100 text-orange-800'
+                            }`}>
+                              {team.team_type === 'rvr' ? 'RVR Team' : 'Opponent'}
+                            </span>
+                            <span className="text-gray-500 text-sm">{team.age_group}</span>
+                          </div>
+                        </div>
+                        <div className="text-2xl">{team.team_type === 'rvr' ? '⚽' : '🏃'}</div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-500">Players:</span>
+                            <span className="ml-1 font-semibold text-gray-900">{team.players?.length || 0}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Manager:</span>
+                            <span className="ml-1 font-semibold text-gray-900">{team.manager || 'TBA'}</span>
+                          </div>
+                        </div>
+
+                        {team.notes && (
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <span className="text-xs text-gray-500">Notes:</span>
+                            <p className="text-sm text-gray-700 mt-1">{team.notes}</p>
+                          </div>
+                        )}
+
+                        <div className="pt-3 border-t flex gap-2">
+                          <button className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                            View Details
+                          </button>
+                          <button className="bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                            Edit
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Empty State */}
+                {teams.length === 0 && (
+                  <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl">👥</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">No Teams Found</h3>
+                    <p className="text-gray-600 mb-6">
+                      Get started by creating your first team using the Match Admin wizard.
+                    </p>
+                    <a
+                      href="/match-admin"
+                      className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                    >
+                      <span className="mr-2">🚀</span>
+                      Create First Team
+                    </a>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -1247,15 +1438,8 @@ export default function MatchCentral() {
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-3">No Fixtures Scheduled</h3>
                         <p className="text-gray-600 mb-6">
-                          {selectedTeam === 'all' ? 'Schedule upcoming matches to see them here' : 'No upcoming fixtures for selected team'}
+                          {selectedTeam === 'all' ? 'No upcoming fixtures scheduled' : 'No upcoming fixtures for selected team'}
                         </p>
-                        <a
-                          href="/match-recorder"
-                          className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
-                        >
-                          <span className="text-xl">📅</span>
-                          <span>Schedule a Match</span>
-                        </a>
                       </div>
                     ) : (
                       upcomingMatches.map((match, index) => {
@@ -1329,8 +1513,21 @@ export default function MatchCentral() {
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       if (confirm('Are you sure you want to delete this fixture?')) {
-                                        storage.deleteMatch(match.id);
-                                        loadData();
+                                        // Delete fixture from database
+                                        const deleteMatch = async () => {
+                                          const { error } = await supabase
+                                            .from('matches')
+                                            .delete()
+                                            .eq('id', match.id);
+                                          
+                                          if (error) {
+                                            console.error('Error deleting fixture:', error);
+                                            alert('Error deleting fixture');
+                                          } else {
+                                            loadData();
+                                          }
+                                        };
+                                        deleteMatch();
                                       }
                                     }}
                                     className="text-red-500 hover:text-red-700 hover:bg-red-50 p-3 rounded-xl transition-all shadow-sm hover:shadow-md transform hover:scale-110"
@@ -1342,9 +1539,9 @@ export default function MatchCentral() {
                                   {/* Action Button */}
                                   <a
                                     href={`/matches/${match.id}/record`}
-                                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg transform hover:scale-105"
                                   >
-                                    📱 Record
+                                    📝 Record
                                   </a>
                                   
                                   {/* Fixture Badge */}

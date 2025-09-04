@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
-import { storageV2 as storage } from "../lib/match-tracker-storage-v2";
+import { supabase } from "../lib/supabase";
 import { Team, Match } from "../types/match-tracker";
 
 type TabType = 'results' | 'fixtures';
@@ -19,12 +19,60 @@ export default function MatchDay() {
 
   const loadData = async () => {
     try {
-      storage.initializeSampleData();
-      const loadedTeams = await storage.getTeams();
-      setTeams(loadedTeams);
-      
-      const loadedMatches = await storage.getMatches();
-      setAllMatches(loadedMatches);
+      const { data: teamsData, error: teamsError } = await supabase
+        .from('teams')
+        .select(`*, players(*)`)
+        .order('created_at', { ascending: false });
+
+      if (teamsError) {
+        console.error('Error loading teams:', teamsError);
+        setTeams([]);
+      } else {
+        const loadedTeams: Team[] = teamsData?.map(team => ({
+          id: team.id,
+          name: team.team_name,
+          category: team.age_group || 'Unknown',
+          isOpponent: team.team_type === 'opponent',
+          homeVenue: team.home_venue || 'St. Finian\'s GAA',
+          league: team.league || 'Local',
+          players: team.players?.map((p: any) => ({
+            id: p.id,
+            name: p.player_name,
+            position: p.position || 'Field Player'
+          })) || [],
+          createdAt: new Date(team.created_at),
+          updatedAt: new Date(team.updated_at || team.created_at),
+          homeKit: { primary: '#009639', secondary: '#FFFFFF' },
+          awayKit: { primary: '#FFFFFF', secondary: '#009639' },
+          ageGroup: team.age_group || 'Open',
+          gender: 'Mixed'
+        })) || [];
+        setTeams(loadedTeams);
+      }
+
+      const { data: matchesData, error: matchesError } = await supabase
+        .from('matches')
+        .select('*')
+        .order('match_date', { ascending: false });
+
+      if (matchesError) {
+        console.error('Error loading matches:', matchesError);
+        setAllMatches([]);
+      } else {
+        const loadedMatches: Match[] = matchesData?.map(match => ({
+          id: match.id,
+          teamId: match.team_id,
+          opponent: match.opponent,
+          scheduledDate: new Date(match.match_date),
+          venue: match.venue || 'St. Finian\'s GAA',
+          isHomeMatch: match.is_home_match || false,
+          matchType: match.match_type || 'Friendly',
+          status: match.status || 'Scheduled',
+          homeScore: match.home_score,
+          awayScore: match.away_score
+        })) || [];
+        setAllMatches(loadedMatches);
+      }
       
       setLoading(false);
     } catch (error) {
