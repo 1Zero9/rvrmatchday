@@ -80,7 +80,7 @@ export default function MatchAdminNew() {
   // Handle edit query parameter
   useEffect(() => {
     const editTeamId = router.query.edit as string;
-    if (editTeamId && teams.length > 0) {
+    if (editTeamId && teams.length > 0 && currentStep !== 'complete') {
       const teamToEdit = teams.find(t => t.id === editTeamId);
       if (teamToEdit) {
         setWizardData({
@@ -105,7 +105,7 @@ export default function MatchAdminNew() {
         setCurrentStep('basic');
       }
     }
-  }, [router.query.edit, teams]);
+  }, [router.query.edit, teams, currentStep]);
 
   const loadReferenceData = async () => {
     try {
