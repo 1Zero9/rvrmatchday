@@ -182,14 +182,19 @@ export default function MatchAdminNew() {
   };
 
   const nextStep = () => {
+    console.log('nextStep called, currentStep:', currentStep, 'wizardData:', wizardData);
     const steps: WizardStep[] = ['type', 'basic', 'details', 'coaches', 'squad', 'review'];
     const currentIndex = steps.indexOf(currentStep);
+    console.log('currentIndex:', currentIndex, 'next would be:', steps[currentIndex + 1]);
+    
     if (currentIndex < steps.length - 1) {
       const nextStepName = steps[currentIndex + 1];
       // Skip coaches and squad steps for opponent teams
       if ((nextStepName === 'coaches' || nextStepName === 'squad') && wizardData.teamType === 'opponent') {
+        console.log('Skipping to review for opponent team');
         setCurrentStep('review');
       } else {
+        console.log('Moving to next step:', nextStepName);
         setCurrentStep(nextStepName);
       }
     }
