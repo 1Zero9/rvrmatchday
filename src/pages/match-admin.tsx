@@ -80,9 +80,14 @@ export default function MatchAdminNew() {
   // Handle edit query parameter
   useEffect(() => {
     const editTeamId = router.query.edit as string;
+    console.log('Edit useEffect triggered:', { editTeamId, teamsLength: teams.length, currentStep });
+    
     if (editTeamId && teams.length > 0 && currentStep !== 'complete') {
       const teamToEdit = teams.find(t => t.id === editTeamId);
+      console.log('Team to edit:', teamToEdit);
+      
       if (teamToEdit) {
+        console.log('Setting wizard data for editing:', teamToEdit);
         setWizardData({
           teamType: teamToEdit.isOpponent ? 'opponent' : 'rvr',
           teamName: teamToEdit.name,
@@ -103,33 +108,58 @@ export default function MatchAdminNew() {
           })) || []
         });
         setCurrentStep('basic');
+      } else {
+        console.log('Team not found for editing:', editTeamId);
       }
     }
   }, [router.query.edit, teams, currentStep]);
 
   const loadReferenceData = async () => {
     try {
-      const [ageGroupsData, leaguesData, venuesData, coachesData, positionsData, playersData] = await Promise.all([
-        supabase.from('age_groups').select('name').order('name'),
-        supabase.from('leagues').select('name').order('name'),
-        supabase.from('venues').select('name').order('name'),
-        supabase.from('coaches').select('first_name, last_name').order('first_name'),
-        supabase.from('positions').select('name').order('name'),
-        supabase.from('players').select('id, first_name, position').order('first_name')
-      ]);
-
-      setAgeGroups(ageGroupsData.data?.map(item => item.name) || []);
-      setLeagues(leaguesData.data?.map(item => item.name) || []);
-      setVenues(venuesData.data?.map(item => item.name) || []);
-      setCoaches(coachesData.data?.map(item => `${item.first_name} ${item.last_name}`) || []);
-      setPositions(positionsData.data?.map(item => item.name) || []);
-      setExistingPlayers(playersData.data?.map(item => ({
+      // Use fallback data if reference tables don't exist yet
+      const fallbackAgeGroups = ['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'Senior', 'Vets'];
+      const fallbackLeagues = ['Dublin & District Schoolboys League', 'DDSL Premier', 'DDSL Div 1', 'DDSL Div 2', 'Friendly'];
+      const fallbackVenues = ['St. Finian\'s GAA', 'Ward River Valley Pitch', 'Away Venue'];
+      const fallbackPositions = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward', 'Substitute'];
+      
+      setAgeGroups(fallbackAgeGroups);
+      setLeagues(fallbackLeagues);
+      setVenues(fallbackVenues);
+      setPositions(fallbackPositions);
+      
+      // Try to load existing players and coaches from teams table
+      const { data: playersData } = await supabase
+        .from('players')
+        .select('id, first_name, position')
+        .order('first_name');
+        
+      setExistingPlayers(playersData?.map(item => ({
         id: item.id,
         name: item.first_name,
         position: item.position || ''
       })) || []);
+      
+      // Load coaches from teams table
+      const { data: teamsData } = await supabase
+        .from('teams')
+        .select('coaches')
+        .not('coaches', 'is', null);
+        
+      const allCoaches = new Set<string>();
+      teamsData?.forEach(team => {
+        if (Array.isArray(team.coaches)) {
+          team.coaches.forEach(coach => allCoaches.add(coach));
+        }
+      });
+      setCoaches(Array.from(allCoaches));
+      
     } catch (error) {
       console.error('Error loading reference data:', error);
+      // Set fallback data even on error
+      setAgeGroups(['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'Senior', 'Vets']);
+      setLeagues(['DDSL Premier', 'DDSL Div 1', 'DDSL Div 2', 'Friendly']);
+      setVenues(['St. Finian\'s GAA', 'Ward River Valley Pitch']);
+      setPositions(['Goalkeeper', 'Defender', 'Midfielder', 'Forward', 'Substitute']);
     }
   };
 

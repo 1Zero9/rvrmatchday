@@ -1389,6 +1389,23 @@ export default function MatchCentral() {
                           >
                             Edit
                           </button>
+                          <button 
+                            onClick={async () => {
+                              if (confirm(`Are you sure you want to delete ${team.name}? This will also delete all associated players and matches.`)) {
+                                try {
+                                  const { error } = await supabase.from('teams').delete().eq('id', team.id);
+                                  if (error) throw error;
+                                  await loadData();
+                                } catch (error) {
+                                  console.error('Error deleting team:', error);
+                                  alert('Error deleting team: ' + error);
+                                }
+                              }
+                            }}
+                            className="bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
                     </div>
