@@ -595,7 +595,7 @@ export default function MatchAdminNew() {
                       });
                       nextStep();
                     }}
-                    disabled={!wizardData.teamName || !wizardData.ageGroup}
+                    disabled={false}
                     className={`px-8 py-3 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium ${
                       wizardData.teamType === 'rvr' 
                         ? 'bg-green-600 hover:bg-green-700' 

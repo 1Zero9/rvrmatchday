@@ -128,6 +128,7 @@ export default function MatchCentral() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamSummaries, setTeamSummaries] = useState<TeamSummary[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string>('all');
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string | null>(null);
   const [overviewFilter, setOverviewFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
@@ -1042,6 +1043,16 @@ export default function MatchCentral() {
                   All Teams
                 </button>
                 <button
+                  onClick={() => setSelectedTeam('rvr')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    selectedTeam === 'rvr'
+                      ? 'bg-green-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  RVR Teams
+                </button>
+                <button
                   onClick={() => setSelectedTeam('opponents')}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     selectedTeam === 'opponents'
@@ -1053,17 +1064,17 @@ export default function MatchCentral() {
                 </button>
               </div>
 
-              {/* RVR Team Dropdown */}
+              {/* Age Group Filter */}
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">RVR Team:</label>
+                <label className="text-sm font-medium text-gray-700">Age Group:</label>
                 <select
-                  value={selectedTeam}
-                  onChange={(e) => setSelectedTeam(e.target.value)}
+                  value={selectedAgeGroup || 'all'}
+                  onChange={(e) => setSelectedAgeGroup(e.target.value === 'all' ? null : e.target.value)}
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
                 >
-                  <option value="all">All RVR Teams</option>
-                  {teams.filter(team => !team.isOpponent).map(team => (
-                    <option key={team.id} value={team.id}>{team.name}</option>
+                  <option value="all">All Age Groups</option>
+                  {Array.from(new Set(teams.map(team => team.ageGroup).filter(Boolean))).sort().map(ageGroup => (
+                    <option key={ageGroup} value={ageGroup}>{ageGroup}</option>
                   ))}
                 </select>
               </div>
@@ -1338,9 +1349,14 @@ export default function MatchCentral() {
                 {/* Teams Grid */}
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {teams.filter(team => {
-                    if (selectedTeam === 'all') return true;
-                    if (selectedTeam === 'opponents') return team.team_type === 'opponent';
-                    return team.id === selectedTeam;
+                    // Team type filter
+                    if (selectedTeam === 'rvr' && team.isOpponent) return false;
+                    if (selectedTeam === 'opponents' && !team.isOpponent) return false;
+                    
+                    // Age group filter
+                    if (selectedAgeGroup && team.ageGroup !== selectedAgeGroup) return false;
+                    
+                    return true;
                   }).map((team) => (
                     <div key={team.id} className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-shadow">
                       <div className="flex items-start justify-between mb-4">
