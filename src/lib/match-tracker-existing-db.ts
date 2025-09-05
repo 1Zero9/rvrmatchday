@@ -230,10 +230,15 @@ export class MatchTrackerExistingDB {
         id,
         match_id,
         player_id,
+        player_name,
         event_type,
         event_minute,
         event_half,
         description,
+        notes,
+        assist_player_name,
+        assist_player_id,
+        event_data,
         is_our_team,
         created_at,
         created_by,
@@ -257,10 +262,15 @@ export class MatchTrackerExistingDB {
         id,
         match_id,
         player_id,
+        player_name,
         event_type,
         event_minute,
         event_half,
         description,
+        notes,
+        assist_player_name,
+        assist_player_id,
+        event_data,
         is_our_team,
         created_at,
         created_by,
@@ -485,23 +495,46 @@ export class MatchTrackerExistingDB {
   }
 
   async saveMatchEvent(event: MatchEvent): Promise<void> {
-    const { error } = await supabase
+    console.log('Saving match event:', event);
+    
+    // Prepare basic event data
+    const eventData: any = {
+      match_id: event.matchId,
+      player_id: event.playerId || null,
+      player_name: event.playerName,
+      event_type: event.eventType,
+      event_minute: event.minute || null,
+      event_half: event.half || null,
+      notes: event.notes || null,
+      is_our_team: true,
+      created_by: event.recordedBy || 'match-recorder'
+    };
+
+    // Handle assist information for goals
+    if (event.eventType === 'Goal' && event.eventData?.assistPlayerName) {
+      eventData.assist_player_name = event.eventData.assistPlayerName;
+      eventData.assist_player_id = event.eventData.assistPlayerId || null;
+    }
+
+    // Handle other event-specific data
+    if (event.eventData) {
+      // Store complex event data as JSON if database supports it
+      eventData.event_data = JSON.stringify(event.eventData);
+    }
+    
+    console.log('Event data to save:', eventData);
+    
+    const { data, error } = await supabase
       .from('match_events')
-      .insert({
-        match_id: event.matchId,
-        player_id: event.playerId,
-        player_name: event.playerName,
-        event_type: event.eventType,
-        event_minute: event.minute,
-        event_half: event.half,
-        notes: event.notes,
-        is_our_team: true,
-        created_by: event.recordedBy
-      });
+      .insert(eventData)
+      .select();
 
     if (error) {
+      console.error('Database error details:', error);
       throw new Error(`Failed to save match event: ${error.message}`);
     }
+    
+    console.log('Match event saved successfully:', data);
   }
 
   async deleteMatchEvent(id: string): Promise<void> {
@@ -605,7 +638,23 @@ export class MatchTrackerExistingDB {
   private mapMatchEventFromExistingDB(dbEvent: any): MatchEvent {
     const playerName = dbEvent.players 
       ? `${dbEvent.players.first_name} ${dbEvent.players.last_name}`
-      : 'Unknown Player';
+      : dbEvent.player_name || 'Unknown Player';
+
+    // Parse event data if available
+    let eventData: any = {};
+    try {
+      if (dbEvent.event_data) {
+        eventData = JSON.parse(dbEvent.event_data);
+      }
+    } catch (e) {
+      console.warn('Failed to parse event data:', dbEvent.event_data);
+    }
+
+    // Add assist information if available
+    if (dbEvent.assist_player_name) {
+      eventData.assistPlayerName = dbEvent.assist_player_name;
+      eventData.assistPlayerId = dbEvent.assist_player_id;
+    }
 
     return {
       id: dbEvent.id,
@@ -615,7 +664,8 @@ export class MatchTrackerExistingDB {
       eventType: dbEvent.event_type,
       minute: dbEvent.event_minute,
       half: dbEvent.event_half || 1,
-      notes: dbEvent.description,
+      eventData: Object.keys(eventData).length > 0 ? eventData : undefined,
+      notes: dbEvent.description || dbEvent.notes,
       recordedAt: new Date(dbEvent.created_at),
       recordedBy: dbEvent.created_by || 'system'
     };

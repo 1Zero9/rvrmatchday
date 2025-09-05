@@ -7,11 +7,12 @@
  * AI Collaboration: Claude (Anthropic)
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Match, Team } from '../types/match-tracker';
+import { Match, Team, MatchEvent } from '../types/match-tracker';
 import { generateMatchStory, getCelebrationColors, getMatchEmojis } from '../lib/match-celebration';
 import { getTeamColorClasses, getTeamIndicatorColor } from '../lib/team-colors';
+import { storageV2 } from '../lib/match-tracker-storage-v2';
 
 interface CelebrationResultCardProps {
   match: Match;
@@ -34,6 +35,9 @@ export default function CelebrationResultCard({
   onToggleExpanded,
   index
 }: CelebrationResultCardProps) {
+  const [goalEvents, setGoalEvents] = useState<MatchEvent[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
+
   const story = generateMatchStory(match, team.name, teamScore, opponentScore);
   const colors = getCelebrationColors(result);
   const goalDifference = Math.abs(teamScore - opponentScore);
@@ -44,6 +48,26 @@ export default function CelebrationResultCard({
   const opponentColors = getTeamColorClasses(match.opponent);
   const teamIndicatorColor = getTeamIndicatorColor(team.name, match.isHomeMatch);
   const opponentIndicatorColor = getTeamIndicatorColor(match.opponent, !match.isHomeMatch);
+
+  // Load match events when expanded
+  useEffect(() => {
+    if (expanded && goalEvents.length === 0) {
+      loadMatchEvents();
+    }
+  }, [expanded]);
+
+  const loadMatchEvents = async () => {
+    setLoadingEvents(true);
+    try {
+      const events = await storageV2.getMatchEvents(match.id);
+      const goals = events.filter(event => event.eventType === 'Goal');
+      setGoalEvents(goals);
+    } catch (error) {
+      console.error('Failed to load match events:', error);
+    } finally {
+      setLoadingEvents(false);
+    }
+  };
 
   return (
     <motion.div
@@ -154,6 +178,48 @@ export default function CelebrationResultCard({
                 </p>
               </div>
             </div>
+
+            {/* Goal Scorers */}
+            {(goalEvents.length > 0 || loadingEvents) && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                  ⚽ Goal Scorers
+                </h3>
+                {loadingEvents ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto"></div>
+                    <p className="text-sm text-gray-500 mt-2">Loading goal details...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {goalEvents.map((goal, idx) => (
+                      <motion.div
+                        key={goal.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="flex items-center justify-between bg-white/80 rounded-lg p-3 border border-gray-200/50"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <div>
+                            <div className="font-medium text-gray-900">{goal.playerName}</div>
+                            {goal.eventData?.assistPlayerName && (
+                              <div className="text-sm text-gray-600">
+                                Assist: <span className="font-medium">{goal.eventData.assistPlayerName}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {goal.minute ? `${goal.minute}'` : 'Full Time'}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Match Details */}
             <div className="grid grid-cols-2 gap-4 mb-6">

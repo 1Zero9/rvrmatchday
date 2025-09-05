@@ -223,13 +223,8 @@ export default function MatchRecorderSimple() {
           selectedSquad: matchToEdit.selectedSquad || []
         });
 
-        // If match has details or goal scorers, go directly to details step
-        const hasDetails = matchToEdit.venue || matchToEdit.referee || matchToEdit.weather || 
-                          matchToEdit.notes || goalScorers.length > 0;
-        
-        if (hasDetails) {
-          setStep('details');
-        }
+        // Always start at step 1 (result) when editing
+        setStep('result');
       }
     } catch (error) {
       console.error('Error loading match for edit:', error);
@@ -311,7 +306,10 @@ export default function MatchRecorderSimple() {
               eventType: 'Goal' as const,
               minute: scorer.minute || (i * 10 + 15), // Default minutes if not specified
               half: 1 as const,
-              eventData: scorer.assistedBy ? { assistPlayerName: scorer.assistedBy } : {},
+              eventData: scorer.assistedBy ? { 
+                assistPlayerName: scorer.assistedBy,
+                goalType: 'Open Play' as const
+              } : { goalType: 'Open Play' as const },
               recordedAt: new Date(),
               recordedBy: 'match-recorder'
             };
