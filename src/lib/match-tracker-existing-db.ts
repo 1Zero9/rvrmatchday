@@ -236,9 +236,6 @@ export class MatchTrackerExistingDB {
         event_half,
         description,
         notes,
-        assist_player_name,
-        assist_player_id,
-        event_data,
         is_our_team,
         created_at,
         created_by,
@@ -268,9 +265,6 @@ export class MatchTrackerExistingDB {
         event_half,
         description,
         notes,
-        assist_player_name,
-        assist_player_id,
-        event_data,
         is_our_team,
         created_at,
         created_by,
@@ -510,16 +504,16 @@ export class MatchTrackerExistingDB {
       created_by: event.recordedBy || 'match-recorder'
     };
 
-    // Handle assist information for goals
+    // Handle assist information for goals by storing in notes field
     if (event.eventType === 'Goal' && event.eventData?.assistPlayerName) {
-      eventData.assist_player_name = event.eventData.assistPlayerName;
-      eventData.assist_player_id = event.eventData.assistPlayerId || null;
+      // Store assist info in notes field with structured format
+      const assistInfo = `Assist: ${event.eventData.assistPlayerName}`;
+      eventData.notes = event.notes ? `${event.notes} | ${assistInfo}` : assistInfo;
     }
 
-    // Handle other event-specific data
+    // Store all event-specific data as JSON in description field if available
     if (event.eventData) {
-      // Store complex event data as JSON if database supports it
-      eventData.event_data = JSON.stringify(event.eventData);
+      eventData.description = JSON.stringify(event.eventData);
     }
     
     console.log('Event data to save:', eventData);
@@ -640,20 +634,22 @@ export class MatchTrackerExistingDB {
       ? `${dbEvent.players.first_name} ${dbEvent.players.last_name}`
       : dbEvent.player_name || 'Unknown Player';
 
-    // Parse event data if available
+    // Parse event data from description field if available
     let eventData: any = {};
     try {
-      if (dbEvent.event_data) {
-        eventData = JSON.parse(dbEvent.event_data);
+      if (dbEvent.description && dbEvent.description.startsWith('{')) {
+        eventData = JSON.parse(dbEvent.description);
       }
     } catch (e) {
-      console.warn('Failed to parse event data:', dbEvent.event_data);
+      console.warn('Failed to parse event data from description:', dbEvent.description);
     }
 
-    // Add assist information if available
-    if (dbEvent.assist_player_name) {
-      eventData.assistPlayerName = dbEvent.assist_player_name;
-      eventData.assistPlayerId = dbEvent.assist_player_id;
+    // Extract assist information from notes field if not in eventData
+    if (!eventData.assistPlayerName && dbEvent.notes) {
+      const assistMatch = dbEvent.notes.match(/Assist:\s*([^|]+)/);
+      if (assistMatch) {
+        eventData.assistPlayerName = assistMatch[1].trim();
+      }
     }
 
     return {
@@ -665,7 +661,7 @@ export class MatchTrackerExistingDB {
       minute: dbEvent.event_minute,
       half: dbEvent.event_half || 1,
       eventData: Object.keys(eventData).length > 0 ? eventData : undefined,
-      notes: dbEvent.description || dbEvent.notes,
+      notes: dbEvent.notes,
       recordedAt: new Date(dbEvent.created_at),
       recordedBy: dbEvent.created_by || 'system'
     };
