@@ -63,10 +63,10 @@ export default function MobileBottomNav({ className = '' }: MobileBottomNavProps
               whileTap={{ scale: 0.95 }}
               className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all min-w-16 ${
                 item.isAction 
-                  ? `${item.color} text-white shadow-md`
+                  ? `${item.color} text-white shadow-xl transform hover:scale-105 ring-2 ring-opacity-50`
                   : item.isActive
-                    ? 'bg-club-primary text-white'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-xl border border-green-500 transform scale-105 ring-2 ring-green-200 font-bold'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-200 bg-gray-50 shadow-sm'
               }`}
             >
               <span className="text-xl mb-1">{item.icon}</span>

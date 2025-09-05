@@ -244,7 +244,7 @@ export default function MatchRecorderSimple() {
 
       if (quickResult.homeTeam === 'custom' && quickResult.homeTeamCustom) {
         const homeTeam: Team = {
-          id: `team-${Date.now()}-home`,
+          id: crypto.randomUUID(),
           name: quickResult.homeTeamCustom,
           ageGroup: 'Unknown',
           season: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1).toString().slice(-2),
@@ -257,7 +257,7 @@ export default function MatchRecorderSimple() {
 
       if (quickResult.awayTeam === 'custom' && quickResult.awayTeamCustom) {
         const awayTeam: Team = {
-          id: `team-${Date.now()}-away`,
+          id: crypto.randomUUID(),
           name: quickResult.awayTeamCustom,
           ageGroup: 'Unknown',
           isOpponent: true,
@@ -274,7 +274,7 @@ export default function MatchRecorderSimple() {
 
       // Create or update the match
       const newMatch: Match = {
-        id: editingMatch ? editingMatch.id : `match-${Date.now()}`,
+        id: editingMatch ? editingMatch.id : crypto.randomUUID(),
         teamId: homeTeamId,
         opponent: awayTeamName,
         matchType: quickResult.matchType,
@@ -304,7 +304,7 @@ export default function MatchRecorderSimple() {
           console.log('Processing scorer:', scorer);
           if (scorer.playerName) {
             const goalEvent = {
-              id: `event-${Date.now()}-${i}`,
+              id: crypto.randomUUID(),
               matchId: newMatch.id,
               playerId: scorer.playerId,
               playerName: scorer.playerName,
