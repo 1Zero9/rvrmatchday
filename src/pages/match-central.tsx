@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
 import CelebrationResultCard from "../components/CelebrationResultCard";
+import MobileBottomNav from "../components/MobileBottomNav";
 import { supabase } from "../lib/supabase";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
 import { VERSION_CONFIG } from "../config/version";
@@ -119,6 +120,116 @@ function MatchExpandedDetails({ match }: { match: Match }) {
           )}
         </div>
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
+    </div>
+  );
+}
+
+// Optimized Squad Display Component for Large Teams
+function OptimizedSquadDisplay({ players }: { players: any[] }) {
+  const [showAll, setShowAll] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Sort players: captain first, then vice captain, then alphabetically
+  const sortedPlayers = React.useMemo(() => {
+    return [...players].sort((a, b) => {
+      if (a.isCaptain && !b.isCaptain) return -1;
+      if (!a.isCaptain && b.isCaptain) return 1;
+      if (a.isViceCaptain && !b.isViceCaptain) return -1;
+      if (!a.isViceCaptain && b.isViceCaptain) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [players]);
+
+  // Filter players based on search term
+  const filteredPlayers = React.useMemo(() => {
+    if (!searchTerm) return sortedPlayers;
+    return sortedPlayers.filter(player => 
+      player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (player.position && player.position.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [sortedPlayers, searchTerm]);
+
+  const displayedPlayers = showAll ? filteredPlayers : filteredPlayers.slice(0, 8);
+  const hasMore = filteredPlayers.length > 8;
+
+  return (
+    <div className="space-y-3">
+      {/* Search bar for large squads */}
+      {players.length > 12 && (
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search players..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pl-8"
+          />
+          <span className="absolute left-2.5 top-2.5 text-gray-400 text-sm">🔍</span>
+        </div>
+      )}
+
+      {/* Player Grid - More compact for large squads */}
+      <div className={`grid gap-2 ${players.length > 12 ? 'grid-cols-1' : 'grid-cols-1'}`}>
+        {displayedPlayers.map(player => (
+          <div key={player.id} className="flex items-center justify-between bg-white rounded p-2 text-sm border hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-base flex-shrink-0">
+                {player.position?.toLowerCase().includes('goalkeeper') ? '🥅' : 
+                 player.position?.toLowerCase().includes('defender') ? '🛡️' : 
+                 player.position?.toLowerCase().includes('midfielder') ? '⚙️' : 
+                 player.position?.toLowerCase().includes('forward') ? '⚽' : '👤'}
+              </span>
+              <span className="font-medium truncate">{player.name}</span>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {player.isCaptain && <span className="text-xs">👑</span>}
+                {player.isViceCaptain && <span className="text-xs">🔹</span>}
+              </div>
+            </div>
+            <div className="text-xs text-gray-500 ml-2 flex-shrink-0">
+              {player.position || 'No position'}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Show more/less button */}
+      {hasMore && (
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="w-full py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
+        >
+          {showAll ? (
+            <>
+              <span>Show Less</span>
+              <span>↑</span>
+            </>
+          ) : (
+            <>
+              <span>Show All {filteredPlayers.length} Players</span>
+              <span>↓</span>
+            </>
+          )}
+        </button>
+      )}
+
+      {/* Summary stats for large squads */}
+      {players.length > 12 && (
+        <div className="bg-blue-50 rounded-lg p-3 text-xs">
+          <div className="grid grid-cols-2 gap-2 text-center">
+            <div>
+              <div className="font-semibold text-blue-900">{players.filter(p => p.isCaptain).length}</div>
+              <div className="text-blue-700">Captain</div>
+            </div>
+            <div>
+              <div className="font-semibold text-blue-900">{players.filter(p => p.isViceCaptain).length}</div>
+              <div className="text-blue-700">Vice Captain</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -252,32 +363,13 @@ function CollapsibleTeamCard({ team, onEdit, onDelete }: {
                 </div>
               </div>
 
-              {/* Squad Overview */}
+              {/* Squad Overview - Optimized for Large Squads */}
               <div className="space-y-3">
                 <h5 className="font-medium text-gray-900 text-sm uppercase tracking-wide">
                   Squad ({team.players?.length || 0})
                 </h5>
                 {team.players && team.players.length > 0 ? (
-                  <div className="max-h-48 overflow-y-auto space-y-1">
-                    {team.players.map(player => (
-                      <div key={player.id} className="flex items-center justify-between bg-white rounded p-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">
-                            {player.position?.toLowerCase().includes('goalkeeper') ? '🥅' : 
-                             player.position?.toLowerCase().includes('defender') ? '🛡️' : 
-                             player.position?.toLowerCase().includes('midfielder') ? '⚙️' : 
-                             player.position?.toLowerCase().includes('forward') ? '⚽' : '👤'}
-                          </span>
-                          <span className="font-medium">{player.name}</span>
-                          {player.isCaptain && <span className="text-xs">👑</span>}
-                          {player.isViceCaptain && <span className="text-xs">🔹</span>}
-                        </div>
-                        <div className="text-xs text-gray-500 truncate ml-2">
-                          {player.position || 'No position'}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <OptimizedSquadDisplay players={team.players} />
                 ) : (
                   <div className="text-center py-4 text-gray-500">
                     <div className="text-2xl mb-1">👥</div>
@@ -325,7 +417,7 @@ export default function MatchCentral() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamSummaries, setTeamSummaries] = useState<TeamSummary[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState<string>('all');
+  const [selectedTeam, setSelectedTeam] = useState<string>('rvr');
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string | null>(null);
   const [overviewFilter, setOverviewFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
@@ -866,10 +958,10 @@ export default function MatchCentral() {
   }
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: '📊', public: true },
-    { id: 'fixtures', label: 'Fixtures', icon: '📅', public: true },
-    { id: 'statistics', label: 'Statistics', icon: '📈', public: true },
-    { id: 'management', label: 'Management', icon: '⚙️', public: false }
+    { id: 'overview', label: 'Results', icon: '🏆', public: true, color: 'green' },
+    { id: 'fixtures', label: 'Fixtures', icon: '📅', public: true, color: 'blue' },
+    { id: 'statistics', label: 'Stats', icon: '📊', public: true, color: 'orange' },
+    { id: 'management', label: 'Teams', icon: '👥', public: false, color: 'purple' }
   ];
 
   return (
@@ -901,44 +993,47 @@ export default function MatchCentral() {
           </div>
         </div>
 
-        {/* Simple Tab Bar */}
-        <div className="bg-white border-b border-gray-200 px-4">
-          <nav className="flex space-x-1">
+        {/* Colored Tab Navigation */}
+        <div className="bg-gray-50 border-b border-gray-200 px-4 py-3">
+          <nav className="flex gap-2 overflow-x-auto">
             <button
               onClick={() => handleTabChange('overview')}
-              className={`py-3 px-4 font-medium text-sm transition-all ${
+              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm flex items-center gap-2 whitespace-nowrap ${
                 activeTab === 'overview'
-                  ? 'border-b-2 border-club-primary text-club-primary'
-                  : 'text-gray-500'
+                  ? 'bg-green-600 hover:bg-green-700 text-white transform scale-105'
+                  : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
               }`}
             >
+              <span>🏆</span>
               Results
             </button>
             <button
               onClick={() => handleTabChange('fixtures')}
-              className={`py-3 px-4 font-medium text-sm transition-all ${
+              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm flex items-center gap-2 whitespace-nowrap ${
                 activeTab === 'fixtures'
-                  ? 'border-b-2 border-club-primary text-club-primary'
-                  : 'text-gray-500'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white transform scale-105'
+                  : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
               }`}
             >
+              <span>📅</span>
               Fixtures
             </button>
             <button
               onClick={() => handleTabChange('statistics')}
-              className={`py-3 px-4 font-medium text-sm transition-all ${
+              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm flex items-center gap-2 whitespace-nowrap ${
                 activeTab === 'statistics'
-                  ? 'border-b-2 border-club-primary text-club-primary'
-                  : 'text-gray-500'
+                  ? 'bg-orange-600 hover:bg-orange-700 text-white transform scale-105'
+                  : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
               }`}
             >
-              📊 Stats
+              <span>📊</span>
+              Stats
             </button>
           </nav>
         </div>
 
         {/* Mobile Content */}
-        <div className="p-4">
+        <div className="p-4 pb-24">
           {/* Mobile Overview */}
           {activeTab === 'overview' && (
             <div>
@@ -967,7 +1062,7 @@ export default function MatchCentral() {
                     <div className="flex gap-2">
                       <a
                         href="/match-recorder?mode=record"
-                        className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-xl border-red-500 transform hover:scale-105 ring-4 ring-red-200 font-bold px-4 py-2 rounded-lg transition-all"
                         title="Record past or today's match"
                       >
                         <span>📝</span>
@@ -975,7 +1070,7 @@ export default function MatchCentral() {
                       </a>
                       <a
                         href="/match-recorder?mode=schedule"
-                        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl border-blue-500 transform hover:scale-105 ring-4 ring-blue-200 font-bold px-4 py-2 rounded-lg transition-all"
                         title="Schedule future match"
                       >
                         <span>📅</span>
@@ -1180,22 +1275,40 @@ export default function MatchCentral() {
               </div>
               
               <div className="flex items-center space-x-3">
-                {/* Navigation Tabs */}
-                <nav className="flex space-x-2">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleTabChange(tab.id)}
-                      className={`flex items-center space-x-2 py-2 px-3 rounded-lg font-medium text-sm transition-all ${
-                        activeTab === tab.id
-                          ? 'bg-club-primary text-white shadow-md'
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      <span className="text-base">{tab.icon}</span>
-                      <span className="hidden sm:inline">{tab.label}</span>
-                    </button>
-                  ))}
+                {/* Navigation Tabs - Colored Boxes */}
+                <nav className="flex space-x-3">
+                  {tabs.map((tab) => {
+                    const getColorClasses = (color: string, isActive: boolean) => {
+                      const colors: any = {
+                        green: isActive 
+                          ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-xl border-green-500 transform scale-105 ring-4 ring-green-200 font-bold' 
+                          : 'bg-gray-50 hover:bg-gray-100 text-gray-400 border border-gray-200 shadow-none hover:text-gray-600 hover:shadow-sm',
+                        blue: isActive 
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl border-blue-500 transform scale-105 ring-4 ring-blue-200 font-bold' 
+                          : 'bg-gray-50 hover:bg-gray-100 text-gray-400 border border-gray-200 shadow-none hover:text-gray-600 hover:shadow-sm',
+                        orange: isActive 
+                          ? 'bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-xl border-orange-500 transform scale-105 ring-4 ring-orange-200 font-bold' 
+                          : 'bg-gray-50 hover:bg-gray-100 text-gray-400 border border-gray-200 shadow-none hover:text-gray-600 hover:shadow-sm',
+                        purple: isActive 
+                          ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-xl border-purple-500 transform scale-105 ring-4 ring-purple-200 font-bold' 
+                          : 'bg-gray-25 hover:bg-gray-50 text-gray-300 border border-gray-100 shadow-none hover:text-gray-500 hover:shadow-sm opacity-60'
+                      };
+                      return colors[color] || colors.green;
+                    };
+
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => handleTabChange(tab.id)}
+                        className={`flex items-center space-x-2 py-3 px-4 rounded-lg font-semibold text-sm transition-all shadow-md hover:shadow-lg ${
+                          getColorClasses(tab.color, activeTab === tab.id)
+                        }`}
+                      >
+                        <span className="text-base">{tab.icon}</span>
+                        <span className="hidden sm:inline">{tab.label}</span>
+                      </button>
+                    );
+                  })}
                 </nav>
                 
                 {/* Divider */}
@@ -2091,6 +2204,9 @@ export default function MatchCentral() {
           </div>
         </StandardLayout>
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 }

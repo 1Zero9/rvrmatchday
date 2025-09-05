@@ -8,8 +8,10 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
+import MobileBottomNav from "../components/MobileBottomNav";
 import { supabase } from "../lib/supabase";
 import { Team } from "../types/match-tracker";
+import { getTeamColorClasses } from "../lib/team-colors";
 
 type TeamType = 'rvr' | 'opponent';
 type WizardStep = 'type' | 'basic' | 'details' | 'coaches' | 'squad' | 'review' | 'complete';
@@ -55,6 +57,7 @@ export default function MatchAdminNew() {
   const [coaches, setCoaches] = useState<string[]>([]);
   const [positions, setPositions] = useState<string[]>([]);
   const [existingPlayers, setExistingPlayers] = useState<{id: string, name: string, position: string}[]>([]);
+  const [newPlayerPosition, setNewPlayerPosition] = useState<string>('');
   
   const [wizardData, setWizardData] = useState<WizardData>({
     teamType: 'rvr',
@@ -70,6 +73,19 @@ export default function MatchAdminNew() {
     notes: '',
     players: []
   });
+
+  // Get dynamic color scheme based on gender selection
+  const getWizardColors = () => {
+    if (wizardData.teamType === 'rvr' && wizardData.gender === 'Female') {
+      return getTeamColorClasses('RVR Girls');
+    } else if (wizardData.teamType === 'rvr') {
+      return getTeamColorClasses('RVR');
+    } else {
+      return getTeamColorClasses('Opponent');
+    }
+  };
+
+  const wizardColors = getWizardColors();
 
   // Load reference data
   useEffect(() => {
@@ -109,18 +125,104 @@ export default function MatchAdminNew() {
     }
   }, [router.query.edit, teams]);
 
+  // Show validation when entering steps with mandatory fields
+  useEffect(() => {
+    if (currentStep === 'basic' || currentStep === 'details') {
+      const timer = setTimeout(() => {
+        setShowValidation(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setShowValidation(false);
+    }
+  }, [currentStep]);
+
   const loadReferenceData = async () => {
     try {
-      // Use fallback data if reference tables don't exist yet
-      const fallbackAgeGroups = ['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'Senior', 'Vets'];
-      const fallbackLeagues = ['Dublin & District Schoolboys League', 'DDSL Premier', 'DDSL Div 1', 'DDSL Div 2', 'Friendly'];
-      const fallbackVenues = ['St. Finian\'s GAA', 'Ward River Valley Pitch', 'Away Venue'];
-      const fallbackPositions = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward', 'Substitute'];
+      // Load age groups from database
+      const { data: ageGroupsData, error: ageGroupsError } = await supabase
+        .from('age_groups')
+        .select('name')
+        .order('sort_order');
       
-      setAgeGroups(fallbackAgeGroups);
-      setLeagues(fallbackLeagues);
-      setVenues(fallbackVenues);
-      setPositions(fallbackPositions);
+      if (!ageGroupsError && ageGroupsData && ageGroupsData.length > 0) {
+        setAgeGroups(ageGroupsData.map(ag => ag.name));
+      } else {
+        // If table doesn't exist or is empty, create it and populate with defaults
+        if (ageGroupsError) {
+          console.log('Age groups table error:', ageGroupsError);
+          // Try to create the table and insert default values
+          const { error: createError } = await supabase
+            .from('age_groups')
+            .insert([
+              { name: 'U8', sort_order: 1 },
+              { name: 'U10', sort_order: 2 },
+              { name: 'U12', sort_order: 3 },
+              { name: 'U14', sort_order: 4 },
+              { name: 'U16', sort_order: 5 },
+              { name: 'U18', sort_order: 6 },
+              { name: 'Senior', sort_order: 7 },
+              { name: 'Vets', sort_order: 8 }
+            ]);
+          
+          if (!createError) {
+            // Reload the data
+            const { data: newAgeGroupsData } = await supabase
+              .from('age_groups')
+              .select('name')
+              .order('sort_order');
+            if (newAgeGroupsData) {
+              setAgeGroups(newAgeGroupsData.map(ag => ag.name));
+            }
+          }
+        }
+        
+        // Fallback
+        const fallbackAgeGroups = ['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'Senior', 'Vets'];
+        setAgeGroups(fallbackAgeGroups);
+      }
+
+      // Load leagues from database
+      const { data: leaguesData, error: leaguesError } = await supabase
+        .from('leagues')
+        .select('name')
+        .order('name');
+      
+      if (!leaguesError && leaguesData) {
+        setLeagues(leaguesData.map(league => league.name));
+      } else {
+        // Fallback if table doesn't exist
+        const fallbackLeagues = ['Dublin & District Schoolboys League', 'DDSL Premier', 'DDSL Div 1', 'DDSL Div 2', 'Friendly'];
+        setLeagues(fallbackLeagues);
+      }
+
+      // Load venues from database
+      const { data: venuesData, error: venuesError } = await supabase
+        .from('venues')
+        .select('name')
+        .order('name');
+      
+      if (!venuesError && venuesData) {
+        setVenues(venuesData.map(venue => venue.name));
+      } else {
+        // Fallback if table doesn't exist
+        const fallbackVenues = ['St. Finian\'s GAA', 'Ward River Valley Pitch', 'Away Venue'];
+        setVenues(fallbackVenues);
+      }
+
+      // Load positions from database
+      const { data: positionsData, error: positionsError } = await supabase
+        .from('positions')
+        .select('name')
+        .order('sort_order');
+      
+      if (!positionsError && positionsData) {
+        setPositions(positionsData.map(pos => pos.name));
+      } else {
+        // Fallback if table doesn't exist
+        const fallbackPositions = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward', 'Substitute'];
+        setPositions(fallbackPositions);
+      }
       
       // Try to load existing players and coaches from teams table
       const { data: playersData } = await supabase
@@ -206,18 +308,81 @@ export default function MatchAdminNew() {
     }
   };
 
+  // Validation state
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [showValidation, setShowValidation] = useState(false);
+
+  // Helper function to check if field should show as invalid
+  const isFieldInvalid = (fieldName: string): boolean => {
+    if (!showValidation) return false;
+    
+    switch (fieldName) {
+      case 'teamName':
+        return currentStep === 'basic' && !wizardData.teamName.trim();
+      case 'ageGroup':
+        return currentStep === 'basic' && !wizardData.ageGroup;
+      case 'league':
+        return currentStep === 'details' && !wizardData.league;
+      case 'homeVenue':
+        return currentStep === 'details' && !wizardData.homeVenue;
+      default:
+        return false;
+    }
+  };
+
+  const validateCurrentStep = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    switch (currentStep) {
+      case 'basic':
+        if (!wizardData.teamName.trim()) {
+          errors.teamName = 'Team name is required';
+        }
+        if (!wizardData.ageGroup) {
+          errors.ageGroup = 'Age group is required';
+        }
+        break;
+      
+      case 'details':
+        if (!wizardData.league) {
+          errors.league = 'League is required';
+        }
+        if (!wizardData.homeVenue) {
+          errors.homeVenue = 'Home venue is required';
+        }
+        break;
+    }
+
+    setValidationErrors(errors);
+    setShowValidation(true); // Show validation highlights
+    return Object.keys(errors).length === 0;
+  };
+
   const nextStep = () => {
+    if (!validateCurrentStep()) {
+      return; // Don't proceed if validation fails
+    }
+
     const steps: WizardStep[] = ['type', 'basic', 'details', 'coaches', 'squad', 'review'];
     const currentIndex = steps.indexOf(currentStep);
     
     if (currentIndex < steps.length - 1) {
       const nextStepName = steps[currentIndex + 1];
+      // Reset validation when moving to next step
+      setShowValidation(false);
+      setValidationErrors({});
+      
       // Skip coaches and squad steps for opponent teams
       if ((nextStepName === 'coaches' || nextStepName === 'squad') && wizardData.teamType === 'opponent') {
         setCurrentStep('review');
       } else {
         setCurrentStep(nextStepName);
       }
+      
+      // Show validation for mandatory fields on new step after a brief delay
+      setTimeout(() => {
+        setShowValidation(true);
+      }, 500);
     }
   };
 
@@ -232,6 +397,12 @@ export default function MatchAdminNew() {
       } else {
         setCurrentStep(prevStepName);
       }
+    }
+  };
+
+  const cancelWizard = () => {
+    if (confirm('Are you sure you want to cancel? All progress will be lost.')) {
+      router.push('/match-central');
     }
   };
 
@@ -402,7 +573,8 @@ export default function MatchAdminNew() {
   }
 
   return (
-    <StandardLayout>
+    <div>
+      <StandardLayout>
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
 
@@ -422,9 +594,7 @@ export default function MatchAdminNew() {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div 
-                className={`h-3 rounded-full transition-all duration-300 ${
-                  wizardData.teamType === 'rvr' ? 'bg-green-600' : 'bg-orange-600'
-                }`}
+                className={`h-3 rounded-full transition-all duration-300 ${wizardColors.background}`}
                 style={{ width: `${(getStepNumber(currentStep) / getTotalSteps()) * 100}%` }}
               />
             </div>
@@ -452,13 +622,13 @@ export default function MatchAdminNew() {
                     }}
                     className={`p-8 border-2 rounded-lg transition-all hover:shadow-lg ${
                       wizardData.teamType === 'rvr' 
-                        ? 'border-green-500 bg-green-50' 
-                        : 'border-gray-300 hover:border-green-300'
+                        ? `${wizardColors.border} ${wizardColors.lightBackground}` 
+                        : `border-gray-300 hover:${wizardColors.border}`
                     }`}
                   >
                     <div className="text-center">
                       <div className="text-4xl mb-4">⚽</div>
-                      <h3 className="text-xl font-bold text-green-700 mb-2">RVR Team</h3>
+                      <h3 className={`text-xl font-bold ${wizardColors.text} mb-2`}>RVR Team</h3>
                       <p className="text-gray-600">River Valley Rangers team with full squad management</p>
                     </div>
                   </button>
@@ -479,6 +649,14 @@ export default function MatchAdminNew() {
                       <h3 className="text-xl font-bold text-orange-700 mb-2">Opponent Team</h3>
                       <p className="text-gray-600">External team for match scheduling</p>
                     </div>
+                  </button>
+                </div>
+                <div className="flex justify-center mt-8">
+                  <button
+                    onClick={cancelWizard}
+                    className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                  >
+                    Cancel
                   </button>
                 </div>
               </motion.div>
@@ -502,13 +680,23 @@ export default function MatchAdminNew() {
                   <div>
                     <label className="block text-lg font-medium text-gray-700 mb-3">
                       Team Name *
-                      {!wizardData.teamName && <span className="text-red-500 ml-2">(Required)</span>}
+                      {validationErrors.teamName && <span className="text-red-500 ml-2">({validationErrors.teamName})</span>}
                     </label>
                     <input
                       type="text"
                       value={wizardData.teamName}
-                      onChange={(e) => setWizardData(prev => ({ ...prev, teamName: e.target.value }))}
-                      className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      onChange={(e) => {
+                        setWizardData(prev => ({ ...prev, teamName: e.target.value }));
+                        // Clear validation error when user starts typing
+                        if (validationErrors.teamName) {
+                          setValidationErrors(prev => ({ ...prev, teamName: '' }));
+                        }
+                      }}
+                      className={`w-full px-4 py-3 text-lg border rounded-lg focus:outline-none focus:ring-2 focus:ring-current ${
+                        isFieldInvalid('teamName')
+                          ? 'border-red-500 bg-red-50 focus:ring-red-500' 
+                          : 'border-gray-300'
+                      }`}
                       placeholder="e.g., RVR U14 Boys"
                     />
                   </div>
@@ -517,20 +705,79 @@ export default function MatchAdminNew() {
                   <div>
                     <label className="block text-lg font-medium text-gray-700 mb-3">
                       Age Group *
-                      {!wizardData.ageGroup && <span className="text-red-500 ml-2">(Required)</span>}
+                      {validationErrors.ageGroup && <span className="text-red-500 ml-2">({validationErrors.ageGroup})</span>}
                     </label>
-                    <select
-                      value={wizardData.ageGroup}
-                      onChange={(e) => setWizardData(prev => ({ ...prev, ageGroup: e.target.value }))}
-                      className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                      <option value="">Select Age Group</option>
-                      {ageGroups.map(age => (
-                        <option key={age} value={age}>{age}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={wizardData.ageGroup}
+                        onChange={(e) => {
+                          setWizardData(prev => ({ ...prev, ageGroup: e.target.value }));
+                          // Clear validation error when user selects an option
+                          if (validationErrors.ageGroup && e.target.value) {
+                            setValidationErrors(prev => ({ ...prev, ageGroup: '' }));
+                          }
+                        }}
+                        className={`w-full px-4 py-3 text-lg border rounded-lg focus:outline-none focus:ring-2 focus:ring-current pr-12 ${
+                          isFieldInvalid('ageGroup')
+                            ? 'border-red-500 bg-red-50 focus:ring-red-500' 
+                            : 'border-gray-300'
+                        }`}
+                      >
+                        <option value="">Select Age Group</option>
+                        {ageGroups.map(age => (
+                          <option key={age} value={age}>{age}</option>
+                        ))}
+                        <option value="__ADD_NEW__" className="text-blue-600 font-medium">➕ Add New Age Group...</option>
+                      </select>
+                      
+                      {/* Inline Add Modal - Shows when "Add New" is selected */}
+                      {wizardData.ageGroup === '__ADD_NEW__' && (
+                        <div className="absolute top-full left-0 right-0 mt-1 p-3 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Enter new age group (e.g. U20)"
+                              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              id="newAgeGroupInline"
+                              autoFocus
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  const input = e.target as HTMLInputElement;
+                                  const value = input.value.trim();
+                                  if (value && !ageGroups.includes(value)) {
+                                    setAgeGroups([...ageGroups, value]);
+                                    setWizardData(prev => ({ ...prev, ageGroup: value }));
+                                  }
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const input = document.getElementById('newAgeGroupInline') as HTMLInputElement;
+                                const value = input.value.trim();
+                                if (value && !ageGroups.includes(value)) {
+                                  setAgeGroups([...ageGroups, value]);
+                                  setWizardData(prev => ({ ...prev, ageGroup: value }));
+                                }
+                              }}
+                              className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                            >
+                              Add
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setWizardData(prev => ({ ...prev, ageGroup: '' }))}
+                              className="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      Options available: {ageGroups.length} ({ageGroups.slice(0,3).join(', ')}...)
+                      {ageGroups.length} options available
                     </div>
                   </div>
 
@@ -547,8 +794,8 @@ export default function MatchAdminNew() {
                           onClick={() => setWizardData(prev => ({ ...prev, gender: gender as any }))}
                           className={`py-3 px-4 rounded-lg border-2 transition-all ${
                             wizardData.gender === gender
-                              ? 'border-green-500 bg-green-50 text-green-700'
-                              : 'border-gray-300 hover:border-green-300'
+                              ? `${wizardColors.border} ${wizardColors.lightBackground} ${wizardColors.text}`
+                              : `border-gray-300 hover:${wizardColors.border}`
                           }`}
                         >
                           {gender}
@@ -567,14 +814,16 @@ export default function MatchAdminNew() {
                     ← Back
                   </button>
                   <button
+                    onClick={cancelWizard}
+                    className="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
                     type="button"
                     onClick={nextStep}
                     disabled={!wizardData.teamName || !wizardData.ageGroup}
-                    className={`px-8 py-3 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium ${
-                      wizardData.teamType === 'rvr' 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : 'bg-orange-600 hover:bg-orange-700'
-                    }`}
+                    className={`px-8 py-3 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium ${wizardColors.background} hover:opacity-90`}
                   >
                     Continue →
                   </button>
@@ -600,17 +849,77 @@ export default function MatchAdminNew() {
                   <div>
                     <label className="block text-lg font-medium text-gray-700 mb-3">
                       League/Competition *
+                      {validationErrors.league && <span className="text-red-500 ml-2">({validationErrors.league})</span>}
                     </label>
-                    <select
-                      value={wizardData.league}
-                      onChange={(e) => setWizardData(prev => ({ ...prev, league: e.target.value }))}
-                      className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                      <option value="">Select League</option>
-                      {leagues.map(league => (
-                        <option key={league} value={league}>{league}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={wizardData.league}
+                        onChange={(e) => {
+                          setWizardData(prev => ({ ...prev, league: e.target.value }));
+                          // Clear validation error when user selects an option
+                          if (validationErrors.league && e.target.value) {
+                            setValidationErrors(prev => ({ ...prev, league: '' }));
+                          }
+                        }}
+                        className={`w-full px-4 py-3 text-lg border rounded-lg focus:outline-none focus:ring-2 focus:ring-current ${
+                          isFieldInvalid('league')
+                            ? 'border-red-500 bg-red-50 focus:ring-red-500' 
+                            : 'border-gray-300'
+                        }`}
+                      >
+                        <option value="">Select League</option>
+                        {leagues.map(league => (
+                          <option key={league} value={league}>{league}</option>
+                        ))}
+                        <option value="__ADD_NEW__" className="text-blue-600 font-medium">➕ Add New League...</option>
+                      </select>
+                      
+                      {/* Inline Add Modal */}
+                      {wizardData.league === '__ADD_NEW__' && (
+                        <div className="absolute top-full left-0 right-0 mt-1 p-3 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Enter new league (e.g. Local Cup)"
+                              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              id="newLeagueInline"
+                              autoFocus
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  const input = e.target as HTMLInputElement;
+                                  const value = input.value.trim();
+                                  if (value && !leagues.includes(value)) {
+                                    setLeagues([...leagues, value]);
+                                    setWizardData(prev => ({ ...prev, league: value }));
+                                  }
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const input = document.getElementById('newLeagueInline') as HTMLInputElement;
+                                const value = input.value.trim();
+                                if (value && !leagues.includes(value)) {
+                                  setLeagues([...leagues, value]);
+                                  setWizardData(prev => ({ ...prev, league: value }));
+                                }
+                              }}
+                              className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                            >
+                              Add
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setWizardData(prev => ({ ...prev, league: '' }))}
+                              className="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Season */}
@@ -621,7 +930,7 @@ export default function MatchAdminNew() {
                     <select
                       value={wizardData.season}
                       onChange={(e) => setWizardData(prev => ({ ...prev, season: e.target.value }))}
-                      className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-current"
                     >
                       <option value="2024/25">2024/25</option>
                       <option value="2025/26">2025/26</option>
@@ -631,18 +940,80 @@ export default function MatchAdminNew() {
                   {/* Home Venue */}
                   <div>
                     <label className="block text-lg font-medium text-gray-700 mb-3">
-                      Home Venue
+                      Home Venue *
+                      {validationErrors.homeVenue && <span className="text-red-500 ml-2">({validationErrors.homeVenue})</span>}
                     </label>
-                    <select
-                      value={wizardData.homeVenue}
-                      onChange={(e) => setWizardData(prev => ({ ...prev, homeVenue: e.target.value }))}
-                      className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                      <option value="">Select Venue</option>
-                      {venues.map(venue => (
-                        <option key={venue} value={venue}>{venue}</option>
-                      ))}
-                    </select>
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <select
+                          value={wizardData.homeVenue}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setWizardData(prev => ({ ...prev, homeVenue: value }));
+                            // Clear validation error when user selects an option
+                            if (validationErrors.homeVenue && value && value !== '__ADD_NEW__') {
+                              setValidationErrors(prev => ({ ...prev, homeVenue: '' }));
+                            }
+                          }}
+                          className={`w-full px-4 py-3 text-lg border rounded-lg focus:outline-none focus:ring-2 focus:ring-current ${
+                            isFieldInvalid('homeVenue')
+                              ? 'border-red-500 bg-red-50 focus:ring-red-500' 
+                              : 'border-gray-300'
+                          }`}
+                        >
+                          <option value="">Select Venue</option>
+                          {venues.map(venue => (
+                            <option key={venue} value={venue}>{venue}</option>
+                          ))}
+                          <option value="__ADD_NEW__" className="text-blue-600 font-medium">➕ Add New Venue...</option>
+                        </select>
+                        
+                        {wizardData.homeVenue === '__ADD_NEW__' && (
+                          <div className="absolute top-full left-0 right-0 mt-1 p-3 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                            <div className="flex gap-2 items-center">
+                              <input
+                                type="text"
+                                placeholder="Enter venue name (e.g. Local Sports Ground)..."
+                                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                autoFocus
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') {
+                                    const input = e.target as HTMLInputElement;
+                                    const value = input.value.trim();
+                                    if (value && !venues.includes(value)) {
+                                      setVenues([...venues, value]);
+                                      setWizardData(prev => ({ ...prev, homeVenue: value }));
+                                    }
+                                  }
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const input = document.querySelector('input[placeholder*="venue name"]') as HTMLInputElement;
+                                  const value = input?.value.trim();
+                                  if (value && !venues.includes(value)) {
+                                    setVenues([...venues, value]);
+                                    setWizardData(prev => ({ ...prev, homeVenue: value }));
+                                  }
+                                }}
+                                className="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                              >
+                                Add
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setWizardData(prev => ({ ...prev, homeVenue: '' }))}
+                                className="px-3 py-2 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                    </div>
                   </div>
 
                   {/* Contact Info */}
@@ -655,7 +1026,7 @@ export default function MatchAdminNew() {
                         type="email"
                         value={wizardData.contactEmail}
                         onChange={(e) => setWizardData(prev => ({ ...prev, contactEmail: e.target.value }))}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-current"
                         placeholder="coach@email.com"
                       />
                     </div>
@@ -667,7 +1038,7 @@ export default function MatchAdminNew() {
                         type="tel"
                         value={wizardData.contactPhone}
                         onChange={(e) => setWizardData(prev => ({ ...prev, contactPhone: e.target.value }))}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-current"
                         placeholder="087 123 4567"
                       />
                     </div>
@@ -682,9 +1053,15 @@ export default function MatchAdminNew() {
                     ← Back
                   </button>
                   <button
+                    onClick={cancelWizard}
+                    className="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
                     onClick={nextStep}
                     disabled={!wizardData.league}
-                    className="px-8 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-lg transition-colors font-medium"
+                    className={`px-8 py-3 disabled:bg-gray-300 text-white rounded-lg transition-colors font-medium ${wizardColors.background} hover:opacity-90`}
                   >
                     Continue →
                   </button>
@@ -846,11 +1223,7 @@ export default function MatchAdminNew() {
                   </button>
                   <button
                     onClick={nextStep}
-                    className={`px-8 py-3 text-white rounded-lg transition-colors font-medium ${
-                      wizardData.teamType === 'rvr' 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : 'bg-orange-600 hover:bg-orange-700'
-                    }`}
+                    className={`px-8 py-3 text-white rounded-lg transition-colors font-medium ${wizardColors.background} hover:opacity-90`}
                   >
                     Continue →
                   </button>
@@ -899,7 +1272,7 @@ export default function MatchAdminNew() {
                               }));
                             }
                           }}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-current"
                         >
                           <option value="">Select existing player...</option>
                           {existingPlayers
@@ -922,7 +1295,7 @@ export default function MatchAdminNew() {
                             <input
                               type="text"
                               placeholder="Player Name"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-current"
                               id="newPlayerName"
                               onKeyPress={(e) => {
                                 if (e.key === 'Enter') {
@@ -942,15 +1315,68 @@ export default function MatchAdminNew() {
                                 }
                               }}
                             />
-                            <select
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                              id="newPlayerPosition"
-                            >
-                              <option value="">Select Position (Optional)</option>
-                              {positions.map(pos => (
-                                <option key={pos} value={pos}>{pos}</option>
-                              ))}
-                            </select>
+                            <div className="relative">
+                              <select
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-current"
+                                id="newPlayerPosition"
+                                value={newPlayerPosition || ''}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setNewPlayerPosition(value);
+                                }}
+                              >
+                                <option value="">Select Position (Optional)</option>
+                                {positions.map(pos => (
+                                  <option key={pos} value={pos}>{pos}</option>
+                                ))}
+                                <option value="__ADD_NEW__" className="text-blue-600 font-medium">➕ Add New Position...</option>
+                              </select>
+                              
+                              {newPlayerPosition === '__ADD_NEW__' && (
+                                <div className="absolute top-full left-0 right-0 mt-1 p-3 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                                  <div className="flex gap-2 items-center">
+                                    <input
+                                      type="text"
+                                      placeholder="Enter position name (e.g. Centre Back)..."
+                                      className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      autoFocus
+                                      onKeyPress={(e) => {
+                                        if (e.key === 'Enter') {
+                                          const input = e.target as HTMLInputElement;
+                                          const value = input.value.trim();
+                                          if (value && !positions.includes(value)) {
+                                            setPositions([...positions, value]);
+                                            setNewPlayerPosition(value);
+                                          }
+                                        }
+                                      }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const input = document.querySelector('input[placeholder*="position name"]') as HTMLInputElement;
+                                        const value = input?.value.trim();
+                                        if (value && !positions.includes(value)) {
+                                          setPositions([...positions, value]);
+                                          setNewPlayerPosition(value);
+                                        }
+                                      }}
+                                      className="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                    >
+                                      Add
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setNewPlayerPosition('')}
+                                      className="px-3 py-2 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            
                             <button
                               onClick={() => {
                                 const nameInput = document.getElementById('newPlayerName') as HTMLInputElement;
@@ -1070,19 +1496,21 @@ export default function MatchAdminNew() {
                                   <input
                                     type="checkbox"
                                     checked={player.isCaptain}
+                                    disabled={!player.isCaptain && wizardData.players.some(p => p.isCaptain)}
                                     onChange={(e) => updatePlayer(index, 'isCaptain', e.target.checked)}
-                                    className="mr-1 w-3 h-3"
+                                    className={`mr-1 w-3 h-3 ${!player.isCaptain && wizardData.players.some(p => p.isCaptain) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   />
-                                  C
+                                  <span className={!player.isCaptain && wizardData.players.some(p => p.isCaptain) ? 'opacity-50' : ''}>C</span>
                                 </label>
                                 <label className="flex items-center text-xs" title="Vice Captain">
                                   <input
                                     type="checkbox"
                                     checked={player.isViceCaptain}
+                                    disabled={!player.isViceCaptain && wizardData.players.some(p => p.isViceCaptain)}
                                     onChange={(e) => updatePlayer(index, 'isViceCaptain', e.target.checked)}
-                                    className="mr-1 w-3 h-3"
+                                    className={`mr-1 w-3 h-3 ${!player.isViceCaptain && wizardData.players.some(p => p.isViceCaptain) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   />
-                                  VC
+                                  <span className={!player.isViceCaptain && wizardData.players.some(p => p.isViceCaptain) ? 'opacity-50' : ''}>VC</span>
                                 </label>
                               </div>
                             </div>
@@ -1102,11 +1530,7 @@ export default function MatchAdminNew() {
                   </button>
                   <button
                     onClick={nextStep}
-                    className={`px-8 py-3 text-white rounded-lg transition-colors font-medium ${
-                      wizardData.teamType === 'rvr' 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : 'bg-orange-600 hover:bg-orange-700'
-                    }`}
+                    className={`px-8 py-3 text-white rounded-lg transition-colors font-medium ${wizardColors.background} hover:opacity-90`}
                   >
                     Continue →
                   </button>
@@ -1194,6 +1618,12 @@ export default function MatchAdminNew() {
                     className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
                   >
                     ← Back
+                  </button>
+                  <button
+                    onClick={cancelWizard}
+                    className="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors"
+                  >
+                    Cancel
                   </button>
                   <button
                     onClick={saveTeam}
@@ -1295,6 +1725,10 @@ export default function MatchAdminNew() {
 
         </div>
       </div>
-    </StandardLayout>
+      </StandardLayout>
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
+    </div>
   );
 }

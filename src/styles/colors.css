@@ -58,11 +58,42 @@
   --info-light: var(--club-accent-light);
   --info-bg: #F0F8FF;
   
+  /* === TEAM COLOR SCHEMES === */
+  
+  /* RVR Main Teams - Brand Colors */
+  --team-rvr-primary: var(--club-primary);
+  --team-rvr-secondary: var(--club-primary-light);
+  --team-rvr-accent: var(--club-secondary);
+  --team-rvr-text: #FFFFFF;
+  --team-rvr-bg: rgba(163, 42, 76, 0.1);
+  --team-rvr-border: var(--club-primary);
+  
+  /* RVR Girls - Brand Colors + Pink */
+  --team-rvr-girls-primary: #C44771;
+  --team-rvr-girls-secondary: #E91E63;
+  --team-rvr-girls-accent: #F8BBD9;
+  --team-rvr-girls-text: #FFFFFF;
+  --team-rvr-girls-bg: rgba(196, 71, 113, 0.1);
+  --team-rvr-girls-border: #C44771;
+  
+  /* Opponents - Neutral Gray-Blue */
+  --team-opponent-primary: #64748B;
+  --team-opponent-secondary: #94A3B8;
+  --team-opponent-accent: #CBD5E1;
+  --team-opponent-text: #FFFFFF;
+  --team-opponent-bg: rgba(100, 116, 139, 0.1);
+  --team-opponent-border: #64748B;
+
   /* === GRADIENTS === */
   --gradient-primary: linear-gradient(135deg, var(--club-primary) 0%, var(--club-primary-light) 100%);
   --gradient-secondary: linear-gradient(135deg, var(--club-secondary) 0%, var(--club-secondary-light) 100%);
   --gradient-accent: linear-gradient(135deg, var(--club-accent) 0%, var(--club-accent-light) 100%);
   --gradient-hero: linear-gradient(135deg, var(--club-primary) 0%, var(--club-secondary) 50%, var(--club-accent) 100%);
+  
+  /* Team Gradients */
+  --gradient-team-rvr: linear-gradient(135deg, var(--team-rvr-primary) 0%, var(--team-rvr-secondary) 100%);
+  --gradient-team-rvr-girls: linear-gradient(135deg, var(--team-rvr-girls-primary) 0%, var(--team-rvr-girls-secondary) 100%);
+  --gradient-team-opponent: linear-gradient(135deg, var(--team-opponent-primary) 0%, var(--team-opponent-secondary) 100%);
   
   /* === GLASS MORPHISM VARIANTS === */
   --glass-primary: rgba(151, 42, 76, 0.1);
@@ -110,6 +141,65 @@
 .gradient-secondary { background: var(--gradient-secondary); }
 .gradient-accent { background: var(--gradient-accent); }
 .gradient-hero { background: var(--gradient-hero); }
+
+/* Mobile-First Improvements */
+@media (max-width: 768px) {
+  /* Larger touch targets for mobile */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better mobile form styling */
+  .mobile-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px;
+  }
+  
+  /* Mobile-optimized cards */
+  .mobile-card {
+    margin: 8px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Safe area handling for devices with notches */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  /* Mobile bottom navigation space */
+  .mobile-bottom-space {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Team Color Utilities */
+
+/* RVR Main Team */
+.bg-team-rvr { background-color: var(--team-rvr-primary); color: var(--team-rvr-text); }
+.bg-team-rvr-light { background-color: var(--team-rvr-bg); }
+.text-team-rvr { color: var(--team-rvr-primary); }
+.border-team-rvr { border-color: var(--team-rvr-border); }
+.gradient-team-rvr { background: var(--gradient-team-rvr); color: var(--team-rvr-text); }
+
+/* RVR Girls Team */
+.bg-team-rvr-girls { background-color: var(--team-rvr-girls-primary); color: var(--team-rvr-girls-text); }
+.bg-team-rvr-girls-light { background-color: var(--team-rvr-girls-bg); }
+.text-team-rvr-girls { color: var(--team-rvr-girls-primary); }
+.border-team-rvr-girls { border-color: var(--team-rvr-girls-border); }
+.gradient-team-rvr-girls { background: var(--gradient-team-rvr-girls); color: var(--team-rvr-girls-text); }
+
+/* Opponent Teams */
+.bg-team-opponent { background-color: var(--team-opponent-primary); color: var(--team-opponent-text); }
+.bg-team-opponent-light { background-color: var(--team-opponent-bg); }
+.text-team-opponent { color: var(--team-opponent-primary); }
+.border-team-opponent { border-color: var(--team-opponent-border); }
+.gradient-team-opponent { background: var(--gradient-team-opponent); color: var(--team-opponent-text); }
 
 /* Glass Effects */
 .glass-primary { background: var(--glass-primary); backdrop-filter: blur(10px); }

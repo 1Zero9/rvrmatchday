@@ -135,6 +135,25 @@ Contact dropdown includes: Contact Us, Join Club, Trials, Become Coach
 - Hero image backgrounds
 - Quick action cards
 
+### Team Color System:
+**NEW: Smart Team Colorization**
+- **RVR Main Teams**: Brand burgundy/maroon colors (`#A32A4C`)
+- **RVR Girls Teams**: Brand colors with pink accent (`#C44771`, `#E91E63`)
+- **Opponent Teams**: Neutral gray-blue (`#64748B`)
+
+**Implementation:**
+- `src/lib/team-colors.ts` - Color detection and utilities
+- `src/styles/colors.css` - CSS variables and utility classes
+- Auto-detects team type from name (RVR, RVR Girls, opponents)
+- Applied in: CelebrationResultCard, Girls team page, match displays
+
+**Usage:**
+```typescript
+import { getTeamColorClasses } from '../lib/team-colors';
+const colors = getTeamColorClasses(teamName);
+// Returns: { background, text, border, gradient, lightBackground }
+```
+
 ### Missing backgroundImage Props:
 1. `/join/inclusive.tsx`
 2. `/get-involved/events.tsx` 

@@ -11,6 +11,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Match, Team } from '../types/match-tracker';
 import { generateMatchStory, getCelebrationColors, getMatchEmojis } from '../lib/match-celebration';
+import { getTeamColorClasses, getTeamIndicatorColor } from '../lib/team-colors';
 
 interface CelebrationResultCardProps {
   match: Match;
@@ -37,6 +38,12 @@ export default function CelebrationResultCard({
   const colors = getCelebrationColors(result);
   const goalDifference = Math.abs(teamScore - opponentScore);
   const matchEmojis = getMatchEmojis(result, goalDifference);
+  
+  // Get team color schemes
+  const teamColors = getTeamColorClasses(team.name);
+  const opponentColors = getTeamColorClasses(match.opponent);
+  const teamIndicatorColor = getTeamIndicatorColor(team.name, match.isHomeMatch);
+  const opponentIndicatorColor = getTeamIndicatorColor(match.opponent, !match.isHomeMatch);
 
   return (
     <motion.div
@@ -62,11 +69,11 @@ export default function CelebrationResultCard({
         <div className="flex items-center justify-between mb-6">
           <div className="flex-1">
             <div className="flex items-center space-x-3 mb-2">
-              <div className={`w-3 h-3 rounded-full ${match.isHomeMatch ? 'bg-blue-500' : 'bg-green-500'}`}></div>
-              <div className="font-bold text-lg text-gray-900">{team.name}</div>
-              {match.isHomeMatch && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">🏠 Home</span>}
+              <div className={`w-3 h-3 rounded-full ${teamIndicatorColor}`}></div>
+              <div className={`font-bold text-lg ${teamColors.text}`}>{team.name}</div>
+              {match.isHomeMatch && <span className={`text-xs px-2 py-1 rounded-full ${teamColors.lightBackground} ${teamColors.text}`}>🏠 Home</span>}
             </div>
-            <div className="text-gray-600 text-sm">vs {match.opponent}</div>
+            <div className="text-gray-600 text-sm">vs <span className={opponentColors.text}>{match.opponent}</span></div>
             <div className="text-xs text-gray-500 flex items-center mt-1">
               <span className="mr-1">📅</span>
               {new Date(match.scheduledDate).toLocaleDateString()}
@@ -83,11 +90,11 @@ export default function CelebrationResultCard({
               }}
               transition={{ duration: 0.4 }}
             >
-              <span className={result === 'W' ? 'text-green-600' : result === 'L' ? 'text-purple-600' : 'text-yellow-600'}>
+              <span className={`${teamColors.text} ${result === 'W' ? 'drop-shadow-sm' : ''}`}>
                 {teamScore}
               </span>
               <span className="text-gray-400 mx-2">-</span>
-              <span className="text-gray-700">{opponentScore}</span>
+              <span className={`${opponentColors.text}`}>{opponentScore}</span>
             </motion.div>
             
             {/* Result Badge */}
@@ -98,9 +105,9 @@ export default function CelebrationResultCard({
 
           <div className="flex-1 text-right">
             <div className="flex items-center justify-end space-x-3 mb-2">
-              <div className="font-bold text-lg text-gray-900">{match.opponent}</div>
-              <div className={`w-3 h-3 rounded-full ${!match.isHomeMatch ? 'bg-blue-500' : 'bg-green-500'}`}></div>
-              {!match.isHomeMatch && <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">✈️ Away</span>}
+              <div className={`font-bold text-lg ${opponentColors.text}`}>{match.opponent}</div>
+              <div className={`w-3 h-3 rounded-full ${opponentIndicatorColor}`}></div>
+              {!match.isHomeMatch && <span className={`text-xs px-2 py-1 rounded-full ${opponentColors.lightBackground} ${opponentColors.text}`}>✈️ Away</span>}
             </div>
             <div className="text-xs text-gray-500 text-right">
               {match.matchType} • {match.venue || (match.isHomeMatch ? 'Home Ground' : 'Away Ground')}
@@ -138,9 +145,9 @@ export default function CelebrationResultCard({
             
             {/* Match Summary */}
             <div className="mb-6">
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className={`rounded-lg p-4 ${teamColors.lightBackground} border ${teamColors.border} border-opacity-20`}>
                 <p className="text-gray-700 leading-relaxed">
-                  A {result === 'W' ? 'well-earned victory' : result === 'L' ? 'hard-fought match' : 'competitive draw'} for {team.name} against {match.opponent}. 
+                  A {result === 'W' ? 'well-earned victory' : result === 'L' ? 'hard-fought match' : 'competitive draw'} for <span className={teamColors.text}>{team.name}</span> against <span className={opponentColors.text}>{match.opponent}</span>. 
                   {result === 'W' && goalDifference >= 2 && ' Excellent team performance.'}
                   {result === 'D' && ' Both teams played with great spirit.'}
                   {result === 'L' && ' The team showed great determination throughout.'}
@@ -170,7 +177,7 @@ export default function CelebrationResultCard({
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-blue-500/20 backdrop-blur-sm border border-blue-200/50 text-blue-700 px-6 py-3 rounded-xl font-medium hover:bg-blue-500/30 transition-all flex items-center justify-center"
+                className={`${teamColors.lightBackground} backdrop-blur-sm border ${teamColors.border} border-opacity-50 ${teamColors.text} px-6 py-3 rounded-xl font-medium hover:opacity-80 transition-all flex items-center justify-center`}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigator.clipboard.writeText(`${team.name} ${result === 'W' ? 'beat' : result === 'D' ? 'drew with' : 'played'} ${match.opponent} ${teamScore}-${opponentScore}`);

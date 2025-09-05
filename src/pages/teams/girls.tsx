@@ -2,8 +2,12 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import StandardLayout from '../../components/StandardLayout';
 import Breadcrumb from '../../components/Breadcrumb';
+import { getTeamColorClasses } from '../../lib/team-colors';
 
 export default function GirlsTeams() {
+  // Get RVR Girls color scheme
+  const girlsColors = getTeamColorClasses('RVR Girls');
+  
   const girlsTeams = [
     {
       id: 'u16-girls',
@@ -67,12 +71,12 @@ export default function GirlsTeams() {
                 </div>
               </Link>
               
-              <div className="bg-pink-50 rounded-lg p-4 border-l-4 border-pink-500">
-                <h3 className="font-medium text-pink-900 mb-2 flex items-center">
+              <div className={`${girlsColors.lightBackground} rounded-lg p-4 border-l-4 ${girlsColors.border}`}>
+                <h3 className={`font-medium ${girlsColors.text} mb-2 flex items-center`}>
                   <span className="text-xl mr-2">🌟</span>
                   Girls Teams
                 </h3>
-                <p className="text-sm text-pink-700">Our fastest growing section</p>
+                <p className={`text-sm ${girlsColors.text} opacity-80`}>Our fastest growing section</p>
               </div>
               
               <Link href="/teams/inclusive" className="group">
@@ -96,7 +100,7 @@ export default function GirlsTeams() {
           className="text-center mb-12"
         >
           <div className="text-6xl mb-6">🌟</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Girls Teams</h1>
+          <h1 className={`text-4xl font-bold ${girlsColors.text} mb-4`}>Girls Teams</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Our newest and fastest growing section - empowering girls through football with skill development and confidence building
           </p>
