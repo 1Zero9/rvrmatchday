@@ -234,7 +234,6 @@ export class MatchTrackerExistingDB {
         event_type,
         event_minute,
         event_half,
-        description,
         notes,
         is_our_team,
         created_at,
@@ -263,7 +262,6 @@ export class MatchTrackerExistingDB {
         event_type,
         event_minute,
         event_half,
-        description,
         notes,
         is_our_team,
         created_at,
@@ -510,11 +508,6 @@ export class MatchTrackerExistingDB {
       const assistInfo = `Assist: ${event.eventData.assistPlayerName}`;
       eventData.notes = event.notes ? `${event.notes} | ${assistInfo}` : assistInfo;
     }
-
-    // Store all event-specific data as JSON in description field if available
-    if (event.eventData) {
-      eventData.description = JSON.stringify(event.eventData);
-    }
     
     console.log('Event data to save:', eventData);
     
@@ -634,21 +627,13 @@ export class MatchTrackerExistingDB {
       ? `${dbEvent.players.first_name} ${dbEvent.players.last_name}`
       : dbEvent.player_name || 'Unknown Player';
 
-    // Parse event data from description field if available
+    // Extract assist information from notes field for goals
     let eventData: any = {};
-    try {
-      if (dbEvent.description && dbEvent.description.startsWith('{')) {
-        eventData = JSON.parse(dbEvent.description);
-      }
-    } catch (e) {
-      console.warn('Failed to parse event data from description:', dbEvent.description);
-    }
-
-    // Extract assist information from notes field if not in eventData
-    if (!eventData.assistPlayerName && dbEvent.notes) {
+    if (dbEvent.event_type === 'Goal' && dbEvent.notes) {
       const assistMatch = dbEvent.notes.match(/Assist:\s*([^|]+)/);
       if (assistMatch) {
         eventData.assistPlayerName = assistMatch[1].trim();
+        eventData.goalType = 'Open Play'; // Default goal type
       }
     }
 
