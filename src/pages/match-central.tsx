@@ -1654,7 +1654,7 @@ export default function MatchCentral() {
                     </div>
                     <a
                       href="/match-admin"
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center"
+                      className="bg-gradient-to-r from-green-600 to-green-700 text-white shadow-xl border-green-500 transform hover:scale-105 ring-4 ring-green-200 font-bold px-6 py-3 rounded-lg transition-all flex items-center"
                     >
                       <span className="mr-2">➕</span>
                       Add New Team
@@ -1706,7 +1706,7 @@ export default function MatchCentral() {
                     </p>
                     <a
                       href="/match-admin"
-                      className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                      className="inline-flex items-center bg-gradient-to-r from-green-600 to-green-700 text-white shadow-xl border-green-500 transform hover:scale-105 ring-4 ring-green-200 font-bold px-6 py-3 rounded-lg transition-all"
                     >
                       <span className="mr-2">🚀</span>
                       Create First Team

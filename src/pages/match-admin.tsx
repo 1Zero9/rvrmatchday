@@ -58,20 +58,55 @@ export default function MatchAdminNew() {
   const [positions, setPositions] = useState<string[]>([]);
   const [existingPlayers, setExistingPlayers] = useState<{id: string, name: string, position: string}[]>([]);
   const [newPlayerPosition, setNewPlayerPosition] = useState<string>('');
+
+  // Generate season options dynamically
+  const generateSeasonOptions = () => {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+    
+    // Football season typically starts in September and ends in May
+    // If it's September or later, we're in the new season
+    // If it's before September, we're still in the previous season
+    let currentSeasonStartYear: number;
+    if (currentMonth >= 9) { // September or later
+      currentSeasonStartYear = currentYear;
+    } else { // Before September
+      currentSeasonStartYear = currentYear - 1;
+    }
+    
+    const currentSeason = `${currentSeasonStartYear}/${(currentSeasonStartYear + 1).toString().slice(-2)}`;
+    const nextSeason = `${currentSeasonStartYear + 1}/${(currentSeasonStartYear + 2).toString().slice(-2)}`;
+    const previousSeason = `${currentSeasonStartYear - 1}/${currentSeasonStartYear.toString().slice(-2)}`;
+    
+    return {
+      current: currentSeason,
+      next: nextSeason,
+      previous: previousSeason,
+      options: [
+        { value: currentSeason, label: `${currentSeason} (Current Season)`, isCurrent: true },
+        { value: nextSeason, label: `${nextSeason} (Next Season)`, isFuture: true },
+        { value: previousSeason, label: `${previousSeason} (Previous Season - Retrospective Only)`, isPast: true }
+      ]
+    };
+  };
   
-  const [wizardData, setWizardData] = useState<WizardData>({
-    teamType: 'rvr',
-    teamName: '',
-    ageGroup: '',
-    gender: 'Male',
-    league: '',
-    season: '2024/25',
-    homeVenue: '',
-    coaches: [],
-    contactEmail: '',
-    contactPhone: '',
-    notes: '',
-    players: []
+  const [wizardData, setWizardData] = useState<WizardData>(() => {
+    const seasons = generateSeasonOptions();
+    return {
+      teamType: 'rvr',
+      teamName: '',
+      ageGroup: '',
+      gender: 'Male',
+      league: '',
+      season: seasons.current,
+      homeVenue: '',
+      coaches: [],
+      contactEmail: '',
+      contactPhone: '',
+      notes: '',
+      players: []
+    };
   });
 
   // Get dynamic color scheme based on gender selection
@@ -107,7 +142,7 @@ export default function MatchAdminNew() {
           ageGroup: teamToEdit.ageGroup || '',
           gender: teamToEdit.gender || 'Mixed',
           league: teamToEdit.league || '',
-          season: teamToEdit.season || '2024/25',
+          season: teamToEdit.season || generateSeasonOptions().current,
           homeVenue: teamToEdit.homeVenue || '',
           coaches: Array.isArray(teamToEdit.coaches) ? teamToEdit.coaches : [],
           contactEmail: teamToEdit.contactEmail || '',
@@ -484,7 +519,8 @@ export default function MatchAdminNew() {
         : await supabase.from('teams').insert(teamData);
       
       if (teamError) {
-        throw new Error(`Team save error: ${teamError.message}`);
+        console.error('Team save error details:', teamError);
+        throw new Error(`Team save error: ${teamError.message}${teamError.details ? ` - ${teamError.details}` : ''}`);
       }
 
       // Save players for RVR teams
@@ -498,15 +534,17 @@ export default function MatchAdminNew() {
           id: crypto.randomUUID(),
           team_id: teamId,
           first_name: player.name,
-          position: player.position,
-          is_active: true
-          // TODO: Add is_captain and is_vice_captain after running SQL migration
+          position: player.position || null,
+          is_active: true,
+          is_captain: player.isCaptain || false,
+          is_vice_captain: player.isViceCaptain || false
         }));
 
         const { error: playersError } = await supabase.from('players').insert(playersData);
         
         if (playersError) {
-          throw new Error(`Players save error: ${playersError.message}`);
+          console.error('Players save error details:', playersError);
+          throw new Error(`Players save error: ${playersError.message}${playersError.details ? ` - ${playersError.details}` : ''}`);
         }
       }
 
@@ -527,7 +565,7 @@ export default function MatchAdminNew() {
       ageGroup: '',
       gender: 'Male',
       league: '',
-      season: '2024/25',
+      season: generateSeasonOptions().current,
       homeVenue: '',
       coaches: [],
       contactEmail: '',
@@ -932,9 +970,23 @@ export default function MatchAdminNew() {
                       onChange={(e) => setWizardData(prev => ({ ...prev, season: e.target.value }))}
                       className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-current"
                     >
-                      <option value="2024/25">2024/25</option>
-                      <option value="2025/26">2025/26</option>
+                      {generateSeasonOptions().options.map(season => (
+                        <option 
+                          key={season.value} 
+                          value={season.value}
+                          className={
+                            season.isCurrent ? 'font-bold text-green-700' :
+                            season.isFuture ? 'text-blue-700' :
+                            season.isPast ? 'text-gray-600' : ''
+                          }
+                        >
+                          {season.label}
+                        </option>
+                      ))}
                     </select>
+                    <p className="text-sm text-gray-500 mt-2">
+                      <strong>Note:</strong> Most teams should use the current season. Previous season is for retrospective data entry only.
+                    </p>
                   </div>
 
                   {/* Home Venue */}
