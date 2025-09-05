@@ -64,6 +64,11 @@ export default function MatchRecorderSimple() {
     selectedSquad: []
   });
 
+  // Debug details state changes
+  useEffect(() => {
+    console.log('Details state updated:', details);
+  }, [details]);
+
   const [players, setPlayers] = useState<any[]>([]);
 
   // Get available venues from matches
@@ -103,19 +108,24 @@ export default function MatchRecorderSimple() {
   }, [quickResult.homeScore, quickResult.awayScore, quickResult.isHomeMatch, quickResult.matchDate]);
 
   useEffect(() => {
-    loadData();
+    const initializeComponent = async () => {
+      // Check for mode parameter
+      const modeParam = router.query.mode as string;
+      if (modeParam === 'schedule' || modeParam === 'record') {
+        setMode(modeParam);
+      }
+      
+      // Load data first
+      await loadData();
+      
+      // Then check for edit mode after data is loaded
+      const editId = router.query.edit as string;
+      if (editId) {
+        loadMatchForEdit(editId);
+      }
+    };
     
-    // Check for mode parameter
-    const modeParam = router.query.mode as string;
-    if (modeParam === 'schedule' || modeParam === 'record') {
-      setMode(modeParam);
-    }
-    
-    // Check for edit mode
-    const editId = router.query.edit as string;
-    if (editId) {
-      loadMatchForEdit(editId);
-    }
+    initializeComponent();
   }, [router.query]);
 
   const loadData = async () => {
@@ -178,10 +188,21 @@ export default function MatchRecorderSimple() {
 
   const loadMatchForEdit = async (matchId: string) => {
     try {
+      console.log('Loading match for edit:', matchId);
+      console.log('Available teams:', teams.length);
+      
+      // Ensure teams are loaded before proceeding
+      if (teams.length === 0) {
+        console.warn('Teams not yet loaded, retrying in 1 second...');
+        setTimeout(() => loadMatchForEdit(matchId), 1000);
+        return;
+      }
+      
       const matches = await storage.getMatches();
       const matchToEdit = matches.find(m => m.id === matchId);
       
       if (matchToEdit) {
+        console.log('Found match to edit:', matchToEdit);
         setEditingMatch(matchToEdit);
         setSavedMatchId(matchId);
         
@@ -189,6 +210,8 @@ export default function MatchRecorderSimple() {
         const homeTeam = teams.find(t => t.id === matchToEdit.teamId);
         const awayTeamName = matchToEdit.opponent;
         const awayTeam = teams.find(t => t.name === awayTeamName);
+        
+        console.log('Team mapping:', { homeTeam, awayTeam, awayTeamName });
         
         // Populate form with match data
         setQuickResult({
@@ -205,6 +228,8 @@ export default function MatchRecorderSimple() {
         
         // Load goal events for this match
         const goalEvents = await storage.getMatchEvents(matchToEdit.id);
+        console.log('Loaded goal events:', goalEvents);
+        
         const goalScorers = goalEvents
           .filter(e => e.eventType === 'Goal')
           .map(event => ({
@@ -214,17 +239,24 @@ export default function MatchRecorderSimple() {
             minute: event.minute || 0
           }));
 
-        setDetails({
+        console.log('Processed goal scorers:', goalScorers);
+
+        const detailsToSet = {
           venue: matchToEdit.venue || 'Home Ground',
           referee: matchToEdit.referee === 'Yes',
           weather: matchToEdit.weather || '',
           notes: matchToEdit.notes || '',
           goalScorers: goalScorers,
           selectedSquad: matchToEdit.selectedSquad || []
-        });
+        };
+        
+        console.log('Setting details:', detailsToSet);
+        setDetails(detailsToSet);
 
         // Always start at step 1 (result) when editing
         setStep('result');
+      } else {
+        console.error('Match not found for editing:', matchId);
       }
     } catch (error) {
       console.error('Error loading match for edit:', error);
