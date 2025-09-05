@@ -494,9 +494,13 @@ export default function MatchAdminNew() {
   const saveTeam = async () => {
     setSaving(true);
     try {
+      console.log('Starting team save process...');
       const editTeamId = router.query.edit as string;
       const isEditing = Boolean(editTeamId);
       const teamId = isEditing ? editTeamId : crypto.randomUUID();
+      
+      console.log('Team save mode:', isEditing ? 'EDIT' : 'CREATE');
+      console.log('Team ID:', teamId);
       
       // Create team record with coaches
       const teamData = {
@@ -514,20 +518,33 @@ export default function MatchAdminNew() {
         is_opponent: wizardData.teamType === 'opponent'
       };
 
-      const { error: teamError } = isEditing 
+      console.log('Team data to save:', teamData);
+
+      console.log('Attempting to save team to database...');
+      const { data: teamResult, error: teamError } = isEditing 
         ? await supabase.from('teams').update(teamData).eq('id', teamId)
         : await supabase.from('teams').insert(teamData);
       
+      console.log('Team save result:', teamResult);
+      
       if (teamError) {
         console.error('Team save error details:', teamError);
-        throw new Error(`Team save error: ${teamError.message}${teamError.details ? ` - ${teamError.details}` : ''}`);
+        throw new Error(`Team save error: ${teamError.message}${teamError.details ? ` - ${teamError.details}` : ''}${teamError.hint ? ` (Hint: ${teamError.hint})` : ''}`);
       }
+
+      console.log('Team saved successfully!');
 
       // Save players for RVR teams
       if (wizardData.teamType === 'rvr' && wizardData.players.length > 0) {
+        console.log(`Saving ${wizardData.players.length} players for RVR team...`);
+        
         if (isEditing) {
+          console.log('Deleting existing players for edit mode...');
           // Delete existing players and re-add (simpler than complex update logic)
-          await supabase.from('players').delete().eq('team_id', teamId);
+          const { error: deleteError } = await supabase.from('players').delete().eq('team_id', teamId);
+          if (deleteError) {
+            console.error('Error deleting existing players:', deleteError);
+          }
         }
         
         const playersData = wizardData.players.map(player => ({
@@ -540,19 +557,28 @@ export default function MatchAdminNew() {
           is_vice_captain: player.isViceCaptain || false
         }));
 
-        const { error: playersError } = await supabase.from('players').insert(playersData);
+        console.log('Players data to save:', playersData);
+
+        const { data: playersResult, error: playersError } = await supabase.from('players').insert(playersData);
+        
+        console.log('Players save result:', playersResult);
         
         if (playersError) {
           console.error('Players save error details:', playersError);
-          throw new Error(`Players save error: ${playersError.message}${playersError.details ? ` - ${playersError.details}` : ''}`);
+          throw new Error(`Players save error: ${playersError.message}${playersError.details ? ` - ${playersError.details}` : ''}${playersError.hint ? ` (Hint: ${playersError.hint})` : ''}`);
         }
+        
+        console.log('Players saved successfully!');
       }
 
       await loadTeams();
       setCurrentStep('complete');
     } catch (error) {
       console.error('Error saving team:', error);
-      alert('Error saving team: ' + error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert(`Error saving team: ${errorMessage}\n\nPlease check the browser console for more details and try again.`);
     } finally {
       setSaving(false);
     }
