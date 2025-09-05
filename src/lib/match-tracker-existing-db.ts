@@ -148,33 +148,27 @@ export class MatchTrackerExistingDB {
 
   // Matches - using existing structure
   async getMatches(teamId?: string): Promise<Match[]> {
+    console.log('Loading matches from database for edit...');
     let query = supabase
       .from('matches')
       .select(`
         id,
         team_id,
-        match_date,
-        kick_off_time,
-        home_away,
+        opponent,
+        scheduled_date,
+        actual_kick_off,
+        is_home_match,
         match_type,
         status,
-        our_score,
-        their_score,
-        attendance,
-        referee_name,
-        weather_conditions,
-        pitch_conditions,
-        match_report,
-        private_notes,
+        home_score,
+        away_score,
+        venue,
+        referee,
+        notes,
         created_at,
-        updated_at,
-        created_by,
-        teams(name),
-        opponents(name),
-        venues(name, address),
-        leagues(name)
+        updated_at
       `)
-      .order('match_date', { ascending: false });
+      .order('scheduled_date', { ascending: false });
 
     if (teamId) {
       query = query.eq('team_id', teamId);
@@ -586,32 +580,25 @@ export class MatchTrackerExistingDB {
   }
 
   private mapMatchFromExistingDB(dbMatch: any): Match {
-    // Combine date and time for scheduled date
-    const matchDate = new Date(dbMatch.match_date);
-    if (dbMatch.kick_off_time) {
-      const [hours, minutes] = dbMatch.kick_off_time.split(':');
-      matchDate.setHours(parseInt(hours), parseInt(minutes));
-    }
-
+    console.log('Mapping database match:', dbMatch);
+    
     return {
       id: dbMatch.id,
       teamId: dbMatch.team_id,
-      opponent: dbMatch.opponents?.name || 'Unknown Opponent',
+      opponent: dbMatch.opponent || 'Unknown Opponent',
       matchType: dbMatch.match_type || 'League',
-      isHomeMatch: dbMatch.home_away === 'HOME',
-      venue: dbMatch.venues?.name || 'Unknown Venue',
-      scheduledDate: matchDate,
+      isHomeMatch: dbMatch.is_home_match || false,
+      venue: dbMatch.venue || 'Unknown Venue',
+      scheduledDate: new Date(dbMatch.scheduled_date),
+      actualKickOff: dbMatch.actual_kick_off ? new Date(dbMatch.actual_kick_off) : undefined,
       status: dbMatch.status || 'Scheduled',
-      homeScore: dbMatch.home_away === 'HOME' ? dbMatch.our_score : dbMatch.their_score,
-      awayScore: dbMatch.home_away === 'HOME' ? dbMatch.their_score : dbMatch.our_score,
-      referee: dbMatch.referee_name,
-      weather: dbMatch.weather_conditions,
-      pitchCond: dbMatch.pitch_conditions || 'Good',
-      attendance: dbMatch.attendance,
-      notes: dbMatch.match_report || dbMatch.private_notes,
-      recordedBy: dbMatch.created_by || 'system',
+      homeScore: dbMatch.home_score || 0,
+      awayScore: dbMatch.away_score || 0,
+      referee: dbMatch.referee,
+      weather: dbMatch.weather,
+      notes: dbMatch.notes,
       createdAt: new Date(dbMatch.created_at),
-      updatedAt: new Date(dbMatch.updated_at)
+      updatedAt: new Date(dbMatch.updated_at || dbMatch.created_at)
     };
   }
 

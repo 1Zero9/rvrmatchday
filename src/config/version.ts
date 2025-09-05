@@ -11,10 +11,10 @@
 export const VERSION_CONFIG = {
   // Current Version Information
   current: {
-    version: "3.0.6",
+    version: "3.0.7",
     codename: "Glass Template System",
     releaseDate: "2025-09-05",
-    buildNumber: "2025.09.05.942"
+    buildNumber: "2025.09.05.036"
   },
 
   // Release Information

@@ -66,7 +66,7 @@ export default function MobileBottomNav({ className = '' }: MobileBottomNavProps
                   ? `${item.color} text-white shadow-xl transform hover:scale-105 ring-2 ring-opacity-50`
                   : item.isActive
                     ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-xl border border-green-500 transform scale-105 ring-2 ring-green-200 font-bold'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-200 bg-gray-50 shadow-sm'
+                    : 'text-gray-800 hover:text-gray-900 hover:bg-gray-200 bg-gray-100 shadow-md border border-gray-200 font-medium'
               }`}
             >
               <span className="text-xl mb-1">{item.icon}</span>
