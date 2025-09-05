@@ -512,7 +512,28 @@ export default function MatchCentral() {
         console.error('Error loading matches:', matchesError);
         setAllMatches([]);
       } else {
-        setAllMatches(matchesData || []);
+        // Transform database records to match expected interface
+        const transformedMatches = (matchesData || []).map(dbMatch => ({
+          id: dbMatch.id,
+          teamId: dbMatch.team_id,
+          opponent: dbMatch.opponent,
+          matchType: dbMatch.match_type || 'League',
+          isHomeMatch: dbMatch.is_home_match,
+          venue: dbMatch.venue,
+          scheduledDate: new Date(dbMatch.scheduled_date),
+          actualKickOff: dbMatch.actual_kick_off ? new Date(dbMatch.actual_kick_off) : undefined,
+          status: dbMatch.status,
+          homeScore: dbMatch.home_score || 0,
+          awayScore: dbMatch.away_score || 0,
+          referee: dbMatch.referee,
+          weather: dbMatch.weather,
+          notes: dbMatch.notes,
+          createdAt: new Date(dbMatch.created_at),
+          updatedAt: new Date(dbMatch.updated_at || dbMatch.created_at)
+        }));
+        
+        console.log('Loaded matches from database:', transformedMatches);
+        setAllMatches(transformedMatches);
       }
       
       // Team summaries will be calculated from database data
