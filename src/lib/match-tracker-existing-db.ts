@@ -379,27 +379,29 @@ export class MatchTrackerExistingDB {
 
   // Write operations for existing database structure
   async saveTeam(team: Team): Promise<void> {
-    // Save team first
+    console.log('Saving team via existing DB storage:', team);
+    
+    // Save team first - using only fields that exist in our schema
+    const teamData = {
+      id: team.id,
+      name: team.name,
+      age_group: team.ageGroup || null,
+      gender: team.gender || 'Mixed',
+      league: team.league || null,
+      season: team.season || '2024-25',
+      home_venue: team.homeVenue || null,
+      contact_email: team.contactEmail || null,
+      contact_phone: team.contactPhone || null,
+      notes: team.notes || null,
+      is_opponent: team.isOpponent || false,
+      coaches: team.coaches || []
+    };
+
+    console.log('Team data to upsert:', teamData);
+
     const { error: teamError } = await supabase
       .from('teams')
-      .upsert({
-        id: team.id,
-        name: team.name,
-        short_name: team.name,
-        season: team.season || '2024-25',
-        home_colors: team.homeKit,
-        away_colors: team.awayKit,
-        is_opponent: team.isOpponent || false,
-        age_group: team.ageGroup,
-        gender: team.gender,
-        league: team.league,
-        home_venue: team.homeVenue,
-        contact_email: team.contactEmail,
-        contact_phone: team.contactPhone,
-        notes: team.notes,
-        is_active: true,
-        is_public: true
-      }, { onConflict: 'id' });
+      .upsert(teamData, { onConflict: 'id' });
 
     if (teamError) {
       throw new Error(`Failed to save team: ${teamError.message}`);

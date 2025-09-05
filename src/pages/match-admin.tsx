@@ -501,40 +501,61 @@ export default function MatchAdminNew() {
       console.log('Team save mode:', isEditing ? 'EDIT' : 'CREATE');
       console.log('Edit Team ID:', editTeamId);
       
-      // Create team record with coaches - let database generate ID for new records
-      const teamData = isEditing ? {
-        id: editTeamId,
+      // Start with minimal data to test what works
+      const baseTeamData = {
         name: wizardData.teamName,
         age_group: wizardData.ageGroup,
         gender: wizardData.gender,
         league: wizardData.league,
-        season: wizardData.season,
-        home_venue: wizardData.homeVenue,
-        contact_email: wizardData.contactEmail || null,
-        contact_phone: wizardData.contactPhone || null,
-        coaches: wizardData.coaches || [],
-        notes: wizardData.notes || null,
-        is_opponent: wizardData.teamType === 'opponent'
-      } : {
-        name: wizardData.teamName,
-        age_group: wizardData.ageGroup,
-        gender: wizardData.gender,
-        league: wizardData.league,
-        season: wizardData.season,
-        home_venue: wizardData.homeVenue,
-        contact_email: wizardData.contactEmail || null,
-        contact_phone: wizardData.contactPhone || null,
-        coaches: wizardData.coaches || [],
-        notes: wizardData.notes || null,
-        is_opponent: wizardData.teamType === 'opponent'
+        season: wizardData.season
       };
+
+      // Add optional fields only if they have values  
+      if (wizardData.homeVenue) {
+        baseTeamData.home_venue = wizardData.homeVenue;
+      }
+      if (wizardData.contactEmail) {
+        baseTeamData.contact_email = wizardData.contactEmail;
+      }
+      if (wizardData.contactPhone) {
+        baseTeamData.contact_phone = wizardData.contactPhone;
+      }
+      if (wizardData.notes) {
+        baseTeamData.notes = wizardData.notes;
+      }
+      if (wizardData.coaches && wizardData.coaches.length > 0) {
+        baseTeamData.coaches = wizardData.coaches;
+      }
+      
+      // Add team type
+      baseTeamData.is_opponent = wizardData.teamType === 'opponent';
+
+      // For editing, add the ID
+      const teamData = isEditing ? { ...baseTeamData, id: editTeamId } : baseTeamData;
 
       console.log('Team data to save:', teamData);
 
       console.log('Attempting to save team to database...');
-      const { data: teamResult, error: teamError } = isEditing 
-        ? await supabase.from('teams').update(teamData).eq('id', editTeamId).select()
-        : await supabase.from('teams').insert(teamData).select();
+      let teamResult, teamError;
+      
+      if (isEditing) {
+        console.log('Updating existing team...');
+        const { data, error } = await supabase
+          .from('teams')
+          .update(teamData)
+          .eq('id', editTeamId)
+          .select();
+        teamResult = data;
+        teamError = error;
+      } else {
+        console.log('Creating new team...');
+        const { data, error } = await supabase
+          .from('teams')
+          .insert([teamData])
+          .select();
+        teamResult = data;  
+        teamError = error;
+      }
       
       console.log('Team save result:', teamResult);
       
