@@ -497,24 +497,35 @@ export default function MatchAdminNew() {
       console.log('Starting team save process...');
       const editTeamId = router.query.edit as string;
       const isEditing = Boolean(editTeamId);
-      const teamId = isEditing ? editTeamId : crypto.randomUUID();
       
       console.log('Team save mode:', isEditing ? 'EDIT' : 'CREATE');
-      console.log('Team ID:', teamId);
+      console.log('Edit Team ID:', editTeamId);
       
-      // Create team record with coaches
-      const teamData = {
-        id: teamId,
+      // Create team record with coaches - let database generate ID for new records
+      const teamData = isEditing ? {
+        id: editTeamId,
         name: wizardData.teamName,
         age_group: wizardData.ageGroup,
         gender: wizardData.gender,
         league: wizardData.league,
         season: wizardData.season,
         home_venue: wizardData.homeVenue,
-        contact_email: wizardData.contactEmail,
-        contact_phone: wizardData.contactPhone,
-        coaches: wizardData.coaches,
-        notes: wizardData.notes,
+        contact_email: wizardData.contactEmail || null,
+        contact_phone: wizardData.contactPhone || null,
+        coaches: wizardData.coaches || [],
+        notes: wizardData.notes || null,
+        is_opponent: wizardData.teamType === 'opponent'
+      } : {
+        name: wizardData.teamName,
+        age_group: wizardData.ageGroup,
+        gender: wizardData.gender,
+        league: wizardData.league,
+        season: wizardData.season,
+        home_venue: wizardData.homeVenue,
+        contact_email: wizardData.contactEmail || null,
+        contact_phone: wizardData.contactPhone || null,
+        coaches: wizardData.coaches || [],
+        notes: wizardData.notes || null,
         is_opponent: wizardData.teamType === 'opponent'
       };
 
@@ -522,14 +533,22 @@ export default function MatchAdminNew() {
 
       console.log('Attempting to save team to database...');
       const { data: teamResult, error: teamError } = isEditing 
-        ? await supabase.from('teams').update(teamData).eq('id', teamId)
-        : await supabase.from('teams').insert(teamData);
+        ? await supabase.from('teams').update(teamData).eq('id', editTeamId).select()
+        : await supabase.from('teams').insert(teamData).select();
       
       console.log('Team save result:', teamResult);
       
       if (teamError) {
         console.error('Team save error details:', teamError);
         throw new Error(`Team save error: ${teamError.message}${teamError.details ? ` - ${teamError.details}` : ''}${teamError.hint ? ` (Hint: ${teamError.hint})` : ''}`);
+      }
+
+      // Get the team ID for new records
+      const teamId = isEditing ? editTeamId : (teamResult && teamResult[0] ? teamResult[0].id : null);
+      console.log('Final team ID:', teamId);
+      
+      if (!teamId) {
+        throw new Error('Failed to get team ID after save');
       }
 
       console.log('Team saved successfully!');
