@@ -295,6 +295,31 @@ export default function MatchAdminNew() {
     }
   };
 
+  // Function to save a new venue to the database
+  const saveVenueToDatabase = async (venueName: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('venues')
+        .insert({ name: venueName, created_at: new Date() });
+      
+      if (error) {
+        console.error('Error saving venue to database:', error);
+        // If it's a duplicate key error or unique constraint violation, consider it successful
+        if (error.code === '23505') {
+          console.log('Venue already exists in database, continuing...');
+          return true;
+        }
+        return false;
+      }
+      
+      console.log('✅ Successfully saved venue to database:', venueName);
+      return true;
+    } catch (error) {
+      console.error('Unexpected error saving venue:', error);
+      return false;
+    }
+  };
+
   const loadTeams = async () => {
     try {
       const { data: teamsData, error } = await supabase
@@ -584,7 +609,9 @@ export default function MatchAdminNew() {
           const { error: deleteError } = await supabase.from('players').delete().eq('team_id', teamId);
           if (deleteError) {
             console.error('Error deleting existing players:', deleteError);
+            throw new Error(`Failed to delete existing players: ${deleteError.message}. Cannot proceed with player updates to avoid duplicates.`);
           }
+          console.log('Successfully deleted existing players');
         }
         
         const playersData = wizardData.players.map(player => ({
@@ -679,13 +706,21 @@ export default function MatchAdminNew() {
   return (
     <div>
       <StandardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 pb-32 md:pb-20">
         <div className="max-w-4xl mx-auto px-4">
 
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 relative">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Team Setup Wizard</h1>
             <p className="text-xl text-gray-600">Simple 4-step process to add teams and opponents</p>
+            <Link 
+              href="/admin" 
+              className="absolute top-0 right-0 text-gray-400 hover:text-gray-600 text-sm flex items-center space-x-1 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-200 hover:shadow-md transition-all"
+              title="Admin Tools & Diagnostics"
+            >
+              <span>🔧</span>
+              <span>Tools</span>
+            </Link>
           </div>
 
           {/* Progress Bar */}
@@ -1094,25 +1129,45 @@ export default function MatchAdminNew() {
                                 placeholder="Enter venue name (e.g. Local Sports Ground)..."
                                 className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 autoFocus
-                                onKeyPress={(e) => {
+                                onKeyPress={async (e) => {
                                   if (e.key === 'Enter') {
                                     const input = e.target as HTMLInputElement;
                                     const value = input.value.trim();
                                     if (value && !venues.includes(value)) {
-                                      setVenues([...venues, value]);
+                                      // Save to database first
+                                      const saved = await saveVenueToDatabase(value);
+                                      if (saved) {
+                                        setVenues([...venues, value]);
+                                        setWizardData(prev => ({ ...prev, homeVenue: value }));
+                                        input.value = '';
+                                      } else {
+                                        alert('Failed to save venue to database. Please try again.');
+                                      }
+                                    } else if (value && venues.includes(value)) {
                                       setWizardData(prev => ({ ...prev, homeVenue: value }));
+                                      input.value = '';
                                     }
                                   }
                                 }}
                               />
                               <button
                                 type="button"
-                                onClick={() => {
+                                onClick={async () => {
                                   const input = document.querySelector('input[placeholder*="venue name"]') as HTMLInputElement;
                                   const value = input?.value.trim();
                                   if (value && !venues.includes(value)) {
-                                    setVenues([...venues, value]);
+                                    // Save to database first
+                                    const saved = await saveVenueToDatabase(value);
+                                    if (saved) {
+                                      setVenues([...venues, value]);
+                                      setWizardData(prev => ({ ...prev, homeVenue: value }));
+                                      input.value = '';
+                                    } else {
+                                      alert('Failed to save venue to database. Please try again.');
+                                    }
+                                  } else if (value && venues.includes(value)) {
                                     setWizardData(prev => ({ ...prev, homeVenue: value }));
+                                    input.value = '';
                                   }
                                 }}
                                 className="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"

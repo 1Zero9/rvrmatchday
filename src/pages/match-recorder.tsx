@@ -80,11 +80,74 @@ export default function MatchRecorderSimple() {
 
   const [players, setPlayers] = useState<any[]>([]);
 
-  // Get available venues from matches
-  const getAvailableVenues = () => {
-    const venues = ['Home Ground', 'Phoenix Park', 'Away Ground', 'Training Ground'];
-    return venues;
+  // State for venues
+  const [venues, setVenues] = useState<string[]>(['Home Ground', 'Phoenix Park', 'Away Ground', 'Training Ground']);
+  const [showAddVenue, setShowAddVenue] = useState(false);
+  const [newVenueName, setNewVenueName] = useState('');
+
+  // Load venues from database
+  const loadVenues = async () => {
+    try {
+      // First try to get venues from a venues table
+      const { data: venuesData, error: venuesError } = await supabase
+        .from('venues')
+        .select('name')
+        .order('name');
+
+      if (venuesData && !venuesError) {
+        const venueNames = venuesData.map(v => v.name);
+        setVenues(venueNames);
+        return;
+      }
+
+      // Fallback: get unique venues from existing matches
+      const { data: matchesData, error: matchesError } = await supabase
+        .from('matches')
+        .select('venue')
+        .not('venue', 'is', null);
+
+      if (matchesData && !matchesError) {
+        const uniqueVenues = [...new Set(matchesData.map(m => m.venue).filter(Boolean))];
+        if (uniqueVenues.length > 0) {
+          setVenues(['Home Ground', ...uniqueVenues.sort()]);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading venues:', error);
+      // Keep default venues
+    }
   };
+
+  // Add new venue to database
+  const addNewVenue = async () => {
+    if (!newVenueName.trim()) return;
+    
+    try {
+      // Try to insert into venues table
+      const { error: venueError } = await supabase
+        .from('venues')
+        .insert([{ name: newVenueName.trim(), is_active: true }]);
+
+      if (!venueError) {
+        // Successfully added to venues table
+        setVenues(prev => [...prev, newVenueName.trim()].sort());
+        setNewVenueName('');
+        setShowAddVenue(false);
+        return;
+      }
+
+      // If venues table doesn't exist, just add to local state
+      console.log('Venues table not found, adding to local state only');
+      setVenues(prev => [...prev, newVenueName.trim()].sort());
+      setNewVenueName('');
+      setShowAddVenue(false);
+    } catch (error) {
+      console.error('Error adding venue:', error);
+    }
+  };
+
+  // Get available venues
+  const getAvailableVenues = () => venues;
 
   // Calculate RVR goals to determine goal scorer slots
   const getRVRGoals = () => {
@@ -118,6 +181,7 @@ export default function MatchRecorderSimple() {
 
   useEffect(() => {
     loadData();
+    loadVenues();
     
     // Check for mode parameter
     const modeParam = router.query.mode as string;
@@ -746,6 +810,11 @@ export default function MatchRecorderSimple() {
               getAvailablePlayers={getAvailablePlayers}
               getRVRGoals={getRVRGoals}
               getAvailableVenues={getAvailableVenues}
+              showAddVenue={showAddVenue}
+              setShowAddVenue={setShowAddVenue}
+              newVenueName={newVenueName}
+              setNewVenueName={setNewVenueName}
+              addNewVenue={addNewVenue}
             />
           )}
 

@@ -9,6 +9,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
 import CelebrationResultCard from "../components/CelebrationResultCard";
@@ -18,6 +19,95 @@ import { Team, TeamSummary, Match } from "../types/match-tracker";
 import { VERSION_CONFIG } from "../config/version";
 
 type TabType = 'overview' | 'fixtures' | 'management' | 'statistics';
+
+// Component for displaying players in match results card
+function MatchPlayersDisplay({ match }: { match: Match }) {
+  const [selectedPlayers, setSelectedPlayers] = React.useState<any[]>([]);
+  
+  React.useEffect(() => {
+    const loadSelectedPlayers = async () => {
+      try {
+        console.log('🔍 Loading players for match:', match.id);
+        
+        // Get selected squad from matches table (selected_squad field)
+        const { data: matchData, error: matchError } = await supabase
+          .from('matches')
+          .select('selected_squad')
+          .eq('id', match.id)
+          .single();
+
+        if (matchData && matchData.selected_squad && !matchError) {
+          console.log('✅ Found match with squad data:', matchData.selected_squad);
+          
+          // Parse selected_squad (could be JSON string or array)
+          let selectedSquad: string[] = [];
+          if (Array.isArray(matchData.selected_squad)) {
+            selectedSquad = matchData.selected_squad;
+          } else if (typeof matchData.selected_squad === 'string') {
+            try {
+              selectedSquad = JSON.parse(matchData.selected_squad);
+            } catch (e) {
+              console.warn('Failed to parse selected_squad JSON:', matchData.selected_squad);
+              selectedSquad = [];
+            }
+          }
+
+          console.log('✅ Parsed squad:', selectedSquad.length, 'selected player IDs');
+          
+          if (selectedSquad.length > 0) {
+            // Get player details for the selected player IDs
+            const { data: playersData, error: playersError } = await supabase
+              .from('players')
+              .select('id, first_name, last_name, position')
+              .in('id', selectedSquad);
+
+            if (playersData && !playersError) {
+              const players = playersData.map(player => ({
+                id: player.id,
+                name: `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player',
+                position: player.position || 'Field Player'
+              }));
+              console.log('✅ Found player details for', players.length, 'selected players');
+              setSelectedPlayers(players);
+              return;
+            }
+          }
+        }
+
+        console.log('❌ No squad selected for this match - showing no players');
+        // Only show players if they were specifically selected for this match
+        setSelectedPlayers([]);
+      } catch (error) {
+        console.error('Error loading match players:', error);
+      }
+    };
+    
+    loadSelectedPlayers();
+  }, [match.id, match.teamId]);
+
+  if (selectedPlayers.length === 0) return null;
+
+  return (
+    <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-100 rounded-lg">
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="text-sm font-semibold text-blue-800 flex items-center">
+          <span className="mr-1">👥</span>
+          Match Squad ({selectedPlayers.length})
+        </h4>
+      </div>
+      <div className="flex flex-wrap gap-1">
+        {selectedPlayers.map((player, index) => (
+          <span 
+            key={index}
+            className="text-xs bg-white/80 text-gray-700 px-2 py-1 rounded-md shadow-sm border border-gray-200"
+          >
+            {player.name}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // Component for inline goal scorers display
 function GoalScorersInline({ match }: { match: Match }) {
@@ -188,6 +278,9 @@ function MatchExpandedDetails({ match }: { match: Match }) {
             </div>
           )}
         </div>
+        
+        {/* Squad Display - Only in Expanded View */}
+        <MatchPlayersDisplay match={match} />
       </div>
       
       {/* Mobile Bottom Navigation */}
@@ -1074,7 +1167,7 @@ export default function MatchCentral() {
   return (
     <div className="min-h-screen">
       {/* Mobile-Only Design */}
-      <div className="block md:hidden bg-white">
+      <div className="block md:hidden bg-white pb-32">
         {/* Simplified Mobile Header */}
         <div className="bg-club-primary text-white p-4">
           <div className="flex items-center justify-between">
@@ -1376,6 +1469,14 @@ export default function MatchCentral() {
                     <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
                       v{VERSION_CONFIG.current.version}
                     </span>
+                    <Link 
+                      href="/admin" 
+                      className="text-gray-400 hover:text-gray-600 text-sm flex items-center space-x-1 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-200 hover:shadow-md transition-all"
+                      title="Admin Tools & Diagnostics"
+                    >
+                      <span>🔧</span>
+                      <span>Tools</span>
+                    </Link>
                   </div>
                   <p className="text-gray-600 mt-1">Complete football match management system</p>
                 </div>

@@ -11,17 +11,17 @@
 export const VERSION_CONFIG = {
   // Current Version Information
   current: {
-    version: "5.0.0",
-    codename: "Enterprise Match Tracking",
+    version: "0.5.1",
+    codename: "Development Build - Match Tracking",
     releaseDate: "2025-09-06",
-    buildNumber: "2025.09.06.470"
+    buildNumber: "2025.09.06.774"
   },
 
   // Release Information
   release: {
-    type: "major" as const,
+    type: "minor" as const,
     impact: "feature" as const,
-    stability: "stable" as const,
+    stability: "development" as const,
     breaking: false
   },
 
@@ -80,10 +80,10 @@ export const VERSION_CONFIG = {
 
   // Deployment Information
   deployment: {
-    environment: "production" as const,
+    environment: "development" as const,
     deployedAt: new Date().toISOString(),
-    commitHash: process.env.VERCEL_GIT_COMMIT_SHA || "local",
-    branch: process.env.VERCEL_GIT_COMMIT_REF || "main"
+    commitHash: process.env.VERCEL_GIT_COMMIT_SHA || "local-dev",
+    branch: process.env.VERCEL_GIT_COMMIT_REF || "development"
   }
 } as const;
 

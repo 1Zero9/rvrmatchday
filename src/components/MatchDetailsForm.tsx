@@ -40,6 +40,11 @@ interface MatchDetailsFormProps {
   getAvailablePlayers: () => any[];
   getRVRGoals: () => number;
   getAvailableVenues: () => string[];
+  showAddVenue: boolean;
+  setShowAddVenue: (show: boolean) => void;
+  newVenueName: string;
+  setNewVenueName: (name: string) => void;
+  addNewVenue: () => Promise<void>;
 }
 
 export default function MatchDetailsForm({
@@ -53,7 +58,12 @@ export default function MatchDetailsForm({
   isFutureMatch,
   getAvailablePlayers,
   getRVRGoals,
-  getAvailableVenues
+  getAvailableVenues,
+  showAddVenue,
+  setShowAddVenue,
+  newVenueName,
+  setNewVenueName,
+  addNewVenue
 }: MatchDetailsFormProps) {
   
   // Force re-render when editingMatch changes
@@ -101,18 +111,75 @@ export default function MatchDetailsForm({
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Venue</label>
-            <select
-              value={details.venue}
-              onChange={(e) => {
-                console.log('🏟️ Venue changed to:', e.target.value);
-                setDetails(prev => ({ ...prev, venue: e.target.value }));
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {getAvailableVenues().map(venue => (
-                <option key={venue} value={venue}>{venue}</option>
-              ))}
-            </select>
+            <div className="space-y-2">
+              <select
+                value={details.venue}
+                onChange={(e) => {
+                  console.log('🏟️ Venue changed to:', e.target.value);
+                  setDetails(prev => ({ ...prev, venue: e.target.value }));
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {getAvailableVenues().map(venue => (
+                  <option key={venue} value={venue}>{venue}</option>
+                ))}
+              </select>
+              
+              {/* Add New Venue Button */}
+              {!showAddVenue && (
+                <button
+                  type="button"
+                  onClick={() => setShowAddVenue(true)}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1"
+                >
+                  <span>➕</span>
+                  <span>Add New Venue</span>
+                </button>
+              )}
+              
+              {/* Add New Venue Form */}
+              {showAddVenue && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-2 p-3 bg-gray-50 rounded-lg border"
+                >
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      placeholder="Enter venue name..."
+                      value={newVenueName}
+                      onChange={(e) => setNewVenueName(e.target.value)}
+                      className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          addNewVenue();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={addNewVenue}
+                      disabled={!newVenueName.trim()}
+                      className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddVenue(false);
+                        setNewVenueName('');
+                      }}
+                      className="px-3 py-2 bg-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </div>
           </div>
 
           <div>

@@ -286,7 +286,7 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
       )}
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className="flex-1 pb-20 md:pb-16">
         {children}
       </main>
 
