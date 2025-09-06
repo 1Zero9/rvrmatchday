@@ -604,35 +604,107 @@ export default function MatchAdminNew() {
         console.log(`Saving ${wizardData.players.length} players for RVR team...`);
         
         if (isEditing) {
-          console.log('Deleting existing players for edit mode...');
-          // Delete existing players and re-add (simpler than complex update logic)
-          const { error: deleteError } = await supabase.from('players').delete().eq('team_id', teamId);
-          if (deleteError) {
-            console.error('Error deleting existing players:', deleteError);
-            throw new Error(`Failed to delete existing players: ${deleteError.message}. Cannot proceed with player updates to avoid duplicates.`);
+          console.log('Updating existing players for edit mode...');
+          
+          // Get existing players for this team
+          const { data: existingPlayers, error: fetchError } = await supabase
+            .from('players')
+            .select('id, first_name, position, is_captain, is_vice_captain')
+            .eq('team_id', teamId);
+          
+          if (fetchError) {
+            console.error('Error fetching existing players:', fetchError);
+            throw new Error(`Failed to fetch existing players: ${fetchError.message}`);
           }
-          console.log('Successfully deleted existing players');
-        }
-        
-        const playersData = wizardData.players.map(player => ({
-          id: crypto.randomUUID(),
-          team_id: teamId,
-          first_name: player.name,
-          position: player.position || null,
-          is_active: true,
-          is_captain: player.isCaptain || false,
-          is_vice_captain: player.isViceCaptain || false
-        }));
+          
+          console.log('Existing players:', existingPlayers);
+          
+          // Create a map of existing players by name for quick lookup
+          const existingPlayerMap = new Map();
+          (existingPlayers || []).forEach(player => {
+            existingPlayerMap.set(player.first_name, player);
+          });
+          
+          // Process each new player - update existing or create new
+          for (const player of wizardData.players) {
+            const existingPlayer = existingPlayerMap.get(player.name);
+            
+            if (existingPlayer) {
+              // Update existing player
+              console.log(`Updating existing player: ${player.name}`);
+              const { error: updateError } = await supabase
+                .from('players')
+                .update({
+                  position: player.position || null,
+                  is_captain: player.isCaptain || false,
+                  is_vice_captain: player.isViceCaptain || false,
+                  is_active: true
+                })
+                .eq('id', existingPlayer.id);
+              
+              if (updateError) {
+                console.error(`Error updating player ${player.name}:`, updateError);
+              }
+              
+              // Remove from map so we know it was processed
+              existingPlayerMap.delete(player.name);
+            } else {
+              // Create new player
+              console.log(`Creating new player: ${player.name}`);
+              const { error: insertError } = await supabase
+                .from('players')
+                .insert({
+                  id: crypto.randomUUID(),
+                  team_id: teamId,
+                  first_name: player.name,
+                  position: player.position || null,
+                  is_active: true,
+                  is_captain: player.isCaptain || false,
+                  is_vice_captain: player.isViceCaptain || false
+                });
+              
+              if (insertError) {
+                console.error(`Error creating player ${player.name}:`, insertError);
+              }
+            }
+          }
+          
+          // Mark remaining existing players as inactive (they were removed from the roster)
+          for (const [playerName, existingPlayer] of existingPlayerMap) {
+            console.log(`Marking player as inactive: ${playerName}`);
+            const { error: deactivateError } = await supabase
+              .from('players')
+              .update({ is_active: false })
+              .eq('id', existingPlayer.id);
+            
+            if (deactivateError) {
+              console.error(`Error deactivating player ${playerName}:`, deactivateError);
+            }
+          }
+          
+          console.log('Player updates completed successfully');
+        } else {
+          // Creating new team - use the original insert logic
+          const playersData = wizardData.players.map(player => ({
+            id: crypto.randomUUID(),
+            team_id: teamId,
+            first_name: player.name,
+            position: player.position || null,
+            is_active: true,
+            is_captain: player.isCaptain || false,
+            is_vice_captain: player.isViceCaptain || false
+          }));
 
-        console.log('Players data to save:', playersData);
+          console.log('Players data to save:', playersData);
 
-        const { data: playersResult, error: playersError } = await supabase.from('players').insert(playersData);
+          const { data: playersResult, error: playersError } = await supabase.from('players').insert(playersData);
         
-        console.log('Players save result:', playersResult);
-        
-        if (playersError) {
-          console.error('Players save error details:', playersError);
-          throw new Error(`Players save error: ${playersError.message}${playersError.details ? ` - ${playersError.details}` : ''}${playersError.hint ? ` (Hint: ${playersError.hint})` : ''}`);
+          console.log('Players save result:', playersResult);
+          
+          if (playersError) {
+            console.error('Error saving players:', playersError);
+            throw new Error(`Failed to save players: ${playersError.message}`);
+          }
         }
         
         console.log('Players saved successfully!');

@@ -18,6 +18,36 @@ import { supabase } from "../lib/supabase";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
 import { VERSION_CONFIG } from "../config/version";
 
+// Chart.js imports and setup
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
 type TabType = 'overview' | 'fixtures' | 'management' | 'statistics';
 
 // Component for displaying players in match results card
@@ -64,7 +94,7 @@ function MatchPlayersDisplay({ match }: { match: Match }) {
             if (playersData && !playersError) {
               const players = playersData.map(player => ({
                 id: player.id,
-                name: `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player',
+                name: `${player.first_name || ''}${player.last_name && player.last_name !== 'null' ? ` ${player.last_name}` : ''}`.trim() || 'Unknown Player',
                 position: player.position || 'Field Player'
               }));
               console.log('✅ Found player details for', players.length, 'selected players');
@@ -138,7 +168,7 @@ function GoalScorersInline({ match }: { match: Match }) {
         const events = (data || []).map(event => ({
           id: event.id,
           playerName: event.players 
-            ? `${event.players.first_name || ''} ${event.players.last_name || ''}`.trim() || 'Unknown Player'
+            ? `${event.players.first_name || ''}${event.players.last_name && event.players.last_name !== 'null' ? ` ${event.players.last_name}` : ''}`.trim() || 'Unknown Player'
             : event.player_name || 'Unknown Player',
           minute: event.event_minute || 0,
           assistPlayerName: event.notes?.match(/Assist:\s*([^|]+)/)?.[1]?.trim()
@@ -206,7 +236,7 @@ function MatchExpandedDetails({ match }: { match: Match }) {
         const events = (data || []).map(event => ({
           id: event.id,
           playerName: event.players 
-            ? `${event.players.first_name || ''} ${event.players.last_name || ''}`.trim() || 'Unknown Player'
+            ? `${event.players.first_name || ''}${event.players.last_name && event.players.last_name !== 'null' ? ` ${event.players.last_name}` : ''}`.trim() || 'Unknown Player'
             : event.player_name || 'Unknown Player',
           minute: event.event_minute || 0,
           eventData: {
@@ -932,66 +962,68 @@ export default function MatchCentral() {
   const getPlayerStatistics = async (teamId: string) => {
     try {
       // Load match events from database for player statistics
-      const { data: matchEvents, error } = await supabase
+      let query = supabase
         .from('match_events')
         .select(`
           id,
           match_id,
+          player_id,
           player_name,
           event_type,
           event_minute,
-          matches!inner(team_id)
+          notes,
+          matches!inner(team_id),
+          players(first_name, last_name)
         `)
-        .eq('matches.team_id', teamId === 'all' ? undefined : teamId);
+        .eq('event_type', 'Goal');
+
+      if (teamId !== 'all') {
+        query = query.eq('matches.team_id', teamId);
+      }
+
+      const { data: matchEvents, error } = await query;
 
       const events = matchEvents || [];
-      console.log('All match events:', events);
-      console.log('All matches for stats:', allMatches);
-      
-      const teamFilter = teamId === 'all' ? 
-        allMatches.filter(m => m.status === 'Finished') :
-        allMatches.filter(m => m.teamId === teamId && m.status === 'Finished');
-      
-      console.log('Team filter matches:', teamFilter);
-      console.log('Filtered finished matches:', teamFilter.map(m => ({id: m.id, homeScore: m.homeScore, awayScore: m.awayScore})));
-      
-      const relevantEvents = (events || []).filter(event => 
-        teamFilter.some(match => match.id === event.match_id)
-      );
-      
-      console.log('Relevant events:', relevantEvents);
+      console.log('✅ Goal events loaded:', events);
 
       // Calculate goals and assists by player
       const playerStats = new Map();
       
-      relevantEvents.forEach(event => {
-        if (event.eventType === 'Goal') {
-          // Goals
-          const playerId = event.playerId || event.playerName;
-          if (!playerStats.has(playerId)) {
-            playerStats.set(playerId, {
-              name: event.playerName,
-              goals: 0,
-              assists: 0,
-              matches: new Set()
-            });
-          }
-          const stats = playerStats.get(playerId);
-          stats.goals++;
-          stats.matches.add(event.matchId);
-          
-          // Assists
-          if (event.eventData?.assistPlayerName) {
-            const assistPlayer = event.eventData.assistPlayerName;
-            if (!playerStats.has(assistPlayer)) {
-              playerStats.set(assistPlayer, {
-                name: assistPlayer,
-                goals: 0,
-                assists: 0,
-                matches: new Set()
-              });
+      events.forEach(event => {
+        // Goals
+        const playerId = event.player_id || event.player_name || 'unknown';
+        const playerName = event.players
+          ? `${event.players.first_name}${event.players.last_name && event.players.last_name !== 'null' ? ` ${event.players.last_name}` : ''}`
+          : (event.player_name && event.player_name !== 'null' ? event.player_name : 'Unknown Player');
+        
+        if (!playerStats.has(playerId)) {
+          playerStats.set(playerId, {
+            name: playerName,
+            goals: 0,
+            assists: 0,
+            matches: new Set()
+          });
+        }
+        const stats = playerStats.get(playerId);
+        stats.goals++;
+        stats.matches.add(event.match_id);
+        
+        // Assists (from notes field)
+        if (event.notes && event.notes.includes('Assist:')) {
+          const assistMatch = event.notes.match(/Assist:\s*([^|]+)/);
+          if (assistMatch) {
+            const assistPlayer = assistMatch[1].trim();
+            if (assistPlayer && assistPlayer !== 'null') {
+              if (!playerStats.has(assistPlayer)) {
+                playerStats.set(assistPlayer, {
+                  name: assistPlayer,
+                  goals: 0,
+                  assists: 0,
+                  matches: new Set()
+                });
+              }
+              playerStats.get(assistPlayer).assists++;
             }
-            playerStats.get(assistPlayer).assists++;
           }
         }
       });
@@ -2107,24 +2139,325 @@ export default function MatchCentral() {
                   </select>
                 </div>
 
-                {/* Main Stats Grid - Real Data */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {/* 3 Chart Boxes at Top - Smaller Size */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  
+                  {/* Match Results Distribution */}
+                  <div className="bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-xl p-4 shadow-lg">
+                    <h3 className="font-bold text-gray-900 mb-3 flex items-center text-sm">
+                      <span className="mr-2 text-lg">🎯</span>
+                      Match Results
+                    </h3>
+                    <div className="h-48 flex items-center justify-center">
+                      <Doughnut 
+                        data={{
+                          labels: ['Wins', 'Draws', 'Losses'],
+                          datasets: [{
+                            data: [currentStats.won, currentStats.drawn, currentStats.lost],
+                            backgroundColor: [
+                              '#10B981', // Green for wins
+                              '#F59E0B', // Yellow for draws  
+                              '#EF4444'  // Red for losses
+                            ],
+                            borderColor: [
+                              '#059669',
+                              '#D97706',
+                              '#DC2626'
+                            ],
+                            borderWidth: 2,
+                            hoverBorderWidth: 3,
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
+                              position: 'bottom',
+                              labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                font: {
+                                  size: 12,
+                                  weight: 'bold'
+                                }
+                              }
+                            },
+                            tooltip: {
+                              callbacks: {
+                                label: (context) => {
+                                  const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+                                  const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : '0';
+                                  return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                }
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Goals Trend Over Time */}
+                  <div className="bg-gradient-to-br from-white to-green-50 border border-green-200 rounded-xl p-4 shadow-lg">
+                    <h3 className="font-bold text-gray-900 mb-3 flex items-center text-sm">
+                      <span className="mr-2 text-lg">📈</span>
+                      Goals Trend
+                    </h3>
+                    <div className="h-48">
+                      <Line 
+                        data={{
+                          labels: (() => {
+                            const teamMatches = allMatches
+                              .filter(match => selectedStatsTeam === 'all' || match.teamId === selectedStatsTeam)
+                              .filter(match => match.status === 'Finished' && match.homeScore !== undefined && match.awayScore !== undefined)
+                              .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
+                              .slice(-10);
+                            return teamMatches.map((match, index) => `Match ${index + 1}`);
+                          })(),
+                          datasets: [
+                            {
+                              label: 'Goals For',
+                              data: (() => {
+                                const teamMatches = allMatches
+                                  .filter(match => selectedStatsTeam === 'all' || match.teamId === selectedStatsTeam)
+                                  .filter(match => match.status === 'Finished' && match.homeScore !== undefined && match.awayScore !== undefined)
+                                  .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
+                                  .slice(-10);
+                                return teamMatches.map(match => match.isHomeMatch ? match.homeScore : match.awayScore);
+                              })(),
+                              borderColor: '#10B981',
+                              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                              borderWidth: 3,
+                              fill: true,
+                              tension: 0.4,
+                              pointBackgroundColor: '#10B981',
+                              pointBorderColor: '#059669',
+                              pointBorderWidth: 2,
+                              pointRadius: 5,
+                              pointHoverRadius: 8,
+                            },
+                            {
+                              label: 'Goals Against',
+                              data: (() => {
+                                const teamMatches = allMatches
+                                  .filter(match => selectedStatsTeam === 'all' || match.teamId === selectedStatsTeam)
+                                  .filter(match => match.status === 'Finished' && match.homeScore !== undefined && match.awayScore !== undefined)
+                                  .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
+                                  .slice(-10);
+                                return teamMatches.map(match => match.isHomeMatch ? match.awayScore : match.homeScore);
+                              })(),
+                              borderColor: '#EF4444',
+                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                              borderWidth: 3,
+                              fill: true,
+                              tension: 0.4,
+                              pointBackgroundColor: '#EF4444',
+                              pointBorderColor: '#DC2626',
+                              pointBorderWidth: 2,
+                              pointRadius: 5,
+                              pointHoverRadius: 8,
+                            }
+                          ]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          interaction: {
+                            intersect: false,
+                            mode: 'index',
+                          },
+                          plugins: {
+                            legend: {
+                              position: 'top',
+                              labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                  size: 12,
+                                  weight: 'bold'
+                                }
+                              }
+                            },
+                            tooltip: {
+                              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                              titleColor: 'white',
+                              bodyColor: 'white',
+                              borderColor: 'rgba(255, 255, 255, 0.2)',
+                              borderWidth: 1,
+                            }
+                          },
+                          scales: {
+                            x: {
+                              grid: {
+                                display: false,
+                              },
+                              ticks: {
+                                font: {
+                                  size: 11
+                                }
+                              }
+                            },
+                            y: {
+                              beginAtZero: true,
+                              grid: {
+                                color: 'rgba(0, 0, 0, 0.1)',
+                              },
+                              ticks: {
+                                font: {
+                                  size: 11
+                                },
+                                stepSize: 1
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Home vs Away Performance Chart */}
+                  <div className="bg-gradient-to-br from-white to-purple-50 border border-purple-200 rounded-xl p-4 shadow-lg">
+                    <h3 className="font-bold text-gray-900 mb-3 flex items-center text-sm">
+                      <span className="mr-2 text-lg">🏠</span>
+                      Home vs Away
+                    </h3>
+                    <div className="h-48">
+                      <Bar 
+                        data={{
+                          labels: ['Home', 'Away'],
+                          datasets: [
+                            {
+                              label: 'Wins',
+                              data: [currentStats.homeWins, currentStats.won - currentStats.homeWins],
+                              backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                              borderColor: '#10B981',
+                              borderWidth: 2,
+                              borderRadius: 8,
+                              borderSkipped: false,
+                            },
+                            {
+                              label: 'Draws', 
+                              data: [
+                                (() => {
+                                  const homeDraws = allMatches
+                                    .filter(match => selectedStatsTeam === 'all' || match.teamId === selectedStatsTeam)
+                                    .filter(match => match.status === 'Finished' && match.isHomeMatch && match.homeScore === match.awayScore)
+                                    .length;
+                                  return homeDraws;
+                                })(),
+                                currentStats.drawn - (() => {
+                                  const homeDraws = allMatches
+                                    .filter(match => selectedStatsTeam === 'all' || match.teamId === selectedStatsTeam)
+                                    .filter(match => match.status === 'Finished' && match.isHomeMatch && match.homeScore === match.awayScore)
+                                    .length;
+                                  return homeDraws;
+                                })()
+                              ],
+                              backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                              borderColor: '#F59E0B',
+                              borderWidth: 2,
+                              borderRadius: 8,
+                              borderSkipped: false,
+                            },
+                            {
+                              label: 'Losses',
+                              data: [
+                                currentStats.homeMatches - currentStats.homeWins - (() => {
+                                  const homeDraws = allMatches
+                                    .filter(match => selectedStatsTeam === 'all' || match.teamId === selectedStatsTeam)
+                                    .filter(match => match.status === 'Finished' && match.isHomeMatch && match.homeScore === match.awayScore)
+                                    .length;
+                                  return homeDraws;
+                                })(),
+                                currentStats.awayMatches - (currentStats.won - currentStats.homeWins) - (currentStats.drawn - (() => {
+                                  const homeDraws = allMatches
+                                    .filter(match => selectedStatsTeam === 'all' || match.teamId === selectedStatsTeam)
+                                    .filter(match => match.status === 'Finished' && match.isHomeMatch && match.homeScore === match.awayScore)
+                                    .length;
+                                  return homeDraws;
+                                })())
+                              ],
+                              backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                              borderColor: '#EF4444',
+                              borderWidth: 2,
+                              borderRadius: 8,
+                              borderSkipped: false,
+                            }
+                          ]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
+                              position: 'top',
+                              labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                  size: 12,
+                                  weight: 'bold'
+                                }
+                              }
+                            },
+                            tooltip: {
+                              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                              titleColor: 'white',
+                              bodyColor: 'white',
+                            }
+                          },
+                          scales: {
+                            x: {
+                              grid: {
+                                display: false,
+                              },
+                              ticks: {
+                                font: {
+                                  size: 12,
+                                  weight: 'bold'
+                                }
+                              }
+                            },
+                            y: {
+                              beginAtZero: true,
+                              grid: {
+                                color: 'rgba(0, 0, 0, 0.1)',
+                              },
+                              ticks: {
+                                font: {
+                                  size: 11
+                                },
+                                stepSize: 1
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+
+
+                </div>
+
+                {/* Main Stats Grid - Real Data - Now Smaller Below Charts */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                   <motion.div 
                     whileHover={{ scale: 1.05, rotateY: 5 }}
-                    className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-6 text-center shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                    className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-4 text-center shadow-lg hover:shadow-xl transition-all cursor-pointer"
                   >
-                    <div className="text-3xl mb-3">⚽</div>
-                    <div className="text-3xl font-black text-green-600">{currentStats.played}</div>
-                    <div className="text-sm text-gray-600 font-semibold">Matches Played</div>
+                    <div className="text-2xl mb-2">⚽</div>
+                    <div className="text-2xl font-black text-green-600">{currentStats.played}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Matches Played</div>
                   </motion.div>
                   
                   <motion.div 
                     whileHover={{ scale: 1.05, rotateY: 5 }}
-                    className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6 text-center shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                    className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 text-center shadow-lg hover:shadow-xl transition-all cursor-pointer"
                   >
-                    <div className="text-3xl mb-3">🏆</div>
-                    <div className="text-3xl font-black text-blue-600">{currentStats.won}</div>
-                    <div className="text-sm text-gray-600 font-semibold">Wins</div>
+                    <div className="text-2xl mb-2">🏆</div>
+                    <div className="text-2xl font-black text-blue-600">{currentStats.won}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Wins</div>
                     {/* Win Percentage Gauge */}
                     <div className="mt-2 bg-gray-200 rounded-full h-2">
                       <div 
@@ -2137,20 +2470,20 @@ export default function MatchCentral() {
                   
                   <motion.div 
                     whileHover={{ scale: 1.05, rotateY: 5 }}
-                    className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl p-6 text-center shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                    className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl p-4 text-center shadow-lg hover:shadow-xl transition-all cursor-pointer"
                   >
-                    <div className="text-3xl mb-3">🤝</div>
-                    <div className="text-3xl font-black text-yellow-600">{currentStats.drawn}</div>
-                    <div className="text-sm text-gray-600 font-semibold">Draws</div>
+                    <div className="text-2xl mb-2">🤝</div>
+                    <div className="text-2xl font-black text-yellow-600">{currentStats.drawn}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Draws</div>
                   </motion.div>
                   
                   <motion.div 
                     whileHover={{ scale: 1.05, rotateY: 5 }}
-                    className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-xl p-6 text-center shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                    className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-xl p-4 text-center shadow-lg hover:shadow-xl transition-all cursor-pointer"
                   >
-                    <div className="text-3xl mb-3">💔</div>
-                    <div className="text-3xl font-black text-red-600">{currentStats.lost}</div>
-                    <div className="text-sm text-gray-600 font-semibold">Losses</div>
+                    <div className="text-2xl mb-2">💔</div>
+                    <div className="text-2xl font-black text-red-600">{currentStats.lost}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Losses</div>
                   </motion.div>
                 </div>
 
@@ -2302,12 +2635,12 @@ export default function MatchCentral() {
                 </div>
 
                 {/* Player Statistics Tables */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   
                   {/* Top Scorers */}
-                  <div className="bg-gradient-to-br from-yellow-50 to-orange-100 border border-yellow-200 rounded-xl p-6 shadow-lg">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center">
-                      <span className="mr-3 text-2xl">🥅</span>
+                  <div className="bg-gradient-to-br from-yellow-50 to-orange-100 border border-yellow-200 rounded-xl p-3 shadow-lg">
+                    <h3 className="font-bold text-gray-900 mb-3 flex items-center text-sm">
+                      <span className="mr-2 text-lg">🥅</span>
                       Top Scorers
                     </h3>
                     <div className="space-y-3">
@@ -2338,9 +2671,9 @@ export default function MatchCentral() {
                   </div>
 
                   {/* Top Assists */}
-                  <div className="bg-gradient-to-br from-blue-50 to-cyan-100 border border-blue-200 rounded-xl p-6 shadow-lg">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center">
-                      <span className="mr-3 text-2xl">🎯</span>
+                  <div className="bg-gradient-to-br from-blue-50 to-cyan-100 border border-blue-200 rounded-xl p-3 shadow-lg">
+                    <h3 className="font-bold text-gray-900 mb-3 flex items-center text-sm">
+                      <span className="mr-2 text-lg">🎯</span>
                       Top Assists
                     </h3>
                     <div className="space-y-3">
@@ -2371,9 +2704,9 @@ export default function MatchCentral() {
                   </div>
 
                   {/* Most Matches */}
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-100 border border-purple-200 rounded-xl p-6 shadow-lg">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center">
-                      <span className="mr-3 text-2xl">🏃</span>
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-100 border border-purple-200 rounded-xl p-3 shadow-lg">
+                    <h3 className="font-bold text-gray-900 mb-3 flex items-center text-sm">
+                      <span className="mr-2 text-lg">🏃</span>
                       Most Matches
                     </h3>
                     <div className="space-y-3">

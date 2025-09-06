@@ -352,7 +352,7 @@ export class MatchTrackerExistingDB {
     (data || []).forEach(event => {
       const playerId = event.player_id || 'unknown';
       const playerName = event.players 
-        ? `${event.players.first_name} ${event.players.last_name}`
+        ? `${event.players.first_name}${event.players.last_name && event.players.last_name !== 'null' ? ` ${event.players.last_name}` : ''}`
         : 'Unknown Player';
       
       if (!scorers[playerId]) {
@@ -583,7 +583,7 @@ export class MatchTrackerExistingDB {
     return {
       id: dbPlayer.id,
       teamId: teamPlayer?.team_id,
-      name: `${dbPlayer.first_name} ${dbPlayer.last_name}`,
+      name: `${dbPlayer.first_name}${dbPlayer.last_name && dbPlayer.last_name !== 'null' ? ` ${dbPlayer.last_name}` : ''}`,
       number: dbPlayer.jersey_number,
       position: dbPlayer.positions?.name || 'Unknown',
       dateOfBirth: dbPlayer.date_of_birth ? new Date(dbPlayer.date_of_birth) : undefined,
@@ -637,7 +637,7 @@ export class MatchTrackerExistingDB {
 
   private mapMatchEventFromExistingDB(dbEvent: any): MatchEvent {
     const playerName = dbEvent.players 
-      ? `${dbEvent.players.first_name} ${dbEvent.players.last_name}`
+      ? `${dbEvent.players.first_name}${dbEvent.players.last_name && dbEvent.players.last_name !== 'null' ? ` ${dbEvent.players.last_name}` : ''}`
       : dbEvent.player_name || 'Unknown Player';
 
     // Extract assist information from notes field for goals

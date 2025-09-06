@@ -445,7 +445,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     // Environment-based authentication
     const adminUser = process.env.NEXT_PUBLIC_ADMIN_USER || 'admin';
-    const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASS || 'defaultpass123';
+    const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASS || 'rvrfc2025';
     
     if (loginForm.username === adminUser && loginForm.password === adminPass) {
       setIsLoggedIn(true);
