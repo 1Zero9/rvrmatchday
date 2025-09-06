@@ -18,7 +18,8 @@ import { existingDbStorage } from './match-tracker-existing-db';
 import { storage as legacyStorage } from './match-tracker-storage';
 
 // Storage mode - can be switched via environment or config
-const USE_SUPABASE = process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_USE_SUPABASE === 'true';
+// Force Supabase usage in both development and production
+const USE_SUPABASE = true; // Always use Supabase database
 
 export class MatchTrackerStorageV2 {
   private get storage() {

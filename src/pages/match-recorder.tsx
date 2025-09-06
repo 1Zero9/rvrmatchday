@@ -7,6 +7,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
+import MatchDetailsForm from "../components/MatchDetailsForm";
 import { storageV2 as storage } from "../lib/match-tracker-storage-v2";
 import { supabase } from "../lib/supabase";
 import { Match, Team } from "../types/match-tracker";
@@ -41,6 +42,7 @@ export default function MatchRecorderSimple() {
   const [step, setStep] = useState<Step>('result');
   const [savedMatchId, setSavedMatchId] = useState<string>('');
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
+  const [detailsLoaded, setDetailsLoaded] = useState(false);
   const [mode, setMode] = useState<'record' | 'schedule'>('record');
   
   const [quickResult, setQuickResult] = useState<QuickResult>({
@@ -66,8 +68,15 @@ export default function MatchRecorderSimple() {
 
   // Debug details state changes
   useEffect(() => {
-    console.log('Details state updated:', details);
-  }, [details]);
+    if (editingMatch) {
+      console.log('🔍 Details state in edit mode:', {
+        weather: details.weather,
+        selectedSquad: details.selectedSquad.length,
+        goalScorers: details.goalScorers.length,
+        notes: details.notes?.substring(0, 50)
+      });
+    }
+  }, [details, editingMatch]);
 
   const [players, setPlayers] = useState<any[]>([]);
 
@@ -108,25 +117,28 @@ export default function MatchRecorderSimple() {
   }, [quickResult.homeScore, quickResult.awayScore, quickResult.isHomeMatch, quickResult.matchDate]);
 
   useEffect(() => {
-    const initializeComponent = async () => {
-      // Check for mode parameter
-      const modeParam = router.query.mode as string;
-      if (modeParam === 'schedule' || modeParam === 'record') {
-        setMode(modeParam);
-      }
-      
-      // Load data first
-      await loadData();
-      
-      // Then check for edit mode after data is loaded
-      const editId = router.query.edit as string;
-      if (editId) {
-        loadMatchForEdit(editId);
-      }
-    };
+    loadData();
     
-    initializeComponent();
+    // Check for mode parameter
+    const modeParam = router.query.mode as string;
+    if (modeParam === 'schedule' || modeParam === 'record') {
+      setMode(modeParam);
+    }
+    
+    // Reset details loaded state when not editing
+    if (!router.query.edit) {
+      setDetailsLoaded(true);
+    }
   }, [router.query]);
+
+  // Separate effect for edit mode that depends on teams being loaded
+  useEffect(() => {
+    const editId = router.query.edit as string;
+    if (editId && teams.length > 0) {
+      console.log('Teams loaded, now loading match for edit:', editId);
+      loadMatchForEdit(editId);
+    }
+  }, [router.query.edit, teams]);
 
   const loadData = async () => {
     try {
@@ -191,14 +203,11 @@ export default function MatchRecorderSimple() {
       console.log('Loading match for edit:', matchId);
       console.log('Available teams:', teams.length);
       
-      // Ensure teams are loaded before proceeding
-      if (teams.length === 0) {
-        console.warn('Teams not yet loaded, retrying in 1 second...');
-        setTimeout(() => loadMatchForEdit(matchId), 1000);
-        return;
-      }
-      
       const matches = await storage.getMatches();
+      console.log('All matches loaded:', matches.length);
+      console.log('Available match IDs:', matches.map(m => m.id));
+      console.log('Looking for match ID:', matchId);
+      
       const matchToEdit = matches.find(m => m.id === matchId);
       
       if (matchToEdit) {
@@ -214,7 +223,7 @@ export default function MatchRecorderSimple() {
         console.log('Team mapping:', { homeTeam, awayTeam, awayTeamName });
         
         // Populate form with match data
-        setQuickResult({
+        const quickResultData = {
           homeTeam: matchToEdit.isHomeMatch ? matchToEdit.teamId : (awayTeam?.id || 'custom'),
           homeTeamCustom: matchToEdit.isHomeMatch ? '' : (!awayTeam ? awayTeamName : ''),
           awayTeam: matchToEdit.isHomeMatch ? (awayTeam?.id || 'custom') : matchToEdit.teamId,
@@ -224,7 +233,10 @@ export default function MatchRecorderSimple() {
           matchDate: matchToEdit.scheduledDate.toISOString().split('T')[0],
           isHomeMatch: matchToEdit.isHomeMatch,
           matchType: matchToEdit.matchType || 'League'
-        });
+        };
+        
+        console.log('Setting quickResult to:', quickResultData);
+        setQuickResult(quickResultData);
         
         // Load goal events for this match
         const goalEvents = await storage.getMatchEvents(matchToEdit.id);
@@ -237,7 +249,8 @@ export default function MatchRecorderSimple() {
             playerName: event.playerName || '',
             assistedBy: event.eventData?.assistPlayerName || '',
             minute: event.minute || 0
-          }));
+          }))
+          .sort((a, b) => a.minute - b.minute); // Sort by minute for consistency
 
         console.log('Processed goal scorers:', goalScorers);
 
@@ -250,8 +263,8 @@ export default function MatchRecorderSimple() {
           selectedSquad: matchToEdit.selectedSquad || []
         };
         
-        console.log('Setting details:', detailsToSet);
         setDetails(detailsToSet);
+        setDetailsLoaded(true);
 
         // Always start at step 1 (result) when editing
         setStep('result');
@@ -265,11 +278,16 @@ export default function MatchRecorderSimple() {
 
   const saveResult = async () => {
     try {
-      // Create teams if custom
+      console.log('💾 SaveResult - Starting with quickResult:', quickResult);
+      console.log('💾 SaveResult - EditingMatch:', editingMatch?.id);
+      
+      // Only create teams if they're truly custom AND we're not editing an existing match
       let homeTeamId = quickResult.homeTeam;
       let awayTeamName = quickResult.awayTeam;
 
-      if (quickResult.homeTeam === 'custom' && quickResult.homeTeamCustom) {
+      // Handle home team
+      if (quickResult.homeTeam === 'custom' && quickResult.homeTeamCustom && !editingMatch) {
+        console.log('🏠 Creating new custom home team:', quickResult.homeTeamCustom);
         const homeTeam: Team = {
           id: crypto.randomUUID(),
           name: quickResult.homeTeamCustom,
@@ -280,9 +298,14 @@ export default function MatchRecorderSimple() {
         };
         await storage.saveTeam(homeTeam);
         homeTeamId = homeTeam.id;
+      } else if (quickResult.homeTeam !== 'custom') {
+        // Use existing team ID
+        homeTeamId = quickResult.homeTeam;
       }
 
-      if (quickResult.awayTeam === 'custom' && quickResult.awayTeamCustom) {
+      // Handle away team
+      if (quickResult.awayTeam === 'custom' && quickResult.awayTeamCustom && !editingMatch) {
+        console.log('✈️ Creating new custom away team:', quickResult.awayTeamCustom);
         const awayTeam: Team = {
           id: crypto.randomUUID(),
           name: quickResult.awayTeamCustom,
@@ -294,10 +317,16 @@ export default function MatchRecorderSimple() {
         };
         await storage.saveTeam(awayTeam);
         awayTeamName = awayTeam.name;
+      } else if (quickResult.awayTeam === 'custom' && quickResult.awayTeamCustom) {
+        // For editing: use the custom name directly
+        awayTeamName = quickResult.awayTeamCustom;
       } else {
+        // Use existing team name
         const awayTeamObj = teams.find(t => t.id === quickResult.awayTeam);
         awayTeamName = awayTeamObj?.name || 'Unknown';
       }
+
+      console.log('💾 Final team mapping:', { homeTeamId, awayTeamName });
 
       // Create or update the match
       const newMatch: Match = {
@@ -309,8 +338,8 @@ export default function MatchRecorderSimple() {
         venue: details.venue,
         scheduledDate: new Date(quickResult.matchDate),
         status: isFutureMatch() ? 'Scheduled' : 'Finished',
-        homeScore: isFutureMatch() ? undefined : (quickResult.isHomeMatch ? quickResult.homeScore : quickResult.awayScore),
-        awayScore: isFutureMatch() ? undefined : (quickResult.isHomeMatch ? quickResult.awayScore : quickResult.homeScore),
+        homeScore: isFutureMatch() ? undefined : quickResult.homeScore,
+        awayScore: isFutureMatch() ? undefined : quickResult.awayScore,
         referee: details.referee ? 'Yes' : 'No',
         weather: details.weather,
         pitchCond: 'Good',
@@ -326,6 +355,20 @@ export default function MatchRecorderSimple() {
       // Save goal events (only for completed matches)
       if (!isFutureMatch()) {
         console.log('Saving goal events, goalScorers:', details.goalScorers);
+        
+        // If editing match, first delete existing goal events to prevent duplicates
+        if (editingMatch) {
+          console.log('Editing match - clearing existing goal events to prevent duplicates');
+          const existingEvents = await storage.getMatchEvents(newMatch.id);
+          const existingGoalEvents = existingEvents.filter(e => e.eventType === 'Goal');
+          console.log('Found existing goal events to delete:', existingGoalEvents.length);
+          
+          for (const event of existingGoalEvents) {
+            await storage.deleteMatchEvent(event.id);
+          }
+        }
+        
+        // Now save the current goal scorers
         for (let i = 0; i < details.goalScorers.length; i++) {
           const scorer = details.goalScorers[i];
           console.log('Processing scorer:', scorer);
@@ -467,8 +510,17 @@ export default function MatchRecorderSimple() {
               <h2 className={`text-xl font-bold mb-6 ${
                 mode === 'record' ? 'text-red-900' : 'text-blue-900'
               }`}>
-                {mode === 'record' ? '📝 Record Match Result' : '📅 Schedule Fixture'}
+                {editingMatch ? '✏️ Edit Match Result' : mode === 'record' ? '📝 Record Match Result' : '📅 Schedule Fixture'}
               </h2>
+              
+              {/* Debug Info for Edit Mode */}
+              {editingMatch && (
+                <div className="mb-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="text-xs text-yellow-800">
+                    <strong>🔧 Edit Debug:</strong> Home={quickResult.homeTeam}, Away={quickResult.awayTeam}, Score={quickResult.homeScore}-{quickResult.awayScore}, Date={quickResult.matchDate}
+                  </div>
+                </div>
+              )}
               
               <div className="space-y-4">
                 {/* Date */}
@@ -487,6 +539,7 @@ export default function MatchRecorderSimple() {
                     className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${
                       mode === 'record' ? 'focus:ring-red-500' : 'focus:ring-blue-500'
                     }`}
+                    key={`date-${editingMatch?.id || 'new'}-${quickResult.matchDate}`}
                   />
                   {isFutureMatch() && (
                     <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
@@ -502,6 +555,7 @@ export default function MatchRecorderSimple() {
                     value={quickResult.matchType}
                     onChange={(e) => setQuickResult(prev => ({ ...prev, matchType: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    key={`matchtype-${editingMatch?.id || 'new'}-${quickResult.matchType}`}
                   >
                     <option value="League">🏆 League</option>
                     <option value="Cup">🏅 Cup</option>
@@ -519,6 +573,7 @@ export default function MatchRecorderSimple() {
                       value={quickResult.homeTeam}
                       onChange={(e) => setQuickResult(prev => ({ ...prev, homeTeam: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      key={`hometeam-${editingMatch?.id || 'new'}-${quickResult.homeTeam}`}
                     >
                       <option value="">Select Team</option>
                       {teams.filter(t => !t.isOpponent).map(team => (
@@ -543,6 +598,7 @@ export default function MatchRecorderSimple() {
                       value={quickResult.awayTeam}
                       onChange={(e) => setQuickResult(prev => ({ ...prev, awayTeam: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      key={`awayteam-${editingMatch?.id || 'new'}-${quickResult.awayTeam}`}
                     >
                       <option value="">Select Opponent</option>
                       {teams.map(team => (
@@ -577,6 +633,7 @@ export default function MatchRecorderSimple() {
                         value={quickResult.homeScore}
                         onChange={(e) => setQuickResult(prev => ({ ...prev, homeScore: parseInt(e.target.value) || 0 }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl font-bold"
+                        key={`homescore-${editingMatch?.id || 'new'}-${quickResult.homeScore}`}
                       />
                     </div>
                     <div className="text-2xl font-bold text-gray-400">-</div>
@@ -590,6 +647,7 @@ export default function MatchRecorderSimple() {
                         value={quickResult.awayScore}
                         onChange={(e) => setQuickResult(prev => ({ ...prev, awayScore: parseInt(e.target.value) || 0 }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl font-bold"
+                        key={`awayscore-${editingMatch?.id || 'new'}-${quickResult.awayScore}`}
                       />
                     </div>
                   </div>
@@ -664,235 +722,31 @@ export default function MatchRecorderSimple() {
           )}
 
           {/* Step 2: Optional Details */}
-          {step === 'details' && (
+          {step === 'details' && !detailsLoaded && (
             <motion.div
-              className="bg-white rounded-lg shadow-lg p-6"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+              className="bg-white rounded-lg shadow-lg p-6 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
             >
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
-                {isFutureMatch() ? '📅 Match Details (Optional)' : '📋 Additional Details (Optional)'}
-              </h2>
-              
-              <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Venue</label>
-                    <select
-                      value={details.venue}
-                      onChange={(e) => setDetails(prev => ({ ...prev, venue: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      {getAvailableVenues().map(venue => (
-                        <option key={venue} value={venue}>{venue}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Referee Present</label>
-                    <div className="flex gap-4 mt-2">
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="referee"
-                          checked={details.referee === true}
-                          onChange={() => setDetails(prev => ({ ...prev, referee: true }))}
-                          className="mr-2"
-                        />
-                        Yes
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="referee"
-                          checked={details.referee === false}
-                          onChange={() => setDetails(prev => ({ ...prev, referee: false }))}
-                          className="mr-2"
-                        />
-                        No
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Weather Conditions</label>
-                  <select
-                    value={details.weather}
-                    onChange={(e) => setDetails(prev => ({ ...prev, weather: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select...</option>
-                    <option value="Sunny">☀️ Sunny</option>
-                    <option value="Partly Cloudy">⛅ Partly Cloudy</option>
-                    <option value="Cloudy">☁️ Cloudy</option>
-                    <option value="Light Rain">🌦️ Light Rain</option>
-                    <option value="Heavy Rain">🌧️ Heavy Rain</option>
-                    <option value="Windy">💨 Windy</option>
-                    <option value="Foggy">🌫️ Foggy</option>
-                  </select>
-                </div>
-
-                {/* Squad Selection - Only show if not future match and RVR team selected */}
-                {!isFutureMatch() && getAvailablePlayers().length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Match Squad (Select players who played)
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto bg-gray-50 p-4 rounded-lg">
-                      {getAvailablePlayers().map((player) => (
-                        <label key={player.id} className="flex items-center space-x-2 cursor-pointer hover:bg-white p-2 rounded">
-                          <input
-                            type="checkbox"
-                            checked={details.selectedSquad.includes(player.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setDetails(prev => ({
-                                  ...prev,
-                                  selectedSquad: [...prev.selectedSquad, player.id]
-                                }));
-                              } else {
-                                setDetails(prev => ({
-                                  ...prev,
-                                  selectedSquad: prev.selectedSquad.filter(id => id !== player.id)
-                                }));
-                              }
-                            }}
-                            className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                          />
-                          <span className="text-sm font-medium text-gray-700">
-                            {player.name}
-                            {player.position && <span className="text-gray-500 ml-1">({player.position})</span>}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                    {details.selectedSquad.length > 0 && (
-                      <p className="text-sm text-green-600 mt-2">
-                        ✅ {details.selectedSquad.length} player{details.selectedSquad.length !== 1 ? 's' : ''} selected
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Goal Scorers */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Goal Scorers ({getRVRGoals()} goal{getRVRGoals() !== 1 ? 's' : ''})
-                  </label>
-                  <div className="space-y-3">
-                    {Array.from({ length: getRVRGoals() }, (_, index) => {
-                      const scorer = details.goalScorers[index] || { playerId: '', playerName: '', assistedBy: '' };
-                      return (
-                        <div key={index} className="flex gap-2 items-center p-3 bg-green-50 rounded-lg">
-                          <div className="text-sm font-medium text-gray-600 w-12">
-                            Goal {index + 1}:
-                          </div>
-                          <select
-                            value={scorer.playerId}
-                            onChange={(e) => {
-                              const selectedPlayer = getAvailablePlayers().find(p => p.id === e.target.value);
-                              const newScorers = [...details.goalScorers];
-                              while (newScorers.length <= index) {
-                                newScorers.push({ playerId: '', playerName: '', assistedBy: '' });
-                              }
-                              newScorers[index] = { 
-                                ...newScorers[index], 
-                                playerId: e.target.value,
-                                playerName: selectedPlayer?.name || ''
-                              };
-                              setDetails(prev => ({ ...prev, goalScorers: newScorers }));
-                            }}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                          >
-                            <option value="">Select player...</option>
-                            {details.selectedSquad.length > 0 ? (
-                              details.selectedSquad.map(playerId => {
-                                const player = getAvailablePlayers().find(p => p.id === playerId);
-                                return player ? (
-                                  <option key={player.id} value={player.id}>
-                                    {player.name} {player.position && `(${player.position})`}
-                                  </option>
-                                ) : null;
-                              })
-                            ) : (
-                              getAvailablePlayers().map(player => (
-                                <option key={player.id} value={player.id}>
-                                  {player.name} {player.position && `(${player.position})`}
-                                </option>
-                              ))
-                            )}
-                          </select>
-                          <select
-                            value={scorer.assistedBy || ''}
-                            onChange={(e) => {
-                              const newScorers = [...details.goalScorers];
-                              while (newScorers.length <= index) {
-                                newScorers.push({ playerId: '', playerName: '', assistedBy: '' });
-                              }
-                              newScorers[index] = { ...newScorers[index], assistedBy: e.target.value };
-                              setDetails(prev => ({ ...prev, goalScorers: newScorers }));
-                            }}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                          >
-                            <option value="">Assisted by...</option>
-                            {details.selectedSquad.length > 0 ? (
-                              details.selectedSquad.map(playerId => {
-                                const player = getAvailablePlayers().find(p => p.id === playerId);
-                                return player && player.id !== scorer.playerId ? (
-                                  <option key={player.id} value={player.name}>
-                                    {player.name} {player.position && `(${player.position})`}
-                                  </option>
-                                ) : null;
-                              })
-                            ) : (
-                              getAvailablePlayers()
-                                .filter(player => player.id !== scorer.playerId)
-                                .map(player => (
-                                  <option key={player.id} value={player.name}>
-                                    {player.name} {player.position && `(${player.position})`}
-                                  </option>
-                                ))
-                            )}
-                          </select>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Match Notes</label>
-                  <textarea
-                    value={details.notes}
-                    onChange={(e) => setDetails(prev => ({ ...prev, notes: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                    placeholder="Key moments, player performances, etc."
-                  />
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-between mt-8">
-                <button
-                  onClick={() => setStep('result')}
-                  className="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium"
-                >
-                  ← Back
-                </button>
-                
-                <button
-                  onClick={async () => {
-                    await saveResult();
-                  }}
-                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
-                >
-                  ✅ Save Match
-                </button>
-              </div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading match details...</p>
             </motion.div>
+          )}
+          
+          {step === 'details' && detailsLoaded && (
+            <MatchDetailsForm 
+              details={details}
+              setDetails={setDetails}
+              quickResult={quickResult}
+              editingMatch={editingMatch}
+              teams={teams}
+              onBack={() => setStep('result')}
+              onSave={saveResult}
+              isFutureMatch={isFutureMatch}
+              getAvailablePlayers={getAvailablePlayers}
+              getRVRGoals={getRVRGoals}
+              getAvailableVenues={getAvailableVenues}
+            />
           )}
 
           {/* Step 3: Done */}

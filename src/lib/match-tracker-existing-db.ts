@@ -164,7 +164,9 @@ export class MatchTrackerExistingDB {
         away_score,
         venue,
         referee,
+        weather,
         notes,
+        selected_squad,
         created_at,
         updated_at
       `)
@@ -190,26 +192,21 @@ export class MatchTrackerExistingDB {
       .select(`
         id,
         team_id,
-        match_date,
-        kick_off_time,
-        home_away,
+        opponent,
+        scheduled_date,
+        actual_kick_off,
+        is_home_match,
         match_type,
         status,
-        our_score,
-        their_score,
-        attendance,
-        referee_name,
-        weather_conditions,
-        pitch_conditions,
-        match_report,
-        private_notes,
+        home_score,
+        away_score,
+        venue,
+        referee,
+        weather,
+        notes,
+        selected_squad,
         created_at,
-        updated_at,
-        created_by,
-        teams(name),
-        opponents(name),
-        venues(name, address),
-        leagues(name)
+        updated_at
       `)
       .eq('id', id)
       .single();
@@ -602,6 +599,21 @@ export class MatchTrackerExistingDB {
   private mapMatchFromExistingDB(dbMatch: any): Match {
     console.log('Mapping database match:', dbMatch);
     
+    // Handle selectedSquad which might be stored as JSON
+    let selectedSquad: string[] = [];
+    if (dbMatch.selected_squad) {
+      if (Array.isArray(dbMatch.selected_squad)) {
+        selectedSquad = dbMatch.selected_squad;
+      } else if (typeof dbMatch.selected_squad === 'string') {
+        try {
+          selectedSquad = JSON.parse(dbMatch.selected_squad);
+        } catch (e) {
+          console.warn('Failed to parse selected_squad JSON:', dbMatch.selected_squad);
+          selectedSquad = [];
+        }
+      }
+    }
+    
     return {
       id: dbMatch.id,
       teamId: dbMatch.team_id,
@@ -617,6 +629,7 @@ export class MatchTrackerExistingDB {
       referee: dbMatch.referee,
       weather: dbMatch.weather,
       notes: dbMatch.notes,
+      selectedSquad: selectedSquad,
       createdAt: new Date(dbMatch.created_at),
       updatedAt: new Date(dbMatch.updated_at || dbMatch.created_at)
     };
@@ -629,11 +642,19 @@ export class MatchTrackerExistingDB {
 
     // Extract assist information from notes field for goals
     let eventData: any = {};
+    let cleanNotes = dbEvent.notes;
+    
     if (dbEvent.event_type === 'Goal' && dbEvent.notes) {
       const assistMatch = dbEvent.notes.match(/Assist:\s*([^|]+)/);
       if (assistMatch) {
         eventData.assistPlayerName = assistMatch[1].trim();
         eventData.goalType = 'Open Play'; // Default goal type
+        
+        // Clean the notes by removing the assist information that's now in eventData
+        cleanNotes = dbEvent.notes.replace(/\|\s*Assist:\s*[^|]+/, '').trim();
+        if (cleanNotes.startsWith('Assist:')) {
+          cleanNotes = '';
+        }
       }
     }
 
@@ -643,10 +664,10 @@ export class MatchTrackerExistingDB {
       playerId: dbEvent.player_id,
       playerName,
       eventType: dbEvent.event_type,
-      minute: dbEvent.event_minute,
+      minute: dbEvent.event_minute || 0,
       half: dbEvent.event_half || 1,
       eventData: Object.keys(eventData).length > 0 ? eventData : undefined,
-      notes: dbEvent.notes,
+      notes: cleanNotes || undefined,
       recordedAt: new Date(dbEvent.created_at),
       recordedBy: dbEvent.created_by || 'system'
     };

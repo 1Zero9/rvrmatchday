@@ -26,9 +26,35 @@ function GoalScorersInline({ match }: { match: Match }) {
   React.useEffect(() => {
     const loadGoalEvents = async () => {
       try {
-        // TODO: Load match events from database when events table is created
-        const events: any[] = [];
-        setGoalEvents(events.filter(e => e.eventType === 'Goal'));
+        // Load match events from database using the fixed storage system
+        const { data, error } = await supabase
+          .from('match_events')
+          .select(`
+            id,
+            player_name,
+            event_minute,
+            notes,
+            players(first_name, last_name)
+          `)
+          .eq('match_id', match.id)
+          .eq('event_type', 'Goal')
+          .order('event_minute');
+
+        if (error) {
+          console.error('Error loading goal events:', error);
+          return;
+        }
+
+        const events = (data || []).map(event => ({
+          id: event.id,
+          playerName: event.players 
+            ? `${event.players.first_name || ''} ${event.players.last_name || ''}`.trim() || 'Unknown Player'
+            : event.player_name || 'Unknown Player',
+          minute: event.event_minute || 0,
+          assistPlayerName: event.notes?.match(/Assist:\s*([^|]+)/)?.[1]?.trim()
+        }));
+        
+        setGoalEvents(events);
       } catch (error) {
         console.error('Error loading goal events:', error);
       }
@@ -40,8 +66,23 @@ function GoalScorersInline({ match }: { match: Match }) {
   if (goalEvents.length === 0) return null;
 
   return (
-    <div className="mt-2 text-xs text-gray-600 bg-green-50 px-2 py-1 rounded">
-      <span className="font-medium">⚽ Goals:</span> {goalEvents.map(e => e.playerName).join(', ')}
+    <div className="mt-2 text-sm text-gray-700 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
+      <div className="font-semibold text-green-800 mb-1">⚽ Goal Scorers:</div>
+      <div className="space-y-1">
+        {goalEvents.map((e, index) => (
+          <div key={index} className="flex items-center justify-between">
+            <span className="font-medium">{e.playerName}</span>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-gray-500">{e.minute}'</span>
+              {e.assistPlayerName && (
+                <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-0.5 rounded">
+                  🅰️ {e.assistPlayerName}
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -53,9 +94,37 @@ function MatchExpandedDetails({ match }: { match: Match }) {
   React.useEffect(() => {
     const loadGoalEvents = async () => {
       try {
-        // TODO: Load match events from database when events table is created
-        const events: any[] = [];
-        setGoalEvents(events.filter(e => e.eventType === 'Goal'));
+        // Load match events from database using the fixed storage system
+        const { data, error } = await supabase
+          .from('match_events')
+          .select(`
+            id,
+            player_name,
+            event_minute,
+            notes,
+            players(first_name, last_name)
+          `)
+          .eq('match_id', match.id)
+          .eq('event_type', 'Goal')
+          .order('event_minute');
+
+        if (error) {
+          console.error('Error loading goal events:', error);
+          return;
+        }
+
+        const events = (data || []).map(event => ({
+          id: event.id,
+          playerName: event.players 
+            ? `${event.players.first_name || ''} ${event.players.last_name || ''}`.trim() || 'Unknown Player'
+            : event.player_name || 'Unknown Player',
+          minute: event.event_minute || 0,
+          eventData: {
+            assistPlayerName: event.notes?.match(/Assist:\s*([^|]+)/)?.[1]?.trim()
+          }
+        }));
+        
+        setGoalEvents(events);
       } catch (error) {
         console.error('Error loading goal events:', error);
       }
@@ -87,8 +156,8 @@ function MatchExpandedDetails({ match }: { match: Match }) {
                   <div className="text-right">
                     <div className="text-sm font-medium text-gray-700">{event.minute}'</div>
                     {event.eventData?.assistPlayerName && (
-                      <div className="text-xs text-green-600">
-                        Assist: {event.eventData.assistPlayerName}
+                      <div className="text-sm font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-md mt-1">
+                        🅰️ {event.eventData.assistPlayerName}
                       </div>
                     )}
                   </div>
@@ -448,9 +517,14 @@ export default function MatchCentral() {
     
     // Check for goal events
     try {
-      // TODO: Load match events from database when events table is created
-      const goalEvents: any[] = [];
-      const hasGoalEvents = goalEvents.length > 0;
+      // Load match events from database to check for additional content
+      const { data: goalEvents, error } = await supabase
+        .from('match_events')
+        .select('id')
+        .eq('match_id', match.id)
+        .eq('event_type', 'Goal');
+      
+      const hasGoalEvents = !error && goalEvents && goalEvents.length > 0;
       return hasBasicExtra || hasGoalEvents;
     } catch (error) {
       return hasBasicExtra;
@@ -764,9 +838,21 @@ export default function MatchCentral() {
   // Calculate player statistics from match events
   const getPlayerStatistics = async (teamId: string) => {
     try {
-      // TODO: Load match events from database when events table is created
-      const matchEvents: any[] = [];
-      console.log('All match events:', matchEvents);
+      // Load match events from database for player statistics
+      const { data: matchEvents, error } = await supabase
+        .from('match_events')
+        .select(`
+          id,
+          match_id,
+          player_name,
+          event_type,
+          event_minute,
+          matches!inner(team_id)
+        `)
+        .eq('matches.team_id', teamId === 'all' ? undefined : teamId);
+
+      const events = matchEvents || [];
+      console.log('All match events:', events);
       console.log('All matches for stats:', allMatches);
       
       const teamFilter = teamId === 'all' ? 
@@ -776,8 +862,8 @@ export default function MatchCentral() {
       console.log('Team filter matches:', teamFilter);
       console.log('Filtered finished matches:', teamFilter.map(m => ({id: m.id, homeScore: m.homeScore, awayScore: m.awayScore})));
       
-      const relevantEvents = matchEvents.filter(event => 
-        teamFilter.some(match => match.id === event.matchId)
+      const relevantEvents = (events || []).filter(event => 
+        teamFilter.some(match => match.id === event.match_id)
       );
       
       console.log('Relevant events:', relevantEvents);
@@ -1312,7 +1398,7 @@ export default function MatchCentral() {
                           : 'bg-gray-50 hover:bg-gray-100 text-gray-400 border border-gray-200 shadow-none hover:text-gray-600 hover:shadow-sm',
                         purple: isActive 
                           ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-xl border-purple-500 transform scale-105 ring-4 ring-purple-200 font-bold' 
-                          : 'bg-gray-25 hover:bg-gray-50 text-gray-300 border border-gray-100 shadow-none hover:text-gray-500 hover:shadow-sm opacity-60'
+                          : 'bg-gray-50 hover:bg-gray-100 text-gray-400 border border-gray-200 shadow-none hover:text-gray-600 hover:shadow-sm'
                       };
                       return colors[color] || colors.green;
                     };
