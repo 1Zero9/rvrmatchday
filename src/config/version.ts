@@ -11,10 +11,10 @@
 export const VERSION_CONFIG = {
   // Current Version Information
   current: {
-    version: "1.0.1",
+    version: "2.0.0",
     codename: "Development Build - Match Tracking",
     releaseDate: "2025-09-06",
-    buildNumber: "2025.09.06.934"
+    buildNumber: "2025.09.06.427"
   },
 
   // Release Information
@@ -53,6 +53,7 @@ export const VERSION_CONFIG = {
   // Branding Information
   branding: {
     developer: "OneZeroNine",
+    website: "www.1zero9.com",
     email: "onezeronine@gmail.com",
     collaboration: "Claude (Anthropic)",
     copyright: "© 2025 OneZeroNine Premium Football Club Template",

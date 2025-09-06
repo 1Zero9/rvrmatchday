@@ -444,14 +444,18 @@ export default function AdminDashboard() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Environment-based authentication
+    // Environment-based authentication (debug mode)
     const adminUser = process.env.NEXT_PUBLIC_ADMIN_USER || 'admin';
     const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASS || 'rvrfc2025';
     
+    console.log('Login attempt:', { username: loginForm.username, expectedUser: adminUser, expectedPass: adminPass });
+    
     if (loginForm.username === adminUser && loginForm.password === adminPass) {
       setIsLoggedIn(true);
+      console.log('Login successful');
     } else {
-      alert('Invalid credentials');
+      console.log('Login failed - credentials mismatch');
+      alert(`Invalid credentials. Expected: ${adminUser}/${adminPass}`);
     }
   };
 

@@ -257,9 +257,22 @@ export default function MatchRecorderSimple() {
 
   // Get players from the selected RVR team
   const getAvailablePlayers = () => {
-    const selectedTeamId = quickResult.isHomeMatch ? quickResult.homeTeam : quickResult.awayTeam;
-    const selectedTeam = teams.find(t => t.id === selectedTeamId && !t.isOpponent);
-    return selectedTeam?.players || [];
+    // Always get players from OUR team (RVR), regardless of home/away
+    // In a home match, our team is the home team
+    // In an away match, our team is the away team
+    const ourTeamId = quickResult.isHomeMatch ? quickResult.homeTeam : quickResult.awayTeam;
+    const ourTeam = teams.find(t => t.id === ourTeamId && !t.isOpponent);
+    
+    console.log('🔍 Getting available players:', {
+      isHomeMatch: quickResult.isHomeMatch,
+      homeTeam: quickResult.homeTeam,
+      awayTeam: quickResult.awayTeam,
+      selectedTeamId: ourTeamId,
+      foundTeam: ourTeam?.name,
+      playersCount: ourTeam?.players?.length || 0
+    });
+    
+    return ourTeam?.players || [];
   };
 
   const loadMatchForEdit = async (matchId: string) => {

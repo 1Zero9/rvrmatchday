@@ -246,7 +246,14 @@ const SiteStatusReport: React.FC = () => {
         <p className="text-sm text-gray-600">
           Generated on {currentDate} • 
           <span className="mx-2">Version {VERSION_CONFIG.current.version}</span> •
-          <span className="mx-2">{VERSION_CONFIG.branding.developer}</span>
+          <a 
+            href={`https://${VERSION_CONFIG.branding.website}`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="mx-2 text-blue-600 hover:text-blue-800 underline"
+          >
+            {VERSION_CONFIG.branding.developer}
+          </a>
         </p>
       </div>
     </div>
