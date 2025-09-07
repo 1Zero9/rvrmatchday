@@ -353,7 +353,8 @@ export default function MatchDay() {
         </div>
 
         {/* Desktop Version */}
-        <div className="hidden md:block bg-gradient-to-br from-green-50 to-blue-50">
+        <div className="hidden md:block">
+          <div className="bg-gradient-to-br from-green-50 to-blue-50">
         
         {/* Compact Header */}
         <div className="bg-white border-b border-gray-200">
@@ -663,9 +664,9 @@ export default function MatchDay() {
 
           </div> {/* End grid */}
         </div> {/* End container */}
+          </div> {/* End desktop bg */}
         </div> {/* End desktop version */}
-        </div> {/* End mobile/desktop wrapper */}
-      </div> {/* End bg */}
+      </div> {/* End mobile/desktop wrapper */}
     </StandardLayout>
   );
 }
