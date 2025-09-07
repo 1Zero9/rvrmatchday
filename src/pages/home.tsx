@@ -120,6 +120,21 @@ export default function StandardHomepage() {
               transition={{ duration: 0.6, delay: 1.4 }}
               whileHover={{ scale: 1.05, rotateY: 5 }}
               whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-blue-600/90 to-blue-700/90 hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="text-2xl mb-2 text-white">⚽</div>
+              <h3 className="text-sm font-bold mb-1 text-white">Match Central</h3>
+              <Link href="/match-central" className="text-white text-xs font-semibold underline">
+                View →
+              </Link>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 1.6 }}
+              whileHover={{ scale: 1.05, rotateY: -5 }}
+              whileTap={{ scale: 0.98 }}
               className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-teal-600/90 to-teal-700/90 hover:shadow-2xl transition-all duration-300"
             >
               <div className="text-2xl mb-2 text-white">👥</div>
@@ -132,7 +147,7 @@ export default function StandardHomepage() {
             <motion.div 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 1.6 }}
+              transition={{ duration: 0.6, delay: 1.8 }}
               whileHover={{ scale: 1.05, rotateY: -5 }}
               whileTap={{ scale: 0.98 }}
               className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-orange-600/90 to-orange-700/90 hover:shadow-2xl transition-all duration-300"
@@ -147,7 +162,7 @@ export default function StandardHomepage() {
             <motion.div 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 1.8 }}
+              transition={{ duration: 0.6, delay: 2.0 }}
               whileHover={{ scale: 1.05, rotateY: 5 }}
               whileTap={{ scale: 0.98 }}
               className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-red-600/90 to-red-700/90 hover:shadow-2xl transition-all duration-300"

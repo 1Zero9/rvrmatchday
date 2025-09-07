@@ -282,9 +282,10 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
             {/* Mobile - Key items with better styling */}
             {[
               { href: "/", label: "🏠 Home", delay: 0 },
-              { href: "/match-central/fixtures", label: "⚽ Fixtures", delay: 0.1 },
-              { href: "/club", label: "🏛️ Club", delay: 0.2 },
-              { href: "/join", label: "🚀 Join Us", delay: 0.25 },
+              { href: "/matchday", label: "⚽ Match Day", delay: 0.1 },
+              { href: "/teams/boys", label: "👥 Teams", delay: 0.15 },
+              { href: "/club/about", label: "🏛️ Club", delay: 0.2 },
+              { href: "/join/members", label: "🚀 Join Us", delay: 0.25 },
               { href: "/contact", label: "📞 Contact", delay: 0.3 }
             ].map((navItem, index) => (
               <motion.div
@@ -304,6 +305,25 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
               </motion.div>
             ))}
             
+            {/* Match Central Section */}
+            <div className="pt-4 border-t border-white/20 space-y-2">
+              <p className="text-xs font-semibold text-white/70 uppercase tracking-wide px-2">Match Central</p>
+              {[
+                { href: "/match-central#fixtures", label: "📅 Fixtures" },
+                { href: "/match-central#results", label: "🏆 Results" },
+                { href: "/quick-record", label: "⚽ Quick Record" },
+              ].map((item) => (
+                <Link 
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`block py-2 px-2 text-sm font-medium hover:text-accent-teal hover:bg-white/10 rounded-lg transition-all ${textColorClass}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
             {currentSection === "public" && (
               <div className="pt-4 space-y-2">
                 <Link 

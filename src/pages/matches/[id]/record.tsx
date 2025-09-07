@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import StandardLayout from "../../../components/StandardLayout";
 import { storage } from "../../../lib/match-tracker-storage";
+import { supabase } from "../../../lib/supabase";
 import { Match, MatchEvent, EventType, Team, Player, MatchStats } from "../../../types/match-tracker";
 import { MatchValidator, MatchSecurity, RealtimeValidator, SecurityContext } from "../../../lib/match-validation";
 
@@ -30,10 +31,15 @@ export default function MatchRecord() {
   const [homeScore, setHomeScore] = useState(0);
   const [awayScore, setAwayScore] = useState(0);
   
-  // Event recording
-  const [showEventForm, setShowEventForm] = useState(false);
-  const [selectedEventType, setSelectedEventType] = useState<EventType | null>(null);
-  const [selectedPlayer, setSelectedPlayer] = useState<string>('');
+  // Goal recording
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [goalFor, setGoalFor] = useState<'home' | 'away'>('home');
+  const [selectedScorer, setSelectedScorer] = useState<string>('');
+  const [selectedAssist, setSelectedAssist] = useState<string>('');
+  const [goalMinute, setGoalMinute] = useState<number>(1);
+  
+  // Notes
+  const [matchNotes, setMatchNotes] = useState<string>('');
   
   // Event management
   const [showEventDetails, setShowEventDetails] = useState(false);
@@ -88,7 +94,110 @@ export default function MatchRecord() {
     return () => clearInterval(syncInterval);
   }, [match?.id, secure]);
 
-  const loadMatch = (matchId: string) => {
+  const loadMatch = async (matchId: string) => {
+    try {
+      // First try to load from Supabase database
+      const { data: supabaseMatch, error: matchError } = await supabase
+        .from('matches')
+        .select('*')
+        .eq('id', matchId)
+        .single();
+
+      if (supabaseMatch && !matchError) {
+        // Convert Supabase match to Match type
+        const loadedMatch: Match = {
+          id: supabaseMatch.id,
+          teamId: supabaseMatch.team_id,
+          opponent: supabaseMatch.opponent,
+          scheduledDate: new Date(supabaseMatch.scheduled_date),
+          venue: supabaseMatch.venue || 'St. Finian\'s GAA',
+          isHomeMatch: supabaseMatch.is_home_match || false,
+          matchType: supabaseMatch.match_type || 'Friendly',
+          status: supabaseMatch.status || 'Scheduled',
+          homeScore: supabaseMatch.home_score,
+          awayScore: supabaseMatch.away_score,
+          pitchCond: 'Good',
+          createdAt: new Date(supabaseMatch.created_at),
+          updatedAt: new Date(supabaseMatch.updated_at || supabaseMatch.created_at)
+        };
+
+        // Try to load team from Supabase
+        const { data: supabaseTeam } = await supabase
+          .from('teams')
+          .select(`
+            id,
+            name,
+            age_group,
+            gender,
+            league,
+            season,
+            home_venue,
+            contact_email,
+            contact_phone,
+            coaches,
+            notes,
+            is_opponent,
+            is_active,
+            created_at,
+            updated_at,
+            players(
+              id,
+              first_name,
+              last_name,
+              jersey_number,
+              position,
+              is_active
+            )
+          `)
+          .eq('id', loadedMatch.teamId)
+          .eq('is_active', true)
+          .single();
+
+        if (supabaseTeam) {
+          const loadedTeam: Team = {
+            id: supabaseTeam.id,
+            name: supabaseTeam.name,
+            ageGroup: supabaseTeam.age_group || 'Open',
+            gender: supabaseTeam.gender || 'Mixed',
+            season: supabaseTeam.season || '2024-25',
+            league: supabaseTeam.league || 'Unassigned',
+            homeVenue: supabaseTeam.home_venue || 'St. Finian\'s GAA',
+            contactEmail: supabaseTeam.contact_email || '',
+            contactPhone: supabaseTeam.contact_phone || '',
+            coaches: Array.isArray(supabaseTeam.coaches) ? supabaseTeam.coaches : (supabaseTeam.coaches ? [supabaseTeam.coaches] : []),
+            notes: supabaseTeam.notes || '',
+            homeKit: { primary: '#009639', secondary: '#FFFFFF' },
+            awayKit: { primary: '#FFFFFF', secondary: '#009639' },
+            isOpponent: supabaseTeam.is_opponent || false,
+            isActive: supabaseTeam.is_active !== false,
+            players: supabaseTeam.players?.filter((p: any) => p.is_active !== false).map((p: any) => ({
+              id: p.id,
+              teamId: supabaseTeam.id,
+              name: `${p.first_name} ${p.last_name}`.trim(),
+              position: p.position || 'Field Player',
+              isCaptain: false,
+              isViceCaptain: false,
+              isActive: p.is_active !== false,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            })) || [],
+            createdAt: new Date(supabaseTeam.created_at),
+            updatedAt: new Date(supabaseTeam.updated_at || supabaseTeam.created_at)
+          };
+
+          setMatch(loadedMatch);
+          setTeam(loadedTeam);
+          setPlayers(loadedTeam.players);
+          setEvents([]); // Start with empty events for new matches
+          setLoading(false);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading match from Supabase:', error);
+    }
+
+    // Fallback to local storage
     const loadedMatch = storage.getMatch(matchId);
     if (!loadedMatch) {
       alert('Match not found');
@@ -138,6 +247,87 @@ export default function MatchRecord() {
     }
 
     setLoading(false);
+  };
+
+  const recordGoal = () => {
+    if (!match || !team) return;
+
+    // Create goal event
+    const goalEvent: MatchEvent = {
+      id: Date.now().toString(),
+      matchId: match.id,
+      eventType: 'Goal',
+      minute: goalMinute,
+      half: currentHalf,
+      playerName: selectedScorer || 'Unknown',
+      playerId: selectedScorer,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    // Create assist event if provided
+    let assistEvent: MatchEvent | null = null;
+    if (selectedAssist && selectedAssist !== selectedScorer) {
+      assistEvent = {
+        id: (Date.now() + 1).toString(),
+        matchId: match.id,
+        eventType: 'Assist' as EventType,
+        minute: goalMinute,
+        half: currentHalf,
+        playerName: selectedAssist,
+        playerId: selectedAssist,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+    }
+
+    // Update score
+    const isHomeGoal = (goalFor === 'home');
+    if (isHomeGoal) {
+      setHomeScore(prev => prev + 1);
+    } else {
+      setAwayScore(prev => prev + 1);
+    }
+
+    // Add events
+    const newEvents = [goalEvent];
+    if (assistEvent) newEvents.push(assistEvent);
+    
+    setEvents(prev => [...prev, ...newEvents]);
+
+    // Save to storage
+    storage.saveMatchEvents(match.id, [...events, ...newEvents]);
+
+    // Update match with new scores
+    const updatedMatch = {
+      ...match,
+      homeScore: isHomeGoal ? homeScore + 1 : homeScore,
+      awayScore: !isHomeGoal ? awayScore + 1 : awayScore,
+      updatedAt: new Date()
+    };
+    storage.saveMatch(updatedMatch);
+    setMatch(updatedMatch);
+
+    // Reset modal
+    setShowGoalModal(false);
+    setSelectedScorer('');
+    setSelectedAssist('');
+    setGoalMinute(1);
+  };
+
+  const saveNotes = () => {
+    if (!match || !matchNotes.trim()) return;
+    
+    // Save notes to match
+    const updatedMatch = {
+      ...match,
+      notes: matchNotes,
+      updatedAt: new Date()
+    };
+    storage.saveMatch(updatedMatch);
+    setMatch(updatedMatch);
+    
+    alert('Notes saved!');
   };
 
   const saveMatchState = () => {
@@ -497,595 +687,256 @@ export default function MatchRecord() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-club-primary via-club-secondary to-club-primary text-white overflow-hidden">
-      {/* Full Screen Match Recording Interface */}
-      
-      {/* Header */}
-      <div className="bg-white/10 backdrop-blur-md border-b border-white/20 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => router.push('/match-central#tracker')}
-              className="text-white/80 hover:text-white transition-colors"
-            >
-              ← Exit
-            </button>
-            <div>
-              <h1 className="text-lg font-bold">{team.name} vs {match.opponent}</h1>
-              <p className="text-sm text-white/70">{match.matchType} • {match.venue}</p>
+    <StandardLayout>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-md mx-auto px-4 py-4">
+            <div className="flex items-center justify-between mb-2">
+              <button
+                onClick={() => router.push('/match-central#fixtures')}
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
+                ← Back
+              </button>
+              <div className="text-sm text-gray-500">{match.matchType}</div>
             </div>
-          </div>
-          
-          <div className="text-right">
-            <div className="text-sm text-white/70">Half {currentHalf}</div>
-            <div className="text-lg font-bold">{formatTime(matchTime)}'</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Score Display */}
-      <div className="bg-white/10 backdrop-blur-md p-6">
-        <div className="flex items-center justify-center space-x-8">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-white">{team.name}</div>
-            <div className="text-6xl font-bold text-white">{homeScore}</div>
-          </div>
-          
-          <div className="text-4xl font-bold text-white">-</div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-white">{match.opponent}</div>
-            <div className="text-6xl font-bold text-white">{awayScore}</div>
+            <h1 className="text-lg font-bold text-gray-900 text-center">
+              {team.name} vs {match.opponent}
+            </h1>
+            <p className="text-sm text-gray-600 text-center">{match.venue}</p>
           </div>
         </div>
 
-        {/* Start Match Button for Scheduled Matches */}
-        {match.status === 'Scheduled' && (
-          <div className="mt-6 text-center">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                const updatedMatch = { ...match, status: 'In Progress' as const };
-                storage.saveMatch(updatedMatch);
-                setMatch(updatedMatch);
-                setIsRunning(true);
-              }}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all flex items-center space-x-3 mx-auto"
-            >
-              <span className="text-2xl">🔴</span>
-              <span>Start Recording Match</span>
-            </motion.button>
-            <p className="text-sm text-white/70 mt-3">
-              Match is scheduled. Click to begin live recording.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Timer Controls - Only show if match has started */}
-      {match.status === 'In Progress' && (
-        <div className="p-4 bg-white/5 backdrop-blur-md">
-          <div className="flex justify-center space-x-4">
-          <button
-            onClick={toggleTimer}
-            className={`px-6 py-3 rounded-lg font-bold text-lg ${
-              isRunning 
-                ? 'bg-white/20 hover:bg-white/30' 
-                : 'bg-white/20 hover:bg-white/30'
-            } transition-all backdrop-blur-md`}
-          >
-            {isRunning ? '⏸️ Pause' : '▶️ Start'}
-          </button>
-          
-          <button
-            onClick={nextHalf}
-            className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-bold text-lg transition-all backdrop-blur-md"
-          >
-            {currentHalf === 1 ? 'Half Time' : 'Full Time'}
-          </button>
-        </div>
-      </div>
-      )}
-
-      {/* Quick Event Buttons - Only show if match has started */}
-      {match.status === 'In Progress' && (
-        <div className="p-4">
-          <h3 className="text-lg font-bold mb-4 text-center">Quick Events</h3>
-        
-        {/* Goal Buttons - Separate for each team */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => quickEvent('Goal', undefined, false)}
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
-          >
-            ⚽ {team.name} Goal
-          </motion.button>
-          
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => quickEvent('Goal', undefined, true)}
-            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
-          >
-            ⚽ {match.opponent} Goal
-          </motion.button>
-        </div>
-        
-        {/* Other Event Buttons */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-          
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => quickEvent('YellowCard')}
-            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
-          >
-            🟨 Yellow
-          </motion.button>
-          
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => quickEvent('RedCard')}
-            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
-          >
-            🟥 Red
-          </motion.button>
-          
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => quickEvent('Substitution')}
-            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
-          >
-            🔄 Sub
-          </motion.button>
-          
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => quickEvent('CornerKick')}
-            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
-          >
-            🚩 Corner
-          </motion.button>
-          
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => quickEvent('Foul')}
-            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-4 rounded-xl text-center font-bold text-lg transition-all border border-white/20"
-          >
-            ⚠️ Foul
-          </motion.button>
-        </div>
-      </div>
-      )}
-
-      {/* Recent Events */}
-      <div className="p-4 bg-white/10 backdrop-blur-md">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-bold">Match Events ({events.length})</h3>
-          {events.length > 5 && (
-            <button 
-              onClick={() => setShowEventDetails(true)}
-              className="text-sm text-white/70 hover:text-white"
-            >
-              View All
-            </button>
-          )}
-        </div>
-        
-        <div className="space-y-2 max-h-48 overflow-y-auto">
-          {events.slice(-5).reverse().map((event) => (
-            <div key={event.id} className="flex items-center justify-between bg-white/10 backdrop-blur-md p-3 rounded-lg group border border-white/20">
-              <div className="flex items-center space-x-3">
-                <span className="text-lg">{getEventIcon(event.eventType)}</span>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-mono text-white/70">{event.minute}'</span>
-                    <span className="font-medium">{event.playerName || 'Team'}</span>
-                  </div>
-                  <span className="text-xs text-white/50">{event.eventType}</span>
-                </div>
+        {/* Score Display */}
+        <div className="bg-white border-b">
+          <div className="max-w-md mx-auto px-4 py-6">
+            <div className="flex items-center justify-center space-x-6">
+              <div className="text-center">
+                <div className="text-lg font-bold text-gray-900">{team.name}</div>
+                <div className="text-4xl font-bold text-blue-600">{match.isHomeMatch ? homeScore : awayScore}</div>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-white/50">H{event.half}</span>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
-                  <button
-                    onClick={() => editEvent(event)}
-                    className="text-white/70 hover:text-white p-1"
-                    title="Edit event"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() => deleteEvent(event.id)}
-                    className="text-white/70 hover:text-white p-1"
-                    title="Delete event"
-                  >
-                    🗑️
-                  </button>
-                </div>
+              <div className="text-2xl font-bold text-gray-400">-</div>
+              
+              <div className="text-center">
+                <div className="text-lg font-bold text-gray-900">{match.opponent}</div>
+                <div className="text-4xl font-bold text-red-600">{match.isHomeMatch ? awayScore : homeScore}</div>
               </div>
             </div>
-          ))}
-          {events.length === 0 && (
-            <p className="text-white/50 text-center py-4">No events recorded yet</p>
-          )}
+          </div>
         </div>
-      </div>
 
-      {/* Event Details Modal */}
-      {showEventDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-            <div className="p-4 border-b border-white/20 flex justify-between items-center">
-              <h3 className="text-lg font-bold">All Match Events</h3>
-              <button
-                onClick={() => setShowEventDetails(false)}
-                className="text-white/70 hover:text-white"
+        <div className="max-w-md mx-auto px-4 py-6 space-y-6">
+          
+          {/* Goal Recording */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-bold text-gray-900">Record Goal</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setGoalFor(match.isHomeMatch ? 'home' : 'away');
+                  setShowGoalModal(true);
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white p-4 rounded-xl text-center font-bold transition-all shadow-md"
               >
-                ✕
-              </button>
+                ⚽ {team.name} Goal
+              </motion.button>
+              
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setGoalFor(match.isHomeMatch ? 'away' : 'home');
+                  setShowGoalModal(true);
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white p-4 rounded-xl text-center font-bold transition-all shadow-md"
+              >
+                ⚽ {match.opponent} Goal
+              </motion.button>
             </div>
+          </div>
+
+          {/* Quick Notes */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-bold text-gray-900">Match Notes</h3>
+            <textarea
+              value={matchNotes}
+              onChange={(e) => setMatchNotes(e.target.value)}
+              placeholder="Add match notes, observations, incidents..."
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows={4}
+            />
+            <button 
+              onClick={saveNotes}
+              disabled={!matchNotes.trim()}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-lg font-medium transition-all"
+            >
+              Save Notes
+            </button>
+          </div>
+
+          {/* Match Events */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-bold text-gray-900">Match Events</h3>
             
-            <div className="p-4 max-h-96 overflow-y-auto">
+            {events.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No events recorded yet
+              </div>
+            ) : (
               <div className="space-y-2">
-                {events.map((event) => (
-                  <div key={event.id} className="flex items-center justify-between bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-lg">{getEventIcon(event.eventType)}</span>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-mono text-white/70">{event.minute}'</span>
-                          <span className="font-medium">{event.playerName || 'Team'}</span>
+                {events.slice(-10).reverse().map((event) => (
+                  <div key={event.id} className="bg-white border border-gray-200 p-3 rounded-lg shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-xl">{getEventIcon(event.eventType)}</span>
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {event.eventType === 'Goal' ? `⚽ ${event.playerName}` : 
+                             event.eventType === 'Assist' ? `🅰️ ${event.playerName}` :
+                             event.playerName || event.eventType}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {event.minute}' • {event.eventType}
+                          </div>
                         </div>
-                        <span className="text-xs text-white/50">{event.eventType}</span>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs text-white/50">H{event.half}</span>
-                      <div className="flex space-x-1">
-                        <button
-                          onClick={() => editEvent(event)}
-                          className="text-white/70 hover:text-white p-1"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => deleteEvent(event.id)}
-                          className="text-white/70 hover:text-white p-1"
-                        >
-                          🗑️
-                        </button>
-                      </div>
+                      
+                      <button
+                        onClick={() => deleteEvent(event.id)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                        title="Delete event"
+                      >
+                        🗑️
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Statistics Modal */}
-      {showStatsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl max-w-md w-full">
-            <div className="p-4 border-b border-white/20 flex justify-between items-center">
-              <h3 className="text-lg font-bold">Match Statistics</h3>
-              <button
-                onClick={() => setShowStatsModal(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">Possession (%)</label>
-                <div className="flex items-center space-x-3">
-                  <button 
-                    onClick={() => updateStat('possession', matchStats.possession - 5)}
-                    className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                  >
-                    -5%
-                  </button>
-                  <span className="flex-1 text-center font-bold text-lg">{matchStats.possession}%</span>
-                  <button 
-                    onClick={() => updateStat('possession', Math.min(100, matchStats.possession + 5))}
-                    className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                  >
-                    +5%
-                  </button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Shots On Target</label>
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={() => updateStat('shotsOn', matchStats.shotsOn - 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      -
-                    </button>
-                    <span className="flex-1 text-center font-bold">{matchStats.shotsOn}</span>
-                    <button 
-                      onClick={() => updateStat('shotsOn', matchStats.shotsOn + 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Shots Off Target</label>
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={() => updateStat('shotsOff', matchStats.shotsOff - 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      -
-                    </button>
-                    <span className="flex-1 text-center font-bold">{matchStats.shotsOff}</span>
-                    <button 
-                      onClick={() => updateStat('shotsOff', matchStats.shotsOff + 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Corners</label>
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={() => updateStat('corners', matchStats.corners - 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      -
-                    </button>
-                    <span className="flex-1 text-center font-bold">{matchStats.corners}</span>
-                    <button 
-                      onClick={() => updateStat('corners', matchStats.corners + 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Fouls</label>
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={() => updateStat('fouls', matchStats.fouls - 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      -
-                    </button>
-                    <span className="flex-1 text-center font-bold">{matchStats.fouls}</span>
-                    <button 
-                      onClick={() => updateStat('fouls', matchStats.fouls + 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Offsides</label>
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={() => updateStat('offsides', matchStats.offsides - 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      -
-                    </button>
-                    <span className="flex-1 text-center font-bold">{matchStats.offsides}</span>
-                    <button 
-                      onClick={() => updateStat('offsides', matchStats.offsides + 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Saves</label>
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={() => updateStat('saves', matchStats.saves - 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      -
-                    </button>
-                    <span className="flex-1 text-center font-bold">{matchStats.saves}</span>
-                    <button 
-                      onClick={() => updateStat('saves', matchStats.saves + 1)}
-                      className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-2 py-1 rounded text-sm transition-all"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex space-x-3 pt-4">
-                <button
-                  onClick={() => {
-                    saveMatchStats();
-                    setShowStatsModal(false);
-                  }}
-                  className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 py-2 px-4 rounded-lg font-medium transition-all"
-                >
-                  Save Stats
-                </button>
-                <button
-                  onClick={() => setShowStatsModal(false)}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-lg transition-all"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Event Modal */}
-      {editingEvent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl max-w-md w-full">
-            <div className="p-4 border-b border-white/20 flex justify-between items-center">
-              <h3 className="text-lg font-bold">Edit Event</h3>
-              <button
-                onClick={() => setEditingEvent(null)}
-                className="text-gray-400 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">Event Type</label>
-                <select
-                  value={editEventData.eventType}
-                  onChange={(e) => setEditEventData(prev => ({ ...prev, eventType: e.target.value as EventType }))}
-                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-3 py-2 text-white"
-                >
-                  <option value="Goal">Goal</option>
-                  <option value="YellowCard">Yellow Card</option>
-                  <option value="RedCard">Red Card</option>
-                  <option value="Substitution">Substitution</option>
-                  <option value="CornerKick">Corner Kick</option>
-                  <option value="FreeKick">Free Kick</option>
-                  <option value="Foul">Foul</option>
-                  <option value="Shot">Shot</option>
-                  <option value="Save">Save</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">Minute</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="120"
-                  value={editEventData.minute}
-                  onChange={(e) => setEditEventData(prev => ({ ...prev, minute: parseInt(e.target.value) || 0 }))}
-                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-3 py-2 text-white"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">Player (Optional)</label>
-                <select
-                  value={editEventData.playerId}
-                  onChange={(e) => setEditEventData(prev => ({ ...prev, playerId: e.target.value }))}
-                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-3 py-2 text-white"
-                >
-                  <option value="">Select Player</option>
-                  {players.map(player => (
-                    <option key={player.id} value={player.id}>
-                      #{player.number} {player.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="flex space-x-3">
-                <button
-                  onClick={saveEventEdit}
-                  className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 py-2 px-4 rounded-lg font-medium transition-all"
-                >
-                  Save Changes
-                </button>
-                <button
-                  onClick={() => setEditingEvent(null)}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-lg transition-all"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bottom Actions */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-md border-t border-white/20 p-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-white/70">
-              Status: {match.status}
-            </div>
-            {secure && (
-              <div className="flex items-center space-x-2 text-xs">
-                <div className={`w-2 h-2 rounded-full ${autoSave ? 'bg-white' : 'bg-white/50'}`}></div>
-                <span className="text-white/70">
-                  {autoSave ? 'Auto-sync' : 'Manual'} | Last sync: {lastSync.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                </span>
-                {validationErrors.length > 0 && (
-                  <div className="ml-2 text-white/80">
-                    ⚠️ {validationErrors.length} validation errors
-                  </div>
-                )}
-              </div>
             )}
           </div>
-          
-          <div className="flex space-x-3">
-            {secure && (
-              <button
-                onClick={() => setAutoSave(!autoSave)}
-                className={`px-3 py-2 rounded-lg text-xs font-medium ${
-                  autoSave 
-                    ? 'bg-white/20 hover:bg-white/30 border border-white/20' 
-                    : 'bg-white/10 hover:bg-white/20 border border-white/20'
-                } transition-all backdrop-blur-md`}
-              >
-                {autoSave ? '🔄 Auto' : '⏸️ Manual'}
-              </button>
-            )}
-            <button 
-              onClick={() => setShowEventDetails(true)}
-              className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm border border-white/20 backdrop-blur-md transition-all"
-            >
-              📊 Events ({events.length})
-            </button>
-            <button 
-              onClick={() => setShowStatsModal(true)}
-              className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm border border-white/20 backdrop-blur-md transition-all"
-            >
-              📈 Stats
-            </button>
-            {match.veoRecording && match.veoUrl && (
-              <a
-                href={match.veoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm border border-white/20 backdrop-blur-md transition-all"
-              >
-                📹 VEO
-              </a>
-            )}
+
+          {/* Finish Match */}
+          <div className="pt-4 border-t">
             <button
-              onClick={finishMatch}
-              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium border border-white/20 backdrop-blur-md transition-all"
+              onClick={() => {
+                if (confirm('Finish match and save results?')) {
+                  // Update match status and scores
+                  const updatedMatch = {
+                    ...match,
+                    status: 'Finished' as const,
+                    homeScore: homeScore,
+                    awayScore: awayScore,
+                    updatedAt: new Date()
+                  };
+                  
+                  // Save to both local storage and try to sync to database
+                  storage.saveMatch(updatedMatch);
+                  
+                  alert('Match finished and saved!');
+                  router.push('/match-central#results');
+                }
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-bold text-lg shadow-md"
             >
-              Finish Match
+              ✅ Finish Match
             </button>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Goal Recording Modal */}
+      {showGoalModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full">
+            <div className="p-4 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900">
+                Record Goal - {goalFor === 'home' ? (match.isHomeMatch ? team.name : match.opponent) : (match.isHomeMatch ? match.opponent : team.name)}
+              </h3>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              {/* Minute */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Minute</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="120"
+                  value={goalMinute}
+                  onChange={(e) => setGoalMinute(parseInt(e.target.value) || 1)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              {/* Goal Scorer */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Goal Scorer</label>
+                <select
+                  value={selectedScorer}
+                  onChange={(e) => setSelectedScorer(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select scorer...</option>
+                  {goalFor === (match.isHomeMatch ? 'home' : 'away') ? (
+                    // Our team players
+                    players.map(player => (
+                      <option key={player.id} value={player.name}>{player.name}</option>
+                    ))
+                  ) : (
+                    // Opponent - allow manual entry
+                    <option value="Opponent Player">Opponent Player</option>
+                  )}
+                  <option value="Own Goal">Own Goal</option>
+                </select>
+              </div>
+
+              {/* Assist */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Assist (Optional)</label>
+                <select
+                  value={selectedAssist}
+                  onChange={(e) => setSelectedAssist(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">No assist</option>
+                  {goalFor === (match.isHomeMatch ? 'home' : 'away') ? (
+                    // Our team players
+                    players.filter(player => player.name !== selectedScorer).map(player => (
+                      <option key={player.id} value={player.name}>{player.name}</option>
+                    ))
+                  ) : (
+                    // Opponent
+                    <option value="Opponent Player">Opponent Player</option>
+                  )}
+                </select>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-gray-200 flex space-x-3">
+              <button
+                onClick={recordGoal}
+                disabled={!selectedScorer}
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-lg font-medium transition-all"
+              >
+                Record Goal ⚽
+              </button>
+              <button
+                onClick={() => {
+                  setShowGoalModal(false);
+                  setSelectedScorer('');
+                  setSelectedAssist('');
+                  setGoalMinute(1);
+                }}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </StandardLayout>
   );
 }

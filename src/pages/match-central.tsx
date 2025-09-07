@@ -639,7 +639,7 @@ export default function MatchCentral() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamSummaries, setTeamSummaries] = useState<TeamSummary[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState<string>('rvr');
+  const [selectedTeam, setSelectedTeam] = useState<string>('all');
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string | null>(null);
   const [overviewFilter, setOverviewFilter] = useState<string>('all');
   const [advancedTeamFilter, setAdvancedTeamFilter] = useState<string>('all');

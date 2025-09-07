@@ -18,6 +18,7 @@ export default function MatchDay() {
   const [loading, setLoading] = useState(true);
   const [allMatches, setAllMatches] = useState<Match[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string>('all');
+  const [selectedMatchType, setSelectedMatchType] = useState<string>('All');
 
   const loadData = async () => {
     try {
@@ -140,7 +141,8 @@ export default function MatchDay() {
         match.status === 'Finished' && 
         match.homeScore !== undefined && 
         match.awayScore !== undefined &&
-        (selectedTeamId === 'all' || match.teamId === selectedTeamId)
+        (selectedTeamId === 'all' || match.teamId === selectedTeamId) &&
+        (selectedMatchType === 'All' || match.matchType === selectedMatchType)
       )
       .sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime())
       .slice(0, 8); // Show more results with better layout
@@ -150,7 +152,8 @@ export default function MatchDay() {
     return allMatches
       .filter(match => 
         match.status === 'Scheduled' &&
-        (selectedTeamId === 'all' || match.teamId === selectedTeamId)
+        (selectedTeamId === 'all' || match.teamId === selectedTeamId) &&
+        (selectedMatchType === 'All' || match.matchType === selectedMatchType)
       )
       .sort((a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime())
       .slice(0, 8); // Show more fixtures with better layout
@@ -161,7 +164,8 @@ export default function MatchDay() {
       match.status === 'Finished' && 
       match.homeScore !== undefined && 
       match.awayScore !== undefined &&
-      (selectedTeamId === 'all' || match.teamId === selectedTeamId)
+      (selectedTeamId === 'all' || match.teamId === selectedTeamId) &&
+      (selectedMatchType === 'All' || match.matchType === selectedMatchType)
     );
 
     const stats = {
@@ -204,9 +208,9 @@ export default function MatchDay() {
     return { result, teamScore, opponentScore };
   };
 
-  const recentResults = React.useMemo(() => getRecentResults(), [allMatches, selectedTeamId]);
-  const upcomingFixtures = React.useMemo(() => getUpcomingFixtures(), [allMatches, selectedTeamId]);
-  const seasonStats = React.useMemo(() => getSeasonStats(), [allMatches, selectedTeamId]);
+  const recentResults = React.useMemo(() => getRecentResults(), [allMatches, selectedTeamId, selectedMatchType]);
+  const upcomingFixtures = React.useMemo(() => getUpcomingFixtures(), [allMatches, selectedTeamId, selectedMatchType]);
+  const seasonStats = React.useMemo(() => getSeasonStats(), [allMatches, selectedTeamId, selectedMatchType]);
 
   if (loading) {
     return (
@@ -266,7 +270,7 @@ export default function MatchDay() {
                 </button>
               </nav>
 
-              {/* Right side - Advanced Team Filter */}
+              {/* Right side - Filters */}
               <div className="flex items-center space-x-3">
                 <label className="text-sm font-medium text-gray-700 hidden sm:block">Filter:</label>
                 <AdvancedTeamFilter
@@ -275,6 +279,17 @@ export default function MatchDay() {
                   onSelectionChange={setSelectedTeamId}
                   className="w-64"
                 />
+                <select
+                  value={selectedMatchType}
+                  onChange={(e) => setSelectedMatchType(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium w-32"
+                >
+                  <option value="All">All matches</option>
+                  <option value="League">League</option>
+                  <option value="Cup">Cup</option>
+                  <option value="Friendly">Friendly</option>
+                  <option value="Tournament">Tournament</option>
+                </select>
               </div>
             </div>
           </div>
