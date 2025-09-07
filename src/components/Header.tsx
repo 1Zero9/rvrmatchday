@@ -151,12 +151,112 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
   const textColorClass = 'text-white text-shadow'; // Always white text with image background
 
   return (
-    <header
-      className={`fixed top-0 left-0 w-full z-50 ${headerClasses}`}
-      style={headerStyle}
-    >
-      {/* Glass morphism overlay for better text readability */}
-      <div className={`absolute inset-0 ${isKidsSection ? '' : 'bg-gradient-to-r from-white/5 to-white/10'} transition-all duration-300`}></div>
+    <>
+      {/* Mobile Header - Clean Design for All Pages */}
+      <div className="block md:hidden">
+        <div className="fixed top-0 left-0 w-full z-50 shadow-lg text-white" style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}>
+          <div className="flex items-center justify-between p-4">
+            <div className="flex items-center space-x-3">
+              <Link href="/" className="flex items-center space-x-2">
+                <img 
+                  src="/images/logo.png" 
+                  alt="Club Logo" 
+                  className="h-8 w-8" 
+                />
+                <span className="font-bold text-white">RVR AFC</span>
+              </Link>
+            </div>
+            
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-white text-2xl focus:outline-none"
+            >
+              {isOpen ? "✕" : "☰"}
+            </button>
+          </div>
+
+          {/* Mobile Menu */}
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white shadow-lg border-t border-gray-100 overflow-hidden"
+              >
+                <div className="px-4 py-6 space-y-3">
+                  {[
+                    { href: "/", label: "Home" },
+                    { href: "/matchday", label: "Match Day" },
+                    { href: "/teams/boys", label: "Teams" },
+                    { href: "/about", label: "About Club" },
+                    { href: "/join/trials", label: "Join Us" },
+                    { href: "/contact", label: "Contact" }
+                  ].map((navItem, index) => (
+                    <motion.div
+                      key={navItem.href}
+                      initial={{ x: -30, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: index * 0.1, duration: 0.3 }}
+                    >
+                      <Link 
+                        href={navItem.href}
+                        onClick={() => setIsOpen(false)}
+                        className="block bg-white border border-gray-200 p-4 rounded-lg transition-all duration-200 hover:shadow-sm"
+                        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#972A4C'}
+                        onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-900 font-medium">{navItem.label}</span>
+                          <span style={{color: '#972A4C'}}>→</span>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))}
+
+                  {/* Match Central Section */}
+                  <div className="pt-4 border-t border-gray-200">
+                    <div className="p-4 rounded-lg text-white" style={{background: 'linear-gradient(to right, #5E7794, #7A92AD)'}}>
+                      <div className="text-center mb-3">
+                        <h3 className="font-bold text-sm uppercase tracking-wide">Match Central</h3>
+                        <p className="text-xs text-blue-200">Password Protected</p>
+                      </div>
+                      <Link 
+                        href="/match-central/login"
+                        onClick={() => setIsOpen(false)}
+                        className="block bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded text-center text-sm font-medium transition-all duration-200"
+                      >
+                        Access Match Central 🔒
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Join CTA */}
+                  <div className="pt-4">
+                    <Link 
+                      href="/join/trials" 
+                      onClick={() => setIsOpen(false)}
+                      className="block text-white px-4 py-3 rounded-xl text-center font-bold shadow-lg hover:shadow-xl transition-all duration-200"
+                      style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}
+                    >
+                      Join the Club
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Desktop Header */}
+      <header
+        className={`hidden md:block fixed top-0 left-0 w-full z-50 ${headerClasses}`}
+        style={headerStyle}
+      >
+        {/* Glass morphism overlay for better text readability */}
+        <div className={`absolute inset-0 ${isKidsSection ? '' : 'bg-gradient-to-r from-white/5 to-white/10'} transition-all duration-300`}></div>
       
       <div className={`relative z-10 max-w-6xl mx-auto flex items-center justify-between p-4 ${textColorClass}`}>
         {/* Logo */}
@@ -254,104 +354,8 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
           )}
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden focus:outline-none z-60"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <motion.div
-            animate={{ rotate: isOpen ? 45 : 0 }}
-            transition={{ duration: 0.2 }}
-            className="text-2xl"
-          >
-            {isOpen ? "✕" : "☰"}
-          </motion.div>
-        </button>
       </div>
-
-      {/* Mobile Nav - Simplified */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.nav
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-white shadow-2xl border-t border-gray-100 px-4 py-6 space-y-3 overflow-hidden"
-          >
-            {/* Main Navigation - Clean Design */}
-            <div className="space-y-3">
-              {[
-                { href: "/", label: "Home" },
-                { href: "/matchday", label: "Match Day" },
-                { href: "/teams/boys", label: "Teams" },
-                { href: "/about", label: "About Club" },
-                { href: "/join/trials", label: "Join Us" },
-                { href: "/contact", label: "Contact" }
-              ].map((navItem, index) => (
-                <motion.div
-                  key={navItem.href}
-                  initial={{ x: -30, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: index * 0.1, duration: 0.3 }}
-                >
-                  <Link 
-                    href={navItem.href}
-                    onClick={() => setIsOpen(false)}
-                    className="block bg-white border border-gray-200 p-4 rounded-lg transition-all duration-200 hover:shadow-sm"
-                    style={{borderColor: navItem.href === '/matchday' ? '#972A4C' : undefined}}
-                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#972A4C'}
-                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-900 font-medium">{navItem.label}</span>
-                      <span style={{color: '#972A4C'}}>→</span>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-            
-            {/* Match Central Section - Password Protected */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.3 }}
-              className="pt-4 border-t border-gray-200"
-            >
-              <div className="bg-gradient-to-r from-club-secondary to-club-secondary-light p-4 rounded-lg text-white">
-                <div className="text-center mb-3">
-                  <h3 className="font-bold text-sm uppercase tracking-wide">Match Central</h3>
-                  <p className="text-xs text-club-secondary-light">Password Protected</p>
-                </div>
-                <Link 
-                  href="/match-central/login"
-                  onClick={() => setIsOpen(false)}
-                  className="block bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded text-center text-sm font-medium transition-all duration-200"
-                >
-                  Access Match Central 🔒
-                </Link>
-              </div>
-            </motion.div>
-
-            {/* Join CTA */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.3 }}
-              className="pt-4"
-            >
-              <Link 
-                href="/join/trials" 
-                onClick={() => setIsOpen(false)}
-                className="block bg-gradient-to-r from-club-primary to-club-primary-dark text-white px-4 py-3 rounded-xl text-center font-bold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02]"
-              >
-                Join the Club
-              </Link>
-            </motion.div>
-          </motion.nav>
-        )}
-      </AnimatePresence>
     </header>
+    </>
   );
 }

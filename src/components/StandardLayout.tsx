@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { useState, ReactNode } from "react";
 import Footer from "./Footer";
 import DeveloperCredits from "./DeveloperCredits";
+import Header from "./Header";
 
 interface StandardLayoutProps {
   children: ReactNode;
@@ -32,8 +33,14 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Navigation - Single Primary Color */}
-      <header className="bg-club-primary text-white shadow-lg sticky top-0 z-50 border-b-4 border-club-accent">
+      {/* Our Mobile/Desktop Header Component */}
+      <Header />
+      
+      {/* Mobile Spacing */}
+      <div className="block md:hidden h-16"></div>
+
+      {/* Desktop Header Navigation - Hidden on Mobile */}
+      <header className="hidden md:block bg-club-primary text-white shadow-lg sticky top-0 z-40 border-b-4 border-club-accent">
         <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;utf8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 fill=%22white%22%3e%3ccircle cx=%2220%22 cy=%2220%22 r=%222%22/%3e%3ccircle cx=%2280%22 cy=%2240%22 r=%221%22/%3e%3ccircle cx=%2240%22 cy=%2270%22 r=%221.5%22/%3e%3ccircle cx=%2290%22 cy=%2280%22 r=%221%22/%3e%3ccircle cx=%2210%22 cy=%2260%22 r=%221%22/%3e%3c/svg%3e')] bg-repeat"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="flex justify-between items-center h-16 md:h-24">
