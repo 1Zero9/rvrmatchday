@@ -16,13 +16,15 @@ import { useState, ReactNode } from "react";
 import Footer from "./Footer";
 import DeveloperCredits from "./DeveloperCredits";
 import Header from "./Header";
+import MobileLayout from "./MobileLayout";
 
 interface StandardLayoutProps {
   children: ReactNode;
   title?: string;
+  currentPage?: string;
 }
 
-export default function StandardLayout({ children, title }: StandardLayoutProps) {
+export default function StandardLayout({ children, title, currentPage }: StandardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogoClick = () => {
@@ -32,12 +34,16 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Our Mobile/Desktop Header Component */}
-      <Header />
-      
-      {/* Mobile Spacing */}
-      <div className="block md:hidden h-16"></div>
+    <>
+      {/* Mobile Layout */}
+      <MobileLayout currentPage={currentPage}>
+        {children}
+      </MobileLayout>
+
+      {/* Desktop Layout */}
+      <div className="hidden md:block min-h-screen bg-gray-50">
+        {/* Desktop Header Component */}
+        <Header />
 
       {/* Desktop Header Navigation - Completely Hidden on Mobile */}
       <header className="hidden md:block bg-club-primary text-white shadow-lg sticky top-0 z-40 border-b-4 border-club-accent">
@@ -297,11 +303,12 @@ export default function StandardLayout({ children, title }: StandardLayoutProps)
         {children}
       </main>
 
-      {/* Enhanced Footer Component - Consistent across all pages */}
-      <Footer />
-      
-      {/* Developer Credits - Minimal Branding */}
-      <DeveloperCredits variant="minimal" />
-    </div>
+        {/* Enhanced Footer Component - Consistent across all pages */}
+        <Footer />
+        
+        {/* Developer Credits - Minimal Branding */}
+        <DeveloperCredits variant="minimal" />
+      </div>
+    </>
   );
 }
