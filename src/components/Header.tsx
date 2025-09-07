@@ -51,13 +51,13 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
         ];
       default: // public
         return [
-          { href: "/", label: "Home", color: "" },
+          { href: "/matchday", label: "MatchDay", color: "" },
           { 
             href: "/match-central", 
             label: "Matches", 
             color: "",
             dropdown: [
-              { href: "/match-central", label: "Match Central", desc: "Complete match management hub" },
+              { href: "/match-central/login", label: "🔒 Match Central", desc: "Password protected match management (rvrfc2025)" },
               { href: "/dashboard", label: "Dashboard", desc: "Club overview dashboard" },
               { href: "/match-central/fixtures", label: "Fixtures", desc: "Upcoming matches & schedule" },
               { href: "/match-central/results", label: "Results", desc: "Latest match results" },
@@ -187,7 +187,6 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
               >
                 <div className="px-4 py-6 space-y-3">
                   {[
-                    { href: "/", label: "Home" },
                     { href: "/matchday", label: "Match Day" },
                     { href: "/teams/boys", label: "Teams" },
                     { href: "/about", label: "About Club" },
@@ -279,7 +278,7 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex space-x-6">
+        <nav className="hidden md:flex space-x-8">
           {navItems.map((item, index) => (
             <motion.div
               key={item.href}
@@ -287,51 +286,41 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               className="relative group"
-              onMouseEnter={() => (item as any).dropdown && setActiveDropdown(item.label)}
-              onMouseLeave={() => setActiveDropdown(null)}
             >
               <div className="flex items-center">
                 <Link 
                   href={item.href} 
-                  className={`hover:text-accent-teal transition-colors duration-300 font-medium ${
+                  className={`hover:text-white/80 transition-colors duration-200 font-medium px-3 py-2 rounded ${
                     item.color || textColorClass
                   } ${isKidsSection ? 'text-lg font-bold' : 'drop-shadow-sm'}`}
                 >
                   {item.label}
                 </Link>
                 {(item as any).dropdown && (
-                  <button 
-                    className={`ml-1 text-xs hover:text-accent-teal transition-colors ${
-                      item.color || textColorClass
-                    }`}
-                  >
+                  <span className={`ml-1 text-xs transition-transform duration-200 group-hover:rotate-180 ${
+                    item.color || textColorClass
+                  }`}>
                     ▼
-                  </button>
+                  </span>
                 )}
               </div>
               
-              {/* Dropdown Menu */}
-              {(item as any).dropdown && activeDropdown === item.label && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border z-50"
-                >
+              {/* Dropdown Menu - More Responsive */}
+              {(item as any).dropdown && (
+                <div className="absolute top-full left-0 mt-1 w-72 bg-white rounded-lg shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="py-2">
                     {(item as any).dropdown.map((dropItem: any, dropIndex: number) => (
                       <Link
                         key={dropItem.href}
                         href={dropItem.href}
-                        className="block px-4 py-3 text-gray-800 hover:bg-gray-100 border-b last:border-b-0"
-                        onClick={() => setActiveDropdown(null)}
+                        className="block px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-b last:border-b-0 transition-colors duration-150"
                       >
-                        <div className="font-semibold text-sm">{dropItem.label}</div>
-                        <div className="text-xs text-gray-600 mt-1">{dropItem.desc}</div>
+                        <div className="font-semibold text-sm text-gray-900">{dropItem.label}</div>
+                        <div className="text-xs text-gray-500 mt-1">{dropItem.desc}</div>
                       </Link>
                     ))}
                   </div>
-                </motion.div>
+                </div>
               )}
             </motion.div>
           ))}
