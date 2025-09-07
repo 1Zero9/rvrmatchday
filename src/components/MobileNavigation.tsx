@@ -32,7 +32,7 @@ export default function MobileNavigation({ currentPage }: MobileNavigationProps)
             <img 
               src="/images/logo.png" 
               alt="RVR AFC Logo" 
-              className="h-8 w-8"
+              className="h-6 w-6"
             />
             <div className="flex flex-col">
               <span className="font-bold text-gray-900 text-sm">RVR AFC</span>
@@ -117,12 +117,12 @@ export default function MobileNavigation({ currentPage }: MobileNavigationProps)
                         }
                       `}
                     >
-                      <span className="text-2xl mr-4">{item.icon}</span>
+                      <span className="text-lg mr-3">{item.icon}</span>
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">{item.label}</div>
                         <div className="text-xs text-gray-500">{item.description}</div>
                       </div>
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </Link>
@@ -157,7 +157,7 @@ export default function MobileNavigation({ currentPage }: MobileNavigationProps)
                     onClick={closeMenu}
                     className="p-3 bg-green-50 rounded-lg text-center border border-green-200 hover:bg-green-100 transition-colors"
                   >
-                    <div className="text-lg mb-1">🤝</div>
+                    <div className="text-base mb-1">🤝</div>
                     <div className="text-xs font-medium text-green-800">Volunteer</div>
                   </Link>
                   <Link
@@ -165,7 +165,7 @@ export default function MobileNavigation({ currentPage }: MobileNavigationProps)
                     onClick={closeMenu}
                     className="p-3 bg-purple-50 rounded-lg text-center border border-purple-200 hover:bg-purple-100 transition-colors"
                   >
-                    <div className="text-lg mb-1">🛒</div>
+                    <div className="text-base mb-1">🛒</div>
                     <div className="text-xs font-medium text-purple-800">Shop</div>
                   </Link>
                 </div>
@@ -175,13 +175,13 @@ export default function MobileNavigation({ currentPage }: MobileNavigationProps)
               <div className="mt-8 pt-6 border-t border-gray-200 text-center">
                 <div className="flex justify-center space-x-4 mb-4">
                   <a href="https://www.facebook.com/RVRFC/" className="text-blue-600 hover:text-blue-700">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm">📘</span>
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-xs">📘</span>
                     </div>
                   </a>
                   <a href="https://www.instagram.com/rvrfc1981/" className="text-pink-600 hover:text-pink-700">
-                    <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm">📷</span>
+                    <div className="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center">
+                      <span className="text-xs">📷</span>
                     </div>
                   </a>
                 </div>

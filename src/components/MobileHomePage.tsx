@@ -18,26 +18,13 @@ export default function MobileHomePage() {
 
   return (
     <div className="pb-8">
-      {/* Hero Section */}
-      <div className="relative h-64 overflow-hidden">
+      {/* Hero Section - Image Only */}
+      <div className="relative h-48 overflow-hidden">
         <img 
           src="/images/hero/halftime2.jpg" 
           alt="Rivervalley Rangers AFC"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
-        <div className="absolute inset-0 flex items-end justify-center pb-8">
-          <div className="text-center text-white px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h1 className="text-2xl font-bold mb-2">Welcome to RVR AFC</h1>
-              <p className="text-blue-200">Building community through football since 1981</p>
-            </motion.div>
-          </div>
-        </div>
       </div>
 
       {/* Quick Actions */}
@@ -57,12 +44,12 @@ export default function MobileHomePage() {
                 className={`block p-4 rounded-xl border transition-all hover:shadow-md ${action.color}`}
               >
                 <div className="flex items-center">
-                  <div className="text-2xl mr-4">{action.icon}</div>
+                  <div className="text-lg mr-3">{action.icon}</div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900">{action.title}</h3>
                     <p className="text-sm text-gray-600">{action.subtitle}</p>
                   </div>
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
