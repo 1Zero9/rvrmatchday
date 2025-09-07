@@ -10,6 +10,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import StandardLayout from '../components/StandardLayout';
 import GlassPageTemplate from '../components/GlassPageTemplate';
 import { GlassCard, GlassActionCard } from '../components/Glass';
 
@@ -46,11 +47,110 @@ export default function About() {
   ];
 
   return (
-    <GlassPageTemplate
-      heroTitle="About Rivervalley Rangers"
-      heroSubtitle="From Ancient Swords to Modern Football • A Thousand Years of Community Spirit"
-      heroIcon="🏰"
-      backgroundImage="/images/hero/cornerflag.png"
+    <div>
+      {/* Mobile Version */}
+      <div className="block md:hidden">
+        <StandardLayout>
+          {/* Mobile Header */}
+          <div className="p-6 shadow-lg text-white" style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}>
+            <div className="text-center">
+              <h1 className="font-bold text-2xl text-white mb-1">About Our Club</h1>
+              <p className="text-pink-200">Community spirit since 1981</p>
+            </div>
+          </div>
+
+          {/* Mobile Content */}
+          <div className="p-4 bg-gray-50">
+            <div className="space-y-6">
+              {/* Club Story */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="font-bold text-lg mb-3" style={{color: '#972A4C'}}>Our Story</h2>
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  Founded in 1981, Rivervalley Rangers AFC has been at the heart of our community for over 40 years. 
+                  What started as a small local club has grown into one of the region's most respected football organizations.
+                </p>
+                <p className="text-gray-700 leading-relaxed">
+                  We pride ourselves on developing not just great football players, but great people. Our commitment to 
+                  community, development, and excellence drives everything we do.
+                </p>
+              </div>
+
+              {/* Our Values */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="font-bold text-lg mb-3" style={{color: '#972A4C'}}>Our Values</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full mr-3" style={{backgroundColor: '#972A4C'}}></div>
+                    <div>
+                      <div className="font-semibold text-gray-900">Community</div>
+                      <div className="text-sm text-gray-600">Building lasting friendships and connections</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full mr-3" style={{backgroundColor: '#5E7794'}}></div>
+                    <div>
+                      <div className="font-semibold text-gray-900">Development</div>
+                      <div className="text-sm text-gray-600">Growing skills, confidence, and character</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full mr-3" style={{backgroundColor: '#98C0F0'}}></div>
+                    <div>
+                      <div className="font-semibold text-gray-900">Excellence</div>
+                      <div className="text-sm text-gray-600">Striving for our best in everything we do</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Links */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="font-bold text-lg mb-3" style={{color: '#972A4C'}}>Learn More</h2>
+                <div className="space-y-2">
+                  {[
+                    { href: '/club/history', label: 'Our History', desc: '44 years of tradition' },
+                    { href: '/teams', label: 'Our Teams', desc: 'From youth to seniors' },
+                    { href: '/club/committee', label: 'Meet the Committee', desc: 'The people behind the club' }
+                  ].map((link, index) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="block border border-gray-200 hover:border-gray-300 p-3 rounded-lg transition-all duration-200"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-gray-900">{link.label}</div>
+                          <div className="text-sm text-gray-600">{link.desc}</div>
+                        </div>
+                        <div className="text-xl" style={{color: '#972A4C'}}>→</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Join CTA */}
+            <div className="mt-8 text-center">
+              <Link 
+                href="/join/trials"
+                className="inline-block text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}
+              >
+                Join Our Community
+              </Link>
+            </div>
+          </div>
+        </StandardLayout>
+      </div>
+
+      {/* Desktop Version */}
+      <div className="hidden md:block">
+        <GlassPageTemplate
+          heroTitle="About Rivervalley Rangers"
+          heroSubtitle="From Ancient Swords to Modern Football • A Thousand Years of Community Spirit"
+          heroIcon="🏰"
+          backgroundImage="/images/hero/cornerflag.png"
       quickActions={quickActions}
       sectionName="ABOUT"
       imageSpecs="1920x1080px minimum, club heritage and community activities preferred"
@@ -247,5 +347,7 @@ export default function About() {
 
       </div>
     </GlassPageTemplate>
+      </div>
+    </div>
   );
 }

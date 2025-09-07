@@ -9,17 +9,17 @@ export default function StandardHomepage() {
       {/* Mobile-Only Design */}
       <div className="block md:hidden">
         {/* Mobile Header - Club Branding */}
-        <div className="bg-gradient-to-r from-club-primary to-club-primary-dark text-white p-6 shadow-lg">
+        <div className="p-6 shadow-lg text-white" style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}>
           <div className="text-center">
             <h1 className="font-bold text-2xl text-white mb-1">Rivervalley Rangers AFC</h1>
-            <p className="text-club-primary-light font-medium">Youth Football Club • Est. 1981</p>
+            <p className="text-pink-200 font-medium">Youth Football Club • Est. 1981</p>
           </div>
         </div>
 
         {/* Welcome Message */}
-        <div className="p-6 bg-gradient-to-br from-club-accent-light to-club-accent text-center">
+        <div className="p-6 text-center text-white" style={{background: 'linear-gradient(to br, #98C0F0, #7BAEEB)'}}>
           <h2 className="text-xl font-bold text-white mb-2">Welcome to Our Club</h2>
-          <p className="text-club-accent-lighter">Building community through football since 1981</p>
+          <p className="text-blue-100">Building community through football since 1981</p>
         </div>
 
         {/* Mobile Quick Actions - Clean Design */}
@@ -42,14 +42,17 @@ export default function StandardHomepage() {
               >
                 <Link 
                   href={action.href}
-                  className="block bg-white border border-gray-200 hover:border-club-primary p-4 rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+                  className="block bg-white border border-gray-200 p-4 rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+                  style={{borderColor: action.href === '/matchday' ? '#972A4C' : undefined}}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#972A4C'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-bold text-gray-900 text-lg">{action.title}</h3>
                       <p className="text-sm text-gray-600 mt-1">{action.subtitle}</p>
                     </div>
-                    <div className="text-club-primary text-xl">→</div>
+                    <div className="text-xl" style={{color: '#972A4C'}}>→</div>
                   </div>
                 </Link>
               </motion.div>
@@ -57,10 +60,10 @@ export default function StandardHomepage() {
           </div>
 
           {/* Match Central Section - Password Protected */}
-          <div className="mb-8 p-5 bg-gradient-to-r from-club-secondary to-club-secondary-light rounded-xl shadow-lg text-white">
+          <div className="mb-8 p-5 rounded-xl shadow-lg text-white" style={{background: 'linear-gradient(to right, #5E7794, #7A92AD)'}}>
             <div className="text-center mb-4">
               <h3 className="font-bold text-lg mb-1">Match Central</h3>
-              <p className="text-xs text-club-secondary-light">Password Protected Area</p>
+              <p className="text-xs text-blue-200">Password Protected Area</p>
             </div>
             <Link 
               href="/match-central/login"
@@ -74,7 +77,8 @@ export default function StandardHomepage() {
           <div className="text-center">
             <Link 
               href="/join/trials"
-              className="inline-block bg-gradient-to-r from-club-primary to-club-primary-dark text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="inline-block text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}
             >
               Join the Club
             </Link>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import StandardLayout from '../../components/StandardLayout';
 import GlassPageTemplate from '../../components/GlassPageTemplate';
 import { GlassCard } from '../../components/Glass';
 
@@ -99,14 +100,90 @@ export default function BoysTeams() {
   ];
 
   return (
-    <GlassPageTemplate
-      heroTitle="Boys Teams"
-      heroSubtitle="From U8 to U18 - developing young talent with fun, friendship and football"
-      heroIcon="⚽"
-      backgroundImage="/images/boys-teams-hero.jpg"
-      quickActions={quickActions}
-      sectionName="BOYS TEAMS"
-      imageSpecs="Boys football teams and training activities"
+    <div>
+      {/* Mobile Version */}
+      <div className="block md:hidden">
+        <StandardLayout>
+          {/* Mobile Header */}
+          <div className="p-6 shadow-lg text-white" style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}>
+            <div className="text-center">
+              <h1 className="font-bold text-2xl text-white mb-1">Boys Teams</h1>
+              <p className="text-pink-200">From U8 to U18 - developing young talent</p>
+            </div>
+          </div>
+
+          {/* Mobile Team Cards */}
+          <div className="p-4 bg-gray-50">
+            <h2 className="font-bold text-lg text-gray-900 mb-4 text-center">Our Teams</h2>
+            <div className="space-y-4">
+              {boysTeams.map((team, index) => (
+                <motion.div
+                  key={team.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.4 }}
+                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+                >
+                  <div className="mb-3">
+                    <h3 className="font-bold text-lg" style={{color: '#972A4C'}}>{team.name}</h3>
+                    <p className="text-sm text-gray-600">{team.league}</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-700">Manager:</span>
+                      <p className="text-gray-900">{team.manager}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Players:</span>
+                      <p className="text-gray-900">{team.players}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="font-medium text-gray-700">Training:</span>
+                      <p className="text-gray-900">{team.trainingDays}</p>
+                    </div>
+                  </div>
+
+                  {team.achievements && team.achievements.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <span className="font-medium text-gray-700 text-sm">Recent Achievements:</span>
+                      <div className="mt-1">
+                        {team.achievements.map((achievement, idx) => (
+                          <span key={idx} className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded mr-1 mt-1">
+                            {achievement}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Join CTA */}
+            <div className="mt-8 text-center">
+              <Link 
+                href="/join/trials"
+                className="inline-block text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}
+              >
+                Join Our Boys Teams
+              </Link>
+            </div>
+          </div>
+        </StandardLayout>
+      </div>
+
+      {/* Desktop Version */}
+      <div className="hidden md:block">
+        <GlassPageTemplate
+          heroTitle="Boys Teams"
+          heroSubtitle="From U8 to U18 - developing young talent with fun, friendship and football"
+          heroIcon="⚽"
+          backgroundImage="/images/boys-teams-hero.jpg"
+          quickActions={quickActions}
+          sectionName="BOYS TEAMS"
+          imageSpecs="Boys football teams and training activities"
     >
       {/* Teams Section Navigation */}
       <div className="mb-12">
@@ -321,5 +398,7 @@ export default function BoysTeams() {
         </div>
       </div>
     </GlassPageTemplate>
+      </div>
+    </div>
   );
 }

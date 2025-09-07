@@ -227,7 +227,133 @@ export default function MatchDay() {
 
   return (
     <StandardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      <div className="min-h-screen">
+        {/* Mobile Version */}
+        <div className="block md:hidden">
+          {/* Mobile Header */}
+          <div className="p-6 shadow-lg text-white" style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}>
+            <div className="text-center">
+              <h1 className="font-bold text-2xl text-white mb-1">MatchDay</h1>
+              <p className="text-pink-200">Live scores & fixtures</p>
+            </div>
+          </div>
+
+          {/* Mobile Tab Navigation */}
+          <div className="bg-white border-b border-gray-200 px-4 py-3">
+            <div className="flex space-x-1">
+              {[
+                { key: 'results', label: 'Recent Results' },
+                { key: 'fixtures', label: 'Fixtures' }
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as TabType)}
+                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all ${
+                    activeTab === tab.key
+                      ? 'text-white shadow-md'
+                      : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+                  }`}
+                  style={{
+                    background: activeTab === tab.key ? 'linear-gradient(to right, #972A4C, #7A2240)' : undefined
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile Content */}
+          <div className="p-4 bg-gray-50">
+            {activeTab === 'results' && (
+              <div className="space-y-3">
+                <h2 className="font-bold text-lg text-gray-900 mb-4">Recent Results</h2>
+                {recentResults.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No recent results</p>
+                ) : (
+                  recentResults.slice(0, 5).map((match, index) => {
+                    const team = teams.find(t => t.id === match.teamId);
+                    const result = getMatchResult(match);
+                    if (!team) return null;
+                    
+                    return (
+                      <div key={match.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="text-sm text-gray-500">
+                            {new Date(match.scheduledDate).toLocaleDateString('en-GB', {
+                              day: 'numeric',
+                              month: 'short'
+                            })}
+                          </div>
+                          <div className={`px-2 py-1 rounded text-xs font-bold ${
+                            result.result === 'W' ? 'bg-green-100 text-green-800' : 
+                            result.result === 'L' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {result.result}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold text-gray-900">{team.name}</div>
+                            <div className="text-sm text-gray-600">vs {match.opponent}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold" style={{color: '#972A4C'}}>
+                              {result.teamScore} - {result.opponentScore}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {activeTab === 'fixtures' && (
+              <div className="space-y-3">
+                <h2 className="font-bold text-lg text-gray-900 mb-4">Upcoming Fixtures</h2>
+                {upcomingFixtures.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No upcoming fixtures</p>
+                ) : (
+                  upcomingFixtures.slice(0, 5).map((match, index) => {
+                    const team = teams.find(t => t.id === match.teamId);
+                    if (!team) return null;
+                    
+                    return (
+                      <div key={match.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="text-sm font-medium" style={{color: '#972A4C'}}>
+                            {new Date(match.scheduledDate).toLocaleDateString('en-GB', {
+                              weekday: 'short',
+                              day: 'numeric',
+                              month: 'short'
+                            })}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {match.isHomeMatch ? 'Home' : 'Away'}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold text-gray-900">{team.name}</div>
+                            <div className="text-sm text-gray-600">vs {match.opponent}</div>
+                          </div>
+                          <div className="text-right text-sm text-gray-500">
+                            {match.venue}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop Version */}
+        <div className="hidden md:block bg-gradient-to-br from-green-50 to-blue-50">
         
         {/* Compact Header */}
         <div className="bg-white border-b border-gray-200">
@@ -537,6 +663,8 @@ export default function MatchDay() {
 
           </div> {/* End grid */}
         </div> {/* End container */}
+        </div> {/* End desktop version */}
+        </div> {/* End mobile/desktop wrapper */}
       </div> {/* End bg */}
     </StandardLayout>
   );
