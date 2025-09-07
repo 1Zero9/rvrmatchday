@@ -9,14 +9,18 @@ export default function StandardHomepage() {
       {/* Mobile-Only Design */}
       <div className="block md:hidden">
         {/* Mobile Header - Simplified */}
-        <div className="bg-gradient-to-r from-green-700 via-green-600 to-green-500 text-white p-4 shadow-lg">
+        <div className="bg-club-primary text-white p-3">
           <div className="flex items-center justify-center">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-3 backdrop-blur-sm border border-white/30">
-              <span className="text-2xl">⚽</span>
-            </div>
+            <Image 
+              src="/images/logo.png" 
+              alt="Rivervalley Rangers AFC Logo" 
+              width={40}
+              height={40}
+              className="mr-3"
+            />
             <div>
-              <h1 className="font-bold text-xl text-white drop-shadow-md">Rivervalley Rangers</h1>
-              <p className="text-sm text-green-100 font-medium">AFC • Est. 1981</p>
+              <h1 className="font-bold text-lg">Rivervalley Rangers</h1>
+              <p className="text-xs text-green-200">AFC • Est. 1981</p>
             </div>
           </div>
         </div>
@@ -72,167 +76,248 @@ export default function StandardHomepage() {
           </div>
         </section>
 
-        {/* Mobile Quick Actions - Modern Cards */}
-        <section className="px-4 py-8 bg-gradient-to-br from-slate-50 via-blue-50 to-green-50 min-h-screen">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-center mb-8"
-          >
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Quick Access</h2>
-            <div className="w-16 h-1 bg-gradient-to-r from-green-500 to-blue-500 rounded-full mx-auto"></div>
-          </motion.div>
-
+        {/* Mobile Quick Actions - Glass Cards */}
+        <section className="p-4 bg-gradient-to-br from-gray-50 to-gray-100">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="grid grid-cols-2 gap-4 mb-8"
+            className="grid grid-cols-2 gap-3 mb-6"
           >
-            {/* Fixtures Card */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 1.0 }}
-              whileHover={{ scale: 1.02, y: -2 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
               whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-club-primary/90 to-club-secondary/90 hover:shadow-2xl transition-all duration-300"
             >
-              <Link href="/match-central" className="block">
-                <div className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-bl-3xl opacity-10"></div>
-                  <div className="relative">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                      <span className="text-2xl text-white">📅</span>
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-1">Fixtures</h3>
-                    <p className="text-sm text-gray-600">Upcoming matches</p>
-                  </div>
-                </div>
+              <div className="text-2xl mb-2 text-white">📅</div>
+              <h3 className="text-sm font-bold mb-1 text-white">Fixtures</h3>
+              <Link href="/match-central" className="text-white text-xs font-semibold underline">
+                View →
               </Link>
             </motion.div>
 
-            {/* Results Card */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 1.2 }}
-              whileHover={{ scale: 1.02, y: -2 }}
+              whileHover={{ scale: 1.05, rotateY: -5 }}
               whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-purple-600/90 to-purple-700/90 hover:shadow-2xl transition-all duration-300"
             >
-              <Link href="/matchday" className="block">
-                <div className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-400 to-purple-600 rounded-bl-3xl opacity-10"></div>
-                  <div className="relative">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                      <span className="text-2xl text-white">🏆</span>
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-1">Results</h3>
-                    <p className="text-sm text-gray-600">Latest scores</p>
-                  </div>
-                </div>
+              <div className="text-2xl mb-2 text-white">🏆</div>
+              <h3 className="text-sm font-bold mb-1 text-white">Results</h3>
+              <Link href="/matchday" className="text-white text-xs font-semibold underline">
+                View →
               </Link>
             </motion.div>
 
-            {/* Match Central Card */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 1.4 }}
-              whileHover={{ scale: 1.02, y: -2 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
               whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-teal-600/90 to-teal-700/90 hover:shadow-2xl transition-all duration-300"
             >
-              <Link href="/match-central" className="block">
-                <div className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-bl-3xl opacity-10"></div>
-                  <div className="relative">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                      <span className="text-2xl text-white">⚽</span>
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-1">Match Central</h3>
-                    <p className="text-sm text-gray-600">Manage matches</p>
-                  </div>
-                </div>
+              <div className="text-2xl mb-2 text-white">👥</div>
+              <h3 className="text-sm font-bold mb-1 text-white">Teams</h3>
+              <Link href="/teams" className="text-white text-xs font-semibold underline">
+                View →
               </Link>
             </motion.div>
 
-            {/* Teams Card */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 1.6 }}
-              whileHover={{ scale: 1.02, y: -2 }}
+              whileHover={{ scale: 1.05, rotateY: -5 }}
               whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-orange-600/90 to-orange-700/90 hover:shadow-2xl transition-all duration-300"
             >
-              <Link href="/teams/boys" className="block">
-                <div className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-teal-400 to-teal-600 rounded-bl-3xl opacity-10"></div>
-                  <div className="relative">
-                    <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl flex items-center justify-center mb-3 shadow-md">
-                      <span className="text-2xl text-white">👥</span>
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-1">Teams</h3>
-                    <p className="text-sm text-gray-600">Our squads</p>
-                  </div>
-                </div>
+              <div className="text-2xl mb-2 text-white">📞</div>
+              <h3 className="text-sm font-bold mb-1 text-white">Contact</h3>
+              <Link href="/contact" className="text-white text-xs font-semibold underline">
+                View →
+              </Link>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 1.8 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-red-600/90 to-red-700/90 hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="text-2xl mb-2 text-white">📰</div>
+              <h3 className="text-sm font-bold mb-1 text-white">News</h3>
+              <Link href="/news" className="text-white text-xs font-semibold underline">
+                View →
+              </Link>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 2.0 }}
+              whileHover={{ scale: 1.05, rotateY: -5 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/25 backdrop-blur-lg border border-white/40 rounded-xl p-3 text-center shadow-xl bg-gradient-to-br from-indigo-600/90 to-indigo-700/90 hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="text-2xl mb-2 text-white">🎉</div>
+              <h3 className="text-sm font-bold mb-1 text-white">Events</h3>
+              <Link href="/get-involved/events" className="text-white text-xs font-semibold underline">
+                View →
               </Link>
             </motion.div>
           </motion.div>
 
-          {/* Join Club CTA */}
+          {/* Upcoming Events Section - Instagram Style */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.8 }}
-            className="mb-6"
+            transition={{ duration: 0.8, delay: 2.2 }}
+            className="space-y-3"
           >
-            <Link href="/join/members">
-              <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-                <div className="relative">
-                  <div className="flex items-center">
-                    <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mr-4 backdrop-blur-sm">
-                      <span className="text-2xl">🚀</span>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold mb-1">Join Rivervalley Rangers</h3>
-                      <p className="text-green-100 text-sm">Become part of our football family</p>
-                    </div>
-                  </div>
-                </div>
+            <motion.h2 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 2.4 }}
+              className="text-lg font-bold text-gray-900 mb-4 flex items-center"
+            >
+              <span className="mr-2">📅</span>
+              <span>What's Coming Up</span>
+              <motion.span
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 3 }}
+                className="ml-2"
+              >
+                ✨
+              </motion.span>
+            </motion.h2>
+            
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 2.6 }}
+              whileHover={{ scale: 1.02, rotateX: 2 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/40 backdrop-blur-lg border border-white/50 rounded-xl p-4 shadow-xl bg-gradient-to-br from-green-600/30 to-blue-600/30 hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="flex items-center mb-2">
+                <span className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">MATCH DAY</span>
+                <span className="text-gray-700 text-xs">This Saturday</span>
               </div>
-            </Link>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm">U16 County Cup Final</h3>
+              <p className="text-gray-700 text-xs mb-2">vs Milltown FC • 2pm • Aviva Stadium</p>
+              <p className="text-club-primary text-xs font-semibold">Come support the lads! 🏆</p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 2.8 }}
+              whileHover={{ scale: 1.02, rotateX: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/40 backdrop-blur-lg border border-white/50 rounded-xl p-4 shadow-xl bg-gradient-to-br from-purple-600/30 to-pink-600/30 hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="flex items-center mb-2">
+                <motion.span 
+                  animate={{ pulse: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold mr-2"
+                >
+                  FUNDRAISER
+                </motion.span>
+                <span className="text-gray-800 text-xs font-medium">Next Friday</span>
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm">Quiz Night</h3>
+              <p className="text-gray-800 text-xs mb-2">Club House • 7:30pm • €10 per team</p>
+              <p className="text-purple-700 text-xs font-semibold">Prizes & craic guaranteed! 🎯</p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 3.0 }}
+              whileHover={{ scale: 1.02, rotateX: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/40 backdrop-blur-lg border border-white/50 rounded-xl p-4 shadow-xl bg-gradient-to-br from-orange-600/30 to-red-600/30 hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="flex items-center mb-2">
+                <motion.span 
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold mr-2"
+                >
+                  TRAINING
+                </motion.span>
+                <span className="text-gray-800 text-xs font-medium">Every Tuesday</span>
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm">Youth Development Programme</h3>
+              <p className="text-gray-800 text-xs mb-2">Ages 8-16 • 6:00-7:30pm • New players welcome</p>
+              <p className="text-orange-700 text-xs font-semibold">First session free! ⚽</p>
+            </motion.div>
+
+            {/* Add more Instagram-style events */}
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 3.2 }}
+              whileHover={{ scale: 1.02, rotateX: 2 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/40 backdrop-blur-lg border border-white/50 rounded-xl p-4 shadow-xl bg-gradient-to-br from-blue-600/30 to-cyan-600/30 hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="flex items-center mb-2">
+                <motion.span 
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold mr-2"
+                >
+                  PROGRAMME
+                </motion.span>
+                <span className="text-gray-800 text-xs font-medium">Starting Soon</span>
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm">Summer Football Camp</h3>
+              <p className="text-gray-800 text-xs mb-2">July 1-5 • Ages 6-14 • €50 for the week</p>
+              <p className="text-blue-700 text-xs font-semibold">Early bird discount available! 🏕️</p>
+            </motion.div>
           </motion.div>
 
-          {/* Secondary Actions */}
+          {/* Enhanced Footer - Glass Effect */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 2.0 }}
-            className="grid grid-cols-2 gap-4"
+            transition={{ duration: 0.8, delay: 3.4 }}
+            className="mt-8"
           >
-            <Link href="/contact">
-              <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center mb-2 shadow-sm">
-                  <span className="text-lg text-white">📞</span>
-                </div>
-                <h3 className="text-sm font-bold text-gray-800">Contact</h3>
-                <p className="text-xs text-gray-600">Get in touch</p>
+            <div className="bg-white/30 backdrop-blur-lg border border-white/40 rounded-xl p-4 shadow-xl">
+              <div className="flex justify-center space-x-6 mb-3">
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <Link href="/about" className="text-club-primary text-sm font-medium hover:text-club-secondary transition-colors">About</Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <Link href="/join" className="text-club-primary text-sm font-medium hover:text-club-secondary transition-colors">Join</Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <Link href="/volunteering" className="text-club-primary text-sm font-medium hover:text-club-secondary transition-colors">Volunteer</Link>
+                </motion.div>
               </div>
-            </Link>
-
-            <Link href="/news">
-              <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100">
-                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center mb-2 shadow-sm">
-                  <span className="text-lg text-white">📰</span>
-                </div>
-                <h3 className="text-sm font-bold text-gray-800">News</h3>
-                <p className="text-xs text-gray-600">Latest updates</p>
-              </div>
-            </Link>
+              <motion.p 
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="text-xs text-gray-600 text-center"
+              >
+                © 2025 Rivervalley Rangers AFC
+              </motion.p>
+            </div>
           </motion.div>
         </section>
       </div>
+
       {/* Desktop Version - Unchanged */}
       <div className="hidden md:block">
         <StandardLayout>
