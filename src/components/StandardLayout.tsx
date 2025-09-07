@@ -35,18 +35,17 @@ export default function StandardLayout({ children, title, currentPage }: Standar
 
   return (
     <>
-      {/* Mobile Layout */}
-      <MobileLayout currentPage={currentPage}>
-        {children}
-      </MobileLayout>
+      {/* Mobile Layout - Only for mobile screens */}
+      <div className="block md:hidden">
+        <MobileLayout currentPage={currentPage}>
+          {children}
+        </MobileLayout>
+      </div>
 
-      {/* Desktop Layout */}
+      {/* Desktop Layout - Only for desktop screens */}
       <div className="hidden md:block min-h-screen bg-gray-50">
-        {/* Desktop Header Component */}
-        <Header />
-
-      {/* Desktop Header Navigation - Completely Hidden on Mobile */}
-      <header className="hidden md:block bg-club-primary text-white shadow-lg sticky top-0 z-40 border-b-4 border-club-accent">
+        {/* Desktop Header Navigation */}
+        <header className="bg-club-primary text-white shadow-lg sticky top-0 z-40 border-b-4 border-club-accent">
         <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;utf8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 fill=%22white%22%3e%3ccircle cx=%2220%22 cy=%2220%22 r=%222%22/%3e%3ccircle cx=%2280%22 cy=%2240%22 r=%221%22/%3e%3ccircle cx=%2240%22 cy=%2270%22 r=%221.5%22/%3e%3ccircle cx=%2290%22 cy=%2280%22 r=%221%22/%3e%3ccircle cx=%2210%22 cy=%2260%22 r=%221%22/%3e%3c/svg%3e')] bg-repeat"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="flex justify-between items-center h-16 md:h-24">
@@ -223,9 +222,9 @@ export default function StandardLayout({ children, title, currentPage }: Standar
               </div>
             </nav>
 
-            {/* Mobile Menu Button - Hidden since Header component handles mobile */}
+            {/* Mobile Menu Button - For tablet size only */}
             <button 
-              className="hidden lg:hidden text-white bg-club-primary p-2 rounded-lg hover:bg-club-primary-light transition-colors"
+              className="lg:hidden text-white bg-club-primary p-2 rounded-lg hover:bg-club-primary-light transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -241,8 +240,8 @@ export default function StandardLayout({ children, title, currentPage }: Standar
           </div>
         </div>
 
-        {/* Mobile Navigation Menu - Hidden since Header component handles mobile */}
-        {false && mobileMenuOpen && (
+        {/* Tablet Navigation Menu */}
+        {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -167,9 +167,272 @@ export default function StandardHomepage() {
           </div>
         </section>
 
-        {/* Rest of desktop content continues... */}
-        {/* Main Sponsors, News, etc. - keeping existing desktop layout */}
-        
+        {/* Main Sponsors Section - High Visibility */}
+        <section className="bg-white py-16 border-b-4 border-green-600">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Proudly Supported By Our Community Partners</h2>
+              <p className="text-lg text-gray-600">The businesses and organizations that make our club possible</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
+              
+              {/* MAIN SPONSOR - REPLACE THIS DIV */}
+              <div className="group cursor-pointer">
+                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-2xl mb-2">🏢</div>
+                    <p className="text-xs font-bold">MAIN SPONSOR</p>
+                    <p className="text-xs">Logo Placeholder</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="group cursor-pointer">
+                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-2xl mb-2">🛍️</div>
+                    <p className="text-xs font-bold">KIT SPONSOR</p>
+                    <p className="text-xs">Logo Placeholder</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="group cursor-pointer">
+                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-2xl mb-2">🚗</div>
+                    <p className="text-xs font-bold">TRANSPORT PARTNER</p>
+                    <p className="text-xs">Logo Placeholder</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="group cursor-pointer">
+                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-2xl mb-2">🍔</div>
+                    <p className="text-xs font-bold">REFRESHMENTS</p>
+                    <p className="text-xs">Logo Placeholder</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center mt-8">
+              <Link href="/get-involved/sponsorship" className="inline-block bg-club-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-club-secondary transition-colors">
+                Become a Sponsor
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Community News & Quick Updates */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">What's Happening at Rivervalley Rangers</h2>
+              <p className="text-lg text-gray-600">Latest news, results, and community stories</p>
+            </div>
+            
+            <div className="grid lg:grid-cols-3 gap-8">
+              
+              {/* Featured Story */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                  
+                  {/* FEATURED NEWS PHOTO PLACEHOLDER - REPLACE THIS DIV */}
+                  <div className="h-64 bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
+                    <div className="text-white text-center">
+                      <div className="text-4xl mb-2">📸</div>
+                      <p className="text-sm font-bold">FEATURED STORY PHOTO</p>
+                      <p className="text-xs">See instructions above in code</p>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center mb-2">
+                      <span className="bg-club-primary text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST NEWS</span>
+                      <span className="text-gray-500 text-sm">2 days ago</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">U16 Boys Reach County Cup Final</h3>
+                    <p className="text-gray-600 mb-4">
+                      Our U16 boys team made history last weekend by securing their place in the County Cup Final after a thrilling 3-2 victory against Milltown FC. The final will be played at...
+                    </p>
+                    <Link href="/news" className="text-green-600 font-semibold hover:text-green-700">
+                      Read Full Story →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Quick Updates */}
+              <div className="space-y-6">
+                
+                {/* Latest Result */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-3">
+                    <span className="bg-club-accent text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST RESULT</span>
+                  </div>
+                  <h4 className="font-bold text-gray-900 mb-2">RVR FC 2-1 Millbrook FC</h4>
+                  <p className="text-gray-600 text-sm mb-3">Great performance from the seniors on Saturday!</p>
+                  <Link href="/matchday" className="text-blue-600 text-sm font-semibold">
+                    View All Results →
+                  </Link>
+                </div>
+                
+                {/* Upcoming Fixture */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-3">
+                    <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">NEXT MATCH</span>
+                  </div>
+                  <h4 className="font-bold text-gray-900 mb-2">RVR FC vs Oakwood United</h4>
+                  <p className="text-gray-600 text-sm mb-1">Saturday 3pm • Home</p>
+                  <p className="text-gray-600 text-sm mb-3">Come support the lads!</p>
+                  <Link href="/match-central/fixtures" className="text-orange-600 text-sm font-semibold">
+                    View All Fixtures →
+                  </Link>
+                </div>
+                
+                {/* Community Story */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-3">
+                    <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">COMMUNITY</span>
+                  </div>
+                  <h4 className="font-bold text-gray-900 mb-2">New Girls Teams Growing Fast</h4>
+                  <p className="text-gray-600 text-sm mb-3">50+ girls registered since launch in 2023</p>
+                  <Link href="/teams/girls" className="text-purple-600 text-sm font-semibold">
+                    Learn More →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Social Media Feeds */}
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Follow Our Journey</h2>
+              <p className="text-lg text-gray-600">Stay connected with live updates from our social channels</p>
+            </div>
+            
+            <div className="grid lg:grid-cols-3 gap-8">
+              
+              {/* Instagram Feed */}
+              <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg p-6 text-white">
+                <div className="flex items-center mb-4">
+                  <div className="text-2xl mr-3">📸</div>
+                  <h3 className="text-xl font-bold">Instagram</h3>
+                </div>
+                <p className="mb-4">Match photos, training sessions, and behind-the-scenes content</p>
+                <div className="bg-white/20 rounded-lg p-4 mb-4 backdrop-blur">
+                  <p className="text-sm opacity-90">📱 INSTAGRAM FEED INTEGRATION</p>
+                  <p className="text-xs opacity-75 mt-1">@rvrfc1981</p>
+                  <p className="text-xs opacity-75">https://www.instagram.com/rvrfc1981/?hl=en</p>
+                </div>
+                <a href="https://www.instagram.com/rvrfc1981/?hl=en" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-purple-600 px-4 py-2 rounded font-semibold hover:bg-gray-100">
+                  Follow Us
+                </a>
+              </div>
+              
+              {/* Main Facebook */}
+              <div className="bg-club-secondary rounded-lg p-6 text-white">
+                <div className="flex items-center mb-4">
+                  <div className="text-2xl mr-3">👥</div>
+                  <h3 className="text-xl font-bold">Facebook - Main Club</h3>
+                </div>
+                <p className="mb-4">Club announcements, events, and community discussions</p>
+                <div className="bg-white/20 rounded-lg p-4 mb-4 backdrop-blur">
+                  <p className="text-sm opacity-90">📱 FACEBOOK FEED INTEGRATION</p>
+                  <p className="text-xs opacity-75 mt-1">Main Club Page</p>
+                  <p className="text-xs opacity-75">https://www.facebook.com/RVRFC/</p>
+                </div>
+                <a href="https://www.facebook.com/RVRFC/" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-blue-600 px-4 py-2 rounded font-semibold hover:bg-gray-100">
+                  Like Our Page
+                </a>
+              </div>
+              
+              {/* Seniors Facebook */}
+              <div className="bg-club-primary rounded-lg p-6 text-white">
+                <div className="flex items-center mb-4">
+                  <div className="text-2xl mr-3">🏆</div>
+                  <h3 className="text-xl font-bold">Facebook - Seniors</h3>
+                </div>
+                <p className="mb-4">Senior team news, match reports, and player updates</p>
+                <div className="bg-white/20 rounded-lg p-4 mb-4 backdrop-blur">
+                  <p className="text-sm opacity-90">📱 FACEBOOK FEED INTEGRATION</p>
+                  <p className="text-xs opacity-75 mt-1">Seniors Team Page</p>
+                  <p className="text-xs opacity-75">https://www.facebook.com/RVRSeniors/</p>
+                </div>
+                <a href="https://www.facebook.com/RVRSeniors/" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-green-600 px-4 py-2 rounded font-semibold hover:bg-gray-100">
+                  Follow Seniors
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Community Gallery Preview */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Community in Action</h2>
+              <p className="text-lg text-gray-600">Capturing the moments that make Rangers special</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* PHOTO PLACEHOLDERS: Community gallery preview */}
+              {[
+                { title: "Match Action", desc: "Players in action during matches" },
+                { title: "Training Sessions", desc: "Youth and senior training" },
+                { title: "Community Events", desc: "Club social events and fundraisers" },
+                { title: "Awards & Celebrations", desc: "Trophy presentations and achievements" }
+              ].map((photo, index) => (
+                <div key={index} className="group cursor-pointer">
+                  <div className="aspect-square bg-gradient-to-br from-green-400 to-blue-500 rounded-lg overflow-hidden relative">
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-100 group-hover:opacity-90 transition-opacity">
+                      <div className="text-white text-center">
+                        <div className="text-3xl mb-2">📸</div>
+                        <p className="text-xs font-bold">{photo.title.toUpperCase()}</p>
+                        <p className="text-xs opacity-75 px-2">{photo.desc}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="text-center mt-8">
+              <Link href="/gallery" className="inline-block bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-900 transition-colors">
+                View Full Gallery
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA Section */}
+        <section className="py-16 bg-club-primary text-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl font-bold mb-4">Ready to Join the Rangers Family?</h2>
+            <p className="text-xl mb-8 text-green-100">
+              Whether you're 7 or 70, there's a place for you at Rivervalley Rangers AFC
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/join" className="bg-white text-green-600 font-bold py-4 px-8 rounded-lg text-lg hover:bg-gray-100 transition-colors">
+                Join as a Player
+              </Link>
+              <Link href="/volunteering" className="bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-orange-700 transition-colors">
+                Volunteer with Us
+              </Link>
+              <Link href="/get-involved/sponsorship" className="bg-transparent border-2 border-white text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-white/10 transition-colors">
+                Support the Club
+              </Link>
+            </div>
+          </div>
+        </section>
+
       </main>
     </StandardLayout>
   );
