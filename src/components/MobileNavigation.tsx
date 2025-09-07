@@ -10,13 +10,11 @@ export default function MobileNavigation({ currentPage }: MobileNavigationProps)
   const [isOpen, setIsOpen] = useState(false);
 
   const mainNavItems = [
-    { href: "/matchday", label: "Match Day", icon: "⚽", description: "Today's fixtures & results" },
+    { href: "/matchday", label: "MatchDay", icon: "⚽", description: "Public fixtures & results" },
     { href: "/teams", label: "Teams", icon: "👥", description: "All our squads" },
     { href: "/about", label: "About Club", icon: "🏛️", description: "Our story & values" },
     { href: "/join/trials", label: "Join Us", icon: "🎯", description: "Book a trial" },
-    { href: "/contact", label: "Contact", icon: "📞", description: "Get in touch" },
-    { href: "/news", label: "News", icon: "📰", description: "Latest updates" },
-    { href: "/gallery", label: "Gallery", icon: "📸", description: "Photos & videos" }
+    { href: "/contact", label: "Contact", icon: "📞", description: "Get in touch" }
   ];
 
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -24,48 +22,45 @@ export default function MobileNavigation({ currentPage }: MobileNavigationProps)
 
   return (
     <>
-      {/* Mobile Header - Fixed Position */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white shadow-lg border-b border-gray-200">
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* Logo/Home */}
-          <Link href="/" className="flex items-center space-x-2" onClick={closeMenu}>
+      {/* Mobile Header - Compact */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-200">
+        <div className="flex items-center justify-between px-3 py-2">
+          {/* Logo/Home - Very Small */}
+          <Link href="/" className="flex items-center space-x-1" onClick={closeMenu}>
             <img 
               src="/images/logo.png" 
               alt="RVR AFC Logo" 
-              className="h-6 w-6"
+              className="h-4 w-4"
             />
-            <div className="flex flex-col">
-              <span className="font-bold text-gray-900 text-sm">RVR AFC</span>
-              <span className="text-xs text-gray-500">Est. 1981</span>
-            </div>
+            <span className="font-bold text-gray-900 text-xs">RVR AFC</span>
           </Link>
 
-          {/* Burger Menu */}
+          {/* Burger Menu - Compact */}
           <button
             onClick={toggleMenu}
-            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="p-1.5 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
             aria-label="Toggle menu"
           >
-            <div className="w-6 h-6 flex flex-col justify-center items-center">
+            <div className="w-5 h-5 flex flex-col justify-center items-center">
               <motion.span
-                animate={isOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-                className="w-5 h-0.5 bg-gray-700 block transition-transform origin-center"
+                animate={isOpen ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }}
+                className="w-4 h-0.5 bg-gray-700 block transition-transform origin-center"
               />
               <motion.span
                 animate={isOpen ? { opacity: 0 } : { opacity: 1 }}
-                className="w-5 h-0.5 bg-gray-700 block my-1 transition-opacity"
+                className="w-4 h-0.5 bg-gray-700 block my-0.5 transition-opacity"
               />
               <motion.span
-                animate={isOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
-                className="w-5 h-0.5 bg-gray-700 block transition-transform origin-center"
+                animate={isOpen ? { rotate: -45, y: -4 } : { rotate: 0, y: 0 }}
+                className="w-4 h-0.5 bg-gray-700 block transition-transform origin-center"
               />
             </div>
           </button>
         </div>
       </header>
 
-      {/* Mobile Spacing for Fixed Header */}
-      <div className="md:hidden h-16"></div>
+      {/* Mobile Spacing for Fixed Header - Compact */}
+      <div className="md:hidden h-10"></div>
 
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
@@ -88,7 +83,7 @@ export default function MobileNavigation({ currentPage }: MobileNavigationProps)
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.3 }}
-            className="md:hidden fixed left-0 top-16 bottom-0 w-80 max-w-[85vw] bg-white shadow-xl z-50 overflow-y-auto"
+            className="md:hidden fixed left-0 top-10 bottom-0 w-80 max-w-[85vw] bg-white shadow-xl z-50 overflow-y-auto"
           >
             <div className="p-6">
               {/* Header */}
