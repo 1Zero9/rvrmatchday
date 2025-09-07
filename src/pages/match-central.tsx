@@ -1017,11 +1017,11 @@ export default function MatchCentral() {
     return stats;
   }, [allMatches]);
 
-  // Calculate player statistics from match events
+  // Calculate player statistics from match events AND match squads
   const getPlayerStatistics = async (teamId: string) => {
     try {
-      // Load match events from database for player statistics
-      let query = supabase
+      // Load goal events from database
+      let goalQuery = supabase
         .from('match_events')
         .select(`
           id,
@@ -1037,23 +1037,61 @@ export default function MatchCentral() {
         .eq('event_type', 'Goal');
 
       if (teamId !== 'all') {
-        query = query.eq('matches.team_id', teamId);
+        goalQuery = goalQuery.eq('matches.team_id', teamId);
       }
 
-      const { data: matchEvents, error } = await query;
+      const { data: goalEvents, error: goalError } = await goalQuery;
 
-      const events = matchEvents || [];
-      console.log('✅ Goal events loaded:', events);
+      // Load matches with squad data to get accurate match appearances
+      let matchQuery = supabase
+        .from('matches')
+        .select(`
+          id,
+          team_id,
+          selected_squad,
+          status
+        `)
+        .eq('status', 'Finished')
+        .not('selected_squad', 'is', null);
 
-      // Calculate goals and assists by player
+      if (teamId !== 'all') {
+        matchQuery = matchQuery.eq('team_id', teamId);
+      }
+
+      const { data: matchesWithSquads, error: matchError } = await matchQuery;
+
+      // Load all active players to get proper names
+      const { data: playersData, error: playersError } = await supabase
+        .from('players')
+        .select('id, first_name, last_name')
+        .eq('is_active', true);
+
+      const events = goalEvents || [];
+      const matches = matchesWithSquads || [];
+      const players = playersData || [];
+
+      console.log('✅ Data loaded:', { 
+        goalEvents: events.length, 
+        matchesWithSquads: matches.length,
+        players: players.length 
+      });
+
+      // Create player lookup for proper names
+      const playerLookup = new Map();
+      players.forEach(player => {
+        playerLookup.set(player.id, `${player.first_name}${player.last_name ? ` ${player.last_name}` : ''}`);
+      });
+
+      // Calculate stats by player
       const playerStats = new Map();
-      
+
+      // Process goal events for goals and assists
       events.forEach(event => {
-        // Goals
         const playerId = event.player_id || event.player_name || 'unknown';
-        const playerName = event.players
-          ? `${event.players.first_name}${event.players.last_name && event.players.last_name !== 'null' ? ` ${event.players.last_name}` : ''}`
-          : (event.player_name && event.player_name !== 'null' ? event.player_name : 'Unknown Player');
+        const playerName = playerLookup.get(playerId) || 
+          (event.players
+            ? `${event.players.first_name}${event.players.last_name && event.players.last_name !== 'null' ? ` ${event.players.last_name}` : ''}`
+            : (event.player_name && event.player_name !== 'null' ? event.player_name : 'Unknown Player'));
         
         if (!playerStats.has(playerId)) {
           playerStats.set(playerId, {
@@ -1067,7 +1105,7 @@ export default function MatchCentral() {
         stats.goals++;
         stats.matches.add(event.match_id);
         
-        // Assists (from notes field)
+        // Process assists from notes field
         if (event.notes && event.notes.includes('Assist:')) {
           const assistMatch = event.notes.match(/Assist:\s*([^|]+)/);
           if (assistMatch) {
@@ -1087,6 +1125,25 @@ export default function MatchCentral() {
         }
       });
 
+      // Process match squads for accurate match appearance counts
+      matches.forEach(match => {
+        if (match.selected_squad && Array.isArray(match.selected_squad)) {
+          match.selected_squad.forEach(playerId => {
+            const playerName = playerLookup.get(playerId) || `Player ${playerId}`;
+            
+            if (!playerStats.has(playerId)) {
+              playerStats.set(playerId, {
+                name: playerName,
+                goals: 0,
+                assists: 0,
+                matches: new Set()
+              });
+            }
+            playerStats.get(playerId).matches.add(match.id);
+          });
+        }
+      });
+
       // Convert to arrays and add match counts
       const playersArray = Array.from(playerStats.values()).map(player => ({
         ...player,
@@ -1103,6 +1160,7 @@ export default function MatchCentral() {
           .sort((a, b) => b.assists - a.assists)
           .slice(0, 10),
         mostMatches: playersArray
+          .filter(p => p.matches > 0)
           .sort((a, b) => b.matches - a.matches)
           .slice(0, 10)
       };
@@ -1154,23 +1212,24 @@ export default function MatchCentral() {
   // Load all player statistics once and cache them
   useEffect(() => {
     const loadAllPlayerStats = async () => {
-      if (allPlayerStats.loaded) return; // Already loaded
-      
       setStatsLoading(true);
       try {
-        const stats = await getPlayerStatistics('all'); // Load all stats once
+        const stats = await getPlayerStatistics('all'); // Load all stats
         setAllPlayerStats({ loaded: true, data: stats });
       } catch (error) {
         console.error('Error loading player stats:', error);
+        setAllPlayerStats({ loaded: true, data: { topScorers: [], topAssists: [], mostMatches: [] } });
       } finally {
         setStatsLoading(false);
       }
     };
     
-    if (allMatches.length > 0 && !allPlayerStats.loaded) {
+    if (allMatches.length > 0) {
+      // Force reload stats whenever matches change
+      setAllPlayerStats({ loaded: false, data: { topScorers: [], topAssists: [], mostMatches: [] } });
       loadAllPlayerStats();
     }
-  }, [allMatches.length, allPlayerStats.loaded]);
+  }, [allMatches.length]);
 
   // Memoized player statistics filtered by selected team - much faster than database queries
   const filteredPlayerStats = React.useMemo(() => {
