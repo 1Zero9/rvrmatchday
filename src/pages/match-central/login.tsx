@@ -15,7 +15,7 @@ export default function MatchCentralLogin() {
     setError('');
 
     // Simple password check - replace with proper auth later
-    if (password === 'matchday2024') {
+    if (password === 'rvrfc2025') {
       // Store auth in localStorage for now
       localStorage.setItem('match-central-auth', 'authenticated');
       router.push('/match-central');

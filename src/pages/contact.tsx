@@ -10,6 +10,7 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import StandardLayout from '../components/StandardLayout';
 import GlassPageTemplate from '../components/GlassPageTemplate';
 import { GlassCard, GlassActionCard } from '../components/Glass';
 
@@ -127,14 +128,102 @@ export default function Contact() {
   ];
 
   return (
-    <GlassPageTemplate
-      heroTitle="Contact Us"
-      heroSubtitle="Get in touch with Rivervalley Rangers AFC - we're here to help with any questions or inquiries"
-      heroIcon="📞"
-      backgroundImage="/images/hero/sunset-hero.jpg"
-      quickActions={quickActions}
-      sectionName="CONTACT"
-      imageSpecs="1920x1080px minimum, club facilities and contact activities preferred"
+    <div>
+      {/* Mobile Version */}
+      <div className="block md:hidden">
+        <StandardLayout>
+          {/* Mobile Header */}
+          <div className="p-6 shadow-lg text-white" style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}>
+            <div className="text-center">
+              <h1 className="font-bold text-2xl text-white mb-1">Contact Us</h1>
+              <p className="text-pink-200">Get in touch with our club</p>
+            </div>
+          </div>
+
+          {/* Mobile Content */}
+          <div className="p-4 bg-gray-50">
+            {/* Contact Form */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+              <h2 className="font-bold text-lg mb-4" style={{color: '#972A4C'}}>Send us a Message</h2>
+              <form className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                    style={{'--ring-color': '#972A4C'} as any}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    rows={4}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-club-primary focus:border-club-primary"
+                    required
+                  ></textarea>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full text-white py-3 px-4 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+                  style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}
+                >
+                  Send Message
+                </button>
+              </form>
+            </div>
+
+            {/* Contact Info */}
+            <div className="space-y-4">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="font-bold text-lg mb-3" style={{color: '#972A4C'}}>Get in Touch</h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="font-semibold text-gray-900">Email</div>
+                    <div className="text-gray-600">info@rvrfc.com</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Phone</div>
+                    <div className="text-gray-600">+353 87 123 4560</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Address</div>
+                    <div className="text-gray-600">St. Finian's GAA Grounds<br />Swords, Co. Dublin</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </StandardLayout>
+      </div>
+
+      {/* Desktop Version */}
+      <div className="hidden md:block">
+        <GlassPageTemplate
+          heroTitle="Contact Us"
+          heroSubtitle="Get in touch with Rivervalley Rangers AFC - we're here to help with any questions or inquiries"
+          heroIcon="📞"
+          backgroundImage="/images/hero/sunset-hero.jpg"
+          quickActions={quickActions}
+          sectionName="CONTACT"
+          imageSpecs="1920x1080px minimum, club facilities and contact activities preferred"
     >
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -508,5 +597,7 @@ export default function Contact() {
       </motion.div>
 
     </GlassPageTemplate>
+      </div>
+    </div>
   );
 }

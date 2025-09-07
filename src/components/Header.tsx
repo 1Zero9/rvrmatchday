@@ -298,11 +298,14 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
                   <Link 
                     href={navItem.href}
                     onClick={() => setIsOpen(false)}
-                    className="block bg-white border border-gray-200 hover:border-club-primary p-4 rounded-lg transition-all duration-200"
+                    className="block bg-white border border-gray-200 p-4 rounded-lg transition-all duration-200 hover:shadow-sm"
+                    style={{borderColor: navItem.href === '/matchday' ? '#972A4C' : undefined}}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#972A4C'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-gray-900 font-medium">{navItem.label}</span>
-                      <span className="text-club-primary">→</span>
+                      <span style={{color: '#972A4C'}}>→</span>
                     </div>
                   </Link>
                 </motion.div>

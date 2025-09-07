@@ -16,10 +16,20 @@ export default function StandardHomepage() {
           </div>
         </div>
 
-        {/* Welcome Message */}
-        <div className="p-6 text-center text-white" style={{background: 'linear-gradient(to br, #98C0F0, #7BAEEB)'}}>
-          <h2 className="text-xl font-bold text-white mb-2">Welcome to Our Club</h2>
-          <p className="text-blue-100">Building community through football since 1981</p>
+        {/* Mobile Hero Image */}
+        <div className="relative h-48 overflow-hidden">
+          <img 
+            src="/images/hero/halftime2.jpg" 
+            alt="Rivervalley Rangers AFC"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 flex items-center justify-center text-white text-center px-4">
+            <div>
+              <h2 className="text-xl font-bold mb-2">Welcome to Our Club</h2>
+              <p className="text-blue-100">Building community through football since 1981</p>
+            </div>
+          </div>
         </div>
 
         {/* Mobile Quick Actions - Clean Design */}
