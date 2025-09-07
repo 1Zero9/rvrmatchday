@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
 import CelebrationResultCard from "../components/CelebrationResultCard";
 import MobileBottomNav from "../components/MobileBottomNav";
+import AdvancedTeamFilter from "../components/AdvancedTeamFilter";
 import { supabase } from "../lib/supabase";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
 import { VERSION_CONFIG } from "../config/version";
@@ -641,6 +642,8 @@ export default function MatchCentral() {
   const [selectedTeam, setSelectedTeam] = useState<string>('rvr');
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string | null>(null);
   const [overviewFilter, setOverviewFilter] = useState<string>('all');
+  const [advancedTeamFilter, setAdvancedTeamFilter] = useState<string>('all');
+  const [matchTypeFilter, setMatchTypeFilter] = useState<string>('All');
   const [loading, setLoading] = useState(true);
   const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
   const [allMatches, setAllMatches] = useState<Match[]>([]);
@@ -847,20 +850,26 @@ export default function MatchCentral() {
   const upcomingMatches = React.useMemo(() => getUpcomingMatches(), [selectedTeam, allMatches]);
   const recentResults = React.useMemo(() => getRecentResults(), [selectedTeam, allMatches]);
 
-  // Get filtered results for overview
+  // Get filtered results for overview (updated to use advanced filters)
   const getFilteredOverviewResults = () => {
-    const finished = allMatches
+    let finished = allMatches
       .filter(match => match.status === 'Finished')
       .sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime());
     
-    if (overviewFilter === 'all') {
-      return finished;
+    // Apply team filter
+    if (advancedTeamFilter !== 'all') {
+      finished = finished.filter(match => match.teamId === advancedTeamFilter);
     }
     
-    return finished.filter(match => match.teamId === overviewFilter);
+    // Apply match type filter
+    if (matchTypeFilter !== 'All') {
+      finished = finished.filter(match => match.matchType === matchTypeFilter);
+    }
+    
+    return finished;
   };
 
-  const filteredOverviewResults = React.useMemo(() => getFilteredOverviewResults(), [overviewFilter, allMatches]);
+  const filteredOverviewResults = React.useMemo(() => getFilteredOverviewResults(), [advancedTeamFilter, matchTypeFilter, allMatches]);
 
   // Generate league table from match results
   const getLeagueTable = () => {
@@ -1374,21 +1383,26 @@ export default function MatchCentral() {
           {/* Mobile Overview */}
           {activeTab === 'overview' && (
             <div>
-              {/* Simple Filter */}
-              {teams.filter(team => !team.isOpponent).length > 1 && (
-                <div className="mb-4">
-                  <select
-                    value={overviewFilter}
-                    onChange={(e) => setOverviewFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                  >
-                    <option value="all">All Teams</option>
-                    {teams.filter(team => !team.isOpponent).map(team => (
-                      <option key={team.id} value={team.id}>{team.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              {/* Advanced Filters for Mobile */}
+              <div className="mb-4 space-y-3">
+                <AdvancedTeamFilter
+                  teams={teams}
+                  selectedTeamId={advancedTeamFilter}
+                  onSelectionChange={setAdvancedTeamFilter}
+                  className="w-full"
+                />
+                <select
+                  value={matchTypeFilter}
+                  onChange={(e) => setMatchTypeFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                >
+                  <option value="All">All Matches</option>
+                  <option value="League">League Only</option>
+                  <option value="Friendly">Friendlies</option>
+                  <option value="Cup">Cup</option>
+                  <option value="Tournament">Tournament</option>
+                </select>
+              </div>
 
               {/* Mobile Match Cards */}
               <div className="space-y-3">
@@ -1767,24 +1781,31 @@ export default function MatchCentral() {
                   </div>
                   <div className="flex items-center gap-3">
                     <label className="text-sm font-medium text-gray-700">Filter:</label>
+                    <AdvancedTeamFilter
+                      teams={teams}
+                      selectedTeamId={advancedTeamFilter}
+                      onSelectionChange={setAdvancedTeamFilter}
+                      className="w-80"
+                    />
                     <select
-                      value={overviewFilter}
-                      onChange={(e) => setOverviewFilter(e.target.value)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 shadow-sm"
+                      value={matchTypeFilter}
+                      onChange={(e) => setMatchTypeFilter(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 shadow-sm text-sm"
                     >
-                      <option value="all">All Teams</option>
-                      {teams.filter(team => !team.isOpponent).map(team => (
-                        <option key={team.id} value={team.id}>{team.name}</option>
-                      ))}
+                      <option value="All">All Matches</option>
+                      <option value="League">League Only</option>
+                      <option value="Friendly">Friendlies</option>
+                      <option value="Cup">Cup</option>
+                      <option value="Tournament">Tournament</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              {/* Results - 2 Column Layout (Fixed for better responsiveness) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Results - Single Column Layout (Matching Matchday) */}
+              <div className="space-y-3">
                 {filteredOverviewResults.length === 0 ? (
-                  <div className="col-span-full bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-xl shadow-lg border border-gray-100 p-8 text-center">
+                  <div className="bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-xl shadow-lg border border-gray-100 p-8 text-center">
                     <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                       <span className="text-white text-3xl">⚽</span>
                     </div>
@@ -1826,137 +1847,78 @@ export default function MatchCentral() {
                     return (
                       <motion.div
                         key={match.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        className={`bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-blue-200 transition-all duration-300 overflow-hidden relative ${
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.2, delay: index * 0.03 }}
+                        className={`bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden ${
                           hasExtra ? 'cursor-pointer' : ''
                         }`}
                         onClick={() => hasExtra && toggleMatchExpand(match.id)}
                       >
-                        {/* Result Indicator Strip - Enhanced */}
-                        <div className={`absolute left-0 top-0 bottom-0 w-2 rounded-l-xl ${
-                          result.result === 'W' ? 'bg-gradient-to-b from-green-400 to-green-600' : 
-                          result.result === 'L' ? 'bg-gradient-to-b from-red-400 to-red-600' : 'bg-gradient-to-b from-yellow-400 to-yellow-600'
+                        {/* Result indicator strip */}
+                        <div className={`h-1 ${
+                          result.result === 'W' ? 'bg-green-500' : 
+                          result.result === 'L' ? 'bg-red-500' : 'bg-yellow-500'
                         }`}></div>
                         
                         {/* Main Card Content - Compact Layout */}
                         <div className="p-4">
                           <div className="flex items-center justify-between">
                             
-                            {/* Left Side - Match Info */}
-                            <div className="flex-1 pr-4">
-                              {/* Teams */}
-                              <div className="flex items-center gap-4 mb-3">
-                                <div className="text-xl font-bold text-gray-900">
-                                  {team.name}
-                                </div>
-                                <span className="text-gray-400 font-bold text-lg">vs</span>
-                                <div className="text-xl font-bold text-gray-900">
-                                  {match.opponent}
-                                </div>
+                            <div className="flex items-center space-x-4">
+                              <div className="text-sm text-gray-500">
+                                {new Date(match.scheduledDate).toLocaleDateString('en-GB', {
+                                  day: 'numeric',
+                                  month: 'short'
+                                })}
                               </div>
-                              
-                              {/* Match Details */}
-                              <div className="flex items-center gap-3 text-sm text-gray-600">
-                                <span className="font-semibold bg-white/70 px-2 py-1 rounded-lg">
-                                  {new Date(match.scheduledDate).toLocaleDateString()}
-                                </span>
-                                <span className={`px-3 py-1 rounded-lg font-semibold shadow-sm ${
-                                  match.isHomeMatch 
-                                    ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-700' 
-                                    : 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700'
-                                }`}>
-                                  {match.isHomeMatch ? '🏠 HOME' : '✈️ AWAY'}
-                                </span>
-                                <span className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 px-3 py-1 rounded-lg font-semibold shadow-sm">
-                                  {match.matchType}
-                                </span>
+                              <div className="flex items-center space-x-2">
+                                <span className="font-semibold text-gray-900">{team.name}</span>
+                                <span className="text-gray-400">vs</span>
+                                <span className="font-semibold text-gray-900">{match.opponent}</span>
                               </div>
                             </div>
 
-                            {/* Right Side - Score & Actions */}
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center space-x-3">
+                              <div className={`text-lg font-bold ${
+                                result.result === 'W' ? 'text-green-600' : 
+                                result.result === 'L' ? 'text-red-600' : 'text-yellow-600'
+                              }`}>
+                                {result.teamScore} - {result.opponentScore}
+                              </div>
+                              <div className={`px-2 py-1 rounded text-xs font-semibold ${
+                                result.result === 'W' ? 'bg-green-100 text-green-700' : 
+                                result.result === 'L' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                {result.result === 'W' ? 'WIN' : result.result === 'L' ? 'LOSS' : 'DRAW'}
+                              </div>
                               {/* Edit Button */}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   router.push(`/match-recorder?edit=${match.id}`);
                                 }}
-                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-3 rounded-xl transition-all shadow-sm hover:shadow-md transform hover:scale-110"
+                                className="text-blue-500 hover:text-blue-700 p-1 rounded transition-colors"
                                 title="Edit match"
                               >
                                 ✏️
                               </button>
-                              
-                              {/* Delete Button */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (confirm('Are you sure you want to delete this match result?')) {
-                                    // Delete match from database
-                                    const deleteMatch = async () => {
-                                      const { error } = await supabase
-                                        .from('matches')
-                                        .delete()
-                                        .eq('id', match.id);
-                                      
-                                      if (error) {
-                                        console.error('Error deleting match:', error);
-                                        alert('Error deleting match');
-                                      } else {
-                                        loadData();
-                                      }
-                                    };
-                                    deleteMatch();
-                                  }
-                                }}
-                                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-3 rounded-xl transition-all shadow-sm hover:shadow-md transform hover:scale-110"
-                                title="Delete match"
-                              >
-                                🗑️
-                              </button>
-                              
-                              {/* Score Display */}
-                              <div className="text-center bg-white/70 rounded-xl p-4 shadow-sm">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <span className={`text-4xl font-black ${
-                                    result.teamScore > result.opponentScore ? 'text-green-600' : 'text-gray-700'
-                                  }`}>
-                                    {result.teamScore}
-                                  </span>
-                                  <span className="text-gray-400 text-3xl font-bold">-</span>
-                                  <span className={`text-4xl font-black ${
-                                    result.opponentScore > result.teamScore ? 'text-green-600' : 'text-gray-700'
-                                  }`}>
-                                    {result.opponentScore}
-                                  </span>
-                                </div>
-                                <div className={`px-4 py-2 rounded-xl text-sm font-bold shadow-sm ${
-                                  result.result === 'W' ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-700' :
-                                  result.result === 'L' ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-700' :
-                                  'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-700'
-                                }`}>
-                                  {result.result === 'W' ? '🏆 WIN' : result.result === 'L' ? '💔 LOSS' : '🤝 DRAW'}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Expand Arrow */}
-                            <div className="px-6 pb-4">
                               {hasExtra && (
-                                <motion.div
-                                  animate={{ rotate: isExpanded ? 180 : 0 }}
-                                  transition={{ duration: 0.2 }}
-                                  className="text-gray-400 hover:text-blue-600 transition-colors p-3 rounded-xl hover:bg-blue-50 shadow-sm hover:shadow-md"
-                                >
-                                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                  </svg>
-                                </motion.div>
+                                <div className="text-xs text-gray-400">
+                                  {isExpanded ? '▲' : '▼'}
+                                </div>
                               )}
                             </div>
+                          </div>
+                          
+                          <div className="mt-2 flex items-center text-xs text-gray-500 space-x-3">
+                            <span className={`px-2 py-1 rounded ${
+                              match.isHomeMatch ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
+                            }`}>
+                              {match.isHomeMatch ? 'HOME' : 'AWAY'}
+                            </span>
+                            <span>{match.venue}</span>
+                            <span>{match.matchType}</span>
                           </div>
                         </div>
 

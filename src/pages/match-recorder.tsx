@@ -151,7 +151,9 @@ export default function MatchRecorderSimple() {
 
   // Calculate RVR goals to determine goal scorer slots
   const getRVRGoals = () => {
-    return quickResult.isHomeMatch ? quickResult.homeScore : quickResult.awayScore;
+    // RVR team is ALWAYS the first team (homeTeam in the UI)
+    // The score we want is ALWAYS the homeScore (RVR's score)
+    return quickResult.homeScore;
   };
 
   // Check if match is in the future (fixture)
@@ -257,22 +259,18 @@ export default function MatchRecorderSimple() {
 
   // Get players from the selected RVR team
   const getAvailablePlayers = () => {
-    // Always get players from OUR team (RVR), regardless of home/away
-    // In a home match, our team is the home team
-    // In an away match, our team is the away team
-    const ourTeamId = quickResult.isHomeMatch ? quickResult.homeTeam : quickResult.awayTeam;
-    const ourTeam = teams.find(t => t.id === ourTeamId && !t.isOpponent);
+    // RVR team is ALWAYS the first team (homeTeam in the UI)
+    // Get players from the homeTeam (which represents RVR team)
+    const rvrTeam = teams.find(t => t.id === quickResult.homeTeam && !t.isOpponent);
     
     console.log('🔍 Getting available players:', {
-      isHomeMatch: quickResult.isHomeMatch,
       homeTeam: quickResult.homeTeam,
       awayTeam: quickResult.awayTeam,
-      selectedTeamId: ourTeamId,
-      foundTeam: ourTeam?.name,
-      playersCount: ourTeam?.players?.length || 0
+      foundTeam: rvrTeam?.name,
+      playersCount: rvrTeam?.players?.length || 0
     });
     
-    return ourTeam?.players || [];
+    return rvrTeam?.players || [];
   };
 
   const loadMatchForEdit = async (matchId: string) => {
@@ -300,13 +298,22 @@ export default function MatchRecorderSimple() {
         console.log('Team mapping:', { homeTeam, awayTeam, awayTeamName });
         
         // Populate form with match data
+        // In our UI: homeTeam = RVR team, awayTeam = opponent team
+        // We need to map the stored match data back to this format
+        const rvrTeam = teams.find(t => t.id === matchToEdit.teamId);
+        const opponentTeam = teams.find(t => t.name === awayTeamName);
+        
+        // Calculate RVR's score and opponent's score based on match location
+        const rvrScore = matchToEdit.isHomeMatch ? matchToEdit.homeScore : matchToEdit.awayScore;
+        const opponentScore = matchToEdit.isHomeMatch ? matchToEdit.awayScore : matchToEdit.homeScore;
+        
         const quickResultData = {
-          homeTeam: matchToEdit.isHomeMatch ? matchToEdit.teamId : (awayTeam?.id || 'custom'),
-          homeTeamCustom: matchToEdit.isHomeMatch ? '' : (!awayTeam ? awayTeamName : ''),
-          awayTeam: matchToEdit.isHomeMatch ? (awayTeam?.id || 'custom') : matchToEdit.teamId,
-          awayTeamCustom: matchToEdit.isHomeMatch ? (!awayTeam ? awayTeamName : '') : '',
-          homeScore: matchToEdit.homeScore || 0,
-          awayScore: matchToEdit.awayScore || 0,
+          homeTeam: matchToEdit.teamId, // RVR team (always first field)
+          homeTeamCustom: '',
+          awayTeam: opponentTeam?.id || 'custom', // Opponent team (always second field)
+          awayTeamCustom: opponentTeam ? '' : awayTeamName,
+          homeScore: rvrScore || 0, // RVR's score (always first score)
+          awayScore: opponentScore || 0, // Opponent's score (always second score)
           matchDate: matchToEdit.scheduledDate.toISOString().split('T')[0],
           isHomeMatch: matchToEdit.isHomeMatch,
           matchType: matchToEdit.matchType || 'League'
@@ -406,6 +413,12 @@ export default function MatchRecorderSimple() {
       console.log('💾 Final team mapping:', { homeTeamId, awayTeamName });
 
       // Create or update the match
+      // Map UI scores to database scores based on match location
+      const dbHomeScore = isFutureMatch() ? undefined : 
+        (quickResult.isHomeMatch ? quickResult.homeScore : quickResult.awayScore); // If home match, home=RVR; if away match, home=opponent
+      const dbAwayScore = isFutureMatch() ? undefined : 
+        (quickResult.isHomeMatch ? quickResult.awayScore : quickResult.homeScore); // If home match, away=opponent; if away match, away=RVR
+      
       const newMatch: Match = {
         id: editingMatch ? editingMatch.id : crypto.randomUUID(),
         teamId: homeTeamId,
@@ -415,8 +428,8 @@ export default function MatchRecorderSimple() {
         venue: details.venue,
         scheduledDate: new Date(quickResult.matchDate),
         status: isFutureMatch() ? 'Scheduled' : 'Finished',
-        homeScore: isFutureMatch() ? undefined : quickResult.homeScore,
-        awayScore: isFutureMatch() ? undefined : quickResult.awayScore,
+        homeScore: dbHomeScore,
+        awayScore: dbAwayScore,
         referee: details.referee ? 'Yes' : 'No',
         weather: details.weather,
         pitchCond: 'Good',
