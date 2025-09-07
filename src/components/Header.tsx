@@ -279,66 +279,55 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
             transition={{ duration: 0.3 }}
             className="md:hidden bg-white shadow-2xl border-t border-gray-100 px-4 py-6 space-y-3 overflow-hidden"
           >
-            {/* Main Navigation Cards */}
-            <div className="space-y-2">
+            {/* Main Navigation - Clean Design */}
+            <div className="space-y-3">
               {[
-                { href: "/", label: "Home", icon: "🏠", color: "from-blue-500 to-blue-600", delay: 0 },
-                { href: "/matchday", label: "Match Day", icon: "⚽", color: "from-green-500 to-green-600", delay: 0.1 },
-                { href: "/teams/boys", label: "Teams", icon: "👥", color: "from-purple-500 to-purple-600", delay: 0.15 },
-                { href: "/club/about", label: "About Club", icon: "🏛️", color: "from-orange-500 to-orange-600", delay: 0.2 },
-                { href: "/join/members", label: "Join Us", icon: "🚀", color: "from-teal-500 to-teal-600", delay: 0.25 },
-                { href: "/contact", label: "Contact", icon: "📞", color: "from-red-500 to-red-600", delay: 0.3 }
-              ].map((navItem) => (
+                { href: "/", label: "Home" },
+                { href: "/matchday", label: "Match Day" },
+                { href: "/teams/boys", label: "Teams" },
+                { href: "/about", label: "About Club" },
+                { href: "/join/trials", label: "Join Us" },
+                { href: "/contact", label: "Contact" }
+              ].map((navItem, index) => (
                 <motion.div
                   key={navItem.href}
                   initial={{ x: -30, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: navItem.delay, duration: 0.3 }}
-                  className="block"
+                  transition={{ delay: index * 0.1, duration: 0.3 }}
                 >
                   <Link 
                     href={navItem.href}
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                    className="block bg-white border border-gray-200 hover:border-club-primary p-4 rounded-lg transition-all duration-200"
                   >
-                    <div className={`w-10 h-10 bg-gradient-to-r ${navItem.color} rounded-lg flex items-center justify-center mr-3 shadow-sm group-hover:shadow-md transition-shadow`}>
-                      <span className="text-lg text-white">{navItem.icon}</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-900 font-medium">{navItem.label}</span>
+                      <span className="text-club-primary">→</span>
                     </div>
-                    <span className="text-gray-900 font-medium group-hover:text-gray-700">{navItem.label}</span>
                   </Link>
                 </motion.div>
               ))}
             </div>
             
-            {/* Match Central Section */}
+            {/* Match Central Section - Password Protected */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.3 }}
               className="pt-4 border-t border-gray-200"
             >
-              <div className="flex items-center mb-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center mr-2">
-                  <span className="text-sm text-white">⚽</span>
+              <div className="bg-gradient-to-r from-club-secondary to-club-secondary-light p-4 rounded-lg text-white">
+                <div className="text-center mb-3">
+                  <h3 className="font-bold text-sm uppercase tracking-wide">Match Central</h3>
+                  <p className="text-xs text-club-secondary-light">Password Protected</p>
                 </div>
-                <p className="text-sm font-bold text-gray-700 uppercase tracking-wide">Match Central</p>
-              </div>
-              <div className="space-y-1">
-                {[
-                  { href: "/match-central#fixtures", label: "Fixtures", icon: "📅" },
-                  { href: "/match-central#results", label: "Results", icon: "🏆" },
-                  { href: "/quick-record", label: "Quick Record", icon: "⚡" },
-                ].map((item) => (
-                  <Link 
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center py-2 px-3 rounded-lg hover:bg-gray-50 transition-all duration-200"
-                  >
-                    <span className="text-base mr-3">{item.icon}</span>
-                    <span className="text-gray-700 text-sm font-medium">{item.label}</span>
-                  </Link>
-                ))}
+                <Link 
+                  href="/match-central/login"
+                  onClick={() => setIsOpen(false)}
+                  className="block bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded text-center text-sm font-medium transition-all duration-200"
+                >
+                  Access Match Central 🔒
+                </Link>
               </div>
             </motion.div>
 
@@ -350,11 +339,11 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
               className="pt-4"
             >
               <Link 
-                href="/join/members" 
+                href="/join/trials" 
                 onClick={() => setIsOpen(false)}
-                className="block bg-gradient-to-r from-green-600 to-green-500 text-white px-4 py-3 rounded-xl text-center font-bold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02]"
+                className="block bg-gradient-to-r from-club-primary to-club-primary-dark text-white px-4 py-3 rounded-xl text-center font-bold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02]"
               >
-                🚀 Join Rivervalley Rangers
+                Join the Club
               </Link>
             </motion.div>
           </motion.nav>
