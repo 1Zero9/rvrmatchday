@@ -2,14 +2,34 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
-import MobileHomePage from "../components/MobileHomePage";
+import MobileLayout from "../components/MobileLayout";
+import MobileHomePro from "../components/mobile/MobileHomePro";
 
 export default function StandardHomepage() {
   return (
-    <StandardLayout currentPage="/home">
-      {/* Mobile content is handled by MobileLayout in StandardLayout */}
-      {/* This is the desktop content */}
-      <main>
+    <>
+      {/* Mobile Version - Professional */}
+      <div className="block md:hidden">
+        <MobileLayout 
+          currentPage="/home"
+          clubData={{
+            name: "RVR AFC", 
+            logo: "/images/logo.png",
+            established: "1981",
+            colors: {
+              primary: "#dc2626",
+              secondary: "#1e40af"
+            }
+          }}
+        >
+          <MobileHomePro />
+        </MobileLayout>
+      </div>
+
+      {/* Desktop Version - Existing */}
+      <div className="hidden md:block">
+        <StandardLayout currentPage="/home">
+          <main>
         
         {/* Hero Section - Authentic Community Feel */}
         <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
@@ -433,7 +453,9 @@ export default function StandardHomepage() {
           </div>
         </section>
 
-      </main>
-    </StandardLayout>
+          </main>
+        </StandardLayout>
+      </div>
+    </>
   );
 }

@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
 import CelebrationResultCard from "../components/CelebrationResultCard";
 import MobileBottomNav from "../components/MobileBottomNav";
@@ -647,6 +647,13 @@ export default function MatchCentral() {
   const [loading, setLoading] = useState(true);
   const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
   const [allMatches, setAllMatches] = useState<Match[]>([]);
+  const [unrecordedMatches, setUnrecordedMatches] = useState<Match[]>([]);
+  const [deleteModal, setDeleteModal] = useState<{show: boolean; matchId: string; matchName: string; type: 'match' | 'fixture'}>({
+    show: false,
+    matchId: '',
+    matchName: '',
+    type: 'match'
+  });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authPassword, setAuthPassword] = useState('');
   const [selectedStatsTeam, setSelectedStatsTeam] = useState<string>('all');
@@ -692,6 +699,42 @@ export default function MatchCentral() {
       return hasBasicExtra || hasGoalEvents;
     } catch (error) {
       return hasBasicExtra;
+    }
+  };
+
+  // Helper function to check if a match needs recording
+  const isMatchUnrecorded = (match: Match) => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+    
+    const matchDate = new Date(match.scheduledDate);
+    const isPastMatch = matchDate < today;
+    const isScheduled = match.status === 'Scheduled';
+    const noScore = (match.homeScore === 0 || match.homeScore === null) && 
+                   (match.awayScore === 0 || match.awayScore === null);
+    
+    return isPastMatch && (isScheduled || noScore);
+  };
+
+  // Delete match handler
+  const handleDeleteMatch = async (matchId: string) => {
+    try {
+      const { error } = await supabase
+        .from('matches')
+        .delete()
+        .eq('id', matchId);
+      
+      if (error) {
+        console.error('Error deleting match:', error);
+        alert('Error deleting match. Please try again.');
+      } else {
+        // Close modal and refresh data
+        setDeleteModal({ show: false, matchId: '', matchName: '', type: 'match' });
+        loadData();
+      }
+    } catch (error) {
+      console.error('Error deleting match:', error);
+      alert('Error deleting match. Please try again.');
     }
   };
 
@@ -772,6 +815,23 @@ export default function MatchCentral() {
         
         console.log('Loaded matches from database:', transformedMatches);
         setAllMatches(transformedMatches);
+        
+        // Check for unrecorded past matches and create alerts
+        const today = new Date();
+        today.setHours(23, 59, 59, 999); // End of today
+        
+        const unrecordedPastMatches = transformedMatches.filter(match => {
+          const matchDate = new Date(match.scheduledDate);
+          const isPastMatch = matchDate < today;
+          const isScheduled = match.status === 'Scheduled';
+          const noScore = (match.homeScore === 0 || match.homeScore === null) && 
+                         (match.awayScore === 0 || match.awayScore === null);
+          
+          return isPastMatch && (isScheduled || noScore);
+        });
+        
+        console.log('Found unrecorded past matches:', unrecordedPastMatches.length);
+        setUnrecordedMatches(unrecordedPastMatches);
       }
       
       // Team summaries will be calculated from database data
@@ -972,7 +1032,10 @@ export default function MatchCentral() {
       form: [] as string[]
     };
 
-    teamMatches.forEach(match => {
+    // Sort matches by date (oldest first) so form is built in chronological order
+    const sortedMatches = teamMatches.sort((a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime());
+    
+    sortedMatches.forEach(match => {
       if (match.homeScore !== undefined && match.awayScore !== undefined) {
         const teamScore = match.isHomeMatch ? match.homeScore : match.awayScore;
         const opponentScore = match.isHomeMatch ? match.awayScore : match.homeScore;
@@ -1551,14 +1614,21 @@ export default function MatchCentral() {
             <div className="space-y-3">
               {upcomingMatches.map((match) => {
                 const team = teams.find(t => t.id === match.teamId);
+                const needsRecording = isMatchUnrecorded(match);
                 return (
-                  <div key={match.id} className="bg-white rounded-lg border shadow-sm p-3">
+                  <div key={match.id} className={`bg-white rounded-lg border shadow-sm p-3 ${needsRecording ? 'border-amber-400 bg-amber-50' : ''}`}>
                     <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-bold text-gray-900">
+                      <div className="flex-1">
+                        <div className={`text-sm font-bold flex items-center gap-2 ${needsRecording ? 'text-amber-800' : 'text-gray-900'}`}>
+                          {needsRecording && <span className="text-amber-600">⚠️</span>}
                           {team?.name || 'Unknown'} vs {match.opponent}
+                          {needsRecording && (
+                            <span className="text-xs bg-amber-200 text-amber-800 px-2 py-1 rounded-full font-semibold">
+                              NEEDS RECORDING
+                            </span>
+                          )}
                         </div>
-                        <div className="text-xs text-gray-600">
+                        <div className={`text-xs ${needsRecording ? 'text-amber-700' : 'text-gray-600'}`}>
                           {match.scheduledDate.toLocaleDateString()} • {match.scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
@@ -1826,6 +1896,69 @@ export default function MatchCentral() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
+              {/* Unrecorded Past Matches Alert */}
+              {unrecordedMatches.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-r-lg mb-8"
+                >
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-amber-800">
+                        ⚠️ {unrecordedMatches.length} Past Match{unrecordedMatches.length > 1 ? 'es' : ''} Need Recording
+                      </h3>
+                      <div className="mt-2 text-sm text-amber-700">
+                        <p className="mb-3">The following matches have passed but haven't been recorded:</p>
+                        <div className="space-y-2 max-h-40 overflow-y-auto">
+                          {unrecordedMatches.slice(0, 5).map(match => (
+                            <div key={match.id} className="bg-white bg-opacity-50 rounded p-2 flex justify-between items-center">
+                              <span className="font-medium">
+                                {match.isHomeMatch ? 'vs' : 'at'} {match.opponent}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-amber-600">
+                                  {new Date(match.scheduledDate).toLocaleDateString()}
+                                </span>
+                                <button
+                                  onClick={() => router.push(`/match-recorder?edit=${match.id}`)}
+                                  className="text-xs bg-amber-600 text-white px-2 py-1 rounded hover:bg-amber-700 transition-colors"
+                                >
+                                  Record Now
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                          {unrecordedMatches.length > 5 && (
+                            <div className="text-xs text-amber-600 text-center py-1">
+                              ...and {unrecordedMatches.length - 5} more
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="ml-auto pl-3">
+                      <div className="-mx-1.5 -my-1.5">
+                        <button
+                          onClick={() => setUnrecordedMatches([])}
+                          className="inline-flex rounded-md p-1.5 text-amber-500 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-amber-50 focus:ring-amber-600"
+                        >
+                          <span className="sr-only">Dismiss</span>
+                          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+              
               {/* Filter Bar - Enhanced Features Style */}
               <div className="bg-gradient-to-r from-white to-blue-50 rounded-xl shadow-lg border border-blue-100 p-6 mb-8">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -1961,6 +2094,25 @@ export default function MatchCentral() {
                                 title="Edit match"
                               >
                                 ✏️
+                              </button>
+                              
+                              {/* Delete Button */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const team = teams.find(t => t.id === match.teamId);
+                                  const matchName = `${team?.name || 'Unknown'} vs ${match.opponent}`;
+                                  setDeleteModal({
+                                    show: true,
+                                    matchId: match.id,
+                                    matchName: matchName,
+                                    type: 'match'
+                                  });
+                                }}
+                                className="text-red-500 hover:text-red-700 p-1 rounded transition-colors ml-1"
+                                title="Delete match"
+                              >
+                                🗑️
                               </button>
                               {hasExtra && (
                                 <div className="text-xs text-gray-400">
@@ -2251,6 +2403,7 @@ export default function MatchCentral() {
                     ) : (
                       upcomingMatches.map((match, index) => {
                         const team = teams.find(t => t.id === match.teamId);
+                        const needsRecording = isMatchUnrecorded(match);
                         return (
                           <motion.div 
                             key={match.id} 
@@ -2258,10 +2411,28 @@ export default function MatchCentral() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, delay: index * 0.05 }}
                             whileHover={{ scale: 1.02, y: -2 }}
-                            className="bg-gradient-to-br from-white via-gray-50 to-purple-50 rounded-xl shadow-lg border border-purple-100 hover:shadow-xl hover:border-purple-200 transition-all duration-300 overflow-hidden relative"
+                            className={`rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 overflow-hidden relative ${
+                              needsRecording 
+                                ? 'bg-gradient-to-br from-amber-50 via-amber-100 to-orange-50 border-amber-300 hover:border-amber-400' 
+                                : 'bg-gradient-to-br from-white via-gray-50 to-purple-50 border-purple-100 hover:border-purple-200'
+                            }`}
                           >
-                            {/* Future Match Indicator Strip */}
-                            <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-blue-400 to-purple-600 rounded-l-xl"></div>
+                            {/* Match Indicator Strip */}
+                            <div className={`absolute left-0 top-0 bottom-0 w-2 rounded-l-xl ${
+                              needsRecording 
+                                ? 'bg-gradient-to-b from-amber-400 to-red-500' 
+                                : 'bg-gradient-to-b from-blue-400 to-purple-600'
+                            }`}></div>
+                            
+                            {/* Unrecorded Match Warning Badge */}
+                            {needsRecording && (
+                              <div className="absolute right-2 top-2">
+                                <div className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-md">
+                                  <span>⚠️</span>
+                                  <span>NEEDS RECORDING</span>
+                                </div>
+                              </div>
+                            )}
                             
                             {/* Card Content */}
                             <div className="p-4">
@@ -2319,23 +2490,14 @@ export default function MatchCentral() {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      if (confirm('Are you sure you want to delete this fixture?')) {
-                                        // Delete fixture from database
-                                        const deleteMatch = async () => {
-                                          const { error } = await supabase
-                                            .from('matches')
-                                            .delete()
-                                            .eq('id', match.id);
-                                          
-                                          if (error) {
-                                            console.error('Error deleting fixture:', error);
-                                            alert('Error deleting fixture');
-                                          } else {
-                                            loadData();
-                                          }
-                                        };
-                                        deleteMatch();
-                                      }
+                                      const team = teams.find(t => t.id === match.teamId);
+                                      const matchName = `${team?.name || 'Unknown'} vs ${match.opponent}`;
+                                      setDeleteModal({
+                                        show: true,
+                                        matchId: match.id,
+                                        matchName: matchName,
+                                        type: 'fixture'
+                                      });
                                     }}
                                     className="text-red-500 hover:text-red-700 hover:bg-red-50 p-3 rounded-xl transition-all shadow-sm hover:shadow-md transform hover:scale-110"
                                     title="Delete fixture"
@@ -3085,6 +3247,82 @@ export default function MatchCentral() {
           </div>
         </StandardLayout>
       </div>
+      
+      {/* Glass Effect Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteModal.show && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          >
+            {/* Backdrop with blur effect */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 backdrop-blur-md"
+              onClick={() => setDeleteModal({ show: false, matchId: '', matchName: '', type: 'match' })}
+            />
+            
+            {/* Modal Content */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="relative bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-8 max-w-md w-full mx-4"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+              }}
+            >
+              {/* Warning Icon */}
+              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-500 to-red-600 rounded-full shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+
+              {/* Title */}
+              <h3 className="text-2xl font-bold text-center text-gray-900 mb-4">
+                Delete {deleteModal.type === 'fixture' ? 'Fixture' : 'Match'}?
+              </h3>
+
+              {/* Warning Message */}
+              <div className="text-center mb-8">
+                <p className="text-lg font-semibold text-gray-800 mb-3">
+                  Are you sure you want to delete this {deleteModal.type}?
+                </p>
+                <p className="text-base text-gray-700 mb-2">
+                  <strong>{deleteModal.matchName}</strong>
+                </p>
+                <p className="text-sm text-red-600 font-medium bg-red-50 rounded-lg p-3 border border-red-200">
+                  ⚠️ This action cannot be undone
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setDeleteModal({ show: false, matchId: '', matchName: '', type: 'match' })}
+                  className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-xl transition-all duration-200 border border-gray-300 hover:shadow-md"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteMatch(deleteModal.matchId)}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                >
+                  Delete Forever
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />

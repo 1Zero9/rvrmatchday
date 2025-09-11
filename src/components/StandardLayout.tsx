@@ -37,7 +37,18 @@ export default function StandardLayout({ children, title, currentPage }: Standar
     <>
       {/* Mobile Layout - Only for mobile screens */}
       <div className="block md:hidden">
-        <MobileLayout currentPage={currentPage}>
+        <MobileLayout 
+          currentPage={currentPage}
+          clubData={{
+            name: "RVR AFC",
+            logo: "/images/logo.png",
+            established: "1981",
+            colors: {
+              primary: "#dc2626",
+              secondary: "#1e40af"
+            }
+          }}
+        >
           {children}
         </MobileLayout>
       </div>

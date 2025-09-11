@@ -364,13 +364,18 @@ export default function MatchRecorderSimple() {
     try {
       console.log('💾 SaveResult - Starting with quickResult:', quickResult);
       console.log('💾 SaveResult - EditingMatch:', editingMatch?.id);
+      console.log('💾 SaveResult - Router query edit:', router.query.edit);
+      
+      // Ensure we're using the correct match ID for edits - prevent duplicates
+      const actualEditId = router.query.edit as string || editingMatch?.id;
+      console.log('💾 SaveResult - Actual edit ID to use:', actualEditId);
       
       // Only create teams if they're truly custom AND we're not editing an existing match
       let homeTeamId = quickResult.homeTeam;
       let awayTeamName = quickResult.awayTeam;
 
       // Handle home team
-      if (quickResult.homeTeam === 'custom' && quickResult.homeTeamCustom && !editingMatch) {
+      if (quickResult.homeTeam === 'custom' && quickResult.homeTeamCustom && !actualEditId) {
         console.log('🏠 Creating new custom home team:', quickResult.homeTeamCustom);
         const homeTeam: Team = {
           id: crypto.randomUUID(),
@@ -388,7 +393,7 @@ export default function MatchRecorderSimple() {
       }
 
       // Handle away team
-      if (quickResult.awayTeam === 'custom' && quickResult.awayTeamCustom && !editingMatch) {
+      if (quickResult.awayTeam === 'custom' && quickResult.awayTeamCustom && !actualEditId) {
         console.log('✈️ Creating new custom away team:', quickResult.awayTeamCustom);
         const awayTeam: Team = {
           id: crypto.randomUUID(),
@@ -420,7 +425,7 @@ export default function MatchRecorderSimple() {
         (quickResult.isHomeMatch ? quickResult.awayScore : quickResult.homeScore); // If home match, away=opponent; if away match, away=RVR
       
       const newMatch: Match = {
-        id: editingMatch ? editingMatch.id : crypto.randomUUID(),
+        id: actualEditId || crypto.randomUUID(),
         teamId: homeTeamId,
         opponent: awayTeamName,
         matchType: quickResult.matchType,
@@ -436,7 +441,7 @@ export default function MatchRecorderSimple() {
         notes: details.notes,
         selectedSquad: details.selectedSquad,
         recordedBy: 'match-recorder',
-        createdAt: editingMatch ? editingMatch.createdAt : new Date(),
+        createdAt: (editingMatch || actualEditId) ? (editingMatch?.createdAt || new Date()) : new Date(),
         updatedAt: new Date()
       };
 
@@ -447,7 +452,7 @@ export default function MatchRecorderSimple() {
         console.log('Saving goal events, goalScorers:', details.goalScorers);
         
         // If editing match, first delete existing goal events to prevent duplicates
-        if (editingMatch) {
+        if (actualEditId) {
           console.log('Editing match - clearing existing goal events to prevent duplicates');
           const existingEvents = await storage.getMatchEvents(newMatch.id);
           const existingGoalEvents = existingEvents.filter(e => e.eventType === 'Goal');
