@@ -12,6 +12,7 @@ export default function StandardHomepage() {
       <div className="block md:hidden">
         <MobileLayout 
           currentPage="/home"
+          showNavigation={false}
           clubData={{
             name: "RVR AFC", 
             logo: "/images/logo.png",

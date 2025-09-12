@@ -34,6 +34,10 @@ interface WizardData {
   contactPhone: string;
   notes: string;
   
+  // Opponent-specific fields
+  primaryMatchTypes: string[]; // Types of matches this opponent typically plays
+  competitionLevel: string; // Level of competition (e.g., Amateur, Semi-Pro, Professional)
+  
   // Step 4: Squad (RVR teams only)
   players: Array<{
     name: string;
@@ -105,6 +109,8 @@ export default function MatchAdminNew() {
       contactEmail: '',
       contactPhone: '',
       notes: '',
+      primaryMatchTypes: [],
+      competitionLevel: '',
       players: []
     };
   });
@@ -148,6 +154,8 @@ export default function MatchAdminNew() {
           contactEmail: teamToEdit.contactEmail || '',
           contactPhone: teamToEdit.contactPhone || '',
           notes: teamToEdit.notes || '',
+          primaryMatchTypes: (teamToEdit as any).primaryMatchTypes || (teamToEdit as any).primary_match_types || [],
+          competitionLevel: (teamToEdit as any).competitionLevel || (teamToEdit as any).competition_level || '',
           players: teamToEdit.players?.map(p => ({
             name: p.name,
             position: p.position,
@@ -554,6 +562,16 @@ export default function MatchAdminNew() {
       
       // Add team type
       baseTeamData.is_opponent = wizardData.teamType === 'opponent';
+      
+      // Add opponent-specific fields
+      if (wizardData.teamType === 'opponent') {
+        if (wizardData.competitionLevel) {
+          baseTeamData.competition_level = wizardData.competitionLevel;
+        }
+        if (wizardData.primaryMatchTypes && wizardData.primaryMatchTypes.length > 0) {
+          baseTeamData.primary_match_types = wizardData.primaryMatchTypes;
+        }
+      }
 
       // For editing, add the ID
       const teamData = isEditing ? { ...baseTeamData, id: editTeamId } : baseTeamData;
@@ -1289,6 +1307,78 @@ export default function MatchAdminNew() {
                     </div>
                   </div>
                 </div>
+
+                {/* Opponent-specific Classification Fields */}
+                {wizardData.teamType === 'opponent' && (
+                  <div className="max-w-2xl mx-auto mt-8 p-6 bg-orange-50 border border-orange-200 rounded-lg">
+                    <h3 className="text-lg font-semibold text-orange-800 mb-4 flex items-center">
+                      <span className="mr-2">🎯</span>
+                      Opponent Classification
+                    </h3>
+                    <p className="text-sm text-orange-700 mb-4">
+                      Help categorize this opponent team for better match scheduling and organization.
+                    </p>
+                    
+                    <div className="space-y-4">
+                      {/* Competition Level */}
+                      <div>
+                        <label className="block text-sm font-medium text-orange-800 mb-2">
+                          Competition Level
+                        </label>
+                        <select
+                          value={wizardData.competitionLevel}
+                          onChange={(e) => setWizardData(prev => ({ ...prev, competitionLevel: e.target.value }))}
+                          className="w-full px-3 py-2 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                        >
+                          <option value="">Select Level</option>
+                          <option value="Youth/Juvenile">Youth/Juvenile</option>
+                          <option value="Amateur">Amateur</option>
+                          <option value="Semi-Professional">Semi-Professional</option>
+                          <option value="Professional">Professional</option>
+                          <option value="International">International</option>
+                        </select>
+                      </div>
+
+                      {/* Primary Match Types */}
+                      <div>
+                        <label className="block text-sm font-medium text-orange-800 mb-2">
+                          Primary Match Types
+                          <span className="text-xs text-orange-600 block font-normal">What types of matches does this team typically play?</span>
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {['League', 'Cup', 'Friendly', 'Tournament', 'Playoff', 'Exhibition'].map(matchType => (
+                            <label key={matchType} className="flex items-center space-x-2 p-2 border border-orange-200 rounded hover:bg-orange-100 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={wizardData.primaryMatchTypes.includes(matchType)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setWizardData(prev => ({
+                                      ...prev,
+                                      primaryMatchTypes: [...prev.primaryMatchTypes, matchType]
+                                    }));
+                                  } else {
+                                    setWizardData(prev => ({
+                                      ...prev,
+                                      primaryMatchTypes: prev.primaryMatchTypes.filter(type => type !== matchType)
+                                    }));
+                                  }
+                                }}
+                                className="text-orange-600 rounded focus:ring-orange-500"
+                              />
+                              <span className="text-sm text-orange-800">{matchType}</span>
+                            </label>
+                          ))}
+                        </div>
+                        {wizardData.primaryMatchTypes.length > 0 && (
+                          <div className="mt-2 text-xs text-orange-600">
+                            Selected: {wizardData.primaryMatchTypes.join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex justify-center mt-8 space-x-4">
                   <button

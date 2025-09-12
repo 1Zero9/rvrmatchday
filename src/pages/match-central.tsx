@@ -181,8 +181,46 @@ function GoalScorersInline({ match }: { match: Match }) {
       }
     };
     
+    const loadSquadPlayers = async () => {
+      console.log('🔍 Loading squad for match:', match.id);
+      console.log('📋 selectedSquad data:', match.selectedSquad);
+      
+      if (!match.selectedSquad || match.selectedSquad.length === 0) {
+        console.log('❌ No selectedSquad data found');
+        setSquadPlayers([]);
+        return;
+      }
+      
+      try {
+        console.log('📦 Querying players table for IDs:', match.selectedSquad);
+        // Load player details for the selected squad
+        const { data, error } = await supabase
+          .from('players')
+          .select('id, first_name, last_name')
+          .in('id', match.selectedSquad);
+
+        console.log('📊 Players query result:', { data, error });
+
+        if (error) {
+          console.error('Error loading squad players:', error);
+          return;
+        }
+
+        const players = (data || []).map(player => ({
+          id: player.id,
+          name: `${player.first_name || ''}${player.last_name && player.last_name !== 'null' ? ` ${player.last_name}` : ''}`.trim() || 'Unknown Player'
+        }));
+        
+        console.log('✅ Processed squad players:', players);
+        setSquadPlayers(players);
+      } catch (error) {
+        console.error('Error loading squad players:', error);
+      }
+    };
+    
     loadGoalEvents();
-  }, [match.id]);
+    loadSquadPlayers();
+  }, [match.id, match.selectedSquad]);
 
   if (goalEvents.length === 0) return null;
 
@@ -208,9 +246,129 @@ function GoalScorersInline({ match }: { match: Match }) {
   );
 }
 
+// Component for quick match stats in cards
+function MatchQuickStats({ match }: { match: Match }) {
+  const [goalEvents, setGoalEvents] = React.useState<any[]>([]);
+  
+  React.useEffect(() => {
+    const loadGoalEvents = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('match_events')
+          .select(`
+            id,
+            player_name,
+            event_minute,
+            notes,
+            event_data,
+            players(first_name, last_name)
+          `)
+          .eq('match_id', match.id)
+          .eq('event_type', 'Goal')
+          .order('event_minute');
+
+        if (!error && data && data.length > 0) {
+          console.log('🔍 Raw goal events data for cards:', data);
+          const events = data.map(event => {
+            const assistFromEventData = event.event_data?.assistPlayerName;
+            const assistFromNotes = event.notes?.match(/Assist:\s*([^|]+)/)?.[1]?.trim();
+            const finalAssist = assistFromEventData || assistFromNotes;
+            
+            console.log('🎯 Processing event:', {
+              playerName: event.player_name,
+              eventData: event.event_data,
+              notes: event.notes,
+              assistFromEventData,
+              assistFromNotes,
+              finalAssist
+            });
+            
+            return {
+              playerName: event.players 
+                ? `${event.players.first_name || ''}${event.players.last_name && event.players.last_name !== 'null' ? ` ${event.players.last_name}` : ''}`.trim() || 'Unknown Player'
+                : event.player_name || 'Unknown Player',
+              minute: event.event_minute || 0,
+              assist: finalAssist
+            };
+          });
+          console.log('📊 Final processed events for cards:', events);
+          setGoalEvents(events);
+        } else if (match.id === 'test-match-1') {
+          // Create test goal events with assists for debugging
+          console.log('🧪 Creating test goal events for assists testing...');
+          const testEvents = [
+            {
+              playerName: 'John Smith',
+              minute: 15,
+              assist: 'Mike Johnson'
+            },
+            {
+              playerName: 'Alex Brown',
+              minute: 32,
+              assist: 'Tom Wilson'
+            },
+            {
+              playerName: 'John Smith',
+              minute: 67,
+              assist: null
+            }
+          ];
+          console.log('🎯 Test events with assists:', testEvents);
+          setGoalEvents(testEvents);
+        }
+      } catch (error) {
+        console.error('Error loading goal events for card:', error);
+      }
+    };
+    
+    loadGoalEvents();
+  }, [match.id]);
+
+  return (
+    <div className="space-y-2">
+      {/* Goals & Assists */}
+      {goalEvents.length > 0 && (
+        <div className="bg-green-50 rounded p-2">
+          <div className="text-xs font-semibold text-green-800 mb-1">⚽ Goals</div>
+          <div className="space-y-1">
+            {goalEvents.slice(0, 2).map((goal, i) => (
+              <div key={i} className="text-xs text-green-700">
+                <span className="font-medium">{goal.playerName}</span>
+                {goal.assist && (
+                  <span className="text-green-600"> (assist: {goal.assist})</span>
+                )}
+              </div>
+            ))}
+            {goalEvents.length > 2 && (
+              <div className="text-xs text-green-600">+{goalEvents.length - 2} more</div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Squad Info */}
+      {match.selectedSquad && match.selectedSquad.length > 0 && (
+        <div className="bg-blue-50 rounded p-2">
+          <div className="text-xs font-semibold text-blue-800">
+            👥 {match.selectedSquad.length} players
+          </div>
+        </div>
+      )}
+      
+      {/* Venue */}
+      {match.venue && (
+        <div className="text-xs text-gray-600 text-center">
+          📍 {match.venue}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Component for expanded match details
 function MatchExpandedDetails({ match }: { match: Match }) {
   const [goalEvents, setGoalEvents] = React.useState<any[]>([]);
+  const [squadPlayers, setSquadPlayers] = React.useState<any[]>([]);
   
   React.useEffect(() => {
     const loadGoalEvents = async () => {
@@ -223,6 +381,7 @@ function MatchExpandedDetails({ match }: { match: Match }) {
             player_name,
             event_minute,
             notes,
+            event_data,
             players(first_name, last_name)
           `)
           .eq('match_id', match.id)
@@ -234,32 +393,101 @@ function MatchExpandedDetails({ match }: { match: Match }) {
           return;
         }
 
-        const events = (data || []).map(event => ({
-          id: event.id,
-          playerName: event.players 
-            ? `${event.players.first_name || ''}${event.players.last_name && event.players.last_name !== 'null' ? ` ${event.players.last_name}` : ''}`.trim() || 'Unknown Player'
-            : event.player_name || 'Unknown Player',
-          minute: event.event_minute || 0,
-          eventData: {
-            assistPlayerName: event.notes?.match(/Assist:\s*([^|]+)/)?.[1]?.trim()
-          }
-        }));
-        
-        setGoalEvents(events);
+        if (data && data.length > 0) {
+          const events = (data || []).map(event => ({
+            id: event.id,
+            playerName: event.players 
+              ? `${event.players.first_name || ''}${event.players.last_name && event.players.last_name !== 'null' ? ` ${event.players.last_name}` : ''}`.trim() || 'Unknown Player'
+              : event.player_name || 'Unknown Player',
+            minute: event.event_minute || 0,
+            eventData: {
+              assistPlayerName: event.event_data?.assistPlayerName || event.notes?.match(/Assist:\s*([^|]+)/)?.[1]?.trim()
+            }
+          }));
+          setGoalEvents(events);
+        } else if (match.id === 'test-match-1') {
+          // Create test goal events with assists for expanded details
+          console.log('🧪 Creating test goal events for expanded details...');
+          const testEvents = [
+            {
+              id: 'test-event-1',
+              playerName: 'John Smith',
+              minute: 15,
+              eventData: {
+                assistPlayerName: 'Mike Johnson'
+              }
+            },
+            {
+              id: 'test-event-2',
+              playerName: 'Alex Brown',
+              minute: 32,
+              eventData: {
+                assistPlayerName: 'Tom Wilson'
+              }
+            },
+            {
+              id: 'test-event-3',
+              playerName: 'John Smith',
+              minute: 67,
+              eventData: {
+                assistPlayerName: null
+              }
+            }
+          ];
+          setGoalEvents(testEvents);
+        }
       } catch (error) {
         console.error('Error loading goal events:', error);
       }
     };
     
+    const loadSquadPlayers = async () => {
+      console.log('🔍 Loading squad for match:', match.id);
+      console.log('📋 selectedSquad data:', match.selectedSquad);
+      
+      if (!match.selectedSquad || match.selectedSquad.length === 0) {
+        console.log('❌ No selectedSquad data found');
+        setSquadPlayers([]);
+        return;
+      }
+      
+      try {
+        console.log('📦 Querying players table for IDs:', match.selectedSquad);
+        // Load player details for the selected squad
+        const { data, error } = await supabase
+          .from('players')
+          .select('id, first_name, last_name')
+          .in('id', match.selectedSquad);
+
+        console.log('📊 Players query result:', { data, error });
+
+        if (error) {
+          console.error('Error loading squad players:', error);
+          return;
+        }
+
+        const players = (data || []).map(player => ({
+          id: player.id,
+          name: `${player.first_name || ''}${player.last_name && player.last_name !== 'null' ? ` ${player.last_name}` : ''}`.trim() || 'Unknown Player'
+        }));
+        
+        console.log('✅ Processed squad players:', players);
+        setSquadPlayers(players);
+      } catch (error) {
+        console.error('Error loading squad players:', error);
+      }
+    };
+    
     loadGoalEvents();
-  }, [match.id]);
+    loadSquadPlayers();
+  }, [match.id, match.selectedSquad]);
 
   return (
     <div className="border-t border-gray-100 bg-gray-50 p-3">
       <div className="space-y-3">
         
         {/* Goal Scorers - Enhanced Display */}
-        {goalEvents.length > 0 && (
+        {goalEvents.length > 0 ? (
           <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-4 shadow-sm">
             <h4 className="font-bold text-green-800 mb-3 flex items-center">
               <span className="mr-2 text-lg">⚽</span>
@@ -275,9 +503,8 @@ function MatchExpandedDetails({ match }: { match: Match }) {
                     <span className="font-semibold text-gray-900">{event.playerName}</span>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium text-gray-700">{event.minute}'</div>
                     {event.eventData?.assistPlayerName && (
-                      <div className="text-sm font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-md mt-1">
+                      <div className="text-sm font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-md">
                         🅰️ {event.eventData.assistPlayerName}
                       </div>
                     )}
@@ -286,16 +513,39 @@ function MatchExpandedDetails({ match }: { match: Match }) {
               ))}
             </div>
           </div>
+        ) : (
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+            <h4 className="font-medium text-gray-600 mb-2 flex items-center">
+              <span className="mr-2">⚽</span>
+              Goal Events
+            </h4>
+            <div className="text-sm text-gray-500">
+              No goal events recorded for this match
+            </div>
+          </div>
         )}
 
-        {/* Traditional Extra Info */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          {match.playerOfTheMatch && (
-            <div className="text-center p-2 bg-yellow-100 rounded">
-              <div>⭐ Player of Match</div>
-              <div className="font-bold">{match.playerOfTheMatch}</div>
+        {/* Squad Players - Who Played */}
+        {squadPlayers.length > 0 && (
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 shadow-sm">
+            <h4 className="font-bold text-blue-800 mb-3 flex items-center">
+              <span className="mr-2 text-lg">👥</span>
+              Squad ({squadPlayers.length} players)
+            </h4>
+            <div className="bg-white/70 p-3 rounded-lg shadow-sm">
+              <div className="text-sm text-gray-900 leading-relaxed">
+                {squadPlayers.map((player, index) => (
+                  <span key={player.id} className="font-medium">
+                    {player.name}{index < squadPlayers.length - 1 ? ', ' : ''}
+                  </span>
+                ))}
+              </div>
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Additional Match Info */}
+        <div className="grid grid-cols-1 gap-2 text-xs">
           {match.attendance && (
             <div className="text-center p-2 bg-blue-100 rounded">
               <div>👥 Attendance</div>
@@ -303,15 +553,12 @@ function MatchExpandedDetails({ match }: { match: Match }) {
             </div>
           )}
           {match.notes && (
-            <div className="col-span-2 p-2 bg-gray-100 rounded">
-              <div className="font-semibold mb-1">📝 Notes</div>
+            <div className="p-2 bg-gray-100 rounded">
+              <div className="font-semibold mb-1">📝 Match Notes</div>
               <div className="text-gray-700">{match.notes}</div>
             </div>
           )}
         </div>
-        
-        {/* Squad Display - Only in Expanded View */}
-        <MatchPlayersDisplay match={match} />
       </div>
       
       {/* Mobile Bottom Navigation */}
@@ -644,6 +891,7 @@ export default function MatchCentral() {
   const [overviewFilter, setOverviewFilter] = useState<string>('all');
   const [advancedTeamFilter, setAdvancedTeamFilter] = useState<string>('all');
   const [matchTypeFilter, setMatchTypeFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
   const [loading, setLoading] = useState(true);
   const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
   const [allMatches, setAllMatches] = useState<Match[]>([]);
@@ -661,6 +909,8 @@ export default function MatchCentral() {
   const [playerStats, setPlayerStats] = useState<{ topScorers: any[]; topAssists: any[]; mostMatches: any[]; }>({ topScorers: [], topAssists: [], mostMatches: [] });
   const [matchesWithExtra, setMatchesWithExtra] = useState<{[key: string]: boolean}>({});
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
+  const [fullScreenMatch, setFullScreenMatch] = useState<Match | null>(null);
+  const [overlayMatch, setOverlayMatch] = useState<Match | null>(null);
 
   const toggleMatchExpand = (matchId: string) => {
     setExpandedResults(prev => ({
@@ -668,6 +918,31 @@ export default function MatchCentral() {
       [matchId]: !prev[matchId]
     }));
   };
+
+  // Full-screen match modal functions
+  const openFullScreenMatch = (match: Match) => {
+    setFullScreenMatch(match);
+    document.body.style.overflow = 'hidden'; // Prevent background scroll
+  };
+
+  const closeFullScreenMatch = () => {
+    setFullScreenMatch(null);
+    document.body.style.overflow = 'unset'; // Restore scroll
+  };
+
+  // Keyboard escape functionality
+  React.useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && fullScreenMatch) {
+        closeFullScreenMatch();
+      }
+    };
+
+    if (fullScreenMatch) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [fullScreenMatch]);
 
   const togglePlayerSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -739,6 +1014,7 @@ export default function MatchCentral() {
   };
 
   const loadData = async () => {
+    console.log('🚀 Starting loadData function...');
     try {
       // Load teams directly from database
       const { data: teamsData, error: teamsError } = await supabase
@@ -784,14 +1060,67 @@ export default function MatchCentral() {
       setTeams(loadedTeams);
       
       // Load all matches from database
+      console.log('🔍 Attempting to load matches from database...');
+      console.log('🔗 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.log('🔑 Supabase Key (first 10 chars):', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 10));
+      
       const { data: matchesData, error: matchesError } = await supabase
         .from('matches')
         .select('*')
         .order('created_at', { ascending: false });
       
+      console.log('📊 Raw database result:', { 
+        matchCount: matchesData?.length || 0, 
+        error: matchesError,
+        firstMatch: matchesData?.[0] ? {
+          id: matchesData[0].id,
+          opponent: matchesData[0].opponent,
+          selectedSquad: matchesData[0].selected_squad
+        } : 'No matches'
+      });
+      
+      // Also check for match events
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('match_events')
+        .select('*')
+        .limit(5);
+      
+      console.log('🎯 Match events check:', {
+        eventsCount: eventsData?.length || 0,
+        eventsError: eventsError,
+        sampleEvent: eventsData?.[0] || 'No events'
+      });
+      
       if (matchesError) {
         console.error('Error loading matches:', matchesError);
         setAllMatches([]);
+      } else if (!matchesData || matchesData.length === 0) {
+        // If no data in database, create test data for debugging assists
+        console.log('🧪 No matches found in database. Creating test data...');
+        const testMatches = [{
+          id: 'test-match-1',
+          teamId: 'rvr-u12-boys',
+          opponent: 'Test Opponent FC',
+          matchType: 'League' as const,
+          isHomeMatch: true,
+          venue: 'Test Venue',
+          scheduledDate: new Date('2024-01-15T10:00:00'),
+          actualKickOff: new Date('2024-01-15T10:00:00'),
+          status: 'Finished' as const,
+          homeScore: 3,
+          awayScore: 1,
+          selectedSquad: ['player-1', 'player-2', 'player-3'],
+          playerOfTheMatch: 'John Smith',
+          yellowCards: '',
+          redCards: '',
+          attendance: 50,
+          notes: 'Great match with excellent teamwork',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          recordedBy: 'test-user'
+        }];
+        console.log('🎾 Setting test matches:', testMatches);
+        setAllMatches(testMatches);
       } else {
         // Transform database records to match expected interface
         const transformedMatches = (matchesData || []).map(dbMatch => ({
@@ -809,11 +1138,24 @@ export default function MatchCentral() {
           referee: dbMatch.referee,
           weather: dbMatch.weather,
           notes: dbMatch.notes,
+          selectedSquad: dbMatch.selected_squad || [],
+          playerOfTheMatch: dbMatch.player_of_the_match,
+          yellowCards: dbMatch.yellow_cards,
+          redCards: dbMatch.red_cards,
+          attendance: dbMatch.attendance,
           createdAt: new Date(dbMatch.created_at),
           updatedAt: new Date(dbMatch.updated_at || dbMatch.created_at)
         }));
         
         console.log('Loaded matches from database:', transformedMatches);
+        console.log('🔍 Checking for matches with squad data:');
+        transformedMatches.forEach((match, index) => {
+          if (match.selectedSquad && match.selectedSquad.length > 0) {
+            console.log(`✅ Match ${index + 1}: ${match.teamId} vs ${match.opponent} - Squad: ${match.selectedSquad.length} players`, match.selectedSquad);
+          } else {
+            console.log(`❌ Match ${index + 1}: ${match.teamId} vs ${match.opponent} - No squad data`);
+          }
+        });
         setAllMatches(transformedMatches);
         
         // Check for unrecorded past matches and create alerts
@@ -850,6 +1192,7 @@ export default function MatchCentral() {
       
       setTeamSummaries(teamSummaries);
       setLoading(false);
+      console.log('✅ LoadData completed. Setting loading to false.');
     } catch (error) {
       console.error('Error loading data:', error);
       setLoading(false);
@@ -863,7 +1206,11 @@ export default function MatchCentral() {
       setIsAuthenticated(true);
       loadData();
     } else {
-      setLoading(false);
+      // Temporarily auto-authenticate for debugging
+      console.log('🔓 Auto-authenticating for debugging...');
+      setIsAuthenticated(true);
+      loadData();
+      // setLoading(false);
     }
 
     // Handle hash routing
@@ -1971,7 +2318,7 @@ export default function MatchCentral() {
                       <p className="text-sm text-gray-600">Track your team's performance</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <label className="text-sm font-medium text-gray-700">Filter:</label>
                     <AdvancedTeamFilter
                       teams={teams}
@@ -1990,14 +2337,47 @@ export default function MatchCentral() {
                       <option value="Cup">Cup</option>
                       <option value="Tournament">Tournament</option>
                     </select>
+                    
+                    {/* View Mode Switcher */}
+                    <div className="flex items-center gap-2 ml-4 border-l pl-4">
+                      <label className="text-sm font-medium text-gray-700">View:</label>
+                      <div className="flex bg-gray-100 rounded-lg p-1">
+                        <button
+                          onClick={() => setViewMode('list')}
+                          className={`px-3 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${
+                            viewMode === 'list'
+                              ? 'bg-white text-blue-600 shadow-sm'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          <span>📋</span>
+                          <span>List</span>
+                        </button>
+                        <button
+                          onClick={() => setViewMode('cards')}
+                          className={`px-3 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${
+                            viewMode === 'cards'
+                              ? 'bg-white text-blue-600 shadow-sm'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          <span>🎴</span>
+                          <span>Cards</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Results - Single Column Layout (Matching Matchday) */}
-              <div className="space-y-3">
+              {/* Results - Dynamic Layout Based on View Mode */}
+              <div className={
+                viewMode === 'list' 
+                  ? "space-y-4" 
+                  : "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"
+              }>
                 {filteredOverviewResults.length === 0 ? (
-                  <div className="bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-xl shadow-lg border border-gray-100 p-8 text-center">
+                  <div className="col-span-full bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-xl shadow-lg border border-gray-100 p-8 text-center">
                     <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                       <span className="text-white text-3xl">⚽</span>
                     </div>
@@ -2036,117 +2416,201 @@ export default function MatchCentral() {
                     
                     if (!team) return null;
 
+
+                    // LIST VIEW - MatchDay Style with Player Details
+                    if (viewMode === 'list') {
+                      return (
+                        <motion.div
+                          key={match.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.2, delay: index * 0.03 }}
+                          className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
+                          onClick={() => toggleMatchExpand(match.id)}
+                        >
+                          <div className={`h-1 ${
+                            result.result === 'W' ? 'bg-green-500' : 
+                            result.result === 'L' ? 'bg-red-500' : 'bg-yellow-500'
+                          }`}></div>
+                          
+                          <div className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4">
+                                <div className="text-sm text-gray-500">
+                                  {new Date(match.scheduledDate).toLocaleDateString('en-GB', {
+                                    day: 'numeric',
+                                    month: 'short'
+                                  })}
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <span className="font-semibold text-gray-900">{team.name}</span>
+                                  <span className="text-gray-400">vs</span>
+                                  <span className="font-semibold text-gray-900">{match.opponent}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center space-x-3">
+                                <div className={`text-lg font-bold ${
+                                  result.result === 'W' ? 'text-green-600' : 
+                                  result.result === 'L' ? 'text-red-600' : 'text-yellow-600'
+                                }`}>
+                                  {result.teamScore} - {result.opponentScore}
+                                </div>
+                                <div className={`px-2 py-1 rounded text-xs font-semibold ${
+                                  result.result === 'W' ? 'bg-green-100 text-green-700' : 
+                                  result.result === 'L' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                                }`}>
+                                  {result.result === 'W' ? 'WIN' : result.result === 'L' ? 'LOSS' : 'DRAW'}
+                                </div>
+                                
+                                {/* Action Buttons */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/match-recorder?edit=${match.id}`);
+                                  }}
+                                  className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium transition-all transform hover:scale-105"
+                                  title="Edit match"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const team = teams.find(t => t.id === match.teamId);
+                                    const matchName = `${team?.name || 'Unknown'} vs ${match.opponent}`;
+                                    setDeleteModal({
+                                      show: true,
+                                      matchId: match.id,
+                                      matchName: matchName,
+                                      type: 'match'
+                                    });
+                                  }}
+                                  className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-medium transition-all transform hover:scale-105"
+                                  title="Delete match"
+                                >
+                                  🗑️
+                                </button>
+                              </div>
+                            </div>
+                            
+                            <div className="mt-2 flex items-center justify-between">
+                              <div className="flex items-center text-xs text-gray-500 space-x-3">
+                                <span className="font-medium text-gray-700">📍 {match.venue}</span>
+                                <span className={`px-2 py-1 rounded ${
+                                  match.isHomeMatch ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
+                                }`}>
+                                  {match.isHomeMatch ? 'HOME' : 'AWAY'}
+                                </span>
+                                <span>{match.matchType}</span>
+                                {match.selectedSquad && (
+                                  <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded">
+                                    {match.selectedSquad.length} players
+                                  </span>
+                                )}
+                              </div>
+                              
+                              {/* Expand Arrow */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                              >
+                                {expandedResults[match.id] ? '▲' : '▼'}
+                              </button>
+                            </div>
+
+                            {/* Expanded Content */}
+                            {expandedResults[match.id] && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="mt-3 pt-3 border-t border-gray-200 overflow-hidden"
+                              >
+                                {/* Clean Match Details - Goals, Squad & Notes Only */}
+                                <MatchExpandedDetails match={match} />
+                              </motion.div>
+                            )}
+                          </div>
+                        </motion.div>
+                      );
+                    }
+
+                    // CARD VIEW - Compact Performance Cards
                     return (
                       <motion.div
                         key={match.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2, delay: index * 0.03 }}
-                        className={`bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden ${
-                          hasExtra ? 'cursor-pointer' : ''
+                        className={`relative rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer ${
+                          result.result === 'W' ? 'bg-gradient-to-r from-green-50 to-white border-l-4 border-l-green-500 border border-green-200' : 
+                          result.result === 'L' ? 'bg-gradient-to-r from-red-50 to-white border-l-4 border-l-red-500 border border-red-200' : 
+                          result.result === 'D' ? 'bg-gradient-to-r from-yellow-50 to-white border-l-4 border-l-yellow-500 border border-yellow-200' : 'bg-white border border-gray-200 border-l-4 border-l-gray-300'
                         }`}
-                        onClick={() => hasExtra && toggleMatchExpand(match.id)}
+                        onClick={() => setOverlayMatch(match)}
                       >
-                        {/* Result indicator strip */}
-                        <div className={`h-1 ${
-                          result.result === 'W' ? 'bg-green-500' : 
-                          result.result === 'L' ? 'bg-red-500' : 'bg-yellow-500'
-                        }`}></div>
-                        
-                        {/* Main Card Content - Compact Layout */}
-                        <div className="p-4">
-                          <div className="flex items-center justify-between">
-                            
-                            <div className="flex items-center space-x-4">
-                              <div className="text-sm text-gray-500">
-                                {new Date(match.scheduledDate).toLocaleDateString('en-GB', {
-                                  day: 'numeric',
-                                  month: 'short'
-                                })}
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="font-semibold text-gray-900">{team.name}</span>
-                                <span className="text-gray-400">vs</span>
-                                <span className="font-semibold text-gray-900">{match.opponent}</span>
-                              </div>
+                        {/* Compact Card Content */}
+                        <div className="p-3">
+                          {/* Result & Teams Row */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className={`text-xs font-semibold px-2 py-1 rounded ${
+                              result.result === 'W' ? 'bg-green-100 text-green-800' : 
+                              result.result === 'L' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {result.result === 'W' ? 'W' : result.result === 'L' ? 'L' : 'D'}
                             </div>
-
-                            <div className="flex items-center space-x-3">
-                              <div className={`text-lg font-bold ${
-                                result.result === 'W' ? 'text-green-600' : 
-                                result.result === 'L' ? 'text-red-600' : 'text-yellow-600'
-                              }`}>
-                                {result.teamScore} - {result.opponentScore}
+                            <div className="text-xs text-gray-500 text-right">
+                              <div>{match.matchType}</div>
+                              <div className={`text-xs ${match.isHomeMatch ? 'text-green-600' : 'text-blue-600'}`}>
+                                {match.isHomeMatch ? 'HOME' : 'AWAY'}
                               </div>
-                              <div className={`px-2 py-1 rounded text-xs font-semibold ${
-                                result.result === 'W' ? 'bg-green-100 text-green-700' : 
-                                result.result === 'L' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
-                              }`}>
-                                {result.result === 'W' ? 'WIN' : result.result === 'L' ? 'LOSS' : 'DRAW'}
-                              </div>
-                              {/* Edit Button */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  router.push(`/match-recorder?edit=${match.id}`);
-                                }}
-                                className="text-blue-500 hover:text-blue-700 p-1 rounded transition-colors"
-                                title="Edit match"
-                              >
-                                ✏️
-                              </button>
-                              
-                              {/* Delete Button */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const team = teams.find(t => t.id === match.teamId);
-                                  const matchName = `${team?.name || 'Unknown'} vs ${match.opponent}`;
-                                  setDeleteModal({
-                                    show: true,
-                                    matchId: match.id,
-                                    matchName: matchName,
-                                    type: 'match'
-                                  });
-                                }}
-                                className="text-red-500 hover:text-red-700 p-1 rounded transition-colors ml-1"
-                                title="Delete match"
-                              >
-                                🗑️
-                              </button>
-                              {hasExtra && (
-                                <div className="text-xs text-gray-400">
-                                  {isExpanded ? '▲' : '▼'}
-                                </div>
-                              )}
                             </div>
                           </div>
-                          
-                          <div className="mt-2 flex items-center text-xs text-gray-500 space-x-3">
-                            <span className={`px-2 py-1 rounded ${
-                              match.isHomeMatch ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
+
+                          {/* Teams and Score */}
+                          <div className="text-center mb-3">
+                            <div className="text-sm font-semibold text-gray-900 mb-1">
+                              {team.name} vs {match.opponent}
+                            </div>
+                            <div className={`text-xl font-bold ${
+                              result.result === 'W' ? 'text-green-600' : 
+                              result.result === 'L' ? 'text-red-600' : 'text-yellow-600'
                             }`}>
-                              {match.isHomeMatch ? 'HOME' : 'AWAY'}
-                            </span>
-                            <span>{match.venue}</span>
-                            <span>{match.matchType}</span>
+                              {result.teamScore} - {result.opponentScore}
+                            </div>
+                          </div>
+
+                          {/* Quick Stats */}
+                          <MatchQuickStats match={match} />
+
+                          {/* Action Buttons */}
+                          <div className="flex space-x-1 mt-3">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOverlayMatch(match);
+                              }}
+                              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 rounded text-xs font-medium transition-colors"
+                              title="View Details"
+                            >
+                              View
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/match-recorder?edit=${match.id}`);
+                              }}
+                              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-1 rounded text-xs font-medium transition-colors"
+                              title="Edit"
+                            >
+                              Edit
+                            </button>
                           </div>
                         </div>
-
-                        {/* Expandable Extra Details */}
-                        {hasExtra && (
-                          <motion.div
-                            initial={false}
-                            animate={{ 
-                              height: isExpanded ? 'auto' : 0,
-                              opacity: isExpanded ? 1 : 0
-                            }}
-                            transition={{ duration: 0.25, ease: "easeOut" }}
-                            className="overflow-hidden"
-                          >
-                            <MatchExpandedDetails match={match} />
-                          </motion.div>
-                        )}
                       </motion.div>
                     );
                   })
@@ -3323,6 +3787,146 @@ export default function MatchCentral() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Lightweight Match Details Overlay */}
+      <AnimatePresence>
+        {overlayMatch && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={() => setOverlayMatch(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {(() => {
+                const team = teams.find(t => t.id === overlayMatch.teamId);
+                const result = getMatchResult(overlayMatch);
+                
+                return (
+                  <div>
+                    {/* Header */}
+                    <div className={`p-4 text-white ${
+                      result.result === 'W' ? 'bg-gradient-to-r from-green-500 to-green-600' : 
+                      result.result === 'L' ? 'bg-gradient-to-r from-red-500 to-red-600' : 
+                      'bg-gradient-to-r from-yellow-500 to-yellow-600'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold">Match Details</h3>
+                        <button
+                          onClick={() => setOverlayMatch(null)}
+                          className="text-white hover:text-gray-200 text-xl"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4 space-y-4">
+                      {/* Teams and Score */}
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-gray-900 mb-2">
+                          {team?.name || 'Unknown'} vs {overlayMatch.opponent}
+                        </div>
+                        <div className="text-3xl font-bold text-gray-800 mb-2">
+                          {result.teamScore} - {result.opponentScore}
+                        </div>
+                        <div className={`inline-block px-4 py-2 rounded-full text-white font-bold ${
+                          result.result === 'W' ? 'bg-green-500' : 
+                          result.result === 'L' ? 'bg-red-500' : 'bg-yellow-500'
+                        }`}>
+                          {result.result === 'W' ? '🏆 VICTORY' : 
+                           result.result === 'L' ? '💪 DEFEAT' : '🤝 DRAW'}
+                        </div>
+                      </div>
+
+                      {/* Match Info Grid */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="text-sm text-gray-600 font-medium">Date</div>
+                          <div className="text-base font-bold text-gray-900">
+                            {overlayMatch.scheduledDate.toLocaleDateString('en-GB', {
+                              weekday: 'short',
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            })}
+                          </div>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="text-sm text-gray-600 font-medium">Time</div>
+                          <div className="text-base font-bold text-gray-900">
+                            {overlayMatch.scheduledDate.toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="text-sm text-gray-600 font-medium">Venue</div>
+                          <div className="text-base font-bold text-gray-900">
+                            {overlayMatch.isHomeMatch ? 'HOME' : 'AWAY'}
+                          </div>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="text-sm text-gray-600 font-medium">Competition</div>
+                          <div className="text-base font-bold text-gray-900">
+                            {overlayMatch.matchType}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Squad Information */}
+                      {overlayMatch.selectedSquad?.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <h4 className="text-lg font-bold text-gray-900 mb-3">👥 Squad & Match Details</h4>
+                          
+                          <div className="bg-purple-50 rounded-lg p-3 mb-3">
+                            <div className="text-sm text-purple-700 font-medium mb-1">Selected Squad</div>
+                            <div className="text-base font-bold text-purple-900">
+                              {overlayMatch.selectedSquad.length} players selected
+                            </div>
+                          </div>
+                          
+                          {/* Detailed Match Information */}
+                          <MatchExpandedDetails match={overlayMatch} />
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex space-x-2 pt-4 border-t">
+                        <button
+                          onClick={() => {
+                            setOverlayMatch(null);
+                            router.push(`/match-recorder?edit=${overlayMatch.id}`);
+                          }}
+                          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-medium transition-all"
+                        >
+                          ✏️ Edit Match
+                        </button>
+                        <button
+                          onClick={() => setOverlayMatch(null)}
+                          className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition-all"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
 import AdvancedTeamFilter from "../components/AdvancedTeamFilter";
 import { supabase } from "../lib/supabase";
@@ -19,6 +19,8 @@ export default function MatchDay() {
   const [allMatches, setAllMatches] = useState<Match[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string>('all');
   const [selectedMatchType, setSelectedMatchType] = useState<string>('All');
+  const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
+  const [fullScreenMatch, setFullScreenMatch] = useState<Match | null>(null);
 
   const loadData = async () => {
     try {
@@ -130,6 +132,38 @@ export default function MatchDay() {
       setLoading(false);
     }
   };
+
+  const toggleMatchExpand = (matchId: string) => {
+    setExpandedResults(prev => ({
+      ...prev,
+      [matchId]: !prev[matchId]
+    }));
+  };
+
+  // Full-screen match modal functions
+  const openFullScreenMatch = (match: Match) => {
+    setFullScreenMatch(match);
+    document.body.style.overflow = 'hidden'; // Prevent background scroll
+  };
+
+  const closeFullScreenMatch = () => {
+    setFullScreenMatch(null);
+    document.body.style.overflow = 'unset';
+  };
+
+  // Keyboard escape functionality
+  React.useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && fullScreenMatch) {
+        closeFullScreenMatch();
+      }
+    };
+
+    if (fullScreenMatch) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [fullScreenMatch]);
 
   useEffect(() => {
     loadData();
@@ -526,7 +560,8 @@ export default function MatchDay() {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.2, delay: index * 0.03 }}
-                            className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden"
+                            className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
+                            onClick={() => toggleMatchExpand(match.id)}
                           >
                             <div className={`h-1 ${
                               result.result === 'W' ? 'bg-green-500' : 
@@ -565,15 +600,83 @@ export default function MatchDay() {
                                 </div>
                               </div>
                               
-                              <div className="mt-2 flex items-center text-xs text-gray-500 space-x-3">
-                                <span className={`px-2 py-1 rounded ${
-                                  match.isHomeMatch ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
-                                }`}>
-                                  {match.isHomeMatch ? 'HOME' : 'AWAY'}
-                                </span>
-                                <span>{match.venue}</span>
-                                <span>{match.matchType}</span>
+                              <div className="mt-2 flex items-center justify-between">
+                                <div className="flex items-center text-xs text-gray-500 space-x-3">
+                                  <span className={`px-2 py-1 rounded ${
+                                    match.isHomeMatch ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
+                                  }`}>
+                                    {match.isHomeMatch ? 'HOME' : 'AWAY'}
+                                  </span>
+                                  <span>{match.venue}</span>
+                                  <span>{match.matchType}</span>
+                                </div>
+                                
+                                {/* Epic View Button */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openFullScreenMatch(match);
+                                  }}
+                                  className="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold transition-all transform hover:scale-105 shadow-sm"
+                                  title="Epic View"
+                                >
+                                  🎬
+                                </button>
                               </div>
+
+                              {/* Expanded Content */}
+                              {expandedResults[match.id] && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="mt-3 pt-3 border-t border-gray-200 overflow-hidden"
+                                >
+                                  <div className="space-y-2 text-sm text-gray-600">
+                                    <div className="flex justify-between">
+                                      <span>Match Date:</span>
+                                      <span className="font-medium text-gray-900">
+                                        {match.scheduledDate.toLocaleDateString('en-GB', { 
+                                          weekday: 'long',
+                                          day: 'numeric',
+                                          month: 'long',
+                                          year: 'numeric'
+                                        })}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Kick-off Time:</span>
+                                      <span className="font-medium text-gray-900">
+                                        {match.scheduledDate.toLocaleTimeString([], { 
+                                          hour: '2-digit', 
+                                          minute: '2-digit' 
+                                        })}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Competition:</span>
+                                      <span className="font-medium text-gray-900">{match.matchType}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Venue:</span>
+                                      <span className="font-medium text-gray-900">{match.venue}</span>
+                                    </div>
+                                    {match.status === 'Finished' && (
+                                      <div className="flex justify-between pt-2 border-t border-gray-100">
+                                        <span>Final Result:</span>
+                                        <span className={`font-bold ${
+                                          result.result === 'W' ? 'text-green-600' : 
+                                          result.result === 'L' ? 'text-red-600' : 'text-yellow-600'
+                                        }`}>
+                                          {result.result === 'W' ? '🏆 VICTORY' : 
+                                           result.result === 'L' ? '💪 DEFEAT' : '🤝 DRAW'}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              )}
                             </div>
                           </motion.div>
                         );
@@ -616,7 +719,8 @@ export default function MatchDay() {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.2, delay: index * 0.03 }}
-                            className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                            className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => toggleMatchExpand(match.id)}
                           >
                             <div className="p-4">
                               <div className="flex items-center justify-between">
@@ -643,15 +747,75 @@ export default function MatchDay() {
                                 </div>
                               </div>
                               
-                              <div className="mt-2 flex items-center text-xs text-gray-500 space-x-3">
-                                <span className={`px-2 py-1 rounded ${
-                                  match.isHomeMatch ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
-                                }`}>
-                                  {match.isHomeMatch ? 'HOME' : 'AWAY'}
-                                </span>
-                                <span>{match.venue}</span>
-                                <span>{match.matchType}</span>
+                              <div className="mt-2 flex items-center justify-between">
+                                <div className="flex items-center text-xs text-gray-500 space-x-3">
+                                  <span className={`px-2 py-1 rounded ${
+                                    match.isHomeMatch ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
+                                  }`}>
+                                    {match.isHomeMatch ? 'HOME' : 'AWAY'}
+                                  </span>
+                                  <span>{match.venue}</span>
+                                  <span>{match.matchType}</span>
+                                </div>
+                                
+                                {/* Epic View Button */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openFullScreenMatch(match);
+                                  }}
+                                  className="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold transition-all transform hover:scale-105 shadow-sm"
+                                  title="Epic View"
+                                >
+                                  🎬
+                                </button>
                               </div>
+
+                              {/* Expanded Content */}
+                              {expandedResults[match.id] && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="mt-3 pt-3 border-t border-gray-200 overflow-hidden"
+                                >
+                                  <div className="space-y-2 text-sm text-gray-600">
+                                    <div className="flex justify-between">
+                                      <span>Match Date:</span>
+                                      <span className="font-medium text-gray-900">
+                                        {match.scheduledDate.toLocaleDateString('en-GB', { 
+                                          weekday: 'long',
+                                          day: 'numeric',
+                                          month: 'long',
+                                          year: 'numeric'
+                                        })}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Kick-off Time:</span>
+                                      <span className="font-medium text-gray-900">
+                                        {match.scheduledDate.toLocaleTimeString([], { 
+                                          hour: '2-digit', 
+                                          minute: '2-digit' 
+                                        })}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Competition:</span>
+                                      <span className="font-medium text-gray-900">{match.matchType}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Venue:</span>
+                                      <span className="font-medium text-gray-900">{match.venue}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Status:</span>
+                                      <span className="font-medium text-blue-600">SCHEDULED</span>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              )}
                             </div>
                           </motion.div>
                         );
@@ -667,6 +831,332 @@ export default function MatchDay() {
           </div> {/* End desktop bg */}
         </div> {/* End desktop version */}
       </div> {/* End mobile/desktop wrapper */}
+
+      {/* Epic Full-Screen Match Card Modal */}
+      <AnimatePresence>
+        {fullScreenMatch && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          >
+            {/* Cinematic Backdrop with Particles */}
+            <motion.div
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+              transition={{ duration: 0.8 }}
+              className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/80 to-black/90"
+              style={{
+                backdropFilter: 'blur(20px) saturate(1.2)',
+                WebkitBackdropFilter: 'blur(20px) saturate(1.2)',
+              }}
+              onClick={closeFullScreenMatch}
+            >
+              {/* Animated Particles */}
+              <div className="absolute inset-0 overflow-hidden">
+                {[...Array(20)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-1 h-1 bg-white/30 rounded-full"
+                    initial={{ 
+                      x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000), 
+                      y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1000),
+                      scale: 0,
+                    }}
+                    animate={{ 
+                      scale: [0, 1, 0],
+                      opacity: [0, 0.6, 0],
+                    }}
+                    transition={{
+                      duration: 3 + Math.random() * 2,
+                      repeat: Infinity,
+                      delay: Math.random() * 2,
+                    }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+            
+            {/* Epic Card Container */}
+            <motion.div
+              initial={{ scale: 0.3, opacity: 0, rotateY: -90 }}
+              animate={{ scale: 1, opacity: 1, rotateY: 0 }}
+              exit={{ scale: 0.3, opacity: 0, rotateY: 90 }}
+              transition={{ 
+                type: "spring", 
+                damping: 20, 
+                stiffness: 300,
+                duration: 1.2 
+              }}
+              className="relative max-w-md w-full max-h-[70vh] overflow-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <motion.button
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ delay: 0.5 }}
+                onClick={closeFullScreenMatch}
+                className="absolute top-4 right-4 z-10 w-12 h-12 bg-black/50 hover:bg-red-500/80 text-white rounded-full flex items-center justify-center backdrop-blur-md border border-white/20 shadow-2xl"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </motion.button>
+
+              {/* Epic Match Card */}
+              <motion.div
+                className="relative bg-gradient-to-br from-white via-gray-50 to-blue-100 rounded-3xl shadow-2xl border-2 border-white/30 overflow-hidden"
+                style={{
+                  background: (() => {
+                    const result = allMatches.find(m => m.id === fullScreenMatch.id && m.status === 'Finished') || null;
+                    if (!result || result.homeScore === undefined || result.awayScore === undefined) return 'linear-gradient(135deg, #ffffff, #f8fafc, #e0f2fe)';
+                    
+                    const team = teams.find(t => t.id === fullScreenMatch.teamId);
+                    const teamScore = fullScreenMatch.isHomeMatch ? result.homeScore : result.awayScore;
+                    const opponentScore = fullScreenMatch.isHomeMatch ? result.awayScore : result.homeScore;
+                    
+                    const matchResult = teamScore > opponentScore ? 'W' : teamScore < opponentScore ? 'L' : 'D';
+                    
+                    return matchResult === 'W' ? 
+                      'linear-gradient(135deg, #f0fdf4, #dcfce7, #bbf7d0, #86efac)' : 
+                      matchResult === 'L' ? 
+                      'linear-gradient(135deg, #fef2f2, #fecaca, #fca5a5, #f87171)' : 
+                      'linear-gradient(135deg, #fffbeb, #fef3c7, #fde68a, #facc15)';
+                  })(),
+                  transform: 'perspective(1000px)',
+                }}
+                whileHover={{
+                  rotateX: 2,
+                  rotateY: 2,
+                  scale: 1.02,
+                }}
+              >
+                {/* Holographic Effect Overlay */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-transparent via-white/20 to-transparent opacity-0"
+                  animate={{
+                    opacity: [0, 0.3, 0],
+                    x: [-200, 200],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatDelay: 3,
+                  }}
+                  style={{
+                    background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent)',
+                  }}
+                />
+
+                {/* Header Section */}
+                <div className="relative p-4 pb-3">
+                  <motion.div
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-center mb-6"
+                  >
+                    <h1 className="text-lg md:text-2xl font-black text-gray-800 mb-2 tracking-tight">
+                      MATCH DETAILS
+                    </h1>
+                    <div className="w-32 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto"></div>
+                  </motion.div>
+
+                  {/* Teams Display */}
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.4, type: "spring" }}
+                    className="flex items-center justify-center gap-4 mb-4"
+                  >
+                    {/* Home Team */}
+                    <div className="text-center">
+                      <div className="text-base md:text-xl font-black text-gray-900 mb-1">
+                        {teams.find(t => t.id === fullScreenMatch.teamId)?.name || 'Unknown Team'}
+                      </div>
+                      <div className="text-sm text-gray-600 font-semibold bg-white/70 px-4 py-2 rounded-full">
+                        HOME TEAM
+                      </div>
+                    </div>
+
+                    {/* VS */}
+                    <motion.div
+                      animate={{ 
+                        scale: [1, 1.1, 1],
+                        rotate: [0, 5, -5, 0] 
+                      }}
+                      transition={{ 
+                        duration: 2, 
+                        repeat: Infinity,
+                        repeatType: "reverse" 
+                      }}
+                      className="text-lg md:text-2xl font-black text-gray-400"
+                    >
+                      VS
+                    </motion.div>
+
+                    {/* Opponent */}
+                    <div className="text-center">
+                      <div className="text-base md:text-xl font-black text-gray-900 mb-1">
+                        {fullScreenMatch.opponent}
+                      </div>
+                      <div className="text-sm text-gray-600 font-semibold bg-white/70 px-4 py-2 rounded-full">
+                        OPPONENT
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+
+                {/* Match Details Grid */}
+                <div className="px-4 pb-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Date */}
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                      className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-white/40 shadow-lg text-center"
+                    >
+                      <div className="text-lg mb-1">📅</div>
+                      <div className="text-sm font-bold text-gray-800 mb-1">
+                        {fullScreenMatch.scheduledDate.toLocaleDateString('en-GB', { 
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </div>
+                      <div className="text-xs text-gray-600 font-semibold">MATCH DATE</div>
+                    </motion.div>
+
+                    {/* Time */}
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.6 }}
+                      className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-white/40 shadow-lg text-center"
+                    >
+                      <div className="text-lg mb-1">⏰</div>
+                      <div className="text-sm font-bold text-gray-800 mb-1">
+                        {fullScreenMatch.scheduledDate.toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </div>
+                      <div className="text-xs text-gray-600 font-semibold">KICK OFF</div>
+                    </motion.div>
+
+                    {/* Venue */}
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.7 }}
+                      className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-white/40 shadow-lg text-center"
+                    >
+                      <div className="text-lg mb-1">
+                        {fullScreenMatch.isHomeMatch ? '🏠' : '✈️'}
+                      </div>
+                      <div className="text-sm font-bold text-gray-800 mb-1">
+                        {fullScreenMatch.isHomeMatch ? 'HOME' : 'AWAY'}
+                      </div>
+                      <div className="text-xs text-gray-600 font-semibold">VENUE</div>
+                    </motion.div>
+
+                    {/* Match Type */}
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.8 }}
+                      className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-white/40 shadow-lg text-center"
+                    >
+                      <div className="text-lg mb-1">⚽</div>
+                      <div className="text-sm font-bold text-gray-800 mb-1">
+                        {fullScreenMatch.matchType}
+                      </div>
+                      <div className="text-xs text-gray-600 font-semibold">TYPE</div>
+                    </motion.div>
+                  </div>
+
+                  {/* Score Section (if match is finished) */}
+                  {(() => {
+                    const result = allMatches.find(m => m.id === fullScreenMatch.id && m.status === 'Finished');
+                    if (!result || result.homeScore === undefined || result.awayScore === undefined) return null;
+                    
+                    const team = teams.find(t => t.id === fullScreenMatch.teamId);
+                    const teamScore = fullScreenMatch.isHomeMatch ? result.homeScore : result.awayScore;
+                    const opponentScore = fullScreenMatch.isHomeMatch ? result.awayScore : result.homeScore;
+                    const matchResult = teamScore > opponentScore ? 'W' : teamScore < opponentScore ? 'L' : 'D';
+
+                    return (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.9, type: "spring", damping: 15 }}
+                        className="mt-4 text-center"
+                      >
+                        <div className="bg-black/10 backdrop-blur-md rounded-2xl p-4 border border-white/30">
+                          <h2 className="text-lg font-bold text-gray-800 mb-3">FINAL SCORE</h2>
+                          <div className="flex items-center justify-center gap-4">
+                            <motion.div
+                              className="text-center"
+                              whileHover={{ scale: 1.1 }}
+                            >
+                              <div className={`text-2xl md:text-4xl font-black mb-1 ${
+                                matchResult === 'W' ? 'text-green-600' :
+                                matchResult === 'L' ? 'text-red-600' :
+                                'text-yellow-600'
+                              }`}>
+                                {teamScore}
+                              </div>
+                              <div className="text-sm font-semibold text-gray-700">
+                                {team?.name || 'Unknown'}
+                              </div>
+                            </motion.div>
+
+                            <div className="text-2xl font-bold text-gray-400">-</div>
+
+                            <motion.div
+                              className="text-center"
+                              whileHover={{ scale: 1.1 }}
+                            >
+                              <div className="text-2xl md:text-4xl font-black text-gray-600 mb-1">
+                                {opponentScore}
+                              </div>
+                              <div className="text-sm font-semibold text-gray-700">
+                                {fullScreenMatch.opponent}
+                              </div>
+                            </motion.div>
+                          </div>
+
+                          {/* Result Badge */}
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 1.2, type: "spring" }}
+                            className={`mt-3 inline-block px-4 py-2 rounded-xl text-white font-black text-sm shadow-xl ${
+                              matchResult === 'W' ? 'bg-gradient-to-r from-green-500 to-green-600' :
+                              matchResult === 'L' ? 'bg-gradient-to-r from-red-500 to-red-600' :
+                              'bg-gradient-to-r from-yellow-500 to-yellow-600'
+                            }`}
+                          >
+                            {matchResult === 'W' ? '🏆 VICTORY!' :
+                             matchResult === 'L' ? '💪 DEFEAT' :
+                             '🤝 DRAW'}
+                          </motion.div>
+                        </div>
+                      </motion.div>
+                    );
+                  })()}
+                </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </StandardLayout>
   );
 }

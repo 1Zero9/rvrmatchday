@@ -1,18 +1,20 @@
 /**
- * 🚀 PROFESSIONAL MOBILE HOMEPAGE
- * Premium football club mobile experience
+ * 📱 iPhone App-Style Mobile Home
+ * Creates a native iOS app experience for Rivervalley Rangers AFC
  * 
- * Purpose: Marketing tool + Coaching gateway
- * Target: Convert visitors to players/fans, provide coach access
+ * Features:
+ * - iOS-style app icons and layout
+ * - Professional branding integration
+ * - Match tracker access for coaches/parents
+ * - Modern glassmorphism design
  */
 
 import { motion } from 'framer-motion';
-import { MobileHero, ActionCard, ContentCard } from '../../design/MobileDesignSystem';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
-export default function MobileHomePro() {
+export default function iPhoneAppHome() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [greeting, setGreeting] = useState('');
 
@@ -169,7 +171,7 @@ export default function MobileHomePro() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
       
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
@@ -177,12 +179,15 @@ export default function MobileHomePro() {
         <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-blue-500 rounded-full blur-3xl" />
       </div>
 
+      {/* Status Bar Area */}
+      <div className="h-12 bg-black/20 backdrop-blur-md" />
+
       {/* Header with Club Branding */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="px-6 py-8 text-center relative z-10"
+        className="px-6 py-8 text-center"
       >
         <div className="flex items-center justify-center mb-6">
           <div className="relative">
@@ -216,7 +221,7 @@ export default function MobileHomePro() {
       </motion.div>
 
       {/* App Grid */}
-      <div className="px-6 pb-8 relative z-10">
+      <div className="px-6 pb-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -262,6 +267,9 @@ export default function MobileHomePro() {
           <p className="mt-1">Dublin's Community Football Club</p>
         </motion.div>
       </div>
+
+      {/* Home Indicator */}
+      <div className="fixed bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-white/30 rounded-full" />
     </div>
   );
 }

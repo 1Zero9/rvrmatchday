@@ -46,6 +46,10 @@ export interface Team {
   notes?: string;
   players?: Player[];
   
+  // Opponent-specific classification fields
+  competitionLevel?: string; // Level of competition (e.g., Amateur, Semi-Pro, Professional)
+  primaryMatchTypes?: string[]; // Types of matches this opponent typically plays
+  
   createdAt?: Date;
   updatedAt?: Date;
 }

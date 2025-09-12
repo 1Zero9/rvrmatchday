@@ -1,303 +1,342 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
-import StandardLayout from "../components/StandardLayout";
-import { supabase } from "../lib/supabase";
-import { Team } from "../types/match-tracker";
+import MobileLayout from "../components/MobileLayout";
+
+interface MatchEvent {
+  id: string;
+  type: 'goal' | 'assist' | 'yellow_card' | 'red_card';
+  playerName: string;
+  minute: number;
+  notes?: string;
+  timestamp: Date;
+}
+
+interface Match {
+  id: string;
+  team: string;
+  opponent: string;
+  date: Date;
+  venue: string;
+  events: MatchEvent[];
+  finalScore?: { home: number; away: number };
+}
 
 export default function QuickRecord() {
-  const router = useRouter();
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [currentMatch, setCurrentMatch] = useState<Match | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [matchTime, setMatchTime] = useState(0); // in minutes
+  const [events, setEvents] = useState<MatchEvent[]>([]);
   
-  // Quick match form
-  const [selectedTeam, setSelectedTeam] = useState<string>('');
-  const [opponent, setOpponent] = useState<string>('');
-  const [venue, setVenue] = useState<string>('St. Finian\'s GAA');
-  const [isHomeMatch, setIsHomeMatch] = useState<boolean>(true);
-  const [matchType, setMatchType] = useState<string>('Friendly');
-  const [homeScore, setHomeScore] = useState<number>(0);
-  const [awayScore, setAwayScore] = useState<number>(0);
-  const [notes, setNotes] = useState<string>('');
+  // Quick setup form
+  const [setupForm, setSetupForm] = useState({
+    team: '',
+    opponent: '',
+    venue: '',
+    playerName: '' // Child's name
+  });
+
+  const [showSetup, setShowSetup] = useState(true);
 
   useEffect(() => {
-    loadTeams();
-  }, []);
-
-  const loadTeams = async () => {
-    try {
-      const { data: teamsData, error } = await supabase
-        .from('teams')
-        .select('*')
-        .eq('is_active', true)
-        .eq('is_opponent', false)
-        .order('name', { ascending: true });
-
-      if (error) {
-        console.error('Error loading teams:', error);
-        return;
-      }
-
-      const loadedTeams: Team[] = teamsData?.map(team => ({
-        id: team.id,
-        name: team.name,
-        ageGroup: team.age_group || 'Open',
-        gender: team.gender || 'Mixed',
-        season: team.season || '2024-25',
-        league: team.league || 'Unassigned',
-        homeVenue: team.home_venue || 'St. Finian\'s GAA',
-        contactEmail: team.contact_email || '',
-        contactPhone: team.contact_phone || '',
-        coaches: Array.isArray(team.coaches) ? team.coaches : (team.coaches ? [team.coaches] : []),
-        notes: team.notes || '',
-        homeKit: { primary: '#009639', secondary: '#FFFFFF' },
-        awayKit: { primary: '#FFFFFF', secondary: '#009639' },
-        isOpponent: false,
-        isActive: true,
-        players: [],
-        createdAt: new Date(team.created_at),
-        updatedAt: new Date(team.updated_at || team.created_at)
-      })) || [];
-
-      setTeams(loadedTeams);
-    } catch (error) {
-      console.error('Error loading teams:', error);
+    // Auto-increment match time when recording
+    let interval: NodeJS.Timeout;
+    if (isRecording) {
+      interval = setInterval(() => {
+        setMatchTime(prev => prev + 1);
+      }, 60000); // Every minute
     }
-  };
+    return () => clearInterval(interval);
+  }, [isRecording]);
 
-  const recordQuickMatch = async () => {
-    if (!selectedTeam || !opponent) {
-      alert('Please select a team and enter opponent name');
+  const startMatch = () => {
+    if (!setupForm.team || !setupForm.opponent || !setupForm.playerName) {
+      alert('Please fill in all required fields');
       return;
     }
 
-    setLoading(true);
-    
-    try {
-      // Create match record in database
-      const matchDate = new Date();
-      const { data: matchData, error: matchError } = await supabase
-        .from('matches')
-        .insert({
-          team_id: selectedTeam,
-          opponent: opponent,
-          scheduled_date: matchDate.toISOString(),
-          match_type: matchType,
-          is_home_match: isHomeMatch,
-          status: 'Finished',
-          home_score: homeScore,
-          away_score: awayScore,
-          venue: venue,
-          notes: notes,
-        })
-        .select()
-        .single();
+    const match: Match = {
+      id: Date.now().toString(),
+      team: setupForm.team,
+      opponent: setupForm.opponent,
+      date: new Date(),
+      venue: setupForm.venue || 'Home',
+      events: []
+    };
 
-      if (matchError) {
-        console.error('Error creating match:', matchError);
-        alert('Error recording match. Please try again.');
-        return;
-      }
-
-      alert(`Match recorded successfully!\n${teams.find(t => t.id === selectedTeam)?.name} vs ${opponent}: ${homeScore}-${awayScore}`);
-      
-      // Reset form
-      setSelectedTeam('');
-      setOpponent('');
-      setHomeScore(0);
-      setAwayScore(0);
-      setNotes('');
-      setVenue('St. Finian\'s GAA');
-      setIsHomeMatch(true);
-      setMatchType('Friendly');
-
-    } catch (error) {
-      console.error('Error recording quick match:', error);
-      alert('Error recording match. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    setCurrentMatch(match);
+    setShowSetup(false);
+    setIsRecording(true);
+    setMatchTime(0);
   };
 
-  return (
-    <StandardLayout>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-2xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between mb-2">
-              <button
-                onClick={() => router.push('/')}
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+  const addEvent = (type: MatchEvent['type']) => {
+    if (!currentMatch) return;
+
+    const event: MatchEvent = {
+      id: Date.now().toString(),
+      type,
+      playerName: setupForm.playerName,
+      minute: matchTime,
+      timestamp: new Date()
+    };
+
+    setEvents(prev => [...prev, event]);
+  };
+
+  const finishMatch = () => {
+    if (currentMatch) {
+      // Save to localStorage for later viewing
+      const savedMatches = localStorage.getItem('parent-matches') || '[]';
+      const matches = JSON.parse(savedMatches);
+      const finalMatch = { ...currentMatch, events };
+      matches.push(finalMatch);
+      localStorage.setItem('parent-matches', JSON.stringify(matches));
+    }
+    
+    // Reset everything
+    setCurrentMatch(null);
+    setIsRecording(false);
+    setEvents([]);
+    setMatchTime(0);
+    setShowSetup(true);
+    setSetupForm({ team: '', opponent: '', venue: '', playerName: '' });
+  };
+
+  const ActionButton = ({ 
+    icon, 
+    label, 
+    color, 
+    onClick, 
+    size = 'normal' 
+  }: {
+    icon: string;
+    label: string;
+    color: string;
+    onClick: () => void;
+    size?: 'normal' | 'large';
+  }) => (
+    <motion.button
+      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.02 }}
+      onClick={onClick}
+      className={`
+        ${size === 'large' ? 'p-6 text-lg' : 'p-4'} 
+        ${color} text-white rounded-2xl font-semibold shadow-lg
+        flex flex-col items-center justify-center space-y-2
+        transition-all duration-200 border-2 border-white/20
+      `}
+    >
+      <span className={size === 'large' ? 'text-3xl' : 'text-2xl'}>{icon}</span>
+      <span className={size === 'large' ? 'text-base' : 'text-sm'}>{label}</span>
+    </motion.button>
+  );
+
+  if (showSetup) {
+    return (
+      <MobileLayout currentPage="/quick-record" showNavigation={false}>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-6">
+          
+          <div className="max-w-md mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center mb-8"
+            >
+              <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-green-500 rounded-2xl flex items-center justify-center shadow-xl">
+                <span className="text-3xl text-white">📱</span>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Quick Record</h1>
+              <p className="text-gray-600">Track your child's match events easily</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Your Child's Name *
+                </label>
+                <input
+                  type="text"
+                  value={setupForm.playerName}
+                  onChange={(e) => setSetupForm(prev => ({ ...prev, playerName: e.target.value }))}
+                  className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="e.g., Sarah Smith"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Team Name *
+                </label>
+                <input
+                  type="text"
+                  value={setupForm.team}
+                  onChange={(e) => setSetupForm(prev => ({ ...prev, team: e.target.value }))}
+                  className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="e.g., RVR U12 Girls"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Opponent Team *
+                </label>
+                <input
+                  type="text"
+                  value={setupForm.opponent}
+                  onChange={(e) => setSetupForm(prev => ({ ...prev, opponent: e.target.value }))}
+                  className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="e.g., Milltown FC"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Venue (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={setupForm.venue}
+                  onChange={(e) => setSetupForm(prev => ({ ...prev, venue: e.target.value }))}
+                  className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="e.g., Home Ground"
+                />
+              </div>
+
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={startMatch}
+                className="w-full p-4 bg-gradient-to-r from-green-500 to-blue-500 text-white font-bold rounded-xl shadow-lg"
               >
-                ← Back to Home
-              </button>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 text-center">
-              Quick Record Match
+                Start Match Recording
+              </motion.button>
+            </motion.div>
+          </div>
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  return (
+    <MobileLayout currentPage="/quick-record" showNavigation={false}>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+        
+        {/* Match Header */}
+        <div className="bg-white shadow-sm p-6 border-b">
+          <div className="text-center">
+            <h1 className="text-lg font-bold text-gray-900">
+              {currentMatch?.team} vs {currentMatch?.opponent}
             </h1>
-            <p className="text-sm text-gray-600 text-center mt-1">
-              Record a match that already happened
+            <p className="text-sm text-gray-600">
+              Tracking: {setupForm.playerName}
             </p>
+            <div className="mt-2 inline-flex items-center px-3 py-1 bg-green-100 rounded-full">
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
+              <span className="text-sm font-semibold text-green-700">
+                {isRecording ? `${matchTime} min` : 'Stopped'}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto px-4 py-6">
-          <div className="bg-white rounded-xl shadow-lg p-6 space-y-6">
-            
-            {/* Team Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Your Team</label>
-              <select
-                value={selectedTeam}
-                onChange={(e) => setSelectedTeam(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select your team...</option>
-                {teams.map(team => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
+        {/* Quick Action Buttons */}
+        <div className="p-6">
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <ActionButton
+              icon="⚽"
+              label="Goal"
+              color="bg-gradient-to-br from-green-500 to-green-600"
+              onClick={() => addEvent('goal')}
+              size="large"
+            />
+            <ActionButton
+              icon="🅰️"
+              label="Assist"
+              color="bg-gradient-to-br from-blue-500 to-blue-600"
+              onClick={() => addEvent('assist')}
+              size="large"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <ActionButton
+              icon="🟨"
+              label="Yellow Card"
+              color="bg-gradient-to-br from-yellow-500 to-orange-500"
+              onClick={() => addEvent('yellow_card')}
+            />
+            <ActionButton
+              icon="🟥"
+              label="Red Card"
+              color="bg-gradient-to-br from-red-500 to-red-600"
+              onClick={() => addEvent('red_card')}
+            />
+          </div>
+
+          {/* Events List */}
+          {events.length > 0 && (
+            <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">
+              <h3 className="font-semibold text-gray-900 mb-3">Match Events</h3>
+              <div className="space-y-2">
+                {events.map((event) => (
+                  <motion.div
+                    key={event.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex items-center">
+                      <span className="text-lg mr-3">
+                        {event.type === 'goal' && '⚽'}
+                        {event.type === 'assist' && '🅰️'}
+                        {event.type === 'yellow_card' && '🟨'}
+                        {event.type === 'red_card' && '🟥'}
+                      </span>
+                      <div>
+                        <span className="font-medium text-sm">
+                          {event.type.replace('_', ' ').toUpperCase()}
+                        </span>
+                        <p className="text-xs text-gray-500">{event.playerName}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-semibold text-gray-600">
+                      {event.minute}'
+                    </span>
+                  </motion.div>
                 ))}
-              </select>
-            </div>
-
-            {/* Opponent */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Opponent</label>
-              <input
-                type="text"
-                value={opponent}
-                onChange={(e) => setOpponent(e.target.value)}
-                placeholder="Enter opponent team name..."
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            {/* Match Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Match Type</label>
-                <select
-                  value={matchType}
-                  onChange={(e) => setMatchType(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="Friendly">Friendly</option>
-                  <option value="League">League</option>
-                  <option value="Cup">Cup</option>
-                  <option value="Tournament">Tournament</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Home/Away</label>
-                <select
-                  value={isHomeMatch ? 'home' : 'away'}
-                  onChange={(e) => setIsHomeMatch(e.target.value === 'home')}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="home">Home</option>
-                  <option value="away">Away</option>
-                </select>
               </div>
             </div>
+          )}
 
-            {/* Venue */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Venue</label>
-              <input
-                type="text"
-                value={venue}
-                onChange={(e) => setVenue(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            {/* Score */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Final Score</h3>
-              <div className="flex items-center justify-center space-x-8">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900 mb-2">
-                    {selectedTeam ? teams.find(t => t.id === selectedTeam)?.name || 'Your Team' : 'Your Team'}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => setHomeScore(Math.max(0, homeScore - 1))}
-                      className="w-10 h-10 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold"
-                    >
-                      -
-                    </button>
-                    <span className="text-4xl font-bold text-blue-600 w-16 text-center">
-                      {isHomeMatch ? homeScore : awayScore}
-                    </span>
-                    <button
-                      onClick={() => setHomeScore(homeScore + 1)}
-                      className="w-10 h-10 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="text-2xl font-bold text-gray-400">-</div>
-                
-                <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900 mb-2">{opponent || 'Opponent'}</div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => setAwayScore(Math.max(0, awayScore - 1))}
-                      className="w-10 h-10 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold"
-                    >
-                      -
-                    </button>
-                    <span className="text-4xl font-bold text-red-600 w-16 text-center">
-                      {isHomeMatch ? awayScore : homeScore}
-                    </span>
-                    <button
-                      onClick={() => setAwayScore(awayScore + 1)}
-                      className="w-10 h-10 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add match notes, scorers, highlights..."
-                rows={4}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            {/* Record Button */}
+          {/* Control Buttons */}
+          <div className="space-y-4">
             <motion.button
               whileTap={{ scale: 0.98 }}
-              onClick={recordQuickMatch}
-              disabled={loading || !selectedTeam || !opponent}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white py-4 px-6 rounded-xl font-bold text-lg shadow-md transition-all"
+              onClick={() => setIsRecording(!isRecording)}
+              className={`w-full p-4 font-bold rounded-xl shadow-lg ${
+                isRecording 
+                  ? 'bg-yellow-500 text-white' 
+                  : 'bg-green-500 text-white'
+              }`}
             >
-              {loading ? 'Recording...' : '✅ Record Match'}
+              {isRecording ? '⏸️ Pause Recording' : '▶️ Resume Recording'}
             </motion.button>
 
-            {/* View Results Link */}
-            <div className="text-center">
-              <button
-                onClick={() => router.push('/match-central#results')}
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                View Match Results →
-              </button>
-            </div>
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={finishMatch}
+              className="w-full p-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-xl shadow-lg"
+            >
+              🏁 Finish Match
+            </motion.button>
           </div>
         </div>
       </div>
-    </StandardLayout>
+    </MobileLayout>
   );
 }
