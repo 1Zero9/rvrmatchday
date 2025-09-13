@@ -18,6 +18,7 @@ import AdvancedTeamFilter from "../components/AdvancedTeamFilter";
 import { supabase } from "../lib/supabase";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
 import { VERSION_CONFIG } from "../config/version";
+import { MatchTypeBadge } from "../components/MatchTypeBadge";
 
 // Chart.js imports and setup
 import {
@@ -890,7 +891,7 @@ export default function MatchCentral() {
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string | null>(null);
   const [overviewFilter, setOverviewFilter] = useState<string>('all');
   const [advancedTeamFilter, setAdvancedTeamFilter] = useState<string>('all');
-  const [matchTypeFilter, setMatchTypeFilter] = useState<string>('All');
+  const [matchTypeFilter, setMatchTypeFilter] = useState<Set<string>>(new Set(['League']));
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
   const [loading, setLoading] = useState(true);
   const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
@@ -905,7 +906,7 @@ export default function MatchCentral() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authPassword, setAuthPassword] = useState('');
   const [selectedStatsTeam, setSelectedStatsTeam] = useState<string>('all');
-  const [selectedMatchType, setSelectedMatchType] = useState<string>('All');
+  const [selectedMatchTypes, setSelectedMatchTypes] = useState<Set<string>>(new Set(['League']));
   const [playerStats, setPlayerStats] = useState<{ topScorers: any[]; topAssists: any[]; mostMatches: any[]; }>({ topScorers: [], topAssists: [], mostMatches: [] });
   const [matchesWithExtra, setMatchesWithExtra] = useState<{[key: string]: boolean}>({});
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
@@ -1269,8 +1270,8 @@ export default function MatchCentral() {
     }
     
     // Apply match type filter
-    if (matchTypeFilter !== 'All') {
-      finished = finished.filter(match => match.matchType === matchTypeFilter);
+    if (matchTypeFilter.size > 0) {
+      finished = finished.filter(match => matchTypeFilter.has(match.matchType));
     }
     
     return finished;
@@ -1341,22 +1342,32 @@ export default function MatchCentral() {
   const leagueTable = React.useMemo(() => getLeagueTable(), [teams]);
 
   // Optimized team statistics calculation with performance tracking
-  const getTeamStatistics = React.useCallback((teamId: string, matchTypeFilter?: string) => {
+  const getTeamStatistics = React.useCallback((teamId: string, matchTypes?: Set<string> | string) => {
     const startTime = performance.now();
     
     const teamMatches = allMatches.filter(match => {
       const teamMatch = (teamId === 'all' || match.teamId === teamId);
       const finishedMatch = match.status === 'Finished';
-      const typeMatch = !matchTypeFilter || matchTypeFilter === 'All' || match.matchType === matchTypeFilter;
+      
+      let typeMatch = true;
+      if (matchTypes) {
+        if (typeof matchTypes === 'string') {
+          typeMatch = matchTypes === 'All' || match.matchType === matchTypes;
+        } else if (matchTypes instanceof Set) {
+          typeMatch = matchTypes.size === 0 || matchTypes.has(match.matchType);
+        }
+      }
+      
       return teamMatch && finishedMatch && typeMatch;
     });
     
-    console.log(`⚡ Optimized stats calculation for team ${teamId} (type: ${matchTypeFilter || 'All'}):`, {
+    console.log(`⚡ Optimized stats calculation for team ${teamId} (type: ${matchTypes ? (typeof matchTypes === 'string' ? matchTypes : Array.from(matchTypes).join(',')) : 'All'}):`, {
       totalMatches: allMatches.length,
       filteredMatches: teamMatches.length,
       performanceTime: `${(performance.now() - startTime).toFixed(2)}ms`,
       finishedMatches: allMatches.filter(m => m.status === 'Finished').length,
-      matchTypes: [...new Set(allMatches.map(m => m.matchType))]
+      matchTypes: [...new Set(allMatches.map(m => m.matchType))],
+      sampleMatches: allMatches.slice(0, 3).map(m => ({ id: m.id, type: m.matchType, status: m.status }))
     });
 
     const stats = {
@@ -1428,7 +1439,7 @@ export default function MatchCentral() {
   }, [allMatches]);
 
   // Calculate player statistics from match events AND match squads
-  const getPlayerStatistics = async (teamId: string) => {
+  const getPlayerStatistics = async (teamId: string, matchTypes?: Set<string>) => {
     try {
       // Load goal events from database
       let goalQuery = supabase
@@ -1441,13 +1452,18 @@ export default function MatchCentral() {
           event_type,
           event_minute,
           notes,
-          matches!inner(team_id),
+          matches!inner(team_id, match_type),
           players(first_name, last_name)
         `)
         .eq('event_type', 'Goal');
 
       if (teamId !== 'all') {
         goalQuery = goalQuery.eq('matches.team_id', teamId);
+      }
+
+      // Filter by match types if provided
+      if (matchTypes && matchTypes.size > 0) {
+        goalQuery = goalQuery.in('matches.match_type', Array.from(matchTypes));
       }
 
       const { data: goalEvents, error: goalError } = await goalQuery;
@@ -1459,13 +1475,19 @@ export default function MatchCentral() {
           id,
           team_id,
           selected_squad,
-          status
+          status,
+          match_type
         `)
         .eq('status', 'Finished')
         .not('selected_squad', 'is', null);
 
       if (teamId !== 'all') {
         matchQuery = matchQuery.eq('team_id', teamId);
+      }
+
+      // Filter by match types if provided
+      if (matchTypes && matchTypes.size > 0) {
+        matchQuery = matchQuery.in('match_type', Array.from(matchTypes));
       }
 
       const { data: matchesWithSquads, error: matchError } = await matchQuery;
@@ -1587,15 +1609,15 @@ export default function MatchCentral() {
   const getFilteredMatches = React.useCallback((additionalFilter?: (match: Match) => boolean) => {
     return allMatches
       .filter(match => selectedStatsTeam === 'all' || match.teamId === selectedStatsTeam)
-      .filter(match => selectedMatchType === 'All' || match.matchType === selectedMatchType)
+      .filter(match => selectedMatchTypes.size === 0 || selectedMatchTypes.has(match.matchType))
       .filter(match => additionalFilter ? additionalFilter(match) : true);
-  }, [allMatches, selectedStatsTeam, selectedMatchType]);
+  }, [allMatches, selectedStatsTeam, selectedMatchTypes]);
 
   // Memoized team statistics for better performance
   const currentStats = React.useMemo(() => {
-    console.log('🚀 Calculating team statistics (memoized):', selectedStatsTeam, selectedMatchType);
-    return getTeamStatistics(selectedStatsTeam, selectedMatchType);
-  }, [selectedStatsTeam, selectedMatchType, getTeamStatistics]);
+    console.log('🚀 Calculating team statistics (memoized):', selectedStatsTeam, selectedMatchTypes);
+    return getTeamStatistics(selectedStatsTeam, selectedMatchTypes);
+  }, [selectedStatsTeam, selectedMatchTypes, getTeamStatistics]);
 
   // Check which matches have extra info to display
   useEffect(() => {
@@ -1619,12 +1641,12 @@ export default function MatchCentral() {
   const [allPlayerStats, setAllPlayerStats] = useState<{ loaded: boolean; data: any[] }>({ loaded: false, data: [] });
   const [statsLoading, setStatsLoading] = useState(false);
 
-  // Load all player statistics once and cache them
+  // Load all player statistics and reload when match types change
   useEffect(() => {
     const loadAllPlayerStats = async () => {
       setStatsLoading(true);
       try {
-        const stats = await getPlayerStatistics('all'); // Load all stats
+        const stats = await getPlayerStatistics('all', selectedMatchTypes); // Load stats with match type filter
         setAllPlayerStats({ loaded: true, data: stats });
       } catch (error) {
         console.error('Error loading player stats:', error);
@@ -1635,11 +1657,11 @@ export default function MatchCentral() {
     };
     
     if (allMatches.length > 0) {
-      // Force reload stats whenever matches change
+      // Force reload stats whenever matches or match types change
       setAllPlayerStats({ loaded: false, data: { topScorers: [], topAssists: [], mostMatches: [] } });
       loadAllPlayerStats();
     }
-  }, [allMatches.length]);
+  }, [allMatches.length, selectedMatchTypes]);
 
   // Memoized player statistics filtered by selected team - much faster than database queries
   const filteredPlayerStats = React.useMemo(() => {
@@ -1860,17 +1882,29 @@ export default function MatchCentral() {
                   onSelectionChange={setAdvancedTeamFilter}
                   className="w-full"
                 />
-                <select
-                  value={matchTypeFilter}
-                  onChange={(e) => setMatchTypeFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                >
-                  <option value="All">All Matches</option>
-                  <option value="League">League Only</option>
-                  <option value="Friendly">Friendlies</option>
-                  <option value="Cup">Cup</option>
-                  <option value="Tournament">Tournament</option>
-                </select>
+                <div className="flex flex-wrap gap-2">
+                  {['League', 'Cup', 'Friendly', 'Tournament'].map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => {
+                        const newTypes = new Set(matchTypeFilter);
+                        if (newTypes.has(type)) {
+                          newTypes.delete(type);
+                        } else {
+                          newTypes.add(type);
+                        }
+                        setMatchTypeFilter(newTypes);
+                      }}
+                      className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                        matchTypeFilter.has(type)
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Mobile Match Cards */}
@@ -2326,17 +2360,29 @@ export default function MatchCentral() {
                       onSelectionChange={setAdvancedTeamFilter}
                       className="w-80"
                     />
-                    <select
-                      value={matchTypeFilter}
-                      onChange={(e) => setMatchTypeFilter(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 shadow-sm text-sm"
-                    >
-                      <option value="All">All Matches</option>
-                      <option value="League">League Only</option>
-                      <option value="Friendly">Friendlies</option>
-                      <option value="Cup">Cup</option>
-                      <option value="Tournament">Tournament</option>
-                    </select>
+                    <div className="flex flex-wrap gap-2">
+                      {['League', 'Cup', 'Friendly', 'Tournament'].map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            const newTypes = new Set(matchTypeFilter);
+                            if (newTypes.has(type)) {
+                              newTypes.delete(type);
+                            } else {
+                              newTypes.add(type);
+                            }
+                            setMatchTypeFilter(newTypes);
+                          }}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            matchTypeFilter.has(type)
+                              ? 'bg-blue-600 text-white shadow-md'
+                              : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
                     
                     {/* View Mode Switcher */}
                     <div className="flex items-center gap-2 ml-4 border-l pl-4">
@@ -2502,7 +2548,7 @@ export default function MatchCentral() {
                                 }`}>
                                   {match.isHomeMatch ? 'HOME' : 'AWAY'}
                                 </span>
-                                <span>{match.matchType}</span>
+                                <MatchTypeBadge matchType={match.matchType} />
                                 {match.selectedSquad && (
                                   <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded">
                                     {match.selectedSquad.length} players
@@ -2564,7 +2610,7 @@ export default function MatchCentral() {
                               {result.result === 'W' ? 'W' : result.result === 'L' ? 'L' : 'D'}
                             </div>
                             <div className="text-xs text-gray-500 text-right">
-                              <div>{match.matchType}</div>
+                              <MatchTypeBadge matchType={match.matchType} />
                               <div className={`text-xs ${match.isHomeMatch ? 'text-green-600' : 'text-blue-600'}`}>
                                 {match.isHomeMatch ? 'HOME' : 'AWAY'}
                               </div>
@@ -2930,9 +2976,7 @@ export default function MatchCentral() {
                                     }`}>
                                       {match.isHomeMatch ? '🏠 HOME' : '✈️ AWAY'}
                                     </span>
-                                    <span className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 px-3 py-1 rounded-lg font-semibold shadow-sm">
-                                      {match.matchType}
-                                    </span>
+                                    <MatchTypeBadge matchType={match.matchType} className="shadow-sm" />
                                   </div>
                                 </div>
 
@@ -3025,17 +3069,29 @@ export default function MatchCentral() {
                       ))}
                     </select>
                     
-                    <select 
-                      value={selectedMatchType}
-                      onChange={(e) => setSelectedMatchType(e.target.value)}
-                      className="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    >
-                      <option value="All">All Matches</option>
-                      <option value="League">League Only</option>
-                      <option value="Friendly">Friendlies Only</option>
-                      <option value="Cup">Cup Only</option>
-                      <option value="Tournament">Tournament</option>
-                    </select>
+                    <div className="flex flex-wrap gap-2">
+                      {['League', 'Cup', 'Friendly', 'Tournament'].map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            const newTypes = new Set(selectedMatchTypes);
+                            if (newTypes.has(type)) {
+                              newTypes.delete(type);
+                            } else {
+                              newTypes.add(type);
+                            }
+                            setSelectedMatchTypes(newTypes);
+                          }}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            selectedMatchTypes.has(type)
+                              ? 'bg-purple-600 text-white shadow-md'
+                              : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -3878,7 +3934,7 @@ export default function MatchCentral() {
                         <div className="bg-gray-50 rounded-lg p-3">
                           <div className="text-sm text-gray-600 font-medium">Competition</div>
                           <div className="text-base font-bold text-gray-900">
-                            {overlayMatch.matchType}
+                            <MatchTypeBadge matchType={overlayMatch.matchType} />
                           </div>
                         </div>
                       </div>

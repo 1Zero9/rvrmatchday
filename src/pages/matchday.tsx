@@ -11,6 +11,7 @@ import MobilePageContainer from "../components/mobile/MobilePageContainer";
 import AdvancedTeamFilter from "../components/AdvancedTeamFilter";
 import { supabase } from "../lib/supabase";
 import { Team, Match } from "../types/match-tracker";
+import { MatchTypeBadge } from "../components/MatchTypeBadge";
 
 type TabType = 'results' | 'fixtures' | 'quickrecord';
 
@@ -20,7 +21,7 @@ export default function MatchDay() {
   const [loading, setLoading] = useState(true);
   const [allMatches, setAllMatches] = useState<Match[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string>('all');
-  const [selectedMatchType, setSelectedMatchType] = useState<string>('All');
+  const [selectedMatchTypes, setSelectedMatchTypes] = useState<Set<string>>(new Set(['League']));
   const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
   const [fullScreenMatch, setFullScreenMatch] = useState<Match | null>(null);
 
@@ -178,7 +179,7 @@ export default function MatchDay() {
         match.homeScore !== undefined && 
         match.awayScore !== undefined &&
         (selectedTeamId === 'all' || match.teamId === selectedTeamId) &&
-        (selectedMatchType === 'All' || match.matchType === selectedMatchType)
+        (selectedMatchTypes.size === 0 || selectedMatchTypes.has(match.matchType))
       )
       .sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime())
       .slice(0, 8); // Show more results with better layout
@@ -189,7 +190,7 @@ export default function MatchDay() {
       .filter(match => 
         match.status === 'Scheduled' &&
         (selectedTeamId === 'all' || match.teamId === selectedTeamId) &&
-        (selectedMatchType === 'All' || match.matchType === selectedMatchType)
+        (selectedMatchTypes.size === 0 || selectedMatchTypes.has(match.matchType))
       )
       .sort((a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime())
       .slice(0, 8); // Show more fixtures with better layout
@@ -201,7 +202,7 @@ export default function MatchDay() {
       match.homeScore !== undefined && 
       match.awayScore !== undefined &&
       (selectedTeamId === 'all' || match.teamId === selectedTeamId) &&
-      (selectedMatchType === 'All' || match.matchType === selectedMatchType)
+      (selectedMatchTypes.size === 0 || selectedMatchTypes.has(match.matchType))
     );
 
     const stats = {
@@ -244,9 +245,9 @@ export default function MatchDay() {
     return { result, teamScore, opponentScore };
   };
 
-  const recentResults = React.useMemo(() => getRecentResults(), [allMatches, selectedTeamId, selectedMatchType]);
-  const upcomingFixtures = React.useMemo(() => getUpcomingFixtures(), [allMatches, selectedTeamId, selectedMatchType]);
-  const seasonStats = React.useMemo(() => getSeasonStats(), [allMatches, selectedTeamId, selectedMatchType]);
+  const recentResults = React.useMemo(() => getRecentResults(), [allMatches, selectedTeamId, selectedMatchTypes]);
+  const upcomingFixtures = React.useMemo(() => getUpcomingFixtures(), [allMatches, selectedTeamId, selectedMatchTypes]);
+  const seasonStats = React.useMemo(() => getSeasonStats(), [allMatches, selectedTeamId, selectedMatchTypes]);
 
   if (loading) {
     return (
@@ -504,17 +505,29 @@ export default function MatchDay() {
                   onSelectionChange={setSelectedTeamId}
                   className="w-64"
                 />
-                <select
-                  value={selectedMatchType}
-                  onChange={(e) => setSelectedMatchType(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium w-32"
-                >
-                  <option value="All">All matches</option>
-                  <option value="League">League</option>
-                  <option value="Cup">Cup</option>
-                  <option value="Friendly">Friendly</option>
-                  <option value="Tournament">Tournament</option>
-                </select>
+                <div className="flex flex-wrap gap-2">
+                  {['League', 'Cup', 'Friendly', 'Tournament'].map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => {
+                        const newTypes = new Set(selectedMatchTypes);
+                        if (newTypes.has(type)) {
+                          newTypes.delete(type);
+                        } else {
+                          newTypes.add(type);
+                        }
+                        setSelectedMatchTypes(newTypes);
+                      }}
+                      className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                        selectedMatchTypes.has(type)
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -672,7 +685,7 @@ export default function MatchDay() {
                                     {match.isHomeMatch ? 'HOME' : 'AWAY'}
                                   </span>
                                   <span>{match.venue}</span>
-                                  <span>{match.matchType}</span>
+                                  <MatchTypeBadge matchType={match.matchType} />
                                 </div>
                                 
                                 {/* Epic View Button */}
@@ -720,7 +733,7 @@ export default function MatchDay() {
                                     </div>
                                     <div className="flex justify-between">
                                       <span>Competition:</span>
-                                      <span className="font-medium text-gray-900">{match.matchType}</span>
+                                      <MatchTypeBadge matchType={match.matchType} />
                                     </div>
                                     <div className="flex justify-between">
                                       <span>Venue:</span>
@@ -819,7 +832,7 @@ export default function MatchDay() {
                                     {match.isHomeMatch ? 'HOME' : 'AWAY'}
                                   </span>
                                   <span>{match.venue}</span>
-                                  <span>{match.matchType}</span>
+                                  <MatchTypeBadge matchType={match.matchType} />
                                 </div>
                                 
                                 {/* Epic View Button */}
@@ -867,7 +880,7 @@ export default function MatchDay() {
                                     </div>
                                     <div className="flex justify-between">
                                       <span>Competition:</span>
-                                      <span className="font-medium text-gray-900">{match.matchType}</span>
+                                      <MatchTypeBadge matchType={match.matchType} />
                                     </div>
                                     <div className="flex justify-between">
                                       <span>Venue:</span>
@@ -1138,8 +1151,8 @@ export default function MatchDay() {
                       className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-white/40 shadow-lg text-center"
                     >
                       <div className="text-lg mb-1">⚽</div>
-                      <div className="text-sm font-bold text-gray-800 mb-1">
-                        {fullScreenMatch.matchType}
+                      <div className="mb-1">
+                        <MatchTypeBadge matchType={fullScreenMatch.matchType} />
                       </div>
                       <div className="text-xs text-gray-600 font-semibold">TYPE</div>
                     </motion.div>

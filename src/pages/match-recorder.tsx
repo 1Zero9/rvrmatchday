@@ -7,6 +7,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
+import MobileLayout from "../components/MobileLayout";
 import MatchDetailsForm from "../components/MatchDetailsForm";
 import { storageV2 as storage } from "../lib/match-tracker-storage-v2";
 import { supabase } from "../lib/supabase";
@@ -542,71 +543,485 @@ export default function MatchRecorderSimple() {
   }
 
   return (
-    <StandardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8">
-        <div className="max-w-2xl mx-auto px-4">
-
-          {/* Header */}
-          <motion.div 
-            className="text-center mb-8"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h1 className={`text-3xl font-bold mb-2 ${
-              editingMatch ? 'text-gray-900' : mode === 'record' ? 'text-red-900' : 'text-blue-900'
-            }`}>
-              {editingMatch 
-                ? '✏️ Edit Match' 
-                : mode === 'record' 
-                  ? '📝 Record Match' 
-                  : '📅 Schedule Match'
-              }
-            </h1>
-            <p className="text-gray-600">
-              {editingMatch 
-                ? 'Update match details and results' 
-                : mode === 'record'
-                  ? 'Record results for completed matches (today or earlier)'
-                  : 'Schedule upcoming fixtures (today or future dates)'
-              }
-            </p>
-          </motion.div>
-
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
-              <span className={`text-sm font-medium ${step === 'result' ? 'text-blue-600' : step === 'details' || step === 'done' ? 'text-green-600' : 'text-gray-500'}`}>
-                1. {isFutureMatch() ? 'Match Info' : 'Result'}
-              </span>
-              <span className={`text-sm font-medium ${step === 'details' ? 'text-blue-600' : step === 'done' ? 'text-green-600' : 'text-gray-500'}`}>
-                2. Details (Optional)
-              </span>
-              <span className={`text-sm font-medium ${step === 'done' ? 'text-blue-600' : 'text-gray-500'}`}>
-                3. Done
-              </span>
+    <div>
+      {/* Mobile Version */}
+      <div className="block md:hidden">
+        <MobileLayout currentPage="/match-recorder" showNavigation={false}>
+          <div className={`min-h-screen relative ${
+            editingMatch ? 'bg-gradient-to-br from-purple-50 to-purple-100' : 
+            mode === 'record' ? 'bg-gradient-to-br from-green-50 to-emerald-100' : 
+            'bg-gradient-to-br from-blue-50 to-indigo-100'
+          }`}>
+            
+            {/* Compact Mobile Header with Progress */}
+            <div className={`px-4 py-6 ${
+              editingMatch ? 'bg-gradient-to-r from-purple-500 to-purple-600' : 
+              mode === 'record' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
+              'bg-gradient-to-r from-blue-500 to-indigo-600'
+            } text-white relative overflow-hidden`}>
+              {/* Background pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-2 right-4 text-6xl">⚽</div>
+                <div className="absolute bottom-2 left-4 text-4xl">📊</div>
+              </div>
+              
+              <div className="relative z-10">
+                {/* Header with inline progress */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="text-3xl">
+                      {editingMatch ? '✏️' : mode === 'record' ? '⚽' : '📅'}
+                    </div>
+                    <div>
+                      <h1 className="text-xl font-bold">
+                        {editingMatch ? 'Edit Match' : mode === 'record' ? 'Record Match' : 'Schedule Match'}
+                      </h1>
+                      <p className="text-white/80 text-sm">
+                        Step {step === 'result' ? '1' : step === 'details' ? '2' : '3'} of 3
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => router.push('/match-central')}
+                    className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors"
+                  >
+                    <span className="text-lg">✕</span>
+                  </button>
+                </div>
+                
+                {/* Compact progress bar */}
+                <div className="w-full bg-white/20 rounded-full h-2">
+                  <div 
+                    className="bg-white h-2 rounded-full transition-all duration-300"
+                    style={{ 
+                      width: step === 'result' ? '33%' : step === 'details' ? '66%' : '100%' 
+                    }}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ 
-                  width: step === 'result' ? '33%' : step === 'details' ? '66%' : '100%' 
-                }}
-              ></div>
+
+            {/* Mobile Content */}
+            <div className="p-4 space-y-6">
+              
+              {/* Step 1: Quick Result Form */}
+              {step === 'result' && (
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/30">
+                  <div className="text-center mb-6">
+                    <div className="text-3xl mb-2">
+                      {editingMatch ? '✏️' : mode === 'record' ? '📝' : '📅'}
+                    </div>
+                    <h2 className="text-lg font-bold text-gray-800">
+                      {editingMatch ? 'Edit Match' : mode === 'record' ? 'Record Result' : 'Schedule Match'}
+                    </h2>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {/* Date */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Match Date
+                      </label>
+                      <input
+                        type="date"
+                        value={quickResult.matchDate}
+                        onChange={(e) => setQuickResult(prev => ({ ...prev, matchDate: e.target.value }))}
+                        max={mode === 'record' ? new Date().toISOString().split('T')[0] : undefined}
+                        min={mode === 'schedule' ? new Date().toISOString().split('T')[0] : undefined}
+                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    {/* Match Type */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Match Type</label>
+                      <select
+                        value={quickResult.matchType}
+                        onChange={(e) => setQuickResult(prev => ({ ...prev, matchType: e.target.value }))}
+                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="League">🏆 League</option>
+                        <option value="Cup">🏅 Cup</option>
+                        <option value="Friendly">🤝 Friendly</option>
+                        <option value="Tournament">🎯 Tournament</option>
+                        <option value="Training">⚽ Training Match</option>
+                      </select>
+                    </div>
+
+                    {/* Teams */}
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Home Team</label>
+                        <select
+                          value={quickResult.homeTeam}
+                          onChange={(e) => setQuickResult(prev => ({ ...prev, homeTeam: e.target.value }))}
+                          className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Select Team</option>
+                          {teams.filter(t => !t.isOpponent).map(team => (
+                            <option key={team.id} value={team.id}>{team.name}</option>
+                          ))}
+                          <option value="custom">+ Add Custom Team</option>
+                        </select>
+                        {quickResult.homeTeam === 'custom' && (
+                          <input
+                            type="text"
+                            placeholder="Enter team name"
+                            value={quickResult.homeTeamCustom}
+                            onChange={(e) => setQuickResult(prev => ({ ...prev, homeTeamCustom: e.target.value }))}
+                            className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Away Team</label>
+                        <select
+                          value={quickResult.awayTeam}
+                          onChange={(e) => setQuickResult(prev => ({ ...prev, awayTeam: e.target.value }))}
+                          className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Select Opponent</option>
+                          {teams.filter(team => team.isOpponent).map(team => (
+                            <option key={team.id} value={team.id}>{team.name}</option>
+                          ))}
+                          <option value="custom">+ Add Custom Opponent</option>
+                        </select>
+                        {quickResult.awayTeam === 'custom' && (
+                          <input
+                            type="text"
+                            placeholder="Enter opponent name"
+                            value={quickResult.awayTeamCustom}
+                            onChange={(e) => setQuickResult(prev => ({ ...prev, awayTeamCustom: e.target.value }))}
+                            className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Score - only for past/today matches */}
+                    {!isFutureMatch() && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Final Score</label>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1">
+                            <label className="block text-xs text-gray-500 mb-1">
+                              {getTeamName(quickResult.homeTeam, quickResult.homeTeamCustom) || 'Home'}
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={quickResult.homeScore}
+                              onChange={(e) => setQuickResult(prev => ({ ...prev, homeScore: parseInt(e.target.value) || 0 }))}
+                              className="w-full px-3 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl font-bold"
+                            />
+                          </div>
+                          <div className="text-xl font-bold text-gray-400">-</div>
+                          <div className="flex-1">
+                            <label className="block text-xs text-gray-500 mb-1">
+                              {getTeamName(quickResult.awayTeam, quickResult.awayTeamCustom) || 'Away'}
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={quickResult.awayScore}
+                              onChange={(e) => setQuickResult(prev => ({ ...prev, awayScore: parseInt(e.target.value) || 0 }))}
+                              className="w-full px-3 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl font-bold"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Home/Away Toggle */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Match Location</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => setQuickResult(prev => ({ ...prev, isHomeMatch: true }))}
+                          className={`px-3 py-3 rounded-lg font-semibold transition-all ${
+                            quickResult.isHomeMatch
+                              ? 'bg-green-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          🏠 Home
+                        </button>
+                        <button
+                          onClick={() => setQuickResult(prev => ({ ...prev, isHomeMatch: false }))}
+                          className={`px-3 py-3 rounded-lg font-semibold transition-all ${
+                            !quickResult.isHomeMatch
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          ✈️ Away
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mobile Actions */}
+                  <div className="flex flex-col gap-3 mt-6">
+                    <button
+                      onClick={async () => {
+                        await saveResult();
+                        setStep('done');
+                      }}
+                      disabled={!isResultValid()}
+                      className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-lg font-semibold transition-colors"
+                    >
+                      {isFutureMatch() ? '📅 Save Fixture' : '✅ Save Result'}
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        if (isResultValid()) {
+                          setStep('details');
+                        } else {
+                          alert('Please complete the required fields first');
+                        }
+                      }}
+                      disabled={!isResultValid()}
+                      className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg font-semibold transition-colors"
+                    >
+                      {isFutureMatch() ? '➡️ Add Info' : '➡️ Add Details'}
+                    </button>
+                    
+                    <button
+                      onClick={() => router.push('/match-central')}
+                      className="w-full px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Details Form */}
+              {step === 'details' && detailsLoaded && (
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/30">
+                  <MatchDetailsForm 
+                    details={details}
+                    setDetails={setDetails}
+                    quickResult={quickResult}
+                    editingMatch={editingMatch}
+                    teams={teams}
+                    onBack={() => setStep('result')}
+                    onSave={saveResult}
+                    isFutureMatch={isFutureMatch}
+                    getAvailablePlayers={getAvailablePlayers}
+                    getRVRGoals={getRVRGoals}
+                    getAvailableVenues={getAvailableVenues}
+                    showAddVenue={showAddVenue}
+                    setShowAddVenue={setShowAddVenue}
+                    newVenueName={newVenueName}
+                    setNewVenueName={setNewVenueName}
+                    addNewVenue={addNewVenue}
+                  />
+                </div>
+              )}
+
+              {/* Step 3: Done */}
+              {step === 'done' && (
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/30 text-center">
+                  <div className="text-5xl mb-4">🎉</div>
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">
+                    {isFutureMatch() ? 'Fixture Scheduled!' : 'Match Saved!'}
+                  </h2>
+                  <p className="text-gray-600 mb-6 text-sm">
+                    {isFutureMatch() ? (
+                      `${getTeamName(quickResult.homeTeam, quickResult.homeTeamCustom)} vs ${getTeamName(quickResult.awayTeam, quickResult.awayTeamCustom)}`
+                    ) : (
+                      `${getTeamName(quickResult.homeTeam, quickResult.homeTeamCustom)} ${quickResult.homeScore} - ${quickResult.awayScore} ${getTeamName(quickResult.awayTeam, quickResult.awayTeamCustom)}`
+                    )}
+                  </p>
+
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={editMatch}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm"
+                      >
+                        ✏️ Edit
+                      </button>
+                      
+                      <button
+                        onClick={deleteMatch}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors text-sm"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                    
+                    <button
+                      onClick={() => router.push('/match-central')}
+                      className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      {isFutureMatch() ? '📅 View Fixtures' : '📊 View Results'}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setStep('result');
+                        setQuickResult({
+                          homeTeam: '',
+                          homeTeamCustom: '',
+                          awayTeam: '',
+                          awayTeamCustom: '',
+                          homeScore: 0,
+                          awayScore: 0,
+                          matchDate: new Date().toISOString().split('T')[0],
+                          isHomeMatch: true,
+                          matchType: 'League'
+                        });
+                        setDetails({
+                          venue: 'Home Ground',
+                          referee: false,
+                          weather: '',
+                          notes: '',
+                          goalScorers: [],
+                          selectedSquad: []
+                        });
+                      }}
+                      className="w-full px-4 py-2 text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      ➕ Record Another
+                    </button>
+                  </div>
+                </div>
+              )}
+              
             </div>
           </div>
+        </MobileLayout>
+      </div>
 
-          {/* Step 1: Log Result */}
+      {/* Desktop Version */}
+      <div className="hidden md:block">
+        <StandardLayout>
+          <div className={`min-h-screen py-8 relative overflow-hidden ${
+            editingMatch ? 'bg-gradient-to-br from-purple-50 to-purple-100' : 
+            mode === 'record' ? 'bg-gradient-to-br from-green-50 to-emerald-100' : 
+            'bg-gradient-to-br from-blue-50 to-indigo-100'
+          }`}>
+            {/* Subtle background elements */}
+            <div className="absolute inset-0 opacity-5">
+              <div className="absolute top-1/4 left-1/6 w-64 h-64 bg-current rounded-full blur-3xl" />
+              <div className="absolute bottom-1/4 right-1/6 w-72 h-72 bg-current rounded-full blur-3xl" />
+            </div>
+
+            <div className="max-w-3xl mx-auto px-4 relative z-10">
+
+              {/* Compact Desktop Header */}
+              <motion.div 
+                className="mb-8"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className={`rounded-2xl p-6 text-white relative overflow-hidden ${
+                  editingMatch ? 'bg-gradient-to-r from-purple-500 to-purple-600' : 
+                  mode === 'record' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
+                  'bg-gradient-to-r from-blue-500 to-indigo-600'
+                }`}>
+                  {/* Background pattern */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-4 right-6 text-8xl">⚽</div>
+                    <div className="absolute bottom-4 left-6 text-6xl">📊</div>
+                  </div>
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-4">
+                        <div className="text-4xl">
+                          {editingMatch ? '✏️' : mode === 'record' ? '⚽' : '📅'}
+                        </div>
+                        <div>
+                          <h1 className="text-2xl font-bold">
+                            {editingMatch ? 'Edit Match' : mode === 'record' ? 'Match Recorder' : 'Schedule Match'}
+                          </h1>
+                          <p className="text-white/80">
+                            {editingMatch ? 'Update match details and results' : 
+                             mode === 'record' ? 'Record completed match results' : 
+                             'Schedule upcoming fixtures'}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => router.push('/match-central')}
+                        className="bg-white/20 hover:bg-white/30 rounded-full p-3 transition-colors"
+                      >
+                        <span className="text-xl">✕</span>
+                      </button>
+                    </div>
+                    
+                    {/* Inline progress steps */}
+                    <div className="flex items-center space-x-6">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                          step === 'result' ? 'bg-white text-gray-800' : (step === 'details' || step === 'done') ? 'bg-white/80 text-gray-800' : 'bg-white/30 text-white'
+                        }`}>
+                          1
+                        </div>
+                        <span className="text-white/90 text-sm font-medium">
+                          {isFutureMatch() ? 'Match Info' : 'Result'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex-1 h-0.5 bg-white/30 rounded-full">
+                        <div 
+                          className="h-0.5 bg-white rounded-full transition-all duration-500"
+                          style={{ width: step === 'result' ? '0%' : step === 'details' ? '50%' : '100%' }}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                          step === 'details' ? 'bg-white text-gray-800' : step === 'done' ? 'bg-white/80 text-gray-800' : 'bg-white/30 text-white'
+                        }`}>
+                          2
+                        </div>
+                        <span className="text-white/90 text-sm font-medium">Details</span>
+                      </div>
+                      
+                      <div className="flex-1 h-0.5 bg-white/30 rounded-full">
+                        <div 
+                          className="h-0.5 bg-white rounded-full transition-all duration-500"
+                          style={{ width: step === 'done' ? '100%' : '0%' }}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                          step === 'done' ? 'bg-white text-gray-800' : 'bg-white/30 text-white'
+                        }`}>
+                          3
+                        </div>
+                        <span className="text-white/90 text-sm font-medium">Done</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+          {/* Step 1: Enhanced Result Form */}
           {step === 'result' && (
             <motion.div
-              className="bg-white rounded-lg shadow-lg p-6"
+              className="bg-white/90 backdrop-blur-lg rounded-3xl border border-white/50 shadow-2xl p-8"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              <h2 className={`text-xl font-bold mb-6 ${
-                mode === 'record' ? 'text-red-900' : 'text-blue-900'
-              }`}>
-                {editingMatch ? '✏️ Edit Match Result' : mode === 'record' ? '📝 Record Match Result' : '📅 Schedule Fixture'}
-              </h2>
+              <div className="text-center mb-8">
+                <div className="text-4xl mb-3">
+                  {editingMatch ? '✏️' : mode === 'record' ? '📝' : '📅'}
+                </div>
+                <h2 className={`text-2xl font-bold bg-gradient-to-r bg-clip-text text-transparent ${
+                  mode === 'record' ? 'from-red-600 to-red-800' : 'from-blue-600 to-blue-800'
+                }`}>
+                  {editingMatch ? 'Edit Match Result' : mode === 'record' ? 'Record Match Result' : 'Schedule Fixture'}
+                </h2>
+              </div>
               
               {/* Debug Info for Edit Mode */}
               {editingMatch && (
@@ -631,9 +1046,9 @@ export default function MatchRecorderSimple() {
                     onChange={(e) => setQuickResult(prev => ({ ...prev, matchDate: e.target.value }))}
                     max={mode === 'record' ? new Date().toISOString().split('T')[0] : undefined}
                     min={mode === 'schedule' ? new Date().toISOString().split('T')[0] : undefined}
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${
-                      mode === 'record' ? 'focus:ring-red-500' : 'focus:ring-blue-500'
-                    }`}
+                    className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 bg-white/80 backdrop-blur-sm ${
+                      mode === 'record' ? 'focus:ring-red-500 focus:border-red-500' : 'focus:ring-blue-500 focus:border-blue-500'
+                    } hover:shadow-md`}
                     key={`date-${editingMatch?.id || 'new'}-${quickResult.matchDate}`}
                   />
                   {isFutureMatch() && (
@@ -667,7 +1082,7 @@ export default function MatchRecorderSimple() {
                     <select
                       value={quickResult.homeTeam}
                       onChange={(e) => setQuickResult(prev => ({ ...prev, homeTeam: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm hover:shadow-md"
                       key={`hometeam-${editingMatch?.id || 'new'}-${quickResult.homeTeam}`}
                     >
                       <option value="">Select Team</option>
@@ -692,7 +1107,7 @@ export default function MatchRecorderSimple() {
                     <select
                       value={quickResult.awayTeam}
                       onChange={(e) => setQuickResult(prev => ({ ...prev, awayTeam: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm hover:shadow-md"
                       key={`awayteam-${editingMatch?.id || 'new'}-${quickResult.awayTeam}`}
                     >
                       <option value="">Select Opponent</option>
@@ -735,7 +1150,7 @@ export default function MatchRecorderSimple() {
                         min="0"
                         value={quickResult.homeScore}
                         onChange={(e) => setQuickResult(prev => ({ ...prev, homeScore: parseInt(e.target.value) || 0 }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl font-bold"
+                        className="w-full px-4 py-4 border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-blue-500 focus:border-blue-500 text-center text-3xl font-bold transition-all duration-200 bg-gradient-to-br from-white to-gray-50 hover:shadow-lg"
                         key={`homescore-${editingMatch?.id || 'new'}-${quickResult.homeScore}`}
                       />
                     </div>
@@ -749,7 +1164,7 @@ export default function MatchRecorderSimple() {
                         min="0"
                         value={quickResult.awayScore}
                         onChange={(e) => setQuickResult(prev => ({ ...prev, awayScore: parseInt(e.target.value) || 0 }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl font-bold"
+                        className="w-full px-4 py-4 border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-blue-500 focus:border-blue-500 text-center text-3xl font-bold transition-all duration-200 bg-gradient-to-br from-white to-gray-50 hover:shadow-lg"
                         key={`awayscore-${editingMatch?.id || 'new'}-${quickResult.awayScore}`}
                       />
                     </div>
@@ -763,20 +1178,20 @@ export default function MatchRecorderSimple() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setQuickResult(prev => ({ ...prev, isHomeMatch: true }))}
-                      className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                      className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                         quickResult.isHomeMatch
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg'
+                          : 'bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-white hover:shadow-md border border-gray-200'
                       }`}
                     >
                       🏠 Home Match
                     </button>
                     <button
                       onClick={() => setQuickResult(prev => ({ ...prev, isHomeMatch: false }))}
-                      className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                      className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                         !quickResult.isHomeMatch
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                          : 'bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-white hover:shadow-md border border-gray-200'
                       }`}
                     >
                       ✈️ Away Match
@@ -801,7 +1216,7 @@ export default function MatchRecorderSimple() {
                       setStep('done');
                     }}
                     disabled={!isResultValid()}
-                    className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-lg font-medium transition-colors"
+                    className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
                   >
                     {isFutureMatch() ? '📅 Save Fixture' : '✅ Save Result'}
                   </button>
@@ -815,7 +1230,7 @@ export default function MatchRecorderSimple() {
                       }
                     }}
                     disabled={!isResultValid()}
-                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg font-medium transition-colors"
+                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
                   >
                     {isFutureMatch() ? '➡️ Add Match Info' : '➡️ Add Details'}
                   </button>
@@ -860,9 +1275,10 @@ export default function MatchRecorderSimple() {
           {/* Step 3: Done */}
           {step === 'done' && (
             <motion.div
-              className="bg-white rounded-lg shadow-lg p-6 text-center"
+              className="bg-white/90 backdrop-blur-lg rounded-3xl border border-white/50 shadow-2xl p-10 text-center"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
             >
               <div className="text-6xl mb-4">🎉</div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
@@ -931,8 +1347,10 @@ export default function MatchRecorderSimple() {
             </motion.div>
           )}
 
-        </div>
+            </div>
+          </div>
+        </StandardLayout>
       </div>
-    </StandardLayout>
+    </div>
   );
 }
