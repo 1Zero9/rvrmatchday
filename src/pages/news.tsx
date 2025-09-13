@@ -1,4 +1,6 @@
 import StandardLayout from '../components/StandardLayout';
+import MobileLayout from '../components/MobileLayout';
+import MobilePageContainer from '../components/mobile/MobilePageContainer';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -100,7 +102,117 @@ export default function NewsUpdates() {
   const regularArticles = newsArticles.filter(article => !article.featured);
 
   return (
-    <StandardLayout title="News & Updates">
+    <>
+      {/* Mobile Version */}
+      <div className="block md:hidden">
+        <MobileLayout currentPage="/news" showNavigation={false}>
+          <MobilePageContainer 
+            title="Latest News"
+            subtitle="Updates & Announcements"
+            icon="📰"
+          >
+            {/* Featured Articles - Mobile */}
+            <div className="mb-6">
+              <h2 className="text-white font-bold text-sm mb-3">Featured Stories</h2>
+              <div className="space-y-3">
+                {featuredArticles.map((article, index) => (
+                  <motion.div
+                    key={article.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.1 * index }}
+                    className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl"
+                  >
+                    <div className="flex items-start space-x-3">
+                      {/* Category Icon */}
+                      <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg">{article.image}</span>
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="text-orange-200 text-xs bg-orange-500/20 px-2 py-0.5 rounded-full">
+                            {article.category}
+                          </span>
+                          <span className="text-blue-100 text-xs">
+                            {new Date(article.date).toLocaleDateString('en-GB', {
+                              day: 'numeric',
+                              month: 'short'
+                            })}
+                          </span>
+                        </div>
+                        <h3 className="text-white font-semibold text-sm mb-2">{article.title}</h3>
+                        <p className="text-blue-200 text-xs line-clamp-3">{article.excerpt}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Articles - Mobile */}
+            <div className="mb-6">
+              <h2 className="text-white font-bold text-sm mb-3">Recent Updates</h2>
+              <div className="space-y-3">
+                {regularArticles.map((article, index) => (
+                  <motion.div
+                    key={article.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 + (0.1 * index) }}
+                    className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-3 shadow-lg"
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm">{article.image}</span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-blue-200 text-xs">{article.category}</span>
+                          <span className="text-blue-100 text-xs">
+                            {new Date(article.date).toLocaleDateString('en-GB', {
+                              day: 'numeric',
+                              month: 'short'
+                            })}
+                          </span>
+                        </div>
+                        <h3 className="text-white font-medium text-xs mb-1">{article.title}</h3>
+                        <p className="text-blue-200 text-xs line-clamp-2">{article.excerpt}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Upcoming Events - Mobile */}
+            <div className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl">
+              <h2 className="text-white font-bold text-sm mb-3">📅 Upcoming Events</h2>
+              <div className="space-y-3">
+                {upcomingEvents.map((event, index) => (
+                  <div key={event.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                    <h3 className="text-white font-medium text-xs mb-1">{event.title}</h3>
+                    <div className="flex justify-between items-center">
+                      <span className="text-blue-200 text-xs">
+                        {new Date(event.date).toLocaleDateString('en-GB', {
+                          day: 'numeric',
+                          month: 'short'
+                        })} • {event.time}
+                      </span>
+                      <span className="text-blue-100 text-xs">{event.location}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </MobilePageContainer>
+        </MobileLayout>
+      </div>
+
+      {/* Desktop Version */}
+      <div className="hidden md:block">
+        <StandardLayout title="News & Updates">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Header */}
@@ -273,7 +385,9 @@ export default function NewsUpdates() {
           </div>
         </div>
 
+        </div>
+        </StandardLayout>
       </div>
-    </StandardLayout>
+    </>
   );
 }

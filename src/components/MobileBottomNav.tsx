@@ -21,6 +21,13 @@ export default function MobileBottomNav({ className = '' }: MobileBottomNavProps
 
   const navItems = [
     {
+      id: 'home',
+      label: 'Home',
+      icon: '🏠',
+      href: '/home',
+      isActive: router.pathname === '/home'
+    },
+    {
       id: 'matches',
       label: 'Matches',
       icon: '🏆',
@@ -88,6 +95,7 @@ export function useMobileBottomNav() {
   
   // Show on main app pages, hide on auth/setup pages
   const showBottomNav = [
+    '/home',
     '/match-central',
     '/match-admin', 
     '/match-recorder',

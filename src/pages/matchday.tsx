@@ -6,11 +6,13 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import StandardLayout from "../components/StandardLayout";
+import MobileLayout from "../components/MobileLayout";
+import MobilePageContainer from "../components/mobile/MobilePageContainer";
 import AdvancedTeamFilter from "../components/AdvancedTeamFilter";
 import { supabase } from "../lib/supabase";
 import { Team, Match } from "../types/match-tracker";
 
-type TabType = 'results' | 'fixtures';
+type TabType = 'results' | 'fixtures' | 'quickrecord';
 
 export default function MatchDay() {
   const [activeTab, setActiveTab] = useState<TabType>('results');
@@ -264,79 +266,80 @@ export default function MatchDay() {
       <div className="min-h-screen">
         {/* Mobile Version */}
         <div className="block md:hidden">
-          {/* Mobile Header */}
-          <div className="p-6 shadow-lg text-white" style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}>
-            <div className="text-center">
-              <h1 className="font-bold text-2xl text-white mb-1">MatchDay</h1>
-              <p className="text-pink-200">Live scores & fixtures</p>
-            </div>
-          </div>
+          <MobileLayout currentPage="/matchday" showNavigation={false}>
+            <MobilePageContainer 
+              title="MatchDay"
+              subtitle="Live Scores & Results"
+              icon="⚽"
+            >
 
-          {/* Mobile Tab Navigation */}
-          <div className="bg-white border-b border-gray-200 px-4 py-3">
-            <div className="flex space-x-1">
-              {[
-                { key: 'results', label: 'Recent Results' },
-                { key: 'fixtures', label: 'Fixtures' }
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key as TabType)}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all ${
-                    activeTab === tab.key
-                      ? 'text-white shadow-md'
-                      : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
-                  }`}
-                  style={{
-                    background: activeTab === tab.key ? 'linear-gradient(to right, #972A4C, #7A2240)' : undefined
-                  }}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
+              {/* Mobile Tab Navigation */}
+              <div className="mb-6">
+                <div className="flex space-x-2">
+                  {[
+                    { key: 'results', label: 'Recent Results', icon: '🏆' },
+                    { key: 'fixtures', label: 'Fixtures', icon: '📅' },
+                    { key: 'quickrecord', label: 'Quick Record', icon: '📱' }
+                  ].map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key as TabType)}
+                      className={`flex-1 py-3 px-4 text-sm font-medium rounded-xl transition-all backdrop-blur-xl border ${
+                        activeTab === tab.key
+                          ? 'bg-white/20 text-white border-white/30 shadow-lg'
+                          : 'bg-white/10 text-white/70 hover:bg-white/15 border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center space-x-2">
+                        <span>{tab.icon}</span>
+                        <span>{tab.label}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          {/* Mobile Content */}
-          <div className="p-4 bg-gray-50">
-            {activeTab === 'results' && (
-              <div className="space-y-3">
-                <h2 className="font-bold text-lg text-gray-900 mb-4">Recent Results</h2>
-                {recentResults.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No recent results</p>
-                ) : (
-                  recentResults.slice(0, 5).map((match, index) => {
-                    const team = teams.find(t => t.id === match.teamId);
-                    const result = getMatchResult(match);
-                    if (!team) return null;
-                    
-                    return (
-                      <div key={match.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="text-sm text-gray-500">
-                            {new Date(match.scheduledDate).toLocaleDateString('en-GB', {
-                              day: 'numeric',
-                              month: 'short'
-                            })}
-                          </div>
-                          <div className={`px-2 py-1 rounded text-xs font-bold ${
-                            result.result === 'W' ? 'bg-green-100 text-green-800' : 
-                            result.result === 'L' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {result.result}
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-semibold text-gray-900">{team.name}</div>
-                            <div className="text-sm text-gray-600">vs {match.opponent}</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold" style={{color: '#972A4C'}}>
-                              {result.teamScore} - {result.opponentScore}
+              {/* Mobile Content */}
+              {activeTab === 'results' && (
+                <div className="space-y-3">
+                  <h2 className="font-bold text-sm text-white mb-4">Recent Results</h2>
+                  {recentResults.length === 0 ? (
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 text-center">
+                      <p className="text-white/70">No recent results</p>
+                    </div>
+                  ) : (
+                    recentResults.slice(0, 5).map((match, index) => {
+                      const team = teams.find(t => t.id === match.teamId);
+                      const result = getMatchResult(match);
+                      if (!team) return null;
+                      
+                      return (
+                        <div key={match.id} className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-sm text-blue-200">
+                              {new Date(match.scheduledDate).toLocaleDateString('en-GB', {
+                                day: 'numeric',
+                                month: 'short'
+                              })}
+                            </div>
+                            <div className={`px-2 py-1 rounded text-xs font-bold ${
+                              result.result === 'W' ? 'bg-green-500/20 text-green-200' : 
+                              result.result === 'L' ? 'bg-red-500/20 text-red-200' : 'bg-yellow-500/20 text-yellow-200'
+                            }`}>
+                              {result.result}
                             </div>
                           </div>
-                        </div>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold text-white">{team.name}</div>
+                              <div className="text-sm text-blue-200">vs {match.opponent}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-white">
+                                {result.teamScore} - {result.opponentScore}
+                              </div>
+                            </div>
+                          </div>
                       </div>
                     );
                   })
@@ -344,46 +347,107 @@ export default function MatchDay() {
               </div>
             )}
 
-            {activeTab === 'fixtures' && (
-              <div className="space-y-3">
-                <h2 className="font-bold text-lg text-gray-900 mb-4">Upcoming Fixtures</h2>
-                {upcomingFixtures.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No upcoming fixtures</p>
-                ) : (
-                  upcomingFixtures.slice(0, 5).map((match, index) => {
-                    const team = teams.find(t => t.id === match.teamId);
-                    if (!team) return null;
-                    
-                    return (
-                      <div key={match.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="text-sm font-medium" style={{color: '#972A4C'}}>
-                            {new Date(match.scheduledDate).toLocaleDateString('en-GB', {
-                              weekday: 'short',
-                              day: 'numeric',
-                              month: 'short'
-                            })}
+              {activeTab === 'fixtures' && (
+                <div className="space-y-3">
+                  <h2 className="font-bold text-sm text-white mb-4">Upcoming Fixtures</h2>
+                  {upcomingFixtures.length === 0 ? (
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 text-center">
+                      <p className="text-white/70">No upcoming fixtures</p>
+                    </div>
+                  ) : (
+                    upcomingFixtures.slice(0, 5).map((match, index) => {
+                      const team = teams.find(t => t.id === match.teamId);
+                      if (!team) return null;
+                      
+                      return (
+                        <div key={match.id} className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-sm font-medium text-blue-200">
+                              {new Date(match.scheduledDate).toLocaleDateString('en-GB', {
+                                weekday: 'short',
+                                day: 'numeric',
+                                month: 'short'
+                              })}
+                            </div>
+                            <div className="text-sm text-blue-200">
+                              {match.isHomeMatch ? 'Home' : 'Away'}
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-600">
-                            {match.isHomeMatch ? 'Home' : 'Away'}
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold text-white">{team.name}</div>
+                              <div className="text-sm text-blue-200">vs {match.opponent}</div>
+                            </div>
+                            <div className="text-right text-sm text-blue-100">
+                              {match.venue}
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-semibold text-gray-900">{team.name}</div>
-                            <div className="text-sm text-gray-600">vs {match.opponent}</div>
-                          </div>
-                          <div className="text-right text-sm text-gray-500">
-                            {match.venue}
-                          </div>
-                        </div>
                       </div>
                     );
                   })
                 )}
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+
+              {activeTab === 'quickrecord' && (
+                <div className="space-y-4">
+                  <h2 className="font-bold text-sm text-white mb-4">Quick Match Tracker</h2>
+                  
+                  {/* Quick Record Info */}
+                  <div className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl">
+                    <div className="text-center mb-4">
+                      <div className="text-4xl mb-2">📱</div>
+                      <h3 className="text-white font-bold text-lg mb-2">Parent Match Tracker</h3>
+                      <p className="text-blue-200 text-sm">
+                        Simple match tracking for parents - record time, score, and basic match details
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-2xl">⏱️</span>
+                          <div>
+                            <h4 className="text-white font-medium text-sm">Time Tracking</h4>
+                            <p className="text-blue-200 text-xs">Live match timer with start/pause controls</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-2xl">📊</span>
+                          <div>
+                            <h4 className="text-white font-medium text-sm">Score Tracking</h4>
+                            <p className="text-blue-200 text-xs">Simple +/- buttons for team scores</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-2xl">⚽</span>
+                          <div>
+                            <h4 className="text-white font-medium text-sm">Match Formats</h4>
+                            <p className="text-blue-200 text-xs">5v5, 7v7, 9v9, 11v11 support</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-6 text-center">
+                      <a 
+                        href="/quick-record"
+                        className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors inline-block"
+                      >
+                        📱 Start Match Tracker
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </MobilePageContainer>
+          </MobileLayout>
         </div>
 
         {/* Desktop Version */}

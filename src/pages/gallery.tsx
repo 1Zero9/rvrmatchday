@@ -1,4 +1,6 @@
 import StandardLayout from '../components/StandardLayout';
+import MobileLayout from '../components/MobileLayout';
+import MobilePageContainer from '../components/mobile/MobilePageContainer';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
@@ -104,7 +106,94 @@ export default function Gallery() {
     : galleryItems.filter(item => item.category === selectedCategory);
 
   return (
-    <StandardLayout title="Photo Gallery">
+    <>
+      {/* Mobile Version */}
+      <div className="block md:hidden">
+        <MobileLayout currentPage="/gallery" showNavigation={false}>
+          <MobilePageContainer 
+            title="Photo Gallery"
+            subtitle="Match Photos & Memories"
+            icon="📸"
+          >
+            {/* Category Filter - Mobile */}
+            <div className="mb-6">
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 whitespace-nowrap flex-shrink-0 ${
+                      selectedCategory === category.id
+                        ? 'bg-white/20 backdrop-blur-sm text-white border border-white/30'
+                        : 'bg-white/10 backdrop-blur-sm text-white/70 hover:bg-white/15 border border-white/20'
+                    }`}
+                  >
+                    <span>{category.icon}</span>
+                    <span className="text-xs">{category.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Gallery Grid - Mobile */}
+            <div className="grid grid-cols-1 gap-4">
+              {filteredItems.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.1 * index }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl"
+                >
+                  <div className="flex items-center space-x-4">
+                    {/* Image */}
+                    <div className={`w-16 h-16 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                      <div className="text-2xl">{item.image}</div>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold text-sm mb-1">{item.title}</h3>
+                      <p className="text-blue-200 text-xs mb-2 line-clamp-2">{item.description}</p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-blue-100 text-xs">
+                          {new Date(item.date).toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'short'
+                          })}
+                        </span>
+                        <span className="text-white text-xs bg-white/20 px-2 py-1 rounded-full">
+                          12 photos
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Upload Section - Mobile */}
+            <div className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl mt-6 text-center">
+              <div className="text-2xl mb-2">📤</div>
+              <h3 className="text-white font-bold text-sm mb-2">Share Your Photos</h3>
+              <p className="text-blue-200 text-xs mb-4">
+                Have great photos? Share them with the community!
+              </p>
+              <Link 
+                href="/contact"
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-medium inline-block"
+              >
+                📧 Email Photos
+              </Link>
+            </div>
+          </MobilePageContainer>
+        </MobileLayout>
+      </div>
+
+      {/* Desktop Version */}
+      <div className="hidden md:block">
+        <StandardLayout title="Photo Gallery">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Header */}
@@ -254,7 +343,9 @@ export default function Gallery() {
           </div>
         </motion.div>
 
+        </div>
+        </StandardLayout>
       </div>
-    </StandardLayout>
+    </>
   );
 }

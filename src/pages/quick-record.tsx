@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import MobileLayout from "../components/MobileLayout";
+import MobilePageContainer from "../components/mobile/MobilePageContainer";
 
 interface MatchEvent {
   id: string;
@@ -33,7 +35,14 @@ export default function QuickRecord() {
     team: '',
     opponent: '',
     venue: '',
-    playerName: '' // Child's name
+    playerName: '', // Child's name
+    matchFormat: '11v11' // Match format
+  });
+
+  // Score tracking
+  const [score, setScore] = useState({
+    home: 0,
+    away: 0
   });
 
   const [showSetup, setShowSetup] = useState(true);
@@ -50,7 +59,7 @@ export default function QuickRecord() {
   }, [isRecording]);
 
   const startMatch = () => {
-    if (!setupForm.team || !setupForm.opponent || !setupForm.playerName) {
+    if (!setupForm.team || !setupForm.opponent || !setupForm.playerName || !setupForm.matchFormat) {
       alert('Please fill in all required fields');
       return;
     }
@@ -70,26 +79,18 @@ export default function QuickRecord() {
     setMatchTime(0);
   };
 
-  const addEvent = (type: MatchEvent['type']) => {
-    if (!currentMatch) return;
-
-    const event: MatchEvent = {
-      id: Date.now().toString(),
-      type,
-      playerName: setupForm.playerName,
-      minute: matchTime,
-      timestamp: new Date()
-    };
-
-    setEvents(prev => [...prev, event]);
-  };
 
   const finishMatch = () => {
     if (currentMatch) {
       // Save to localStorage for later viewing
       const savedMatches = localStorage.getItem('parent-matches') || '[]';
       const matches = JSON.parse(savedMatches);
-      const finalMatch = { ...currentMatch, events };
+      const finalMatch = { 
+        ...currentMatch, 
+        score,
+        matchFormat: setupForm.matchFormat,
+        finalMinutes: matchTime
+      };
       matches.push(finalMatch);
       localStorage.setItem('parent-matches', JSON.stringify(matches));
     }
@@ -98,9 +99,10 @@ export default function QuickRecord() {
     setCurrentMatch(null);
     setIsRecording(false);
     setEvents([]);
+    setScore({ home: 0, away: 0 });
     setMatchTime(0);
     setShowSetup(true);
-    setSetupForm({ team: '', opponent: '', venue: '', playerName: '' });
+    setSetupForm({ team: '', opponent: '', venue: '', playerName: '', matchFormat: '11v11' });
   };
 
   const ActionButton = ({ 
@@ -135,29 +137,21 @@ export default function QuickRecord() {
   if (showSetup) {
     return (
       <MobileLayout currentPage="/quick-record" showNavigation={false}>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-6">
-          
+        <MobilePageContainer 
+          title="Quick Record"
+          subtitle="Simple Match Tracking"
+          icon="📱"
+        >
           <div className="max-w-md mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center mb-8"
-            >
-              <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-green-500 rounded-2xl flex items-center justify-center shadow-xl">
-                <span className="text-3xl text-white">📱</span>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Quick Record</h1>
-              <p className="text-gray-600">Track your child's match events easily</p>
-            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="space-y-4"
+              className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-6 shadow-2xl space-y-4"
             >
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-white mb-2">
                   Your Child's Name *
                 </label>
                 <input
@@ -170,7 +164,7 @@ export default function QuickRecord() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-white mb-2">
                   Team Name *
                 </label>
                 <input
@@ -183,7 +177,7 @@ export default function QuickRecord() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-white mb-2">
                   Opponent Team *
                 </label>
                 <input
@@ -196,7 +190,7 @@ export default function QuickRecord() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-white mb-2">
                   Venue (Optional)
                 </label>
                 <input
@@ -208,6 +202,22 @@ export default function QuickRecord() {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-semibold text-white mb-2">
+                  Match Format *
+                </label>
+                <select
+                  value={setupForm.matchFormat}
+                  onChange={(e) => setSetupForm(prev => ({ ...prev, matchFormat: e.target.value }))}
+                  className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="5v5">5v5 (Small Sided)</option>
+                  <option value="7v7">7v7 (U9-U10)</option>
+                  <option value="9v9">9v9 (U11-U12)</option>
+                  <option value="11v11">11v11 (U13+)</option>
+                </select>
+              </div>
+
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={startMatch}
@@ -217,101 +227,109 @@ export default function QuickRecord() {
               </motion.button>
             </motion.div>
           </div>
-        </div>
+        </MobilePageContainer>
       </MobileLayout>
     );
   }
 
   return (
     <MobileLayout currentPage="/quick-record" showNavigation={false}>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      <MobilePageContainer 
+        title="Match Recording"
+        subtitle={`${setupForm.matchFormat} • ${setupForm.playerName}`}
+        icon="⚽"
+      >
         
-        {/* Match Header */}
-        <div className="bg-white shadow-sm p-6 border-b">
+        {/* Live Score Header */}
+        <div className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl mb-4">
           <div className="text-center">
-            <h1 className="text-lg font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-white mb-2">
               {currentMatch?.team} vs {currentMatch?.opponent}
-            </h1>
-            <p className="text-sm text-gray-600">
-              Tracking: {setupForm.playerName}
-            </p>
-            <div className="mt-2 inline-flex items-center px-3 py-1 bg-green-100 rounded-full">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
-              <span className="text-sm font-semibold text-green-700">
-                {isRecording ? `${matchTime} min` : 'Stopped'}
+            </h2>
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 mb-2 border border-white/20">
+              <div className="text-4xl font-bold text-white mb-1">
+                {score.home} - {score.away}
+              </div>
+              <div className="text-xs text-blue-200">{setupForm.matchFormat}</div>
+            </div>
+            <div className="inline-flex items-center px-3 py-1 bg-green-500/20 backdrop-blur-sm rounded-full border border-green-400/30">
+              <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse" />
+              <span className="text-sm font-semibold text-green-200">
+                {isRecording ? `${matchTime} min` : 'Paused'}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Quick Action Buttons */}
-        <div className="p-6">
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            <ActionButton
-              icon="⚽"
-              label="Goal"
-              color="bg-gradient-to-br from-green-500 to-green-600"
-              onClick={() => addEvent('goal')}
-              size="large"
-            />
-            <ActionButton
-              icon="🅰️"
-              label="Assist"
-              color="bg-gradient-to-br from-blue-500 to-blue-600"
-              onClick={() => addEvent('assist')}
-              size="large"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            <ActionButton
-              icon="🟨"
-              label="Yellow Card"
-              color="bg-gradient-to-br from-yellow-500 to-orange-500"
-              onClick={() => addEvent('yellow_card')}
-            />
-            <ActionButton
-              icon="🟥"
-              label="Red Card"
-              color="bg-gradient-to-br from-red-500 to-red-600"
-              onClick={() => addEvent('red_card')}
-            />
-          </div>
-
-          {/* Events List */}
-          {events.length > 0 && (
-            <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Match Events</h3>
-              <div className="space-y-2">
-                {events.map((event) => (
-                  <motion.div
-                    key={event.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+        {/* Score Tracking */}
+        <div>
+          <div className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl mb-4">
+            <h3 className="font-semibold text-white mb-4 text-center">Score Tracking</h3>
+            
+            {/* Home Team Score */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between bg-blue-500/20 backdrop-blur-sm rounded-xl p-3 border border-blue-400/30">
+                <span className="font-medium text-white">{currentMatch?.team}</span>
+                <div className="flex items-center space-x-3">
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setScore(prev => ({ ...prev, home: Math.max(0, prev.home - 1) }))}
+                    className="w-8 h-8 bg-red-500 text-white rounded-full text-lg font-bold"
                   >
-                    <div className="flex items-center">
-                      <span className="text-lg mr-3">
-                        {event.type === 'goal' && '⚽'}
-                        {event.type === 'assist' && '🅰️'}
-                        {event.type === 'yellow_card' && '🟨'}
-                        {event.type === 'red_card' && '🟥'}
-                      </span>
-                      <div>
-                        <span className="font-medium text-sm">
-                          {event.type.replace('_', ' ').toUpperCase()}
-                        </span>
-                        <p className="text-xs text-gray-500">{event.playerName}</p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-semibold text-gray-600">
-                      {event.minute}'
-                    </span>
-                  </motion.div>
-                ))}
+                    -
+                  </motion.button>
+                  <span className="text-2xl font-bold text-white min-w-8 text-center">{score.home}</span>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setScore(prev => ({ ...prev, home: prev.home + 1 }))}
+                    className="w-8 h-8 bg-green-500 text-white rounded-full text-lg font-bold"
+                  >
+                    +
+                  </motion.button>
+                </div>
               </div>
             </div>
-          )}
+
+            {/* Away Team Score */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between bg-gray-600/20 backdrop-blur-sm rounded-xl p-3 border border-gray-400/30">
+                <span className="font-medium text-white">{currentMatch?.opponent}</span>
+                <div className="flex items-center space-x-3">
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setScore(prev => ({ ...prev, away: Math.max(0, prev.away - 1) }))}
+                    className="w-8 h-8 bg-red-500 text-white rounded-full text-lg font-bold"
+                  >
+                    -
+                  </motion.button>
+                  <span className="text-2xl font-bold text-white min-w-8 text-center">{score.away}</span>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setScore(prev => ({ ...prev, away: prev.away + 1 }))}
+                    className="w-8 h-8 bg-green-500 text-white rounded-full text-lg font-bold"
+                  >
+                    +
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Match Summary */}
+          <div className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl mb-4">
+            <h3 className="font-semibold text-white mb-3 text-center">Match Summary</h3>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white mb-2">
+                {score.home} - {score.away}
+              </div>
+              <p className="text-sm text-blue-200 mb-2">
+                {currentMatch?.team} vs {currentMatch?.opponent}
+              </p>
+              <p className="text-xs text-blue-100">
+                {setupForm.matchFormat} • {matchTime} minutes
+              </p>
+            </div>
+          </div>
 
           {/* Control Buttons */}
           <div className="space-y-4">
@@ -336,7 +354,7 @@ export default function QuickRecord() {
             </motion.button>
           </div>
         </div>
-      </div>
+      </MobilePageContainer>
     </MobileLayout>
   );
 }
