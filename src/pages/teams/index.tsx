@@ -113,7 +113,7 @@ export default function TeamsIndex() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mb-16"
             >
-              <GlassCard className="p-8">
+              <GlassCard className="p-8 bg-gradient-to-br from-gray-900/80 to-black/70">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-white mb-4">Dublin's Largest Club</h2>
                   <div className="w-20 h-1 bg-club-accent mx-auto rounded-full"></div>
@@ -149,7 +149,7 @@ export default function TeamsIndex() {
               transition={{ duration: 0.6, delay: 0.6 }}
               className="mb-16"
             >
-              <GlassCard className="p-8">
+              <GlassCard className="p-8 bg-gradient-to-br from-gray-900/80 to-black/70">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-white mb-4">Team Categories</h2>
                   <div className="w-20 h-1 bg-club-accent mx-auto rounded-full"></div>
@@ -195,7 +195,7 @@ export default function TeamsIndex() {
               transition={{ duration: 0.6, delay: 1.0 }}
               className="mb-16"
             >
-              <GlassCard className="p-8">
+              <GlassCard className="p-8 bg-gradient-to-br from-gray-900/80 to-black/70">
                 <div className="grid lg:grid-cols-2 gap-8 items-center">
                   <div>
                     <h2 className="text-3xl font-bold text-white mb-4">Professional Coaching</h2>
@@ -253,7 +253,7 @@ export default function TeamsIndex() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.2 }}
             >
-              <GlassCard className="p-8 text-center">
+              <GlassCard className="p-8 text-center bg-gradient-to-br from-gray-900/80 to-black/70">
                 <h2 className="text-3xl font-bold text-white mb-4">Find Your Perfect Team</h2>
                 <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
                   Whether you're 5 or 50, just starting out or an experienced player, we have a team for you. 

@@ -1,4 +1,6 @@
 import StandardLayout from '../../components/StandardLayout';
+import MobileLayout from '../../components/MobileLayout';
+import MobilePageContainer from '../../components/mobile/MobilePageContainer';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Breadcrumb from '../../components/Breadcrumb';
@@ -8,29 +10,24 @@ export default function TrialsRegistration() {
     <div>
       {/* Mobile Version */}
       <div className="block md:hidden">
-        <StandardLayout title="Trials & Registration">
-          {/* Mobile Header */}
-          <div className="p-6 shadow-lg text-white" style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}>
-            <div className="text-center">
-              <h1 className="font-bold text-2xl text-white mb-1">Book a Trial</h1>
-              <p className="text-pink-200">Join Rivervalley Rangers today</p>
-            </div>
-          </div>
+        <MobileLayout currentPage="/join/trials" showNavigation={false}>
+          <MobilePageContainer 
+            title="Book a Trial"
+            subtitle="Join Rivervalley Rangers"
+            icon="🎯"
+          >
 
-          {/* Mobile Content */}
-          <div className="p-4 bg-gray-50">
-            <div className="space-y-6">
-              {/* Registration Form */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="font-bold text-lg mb-4" style={{color: '#972A4C'}}>Register for Trials</h2>
+            {/* Registration Form */}
+            <div className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-6 shadow-2xl mb-6">
+              <h2 className="font-bold text-white text-lg mb-4">Register for Trials</h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Player Name</label>
-                    <input type="text" className="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter player name" />
+                    <label className="block text-sm font-medium text-white mb-1">Player Name</label>
+                    <input type="text" className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-900 placeholder-gray-400" placeholder="Enter player name" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Age Group</label>
-                    <select className="w-full p-3 border border-gray-300 rounded-lg">
+                    <label className="block text-sm font-medium text-white mb-1">Age Group</label>
+                    <select className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-900">
                       <option>Select age group...</option>
                       <option>U8 (Ages 6-8)</option>
                       <option>U10 (Ages 8-10)</option>
@@ -41,52 +38,50 @@ export default function TrialsRegistration() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Parent/Guardian Email</label>
-                    <input type="email" className="w-full p-3 border border-gray-300 rounded-lg" placeholder="parent@email.com" />
+                    <label className="block text-sm font-medium text-white mb-1">Parent/Guardian Email</label>
+                    <input type="email" className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-900 placeholder-gray-400" placeholder="parent@email.com" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                    <input type="tel" className="w-full p-3 border border-gray-300 rounded-lg" placeholder="+353 87 123 4567" />
+                    <label className="block text-sm font-medium text-white mb-1">Phone Number</label>
+                    <input type="tel" className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-900 placeholder-gray-400" placeholder="+353 87 123 4567" />
                   </div>
                   <button
-                    className="w-full text-white py-3 px-4 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
-                    style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}
+                    className="w-full text-white py-3 px-4 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
                   >
                     Book Trial Session
                   </button>
                 </div>
               </div>
 
-              {/* Next Steps */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="font-bold text-lg mb-3" style={{color: '#972A4C'}}>Next Steps</h3>
+            {/* Next Steps */}
+            <div className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-6 shadow-2xl mb-6">
+              <h3 className="font-bold text-white text-lg mb-3">Next Steps</h3>
                 <div className="space-y-3">
                   <div className="flex items-start">
-                    <div className="w-6 h-6 rounded-full text-white text-sm flex items-center justify-center mr-3 mt-0.5" style={{backgroundColor: '#972A4C'}}>1</div>
+                    <div className="w-6 h-6 rounded-full text-white text-sm flex items-center justify-center mr-3 mt-0.5 bg-orange-500">1</div>
                     <div>
-                      <div className="font-medium text-gray-900">Submit Registration</div>
-                      <div className="text-sm text-gray-600">Complete the form above</div>
+                      <div className="font-medium text-white">Submit Registration</div>
+                      <div className="text-sm text-blue-200">Complete the form above</div>
                     </div>
                   </div>
                   <div className="flex items-start">
-                    <div className="w-6 h-6 rounded-full text-white text-sm flex items-center justify-center mr-3 mt-0.5" style={{backgroundColor: '#5E7794'}}>2</div>
+                    <div className="w-6 h-6 rounded-full text-white text-sm flex items-center justify-center mr-3 mt-0.5 bg-blue-500">2</div>
                     <div>
-                      <div className="font-medium text-gray-900">We'll Contact You</div>
-                      <div className="text-sm text-gray-600">Within 24 hours with trial details</div>
+                      <div className="font-medium text-white">We'll Contact You</div>
+                      <div className="text-sm text-blue-200">Within 24 hours with trial details</div>
                     </div>
                   </div>
                   <div className="flex items-start">
-                    <div className="w-6 h-6 rounded-full text-white text-sm flex items-center justify-center mr-3 mt-0.5" style={{backgroundColor: '#98C0F0'}}>3</div>
+                    <div className="w-6 h-6 rounded-full text-white text-sm flex items-center justify-center mr-3 mt-0.5 bg-green-500">3</div>
                     <div>
-                      <div className="font-medium text-gray-900">Attend Trial</div>
-                      <div className="text-sm text-gray-600">Bring boots, shin pads & water</div>
+                      <div className="font-medium text-white">Attend Trial</div>
+                      <div className="text-sm text-blue-200">Bring boots, shin pads & water</div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </StandardLayout>
+          </MobilePageContainer>
+        </MobileLayout>
       </div>
 
       {/* Desktop Version */}
