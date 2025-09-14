@@ -105,7 +105,7 @@ export default function NewsUpdates() {
     <>
       {/* Mobile Version */}
       <div className="block md:hidden">
-        <MobileLayout currentPage="/news" showNavigation={false}>
+        <MobileLayout currentPage="/news">
           <MobilePageContainer 
             title="Latest News"
             subtitle="Updates & Announcements"

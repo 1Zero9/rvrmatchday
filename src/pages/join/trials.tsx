@@ -10,7 +10,7 @@ export default function TrialsRegistration() {
     <div>
       {/* Mobile Version */}
       <div className="block md:hidden">
-        <MobileLayout currentPage="/join/trials" showNavigation={false}>
+        <MobileLayout currentPage="/join/trials">
           <MobilePageContainer 
             title="Book a Trial"
             subtitle="Join Rivervalley Rangers"
@@ -46,7 +46,7 @@ export default function TrialsRegistration() {
                     <input type="tel" className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-900 placeholder-gray-400" placeholder="+353 87 123 4567" />
                   </div>
                   <button
-                    className="w-full text-white py-3 px-4 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                    className="w-full text-white py-3 px-4 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-[#972A4C] to-[#5E7794] hover:from-[#972A4C]/90 hover:to-[#5E7794]/90"
                   >
                     Book Trial Session
                   </button>

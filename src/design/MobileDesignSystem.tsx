@@ -16,18 +16,46 @@ import { motion } from 'framer-motion';
 export const DesignTokens = {
   // Professional Color Palette
   colors: {
-    // Primary Brand (Customizable per club)
+    // Primary Brand (RVR Brand Colors)
     primary: {
-      50: '#fef2f2',
-      100: '#fde6e6', 
-      200: '#fbc4c4',
-      300: '#f87171',
-      400: '#ef4444',
-      500: '#dc2626', // Main brand color
-      600: '#b91c1c',
-      700: '#991b1b',
-      800: '#7f1d1d',
-      900: '#671414'
+      50: '#fdf2f5',
+      100: '#fce7ed', 
+      200: '#f9d0db',
+      300: '#f4a2bb',
+      400: '#ec6591',
+      500: '#972A4C', // Main burgundy brand color
+      600: '#85244a',
+      700: '#6f1e3f',
+      800: '#5c1a36',
+      900: '#4d1730'
+    },
+    
+    // Secondary Brand Colors
+    secondary: {
+      50: '#f4f6f9',
+      100: '#e9edf3',
+      200: '#d3dbe7',
+      300: '#98c0f0', // Light blue accent
+      400: '#7a9fd8',
+      500: '#5E7794', // Blue-gray main
+      600: '#536b85',
+      700: '#465a73',
+      800: '#3a4b60',
+      900: '#2f3e4f'
+    },
+    
+    // Neutral updated for brand
+    brandNeutral: {
+      50: '#fbfbfb',
+      100: '#f7f7f7',
+      200: '#e8e8e8',
+      300: '#d4d4d4',
+      400: '#B6B7B6', // Brand gray
+      500: '#9a9b9a',
+      600: '#7a7b7a',
+      700: '#5a5b5a',
+      800: '#3a3b3a',
+      900: '#1a1b1a'
     },
     
     // Neutral Grays (Professional)
@@ -195,8 +223,8 @@ export function ActionCard({
   size = 'md' 
 }: ActionCardProps) {
   const variants = {
-    primary: 'bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100',
-    secondary: 'bg-gray-50 border-gray-200 text-gray-900 hover:bg-gray-100',
+    primary: 'bg-[#972A4C]/10 border-[#972A4C]/30 text-[#972A4C] hover:bg-[#972A4C]/20',
+    secondary: 'bg-[#5E7794]/10 border-[#5E7794]/30 text-[#5E7794] hover:bg-[#5E7794]/20',
     success: 'bg-green-50 border-green-200 text-green-900 hover:bg-green-100',
     warning: 'bg-orange-50 border-orange-200 text-orange-900 hover:bg-orange-100'
   };
@@ -243,30 +271,33 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ logo, clubName, onMenuToggle, isMenuOpen }: MobileHeaderProps) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#972A4C] to-[#5E7794] shadow-lg">
       <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center space-x-2">
-          <img src={logo} alt={`${clubName} Logo`} className="h-6 w-6" />
-          <span className="font-semibold text-sm text-gray-900">{clubName}</span>
-        </div>
+        <a href="/home" className="flex items-center space-x-3 hover:opacity-90 transition-opacity">
+          <img src={logo} alt={`${clubName} Logo`} className="h-8 w-8 drop-shadow-sm" />
+          <div>
+            <span className="font-bold text-sm text-white drop-shadow-sm">{clubName}</span>
+            <p className="text-xs text-[#98C0F0] font-medium">EST. 1981</p>
+          </div>
+        </a>
         
         <button
           onClick={onMenuToggle}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-lg hover:bg-white/10 transition-all duration-200 backdrop-blur-sm"
           aria-label="Toggle menu"
         >
           <div className="w-5 h-5 flex flex-col justify-center items-center">
             <motion.span
               animate={isMenuOpen ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }}
-              className="w-4 h-0.5 bg-gray-700 block transition-transform origin-center"
+              className="w-4 h-0.5 bg-white block transition-transform origin-center drop-shadow-sm"
             />
             <motion.span
               animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
-              className="w-4 h-0.5 bg-gray-700 block my-0.5 transition-opacity"
+              className="w-4 h-0.5 bg-white block my-0.5 transition-opacity drop-shadow-sm"
             />
             <motion.span
               animate={isMenuOpen ? { rotate: -45, y: -4 } : { rotate: 0, y: 0 }}
-              className="w-4 h-0.5 bg-gray-700 block transition-transform origin-center"
+              className="w-4 h-0.5 bg-white block transition-transform origin-center drop-shadow-sm"
             />
           </div>
         </button>

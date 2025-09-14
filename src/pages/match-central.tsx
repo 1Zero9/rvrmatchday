@@ -684,13 +684,25 @@ function CollapsibleTeamCard({ team, onEdit, onDelete }: {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow ${
+    <div className={`rounded-lg shadow-sm border hover:shadow-lg transition-all duration-200 relative overflow-hidden ${
       !team.isOpponent 
-        ? 'border-green-200 hover:border-green-300' 
-        : (team.isOpponent && team.league)
-          ? 'border-blue-200 hover:border-blue-300 bg-blue-50/30'
-          : 'border-orange-200 hover:border-orange-300'
+        ? 'border-green-300 hover:border-green-400 bg-gradient-to-r from-green-50 to-green-100/50' 
+        : (team.isOpponent && team.league && !['No League', 'Friendly Only'].includes(team.league))
+          ? 'border-blue-300 hover:border-blue-400 bg-gradient-to-r from-blue-50 to-blue-100/50'
+          : team.league === 'Friendly Only'
+            ? 'border-purple-300 hover:border-purple-400 bg-gradient-to-r from-purple-50 to-purple-100/50'
+            : 'border-orange-300 hover:border-orange-400 bg-gradient-to-r from-orange-50 to-orange-100/50'
     }`}>
+      {/* Colored Left Border Accent */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+        !team.isOpponent 
+          ? 'bg-gradient-to-b from-green-400 to-green-600' 
+          : (team.isOpponent && team.league && !['No League', 'Friendly Only'].includes(team.league))
+            ? 'bg-gradient-to-b from-blue-400 to-blue-600'
+            : team.league === 'Friendly Only'
+              ? 'bg-gradient-to-b from-purple-400 to-purple-600'
+              : 'bg-gradient-to-b from-orange-400 to-orange-600'
+      }`}></div>
       {/* Compact Line Item - Always Visible */}
       <div className="p-4">
         <div className="flex items-center justify-between">
@@ -708,9 +720,11 @@ function CollapsibleTeamCard({ team, onEdit, onDelete }: {
             <div className="text-2xl">
               {!team.isOpponent 
                 ? '⚽' 
-                : (team.isOpponent && team.league) 
+                : (team.isOpponent && team.league && !['No League', 'Friendly Only'].includes(team.league)) 
                   ? '🏆' 
-                  : '🏃'
+                  : team.league === 'Friendly Only'
+                    ? '🤝'
+                    : '🏃'
               }
             </div>
             
@@ -722,15 +736,17 @@ function CollapsibleTeamCard({ team, onEdit, onDelete }: {
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     !team.isOpponent 
                       ? 'bg-green-100 text-green-700' 
-                      : (team.isOpponent && team.league)
+                      : (team.isOpponent && team.league && !['No League', 'Friendly Only'].includes(team.league))
                         ? 'bg-blue-100 text-blue-700'
                         : 'bg-orange-100 text-orange-700'
                   }`}>
                     {!team.isOpponent 
                       ? 'RVR' 
-                      : (team.isOpponent && team.league) 
+                      : (team.isOpponent && team.league && !['No League', 'Friendly Only'].includes(team.league)) 
                         ? 'LEAGUE' 
-                        : 'OPP'
+                        : team.league === 'Friendly Only'
+                          ? 'FRIENDLY'
+                          : 'OPP'
                     }
                   </span>
                   {team.ageGroup && (
@@ -747,13 +763,10 @@ function CollapsibleTeamCard({ team, onEdit, onDelete }: {
               </div>
               <div className="text-sm text-gray-500 mt-1 flex items-center gap-2">
                 <span>{team.players?.length || 0} players</span>
-                {team.league && (
+                {team.league && !['No League', 'Friendly Only'].includes(team.league) && (
                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                     🏆 {team.league}
                   </span>
-                )}
-                {!team.league && team.isOpponent && (
-                  <span className="text-orange-600 text-xs">Friendly/Cup opponent</span>
                 )}
                 <span>• {team.season || 'No season'}</span>
               </div>
@@ -889,6 +902,7 @@ export default function MatchCentral() {
   const [teamSummaries, setTeamSummaries] = useState<TeamSummary[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string>('all');
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string | null>(null);
+  const [selectedLeague, setSelectedLeague] = useState<string>('all');
   const [overviewFilter, setOverviewFilter] = useState<string>('all');
   const [advancedTeamFilter, setAdvancedTeamFilter] = useState<string>('all');
   const [matchTypeFilter, setMatchTypeFilter] = useState<Set<string>>(new Set(['League']));
@@ -910,6 +924,12 @@ export default function MatchCentral() {
   const [playerStats, setPlayerStats] = useState<{ topScorers: any[]; topAssists: any[]; mostMatches: any[]; }>({ topScorers: [], topAssists: [], mostMatches: [] });
   const [matchesWithExtra, setMatchesWithExtra] = useState<{[key: string]: boolean}>({});
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
+  const [collapsedTeamSections, setCollapsedTeamSections] = useState<{[key: string]: boolean}>({
+    rvrTeams: false,
+    leagueOpponents: false,
+    friendlyOpponents: false,
+    otherOpponents: false
+  });
   const [fullScreenMatch, setFullScreenMatch] = useState<Match | null>(null);
   const [overlayMatch, setOverlayMatch] = useState<Match | null>(null);
 
@@ -947,6 +967,13 @@ export default function MatchCentral() {
 
   const togglePlayerSection = (section: string) => {
     setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const toggleTeamSection = (section: string) => {
+    setCollapsedTeamSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }));
@@ -2211,58 +2238,116 @@ export default function MatchCentral() {
 
         <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-8 py-4 md:py-8">
 
-        {/* Team Filter (for management) */}
+        {/* Enhanced Team Filters (for management) */}
         {(activeTab === 'management') && (
-          <div className="bg-white rounded-lg shadow-sm border p-4 mb-8">
-            <div className="flex items-center gap-4 flex-wrap">
-              {/* Team Type Buttons */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setSelectedTeam('all')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedTeam === 'all'
-                      ? 'bg-green-600 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  All Teams
-                </button>
-                <button
-                  onClick={() => setSelectedTeam('rvr')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedTeam === 'rvr'
-                      ? 'bg-green-600 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  RVR Teams
-                </button>
-                <button
-                  onClick={() => setSelectedTeam('opponents')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedTeam === 'opponents'
-                      ? 'bg-orange-600 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Opponents
-                </button>
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div className="flex flex-wrap items-start gap-8">
+              {/* Team Type Filters */}
+              <div className="flex-shrink-0">
+                <p className="text-sm font-semibold text-gray-700 mb-3">Team Type</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSelectedTeam('all')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      selectedTeam === 'all'
+                        ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                        : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-blue-50'
+                    }`}
+                  >
+                    All Teams ({teams.length})
+                  </button>
+                  <button
+                    onClick={() => setSelectedTeam('rvr')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      selectedTeam === 'rvr'
+                        ? 'bg-green-100 text-green-800 border border-green-300'
+                        : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-green-50'
+                    }`}
+                  >
+                    ⚽ RVR Teams ({teams.filter(t => !t.isOpponent).length})
+                  </button>
+                  <button
+                    onClick={() => setSelectedTeam('opponents')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      selectedTeam === 'opponents'
+                        ? 'bg-orange-100 text-orange-800 border border-orange-300'
+                        : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-orange-50'
+                    }`}
+                  >
+                    🏟️ Opponents ({teams.filter(t => t.isOpponent).length})
+                  </button>
+                </div>
               </div>
 
-              {/* Age Group Filter */}
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">Age Group:</label>
-                <select
-                  value={selectedAgeGroup || 'all'}
-                  onChange={(e) => setSelectedAgeGroup(e.target.value === 'all' ? null : e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                >
-                  <option value="all">All Age Groups</option>
-                  {Array.from(new Set(teams.map(team => team.ageGroup).filter(Boolean))).sort().map(ageGroup => (
-                    <option key={ageGroup} value={ageGroup}>{ageGroup}</option>
-                  ))}
-                </select>
-              </div>
+              {/* League Filters */}
+              {(() => {
+                const uniqueLeagues = Array.from(new Set(teams.map(team => team.league).filter(Boolean)));
+                return uniqueLeagues.length > 1 ? (
+                  <div className="flex-shrink-0">
+                    <p className="text-sm font-semibold text-gray-700 mb-3">League</p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => setSelectedLeague('all')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                          selectedLeague === 'all'
+                            ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                            : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-purple-50'
+                        }`}
+                      >
+                        All Leagues
+                      </button>
+                      {uniqueLeagues.map(league => (
+                        <button
+                          key={league}
+                          onClick={() => setSelectedLeague(league)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            selectedLeague === league
+                              ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                              : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-purple-50'
+                          }`}
+                        >
+                          🏆 {league} ({teams.filter(t => t.league === league).length})
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
+              {/* Age Group Filters */}
+              {(() => {
+                const uniqueAgeGroups = Array.from(new Set(teams.map(team => team.ageGroup).filter(Boolean))).sort();
+                return uniqueAgeGroups.length > 1 ? (
+                  <div className="flex-shrink-0">
+                    <p className="text-sm font-semibold text-gray-700 mb-3">Age Group</p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => setSelectedAgeGroup(null)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                          !selectedAgeGroup
+                            ? 'bg-indigo-100 text-indigo-800 border border-indigo-300'
+                            : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-indigo-50'
+                        }`}
+                      >
+                        All Ages
+                      </button>
+                      {uniqueAgeGroups.map(ageGroup => (
+                        <button
+                          key={ageGroup}
+                          onClick={() => setSelectedAgeGroup(ageGroup)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            selectedAgeGroup === ageGroup
+                              ? 'bg-indigo-100 text-indigo-800 border border-indigo-300'
+                              : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-indigo-50'
+                          }`}
+                        >
+                          🏃‍♂️ {ageGroup} ({teams.filter(t => t.ageGroup === ageGroup).length})
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
             </div>
           </div>
         )}
@@ -2702,6 +2787,9 @@ export default function MatchCentral() {
                       // Age group filter
                       if (selectedAgeGroup && team.ageGroup !== selectedAgeGroup) return false;
                       
+                      // League filter
+                      if (selectedLeague !== 'all' && team.league !== selectedLeague) return false;
+                      
                       return true;
                     });
 
@@ -2726,107 +2814,227 @@ export default function MatchCentral() {
                     // Group teams for All Teams view
                     if (selectedTeam === 'all') {
                       const rvrTeams = sortedTeams.filter(team => !team.isOpponent);
-                      const leagueOpponents = sortedTeams.filter(team => team.isOpponent && team.league);
-                      const otherOpponents = sortedTeams.filter(team => team.isOpponent && !team.league);
+                      const leagueOpponents = sortedTeams.filter(team => team.isOpponent && team.league && !['No League', 'Friendly Only'].includes(team.league));
+                      const friendlyOpponents = sortedTeams.filter(team => team.isOpponent && team.league === 'Friendly Only');
+                      const otherOpponents = sortedTeams.filter(team => team.isOpponent && (!team.league || team.league === 'No League'));
 
                       return (
                         <>
                           {/* RVR Teams Section */}
                           {rvrTeams.length > 0 && (
                             <div className="mb-6">
-                              <div className="flex items-center gap-2 mb-4 p-3 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border border-green-200">
-                                <span className="text-2xl">⚽</span>
-                                <h4 className="text-lg font-bold text-green-800">
-                                  River Valley Rangers Teams ({rvrTeams.length})
-                                </h4>
+                              <div 
+                                className="relative mb-4 p-4 bg-gradient-to-r from-green-100 via-green-50 to-emerald-100 rounded-xl border-2 border-green-300 shadow-md cursor-pointer hover:shadow-lg transition-all duration-200"
+                                onClick={() => toggleTeamSection('rvrTeams')}
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-r from-green-200/20 to-emerald-200/20 rounded-xl"></div>
+                                <div className="relative flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="bg-green-500 p-2 rounded-lg shadow-lg">
+                                      <span className="text-white text-xl">⚽</span>
+                                    </div>
+                                    <div>
+                                      <h4 className="text-xl font-bold bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">
+                                        River Valley Rangers Teams
+                                      </h4>
+                                      <p className="text-green-600 text-sm font-medium">{rvrTeams.length} teams</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-green-600 text-xl font-bold transition-transform duration-200" style={{
+                                    transform: collapsedTeamSections.rvrTeams ? 'rotate(0deg)' : 'rotate(90deg)'
+                                  }}>
+                                    ▶
+                                  </div>
+                                </div>
                               </div>
-                              <div className="space-y-3">
-                                {rvrTeams.map((team) => (
-                                  <CollapsibleTeamCard 
-                                    key={team.id} 
-                                    team={team} 
-                                    onEdit={() => router.push(`/match-admin?edit=${team.id}`)}
-                                    onDelete={async () => {
-                                      if (confirm(`Are you sure you want to delete ${team.name}? This will also delete all associated players and matches.`)) {
-                                        try {
-                                          const { error } = await supabase.from('teams').delete().eq('id', team.id);
-                                          if (error) throw error;
-                                          await loadData();
-                                        } catch (error) {
-                                          console.error('Error deleting team:', error);
-                                          alert('Error deleting team: ' + error);
+                              {!collapsedTeamSections.rvrTeams && (
+                                <div className="space-y-3">
+                                  {rvrTeams.map((team) => (
+                                    <CollapsibleTeamCard 
+                                      key={team.id} 
+                                      team={team} 
+                                      onEdit={() => router.push(`/match-admin?edit=${team.id}`)}
+                                      onDelete={async () => {
+                                        if (confirm(`Are you sure you want to delete ${team.name}? This will also delete all associated players and matches.`)) {
+                                          try {
+                                            const { error } = await supabase.from('teams').delete().eq('id', team.id);
+                                            if (error) throw error;
+                                            await loadData();
+                                          } catch (error) {
+                                            console.error('Error deleting team:', error);
+                                            alert('Error deleting team: ' + error);
+                                          }
                                         }
-                                      }
-                                    }}
-                                  />
-                                ))}
-                              </div>
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           )}
 
                           {/* League Opponents Section */}
                           {leagueOpponents.length > 0 && (
                             <div className="mb-6">
-                              <div className="flex items-center gap-2 mb-4 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
-                                <span className="text-2xl">🏆</span>
-                                <h4 className="text-lg font-bold text-blue-800">
-                                  League Opponents ({leagueOpponents.length})
-                                </h4>
+                              <div 
+                                className="relative mb-4 p-4 bg-gradient-to-r from-blue-100 via-blue-50 to-cyan-100 rounded-xl border-2 border-blue-300 shadow-md cursor-pointer hover:shadow-lg transition-all duration-200"
+                                onClick={() => toggleTeamSection('leagueOpponents')}
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-200/20 to-cyan-200/20 rounded-xl"></div>
+                                <div className="relative flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-500 rounded-xl shadow-lg">
+                                      <span className="text-2xl text-white">🏆</span>
+                                    </div>
+                                    <div>
+                                      <h4 className="text-xl font-bold text-blue-900 mb-1">
+                                        League Opponents
+                                      </h4>
+                                      <p className="text-sm text-blue-700 font-medium">
+                                        {leagueOpponents.length} competitive opponents
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="text-blue-600 text-xl font-bold transition-transform duration-200" style={{
+                                    transform: collapsedTeamSections.leagueOpponents ? 'rotate(0deg)' : 'rotate(90deg)'
+                                  }}>
+                                    ▶
+                                  </div>
+                                </div>
                               </div>
-                              <div className="space-y-3">
-                                {leagueOpponents.map((team) => (
-                                  <CollapsibleTeamCard 
-                                    key={team.id} 
-                                    team={team} 
-                                    onEdit={() => router.push(`/match-admin?edit=${team.id}`)}
-                                    onDelete={async () => {
-                                      if (confirm(`Are you sure you want to delete ${team.name}? This will also delete all associated players and matches.`)) {
-                                        try {
-                                          const { error } = await supabase.from('teams').delete().eq('id', team.id);
-                                          if (error) throw error;
-                                          await loadData();
-                                        } catch (error) {
-                                          console.error('Error deleting team:', error);
-                                          alert('Error deleting team: ' + error);
+                              {!collapsedTeamSections.leagueOpponents && (
+                                <div className="space-y-3">
+                                  {leagueOpponents.map((team) => (
+                                    <CollapsibleTeamCard 
+                                      key={team.id} 
+                                      team={team} 
+                                      onEdit={() => router.push(`/match-admin?edit=${team.id}`)}
+                                      onDelete={async () => {
+                                        if (confirm(`Are you sure you want to delete ${team.name}? This will also delete all associated players and matches.`)) {
+                                          try {
+                                            const { error } = await supabase.from('teams').delete().eq('id', team.id);
+                                            if (error) throw error;
+                                            await loadData();
+                                          } catch (error) {
+                                            console.error('Error deleting team:', error);
+                                            alert('Error deleting team: ' + error);
+                                          }
                                         }
-                                      }
-                                    }}
-                                  />
-                                ))}
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Friendly Opponents Section */}
+                          {friendlyOpponents.length > 0 && (
+                            <div className="mb-6">
+                              <div 
+                                className="relative mb-4 p-4 bg-gradient-to-r from-purple-100 via-purple-50 to-pink-100 rounded-xl border-2 border-purple-300 shadow-md cursor-pointer hover:shadow-lg transition-all duration-200"
+                                onClick={() => toggleTeamSection('friendlyOpponents')}
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-200/20 to-pink-200/20 rounded-xl"></div>
+                                <div className="relative flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-purple-500 rounded-xl shadow-lg">
+                                      <span className="text-2xl text-white">🤝</span>
+                                    </div>
+                                    <div>
+                                      <h4 className="text-xl font-bold text-purple-900 mb-1">
+                                        Friendly Opponents
+                                      </h4>
+                                      <p className="text-sm text-purple-700 font-medium">
+                                        {friendlyOpponents.length} friendly match teams
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="text-purple-600 text-xl font-bold transition-transform duration-200" style={{
+                                    transform: collapsedTeamSections.friendlyOpponents ? 'rotate(0deg)' : 'rotate(90deg)'
+                                  }}>
+                                    ▶
+                                  </div>
+                                </div>
                               </div>
+                              {!collapsedTeamSections.friendlyOpponents && (
+                                <div className="space-y-3">
+                                  {friendlyOpponents.map((team) => (
+                                    <CollapsibleTeamCard 
+                                      key={team.id} 
+                                      team={team} 
+                                      onEdit={() => router.push(`/match-admin?edit=${team.id}`)}
+                                      onDelete={async () => {
+                                        if (confirm(`Are you sure you want to delete ${team.name}? This will also delete all associated players and matches.`)) {
+                                          try {
+                                            const { error } = await supabase.from('teams').delete().eq('id', team.id);
+                                            if (error) throw error;
+                                            await loadData();
+                                          } catch (error) {
+                                            console.error('Error deleting team:', error);
+                                            alert('Error deleting team: ' + error);
+                                          }
+                                        }
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           )}
 
                           {/* Other Opponents Section */}
                           {otherOpponents.length > 0 && (
                             <div className="mb-6">
-                              <div className="flex items-center gap-2 mb-4 p-3 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200">
-                                <span className="text-2xl">🏃</span>
-                                <h4 className="text-lg font-bold text-orange-800">
-                                  Friendly & Cup Opponents ({otherOpponents.length})
-                                </h4>
+                              <div 
+                                className="relative mb-4 p-4 bg-gradient-to-r from-orange-100 via-orange-50 to-amber-100 rounded-xl border-2 border-orange-300 shadow-md cursor-pointer hover:shadow-lg transition-all duration-200"
+                                onClick={() => toggleTeamSection('otherOpponents')}
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-r from-orange-200/20 to-amber-200/20 rounded-xl"></div>
+                                <div className="relative flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-orange-500 rounded-xl shadow-lg">
+                                      <span className="text-2xl text-white">🏃</span>
+                                    </div>
+                                    <div>
+                                      <h4 className="text-xl font-bold text-orange-900 mb-1">
+                                        Other Opponents
+                                      </h4>
+                                      <p className="text-sm text-orange-700 font-medium">
+                                        {otherOpponents.length} cup & other match teams
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="text-orange-600 text-xl font-bold transition-transform duration-200" style={{
+                                    transform: collapsedTeamSections.otherOpponents ? 'rotate(0deg)' : 'rotate(90deg)'
+                                  }}>
+                                    ▶
+                                  </div>
+                                </div>
                               </div>
-                              <div className="space-y-3">
-                                {otherOpponents.map((team) => (
-                                  <CollapsibleTeamCard 
-                                    key={team.id} 
-                                    team={team} 
-                                    onEdit={() => router.push(`/match-admin?edit=${team.id}`)}
-                                    onDelete={async () => {
-                                      if (confirm(`Are you sure you want to delete ${team.name}? This will also delete all associated players and matches.`)) {
-                                        try {
-                                          const { error } = await supabase.from('teams').delete().eq('id', team.id);
-                                          if (error) throw error;
-                                          await loadData();
-                                        } catch (error) {
-                                          console.error('Error deleting team:', error);
-                                          alert('Error deleting team: ' + error);
+                              {!collapsedTeamSections.otherOpponents && (
+                                <div className="space-y-3">
+                                  {otherOpponents.map((team) => (
+                                    <CollapsibleTeamCard 
+                                      key={team.id} 
+                                      team={team} 
+                                      onEdit={() => router.push(`/match-admin?edit=${team.id}`)}
+                                      onDelete={async () => {
+                                        if (confirm(`Are you sure you want to delete ${team.name}? This will also delete all associated players and matches.`)) {
+                                          try {
+                                            const { error } = await supabase.from('teams').delete().eq('id', team.id);
+                                            if (error) throw error;
+                                            await loadData();
+                                          } catch (error) {
+                                            console.error('Error deleting team:', error);
+                                            alert('Error deleting team: ' + error);
+                                          }
                                         }
-                                      }
-                                    }}
-                                  />
-                                ))}
-                              </div>
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           )}
                         </>

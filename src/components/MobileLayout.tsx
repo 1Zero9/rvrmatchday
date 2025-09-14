@@ -23,7 +23,7 @@ export default function MobileLayout({
   clubData 
 }: MobileLayoutProps) {
   return (
-    <div className="md:hidden min-h-screen bg-white">
+    <div className="md:hidden min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {/* Professional Mobile Navigation */}
       {showNavigation && (
         <MobileNavigationPro 
@@ -37,11 +37,12 @@ export default function MobileLayout({
         {children}
       </main>
       
-      {/* Simple Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200 py-8 px-4 text-center">
-        <div className="text-xs text-gray-500 space-y-2">
-          <p>© 2025 Rivervalley Rangers AFC</p>
-          <p>Powered by RVR Football Platform</p>
+      {/* Brand Footer */}
+      <footer className="bg-gradient-to-r from-[#972A4C] to-[#5E7794] py-8 px-4 text-center">
+        <div className="text-xs text-white space-y-2">
+          <p className="font-semibold">© 2025 Rivervalley Rangers AFC</p>
+          <p className="text-[#98C0F0] opacity-90">Powered by RVR Football Platform</p>
+          <p className="text-[#98C0F0] opacity-75 text-xs">Community Football Since 1981</p>
         </div>
       </footer>
     </div>

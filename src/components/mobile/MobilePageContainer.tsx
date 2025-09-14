@@ -27,18 +27,12 @@ export default function MobilePageContainer({
   contentClassName = ''
 }: MobilePageContainerProps) {
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden ${className}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-[#972A4C] via-[#5E7794] to-[#98C0F0] relative overflow-hidden ${className}`}>
       
       {/* Background Pattern */}
       <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-green-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-3/4 left-3/4 w-48 h-48 bg-purple-500/15 rounded-full blur-2xl animate-pulse delay-2000" />
-        
-        {/* Floating glass orbs */}
-        <div className="absolute top-20 right-10 w-4 h-4 bg-white/20 backdrop-blur-sm rounded-full animate-float" />
-        <div className="absolute top-40 left-8 w-6 h-6 bg-white/15 backdrop-blur-sm rounded-full animate-float delay-1000" />
-        <div className="absolute bottom-32 right-20 w-3 h-3 bg-white/25 backdrop-blur-sm rounded-full animate-float delay-2000" />
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[#98C0F0]/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-[#972A4C]/20 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       {/* Header */}

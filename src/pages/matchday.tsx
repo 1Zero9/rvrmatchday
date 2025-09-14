@@ -267,7 +267,7 @@ export default function MatchDay() {
       <div className="min-h-screen">
         {/* Mobile Version */}
         <div className="block md:hidden">
-          <MobileLayout currentPage="/matchday" showNavigation={false}>
+          <MobileLayout currentPage="/matchday">
             <MobilePageContainer 
               title="MatchDay"
               subtitle="Live Scores & Results"

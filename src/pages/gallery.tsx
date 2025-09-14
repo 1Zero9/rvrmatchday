@@ -109,7 +109,7 @@ export default function Gallery() {
     <>
       {/* Mobile Version */}
       <div className="block md:hidden">
-        <MobileLayout currentPage="/gallery" showNavigation={false}>
+        <MobileLayout currentPage="/gallery">
           <MobilePageContainer 
             title="Photo Gallery"
             subtitle="Match Photos & Memories"

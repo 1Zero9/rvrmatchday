@@ -85,8 +85,10 @@ export default function TeamsIndex() {
             logo: "/images/logo.png",
             established: "1981",
             colors: {
-              primary: "#dc2626",
-              secondary: "#1e40af"
+              primary: "#972A4C",
+              secondary: "#5E7794",
+              accent: "#98C0F0",
+              neutral: "#B6B7B6"
             }
           }}
         >

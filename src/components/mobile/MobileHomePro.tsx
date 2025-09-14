@@ -36,7 +36,7 @@ export default function MobileHomePro() {
       description: 'All Squads & Ages',
       href: '/teams',
       icon: '👥',
-      gradient: 'from-indigo-500 to-purple-600',
+      gradient: 'from-[#972A4C] to-[#5E7794]',
       size: 'large', // Featured app
       badge: null
     },
@@ -45,7 +45,7 @@ export default function MobileHomePro() {
       description: 'Live Scores & Results',
       href: '/matchday',
       icon: '⚽',
-      gradient: 'from-green-500 to-green-600',
+      gradient: 'from-[#5E7794] to-[#98C0F0]',
       size: 'medium',
       badge: null
     },
@@ -54,7 +54,7 @@ export default function MobileHomePro() {
       description: 'Coach Dashboard',
       href: '/match-central',
       icon: '🏆',
-      gradient: 'from-blue-600 to-blue-700',
+      gradient: 'from-[#972A4C] to-[#98C0F0]',
       size: 'medium',
       badge: '🔒'
     },
@@ -63,7 +63,7 @@ export default function MobileHomePro() {
       description: 'Book Your Trial',
       href: '/join/trials',
       icon: '🎯',
-      gradient: 'from-orange-500 to-red-500',
+      gradient: 'from-[#98C0F0] to-[#972A4C]',
       size: 'medium',
       badge: null
     },
@@ -72,7 +72,7 @@ export default function MobileHomePro() {
       description: 'Match Photos',
       href: '/gallery',
       icon: '📸',
-      gradient: 'from-pink-500 to-rose-500',
+      gradient: 'from-[#972A4C]/80 to-[#5E7794]',
       size: 'medium',
       badge: null
     },
@@ -81,7 +81,7 @@ export default function MobileHomePro() {
       description: 'Latest Updates',
       href: '/news',
       icon: '📰',
-      gradient: 'from-gray-600 to-gray-700',
+      gradient: 'from-[#B6B7B6] to-[#5E7794]',
       size: 'medium',
       badge: null
     },
@@ -90,7 +90,7 @@ export default function MobileHomePro() {
       description: 'Get in Touch',
       href: '/contact',
       icon: '📞',
-      gradient: 'from-teal-500 to-cyan-500',
+      gradient: 'from-[#5E7794] to-[#B6B7B6]',
       size: 'medium',
       badge: null
     }
@@ -171,13 +171,13 @@ export default function MobileHomePro() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-[#972A4C] via-[#972A4C] to-[#972A4C]/70 relative overflow-hidden pb-20">
       
       {/* Enhanced Background Pattern with Glass Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-green-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-3/4 left-3/4 w-48 h-48 bg-purple-500/15 rounded-full blur-2xl animate-pulse delay-2000" />
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[#98C0F0]/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-[#972A4C]/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-3/4 left-3/4 w-48 h-48 bg-[#B6B7B6]/15 rounded-full blur-2xl animate-pulse delay-2000" />
         
         {/* Floating glass orbs */}
         <div className="absolute top-20 right-10 w-4 h-4 bg-white/20 backdrop-blur-sm rounded-full animate-float" />
