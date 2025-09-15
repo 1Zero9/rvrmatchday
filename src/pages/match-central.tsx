@@ -1429,8 +1429,12 @@ export default function MatchCentral() {
         
         if (teamScore > opponentScore) {
           stats.won++;
-          if (match.isHomeMatch) stats.homeWins++;
-          stats.form.unshift('W');
+          if (match.isHomeMatch) {
+            stats.homeWins++;
+          } else {
+            stats.awayWins++;
+          }
+          stats.form.push('W');
           
           const margin = teamScore - opponentScore;
           if (margin > stats.biggestWin.margin) {
@@ -1438,10 +1442,10 @@ export default function MatchCentral() {
           }
         } else if (teamScore === opponentScore) {
           stats.drawn++;
-          stats.form.unshift('D');
+          stats.form.push('D');
         } else {
           stats.lost++;
-          stats.form.unshift('L');
+          stats.form.push('L');
           
           const margin = opponentScore - teamScore;
           if (margin > stats.biggestLoss.margin) {
@@ -1454,7 +1458,7 @@ export default function MatchCentral() {
     stats.avgGoalsFor = stats.played > 0 ? stats.goalsFor / stats.played : 0;
     stats.avgGoalsAgainst = stats.played > 0 ? stats.goalsAgainst / stats.played : 0;
     stats.winPercentage = stats.played > 0 ? (stats.won / stats.played) * 100 : 0;
-    stats.form = stats.form.slice(0, 5); // Last 5 matches
+    stats.form = stats.form.slice(-5); // Last 5 matches chronologically
 
     const endTime = performance.now();
     console.log(`✅ Stats calculation completed in ${(endTime - startTime).toFixed(2)}ms`);
@@ -3490,7 +3494,7 @@ export default function MatchCentral() {
                           datasets: [
                             {
                               label: 'Wins',
-                              data: [currentStats.homeWins, currentStats.won - currentStats.homeWins],
+                              data: [currentStats.homeWins, currentStats.awayWins],
                               backgroundColor: 'rgba(16, 185, 129, 0.8)',
                               borderColor: '#10B981',
                               borderWidth: 2,
@@ -3501,18 +3505,24 @@ export default function MatchCentral() {
                               label: 'Draws', 
                               data: [
                                 (() => {
-                                  const homeDraws = allMatches
-                                    .filter(match => selectedStatsTeam === 'all' || match.teamId === selectedStatsTeam)
-                                    .filter(match => match.status === 'Finished' && match.isHomeMatch && match.homeScore === match.awayScore)
-                                    .length;
-                                  return homeDraws;
+                                  const filteredMatches = getFilteredMatches(match => 
+                                    match.status === 'Finished' && 
+                                    match.isHomeMatch && 
+                                    match.homeScore !== undefined && 
+                                    match.awayScore !== undefined &&
+                                    match.homeScore === match.awayScore
+                                  );
+                                  return filteredMatches.length;
                                 })(),
-                                currentStats.drawn - (() => {
-                                  const homeDraws = allMatches
-                                    .filter(match => selectedStatsTeam === 'all' || match.teamId === selectedStatsTeam)
-                                    .filter(match => match.status === 'Finished' && match.isHomeMatch && match.homeScore === match.awayScore)
-                                    .length;
-                                  return homeDraws;
+                                (() => {
+                                  const filteredMatches = getFilteredMatches(match => 
+                                    match.status === 'Finished' && 
+                                    !match.isHomeMatch && 
+                                    match.homeScore !== undefined && 
+                                    match.awayScore !== undefined &&
+                                    match.homeScore === match.awayScore
+                                  );
+                                  return filteredMatches.length;
                                 })()
                               ],
                               backgroundColor: 'rgba(245, 158, 11, 0.8)',
@@ -3531,13 +3541,16 @@ export default function MatchCentral() {
                                     .length;
                                   return homeDraws;
                                 })(),
-                                currentStats.awayMatches - (currentStats.won - currentStats.homeWins) - (currentStats.drawn - (() => {
-                                  const homeDraws = allMatches
-                                    .filter(match => selectedStatsTeam === 'all' || match.teamId === selectedStatsTeam)
-                                    .filter(match => match.status === 'Finished' && match.isHomeMatch && match.homeScore === match.awayScore)
-                                    .length;
-                                  return homeDraws;
-                                })())
+                                (() => {
+                                  const awayDraws = getFilteredMatches(match => 
+                                    match.status === 'Finished' && 
+                                    !match.isHomeMatch && 
+                                    match.homeScore !== undefined && 
+                                    match.awayScore !== undefined &&
+                                    match.homeScore === match.awayScore
+                                  ).length;
+                                  return currentStats.awayMatches - currentStats.awayWins - awayDraws;
+                                })()
                               ],
                               backgroundColor: 'rgba(239, 68, 68, 0.8)',
                               borderColor: '#EF4444',
@@ -3720,12 +3733,12 @@ export default function MatchCentral() {
                         <span className="text-sm text-gray-600">Away Record:</span>
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-blue-600">
-                            {currentStats.won - currentStats.homeWins}W-{currentStats.awayMatches - (currentStats.won - currentStats.homeWins)}
+                            {currentStats.awayWins}W-{currentStats.awayMatches - currentStats.awayWins}
                           </span>
                           <div className="w-16 bg-gray-200 rounded-full h-2">
                             <div 
                               className="bg-blue-500 h-2 rounded-full"
-                              style={{ width: `${currentStats.awayMatches > 0 ? ((currentStats.won - currentStats.homeWins) / currentStats.awayMatches) * 100 : 0}%` }}
+                              style={{ width: `${currentStats.awayMatches > 0 ? (currentStats.awayWins / currentStats.awayMatches) * 100 : 0}%` }}
                             ></div>
                           </div>
                         </div>

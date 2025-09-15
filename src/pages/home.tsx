@@ -76,8 +76,8 @@ export default function StandardHomepage() {
                 <Image 
                   src="/images/logo.png" 
                   alt="Rivervalley Rangers AFC Logo" 
-                  width={220}
-                  height={220}
+                  width={170}
+                  height={170}
                   className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
