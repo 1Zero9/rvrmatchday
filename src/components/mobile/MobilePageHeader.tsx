@@ -25,20 +25,39 @@ export default function MobilePageHeader({
 }: MobilePageHeaderProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className={`px-4 pt-16 pb-2 relative z-10 ${className}`}
+      transition={{ duration: 0.6 }}
+      className={`px-6 pt-16 pb-6 relative z-10 ${className}`}
     >
-      {/* Compact Page Title Only */}
+      {/* Enhanced Page Header */}
       <div className="text-center">
-        <div className="flex items-center justify-center space-x-2 mb-1">
-          {icon && <span className="text-xl">{icon}</span>}
-          <h1 className="text-xl font-bold drop-shadow-lg text-white">{title}</h1>
-        </div>
-        {subtitle && (
-          <p className="text-[#98C0F0] text-sm drop-shadow-md opacity-90">{subtitle}</p>
+        {/* Home button indicator */}
+        {showHomeButton && (
+          <Link href="/home" className="absolute top-4 right-4 w-8 h-8 bg-blue-500/80 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/40 shadow-lg z-10">
+            <span className="text-white text-sm font-bold">🏠</span>
+          </Link>
         )}
+        
+        {/* Glass container for title */}
+        <div className="bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/25 shadow-2xl mb-4">
+          <div className="flex items-center justify-center space-x-3 mb-2">
+            {icon && (
+              <motion.span 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 150 }}
+                className="text-3xl drop-shadow-lg"
+              >
+                {icon}
+              </motion.span>
+            )}
+            <h1 className="text-2xl font-bold drop-shadow-lg text-white">{title}</h1>
+          </div>
+          {subtitle && (
+            <p className="text-slate-200 text-sm drop-shadow-md font-medium opacity-90">{subtitle}</p>
+          )}
+        </div>
       </div>
     </motion.div>
   );

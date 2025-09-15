@@ -15,6 +15,9 @@ import { useState, useEffect } from 'react';
 export default function MobileHomePro() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [greeting, setGreeting] = useState('');
+  const [teamsCount, setTeamsCount] = useState(0);
+  const [playersCount, setPlayersCount] = useState(0);
+  const [yearsCount, setYearsCount] = useState(0);
 
   useEffect(() => {
     // Update time every minute
@@ -29,15 +32,63 @@ export default function MobileHomePro() {
     return () => clearInterval(timer);
   }, [currentTime]);
 
+  // Counter animation effect
+  useEffect(() => {
+    const animateCounters = () => {
+      // Teams counter: 0 to 18
+      const teamsTimer = setInterval(() => {
+        setTeamsCount(prev => {
+          if (prev < 18) return prev + 1;
+          clearInterval(teamsTimer);
+          return 18;
+        });
+      }, 80);
+
+      // Players counter: 0 to 350+ (animate to 350)
+      const playersTimer = setInterval(() => {
+        setPlayersCount(prev => {
+          if (prev < 350) return prev + 15;
+          clearInterval(playersTimer);
+          return 350;
+        });
+      }, 60);
+
+      // Years counter: 0 to 42
+      const yearsTimer = setInterval(() => {
+        setYearsCount(prev => {
+          if (prev < 42) return prev + 2;
+          clearInterval(yearsTimer);
+          return 42;
+        });
+      }, 70);
+    };
+
+    // Start animation after initial page load delay
+    const startDelay = setTimeout(animateCounters, 1500);
+    
+    return () => {
+      clearTimeout(startDelay);
+    };
+  }, []);
+
   // Main app icons - iPhone style with rounded rectangles
-  const appIcons = [
+  const publicAppIcons = [
     {
       name: 'Our Teams',
       description: 'All Squads & Ages',
       href: '/teams',
       icon: '👥',
-      gradient: 'from-[var(--club-primary)] to-[var(--club-secondary)]',
-      size: 'large', // Featured app
+      gradient: 'from-blue-500 to-indigo-600',
+      size: 'medium',
+      badge: null
+    },
+    {
+      name: 'Join Club',
+      description: 'Book Your Trial',
+      href: '/join/trials',
+      icon: '🎯',
+      gradient: 'from-purple-500 to-violet-600',
+      size: 'medium',
       badge: null
     },
     {
@@ -45,25 +96,7 @@ export default function MobileHomePro() {
       description: 'Live Scores & Results',
       href: '/matchday',
       icon: '⚽',
-      gradient: 'from-[#5E7794] to-[#98C0F0]',
-      size: 'medium',
-      badge: null
-    },
-    {
-      name: 'Match Central',
-      description: 'Coach Dashboard',
-      href: '/match-central',
-      icon: '🏆',
-      gradient: 'from-[var(--club-primary)] to-[var(--club-accent)]',
-      size: 'medium',
-      badge: '🔒'
-    },
-    {
-      name: 'Join Club',
-      description: 'Book Your Trial',
-      href: '/join/trials',
-      icon: '🎯',
-      gradient: 'from-[var(--club-accent)] to-[var(--club-primary)]',
+      gradient: 'from-green-500 to-emerald-600',
       size: 'medium',
       badge: null
     },
@@ -72,7 +105,7 @@ export default function MobileHomePro() {
       description: 'Match Photos',
       href: '/gallery',
       icon: '📸',
-      gradient: 'from-[var(--club-primary)]/80 to-[var(--club-secondary)]',
+      gradient: 'from-pink-500 to-rose-600',
       size: 'medium',
       badge: null
     },
@@ -81,7 +114,7 @@ export default function MobileHomePro() {
       description: 'Latest Updates',
       href: '/news',
       icon: '📰',
-      gradient: 'from-[#B6B7B6] to-[#5E7794]',
+      gradient: 'from-slate-500 to-gray-600',
       size: 'medium',
       badge: null
     },
@@ -90,17 +123,28 @@ export default function MobileHomePro() {
       description: 'Get in Touch',
       href: '/contact',
       icon: '📞',
-      gradient: 'from-[#5E7794] to-[#B6B7B6]',
+      gradient: 'from-teal-500 to-cyan-600',
       size: 'medium',
       badge: null
     }
   ];
 
+  // Private/Admin access - shown at bottom
+  const adminAppIcon = {
+    name: 'Match Central',
+    description: 'Coach Dashboard',
+    href: '/match-central',
+    icon: '🏆',
+    gradient: 'from-amber-500 to-orange-600',
+    size: 'small',
+    badge: '🔒'
+  };
+
   const AppIcon = ({ app, index }: { app: any, index: number }) => {
     const sizeClasses = {
       large: 'col-span-2 h-32', // Featured app
-      medium: 'h-24',
-      small: 'h-24' // Make small same as medium
+      medium: 'h-20',
+      small: 'h-16'
     };
 
     const iconSizes = {
@@ -171,18 +215,31 @@ export default function MobileHomePro() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--club-primary)] via-[var(--club-primary)] to-[var(--club-primary)]/95 relative overflow-hidden pb-20">
+    <div className="min-h-screen relative overflow-hidden pb-20">
+      
+      {/* Mobile Background Image with Blur */}
+      <div className="absolute inset-0">
+        <img 
+          src="/images/hero/halftime2.jpg" 
+          alt="Football field background"
+          className="w-full h-full object-cover brightness-110"
+        />
+        <div className="absolute inset-0 bg-black/40"></div>
+      </div>
+      
+      {/* Club maroon accent at top */}
+      <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-red-900/60 to-transparent"></div>
       
       {/* Enhanced Background Pattern with Glass Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[var(--club-accent)]/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-[var(--club-primary)]/20 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-3/4 left-3/4 w-48 h-48 bg-[#B6B7B6]/15 rounded-full blur-2xl animate-pulse delay-2000" />
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-3/4 left-3/4 w-48 h-48 bg-emerald-500/15 rounded-full blur-2xl animate-pulse delay-2000" />
         
         {/* Floating glass orbs */}
-        <div className="absolute top-20 right-10 w-4 h-4 bg-white/20 backdrop-blur-sm rounded-full animate-float" />
-        <div className="absolute top-40 left-8 w-6 h-6 bg-white/15 backdrop-blur-sm rounded-full animate-float delay-1000" />
-        <div className="absolute bottom-32 right-20 w-3 h-3 bg-white/25 backdrop-blur-sm rounded-full animate-float delay-2000" />
+        <div className="absolute top-20 right-10 w-4 h-4 bg-white/20 backdrop-blur-sm rounded-full animate-bounce" />
+        <div className="absolute top-40 left-8 w-6 h-6 bg-white/15 backdrop-blur-sm rounded-full animate-pulse" />
+        <div className="absolute bottom-32 right-20 w-3 h-3 bg-white/25 backdrop-blur-sm rounded-full animate-ping" />
       </div>
 
       {/* Header with Combined Logo and Title - Clean Style */}
@@ -216,17 +273,17 @@ export default function MobileHomePro() {
                   <Image 
                     src="/images/logo.png" 
                     alt="RVR AFC Logo" 
-                    width={56}
-                    height={56}
-                    className="w-14 h-14 rounded-lg drop-shadow-2xl"
+                    width={72}
+                    height={72}
+                    className="w-20 h-20 rounded-xl drop-shadow-2xl"
                   />
                 </motion.div>
               </Link>
               
               {/* Title - Centered */}
-              <div className="flex-1 text-center">
-                <h1 className="text-xl font-bold drop-shadow-lg leading-tight text-white border-b-2 border-blue-400 pb-1 mb-1 inline-block">Rivervalley Rangers AFC</h1>
-                <p className="text-blue-200 text-xs drop-shadow-md">Community Football Since 1981</p>
+              <div className="flex-1 text-center ml-4">
+                <h1 className="text-xl font-bold drop-shadow-lg leading-tight text-white mb-1">Rivervalley Rangers AFC</h1>
+                <p className="text-blue-200 text-xs drop-shadow-md font-medium">Community Football Since 1981</p>
               </div>
             </div>
           </div>
@@ -252,7 +309,7 @@ export default function MobileHomePro() {
           transition={{ delay: 0.3, duration: 0.6 }}
           className="grid grid-cols-2 gap-4 max-w-sm mx-auto"
         >
-          {appIcons.map((app, index) => (
+          {publicAppIcons.map((app, index) => (
             <AppIcon key={app.name} app={app} index={index} />
           ))}
         </motion.div>
@@ -262,40 +319,110 @@ export default function MobileHomePro() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.4 }}
-          className="mt-8 relative max-w-sm mx-auto"
+          className="mt-6 relative max-w-sm mx-auto"
         >
           {/* Glass container with multiple layers */}
-          <div className="bg-white/15 backdrop-blur-xl rounded-2xl p-6 border border-white/30 shadow-2xl">
-            <div className="absolute inset-1 bg-white/5 rounded-xl backdrop-blur-sm" />
-            <div className="absolute inset-2 bg-gradient-to-br from-white/10 to-transparent rounded-lg" />
+          <div className="bg-white/25 backdrop-blur-xl rounded-3xl p-6 border border-white/50 shadow-2xl">
+            <div className="absolute inset-1 bg-white/10 rounded-2xl backdrop-blur-sm" />
+            <div className="absolute inset-2 bg-gradient-to-br from-white/20 to-transparent rounded-xl" />
             
-            <div className="relative z-10 grid grid-cols-3 gap-8 text-center">
+            <div className="relative z-10 grid grid-cols-3 gap-6 text-center">
               <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 1.0, type: "spring", stiffness: 100 }}
-                className="transform hover:scale-110 transition-transform duration-300"
+                initial={{ scale: 0, rotateY: -180 }}
+                animate={{ scale: 1, rotateY: 0 }}
+                transition={{ delay: 1.0, type: "spring", stiffness: 120, damping: 12 }}
+                whileHover={{ 
+                  scale: 1.15, 
+                  rotateY: 15,
+                  transition: { type: "spring", stiffness: 300, damping: 10 }
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="transform transition-all duration-300 cursor-pointer group"
               >
-                <div className="text-4xl font-black text-white drop-shadow-2xl mb-1 bg-gradient-to-b from-white to-blue-200 bg-clip-text text-transparent">18</div>
-                <div className="text-xs text-blue-200 font-bold drop-shadow-lg uppercase tracking-wider">Teams</div>
+                <motion.div 
+                  className="text-4xl font-black text-white drop-shadow-2xl mb-1 bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent"
+                  animate={{ 
+                    textShadow: [
+                      "0 0 0 rgba(59, 130, 246, 0)",
+                      "0 0 20px rgba(59, 130, 246, 0.8)",
+                      "0 0 0 rgba(59, 130, 246, 0)"
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                >
+                  {teamsCount}
+                </motion.div>
+                <div className="text-xs text-slate-200 font-bold drop-shadow-lg uppercase tracking-wider group-hover:text-blue-200 transition-colors duration-300">Teams</div>
+                <motion.div 
+                  className="absolute -inset-2 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  whileHover={{ scale: 1.1 }}
+                />
               </motion.div>
+              
               <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 1.1, type: "spring", stiffness: 100 }}
-                className="transform hover:scale-110 transition-transform duration-300"
+                initial={{ scale: 0, rotateY: -180 }}
+                animate={{ scale: 1, rotateY: 0 }}
+                transition={{ delay: 1.1, type: "spring", stiffness: 120, damping: 12 }}
+                whileHover={{ 
+                  scale: 1.15, 
+                  rotateY: -15,
+                  transition: { type: "spring", stiffness: 300, damping: 10 }
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="transform transition-all duration-300 cursor-pointer group"
               >
-                <div className="text-4xl font-black text-white drop-shadow-2xl mb-1 bg-gradient-to-b from-white to-blue-200 bg-clip-text text-transparent">350+</div>
-                <div className="text-xs text-blue-200 font-bold drop-shadow-lg uppercase tracking-wider">Players</div>
+                <motion.div 
+                  className="text-4xl font-black text-white drop-shadow-2xl mb-1 bg-gradient-to-r from-emerald-300 to-green-300 bg-clip-text text-transparent"
+                  animate={{ 
+                    scale: [1, 1.05, 1],
+                    textShadow: [
+                      "0 0 0 rgba(34, 197, 94, 0)",
+                      "0 0 25px rgba(34, 197, 94, 0.9)",
+                      "0 0 0 rgba(34, 197, 94, 0)"
+                    ]
+                  }}
+                  transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 2 }}
+                >
+                  {playersCount}+
+                </motion.div>
+                <div className="text-xs text-slate-200 font-bold drop-shadow-lg uppercase tracking-wider group-hover:text-emerald-200 transition-colors duration-300">Players</div>
+                <motion.div 
+                  className="absolute -inset-2 bg-gradient-to-r from-emerald-500/20 to-green-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  whileHover={{ scale: 1.1 }}
+                />
               </motion.div>
+              
               <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 1.2, type: "spring", stiffness: 100 }}
-                className="transform hover:scale-110 transition-transform duration-300"
+                initial={{ scale: 0, rotateY: -180 }}
+                animate={{ scale: 1, rotateY: 0 }}
+                transition={{ delay: 1.2, type: "spring", stiffness: 120, damping: 12 }}
+                whileHover={{ 
+                  scale: 1.15, 
+                  rotateY: 15,
+                  transition: { type: "spring", stiffness: 300, damping: 10 }
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="transform transition-all duration-300 cursor-pointer group"
               >
-                <div className="text-4xl font-black text-white drop-shadow-2xl mb-1 bg-gradient-to-b from-white to-blue-200 bg-clip-text text-transparent">42</div>
-                <div className="text-xs text-blue-200 font-bold drop-shadow-lg uppercase tracking-wider">Years</div>
+                <motion.div 
+                  className="text-4xl font-black text-white drop-shadow-2xl mb-1 bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent"
+                  animate={{ 
+                    rotate: [0, 5, -5, 0],
+                    textShadow: [
+                      "0 0 0 rgba(245, 158, 11, 0)",
+                      "0 0 30px rgba(245, 158, 11, 1)",
+                      "0 0 0 rgba(245, 158, 11, 0)"
+                    ]
+                  }}
+                  transition={{ duration: 3, repeat: Infinity, repeatDelay: 1 }}
+                >
+                  {yearsCount}
+                </motion.div>
+                <div className="text-xs text-slate-200 font-bold drop-shadow-lg uppercase tracking-wider group-hover:text-amber-200 transition-colors duration-300">Years</div>
+                <motion.div 
+                  className="absolute -inset-2 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  whileHover={{ scale: 1.1 }}
+                />
               </motion.div>
             </div>
           </div>
@@ -306,42 +433,69 @@ export default function MobileHomePro() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.0, duration: 0.4 }}
-          className="text-center mt-8 mx-4"
+          className="text-center mt-6 mx-4"
         >
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-3 border border-white/20 shadow-lg">
-            <div className="absolute inset-1 bg-white/5 rounded-xl backdrop-blur-sm" />
-            <div className="relative z-10 text-white/70 text-xs flex items-center justify-center space-x-2">
-              <span>💡</span>
+          <div className="bg-white/15 backdrop-blur-xl rounded-xl p-3 border border-white/25 shadow-lg">
+            <div className="relative z-10 text-white/80 text-xs flex items-center justify-center space-x-2">
+              <span className="text-sm">💡</span>
               <span className="font-medium">Tap the logo to return home from any page</span>
             </div>
           </div>
         </motion.div>
 
-        {/* Best Viewed on Desktop Section */}
+        {/* Enhanced Desktop Experience */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 0.4 }}
-          className="text-center mt-6 mx-4"
+          className="text-center mt-4 mx-4"
         >
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
-            <div className="absolute inset-1 bg-white/5 rounded-xl backdrop-blur-sm" />
+          <div className="bg-white/15 backdrop-blur-xl rounded-xl p-4 border border-white/25 shadow-lg">
             <div className="relative z-10">
-              <div className="text-3xl mb-2">🖥️</div>
-              <h3 className="text-white font-bold text-sm mb-2">Enhanced Desktop Experience</h3>
-              <p className="text-blue-200 text-xs mb-3 leading-relaxed">
-                For the full website experience with advanced features, detailed match statistics, and comprehensive team management tools, visit us on desktop or tablet.
+              <div className="text-2xl mb-2">🖥️</div>
+              <h3 className="text-white font-semibold text-sm mb-2">Enhanced Desktop Experience</h3>
+              <p className="text-white/70 text-xs mb-3 leading-relaxed">
+                Full website features, advanced stats, and comprehensive management tools available on desktop.
               </p>
-              <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 border border-white/20">
-                  <span className="text-lg mb-1 block">📊</span>
-                  <span className="text-white font-medium">Advanced Stats</span>
+                  <span className="text-base mb-1 block">📊</span>
+                  <span className="text-white/90 font-medium">Advanced Stats</span>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 border border-white/20">
-                  <span className="text-lg mb-1 block">🎛️</span>
-                  <span className="text-white font-medium">Admin Tools</span>
+                  <span className="text-base mb-1 block">🎛️</span>
+                  <span className="text-white/90 font-medium">Admin Tools</span>
                 </div>
               </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Admin/Coach Access - Bottom Section */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 0.4 }}
+          className="text-center mt-6 mx-4 mb-4"
+        >
+          <div className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-lg">
+            <div className="relative z-10">
+              <div className="text-xl mb-2">🔐</div>
+              <h3 className="text-white/70 font-medium text-sm mb-3">Coach & Admin Access</h3>
+              
+              {/* Match Central as small discrete button */}
+              <motion.div
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 1.7, type: "spring", stiffness: 100 }}
+                className="inline-block mb-3"
+              >
+                <AppIcon app={adminAppIcon} index={0} />
+              </motion.div>
+              
+              <p className="text-white/60 text-xs leading-relaxed">
+                Tools for coaches, team managers, and club officials
+              </p>
             </div>
           </div>
         </motion.div>

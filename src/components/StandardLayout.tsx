@@ -17,6 +17,7 @@ import Footer from "./Footer";
 import DeveloperCredits from "./DeveloperCredits";
 import Header from "./Header";
 import MobileLayout from "./MobileLayout";
+import { QuickLogin } from "./InlineEditor";
 
 interface StandardLayoutProps {
   children: ReactNode;
@@ -26,6 +27,7 @@ interface StandardLayoutProps {
 
 export default function StandardLayout({ children, title, currentPage }: StandardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showEditorLogin, setShowEditorLogin] = useState(false);
 
   const handleLogoClick = () => {
     // Reset to Stage 1 (Identity Launch Page)
@@ -117,20 +119,8 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                   <Link href="/about" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
                     🏰 Our Story
                   </Link>
-                  <Link href="/club" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    🏛️ Club Overview
-                  </Link>
-                  <Link href="/club/values" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    🤝 Our Values
-                  </Link>
-                  <Link href="/club/history" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    📜 Club History
-                  </Link>
-                  <Link href="/club/facilities" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    🏟️ Facilities
-                  </Link>
-                  <Link href="/club/committee" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary">
-                    👥 Committee
+                  <Link href="/club" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary">
+                    🏛️ Club Info
                   </Link>
                 </div>
               </div>
@@ -202,9 +192,12 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                   <Link href="/get-involved/events" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
                     🎉 Events
                   </Link>
-                  <Link href="/boot-room" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary">
+                  <Link href="/boot-room" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
                     👢 Boot Room
                   </Link>
+                  <div className="px-4 py-3">
+                    <QuickLogin />
+                  </div>
                 </div>
               </div>
 

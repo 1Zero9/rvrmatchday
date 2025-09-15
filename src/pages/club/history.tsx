@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import GlassPageTemplate from '../../components/GlassPageTemplate';
 import { GlassCard, GlassActionCard } from '../../components/Glass';
+import InlineEditor from '../../components/InlineEditor';
 
 export default function ClubHistory() {
   const quickActions = [
@@ -179,10 +180,13 @@ export default function ClubHistory() {
           className="text-center mb-12"
         >
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Journey Through Time</h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            From humble beginnings in 1981 to becoming a cornerstone of the Swords community, 
-            our story is one of passion, dedication, and the unifying power of football.
-          </p>
+          <InlineEditor
+            contentKey="club_history_intro"
+            initialContent="From humble beginnings in 1981 to becoming a cornerstone of the Swords community, our story is one of passion, dedication, and the unifying power of football."
+            type="textarea"
+            className="text-lg text-gray-600 max-w-3xl mx-auto"
+            placeholder="History introduction..."
+          />
         </motion.div>
 
         <div className="space-y-8">
@@ -231,9 +235,13 @@ export default function ClubHistory() {
           className="text-center mb-12"
         >
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Club Legends</h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            The people who built our club, shaped our culture, and created the foundation for future generations.
-          </p>
+          <InlineEditor
+            contentKey="club_legends_intro"
+            initialContent="The people who built our club, shaped our culture, and created the foundation for future generations."
+            type="textarea"
+            className="text-lg text-gray-600 max-w-3xl mx-auto"
+            placeholder="Club legends introduction..."
+          />
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -293,10 +301,13 @@ export default function ClubHistory() {
             </div>
 
             <div className="mt-8 p-6 bg-yellow-100/20 rounded-lg">
-              <p className="text-center text-yellow-100">
-                "More than trophies, we measure success by the friendships formed, 
-                skills developed, and the positive impact on our community."
-              </p>
+              <InlineEditor
+                contentKey="club_achievements_quote"
+                initialContent="More than trophies, we measure success by the friendships formed, skills developed, and the positive impact on our community."
+                type="textarea"
+                className="text-center text-yellow-100"
+                placeholder="Achievements quote..."
+              />
               <p className="text-center text-yellow-200 text-sm mt-2">— Club Mission Statement</p>
             </div>
           </GlassCard>
@@ -311,9 +322,13 @@ export default function ClubHistory() {
         className="bg-gradient-to-br from-green-900 via-blue-900 to-purple-900 rounded-2xl p-8 text-center text-white"
       >
         <h2 className="text-3xl font-bold mb-4">Be Part of Our Next Chapter</h2>
-        <p className="text-xl mb-8 opacity-90">
-          Join the next generation of Rivervalley Rangers and help us write the future of community football
-        </p>
+        <InlineEditor
+          contentKey="club_history_cta_text"
+          initialContent="Join the next generation of Rivervalley Rangers and help us write the future of community football"
+          type="textarea"
+          className="text-xl mb-8 opacity-90"
+          placeholder="Call to action..."
+        />
         
         <div className="grid md:grid-cols-3 gap-6">
           <GlassActionCard

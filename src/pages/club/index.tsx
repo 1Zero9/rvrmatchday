@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import GlassPageTemplate from '../../components/GlassPageTemplate';
 import { GlassCard, GlassActionCard } from '../../components/Glass';
+import InlineEditor from '../../components/InlineEditor';
 
 export default function ClubIndex() {
   const quickActions = [
@@ -153,7 +154,13 @@ export default function ClubIndex() {
                     </div>
                   </div>
                   
-                  <p className="text-gray-700 mb-6 leading-relaxed">{section.description}</p>
+                  <InlineEditor
+                    contentKey={`club_section_${index}_description`}
+                    initialContent={section.description}
+                    type="textarea"
+                    className="text-gray-700 mb-6 leading-relaxed"
+                    placeholder="Section description..."
+                  />
                   
                   <div className="grid md:grid-cols-2 gap-4 mb-6">
                     {section.highlights.map((highlight, highlightIndex) => (
@@ -212,10 +219,13 @@ export default function ClubIndex() {
         className="mt-16 bg-gradient-to-br from-green-900 via-blue-900 to-purple-900 rounded-2xl p-8 text-center text-white"
       >
         <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
-        <p className="text-xl mb-8 opacity-90 max-w-4xl mx-auto">
-          To provide a welcoming, inclusive environment where players of all ages and abilities can enjoy football, 
-          develop their skills, and build lasting friendships within our community.
-        </p>
+        <InlineEditor
+          contentKey="club_mission_statement"
+          initialContent="To provide a welcoming, inclusive environment where players of all ages and abilities can enjoy football, develop their skills, and build lasting friendships within our community."
+          type="textarea"
+          className="text-xl mb-8 opacity-90 max-w-4xl mx-auto"
+          placeholder="Mission statement..."
+        />
         
         <div className="grid md:grid-cols-2 gap-6">
           <GlassActionCard
