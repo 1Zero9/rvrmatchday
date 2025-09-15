@@ -90,6 +90,11 @@
   --gradient-accent: linear-gradient(135deg, var(--club-accent) 0%, var(--club-accent-light) 100%);
   --gradient-hero: linear-gradient(135deg, var(--club-primary) 0%, var(--club-secondary) 50%, var(--club-accent) 100%);
   
+  /* Mobile-Optimized Gradients - Stronger Maroon Dominance */
+  --gradient-mobile-hero: linear-gradient(135deg, var(--club-primary) 0%, var(--club-primary) 60%, var(--club-primary-light) 100%);
+  --gradient-mobile-primary: linear-gradient(135deg, var(--club-primary) 0%, var(--club-secondary) 100%);
+  --gradient-mobile-accent: linear-gradient(135deg, var(--club-primary) 0%, var(--club-accent) 100%);
+  
   /* Team Gradients */
   --gradient-team-rvr: linear-gradient(135deg, var(--team-rvr-primary) 0%, var(--team-rvr-secondary) 100%);
   --gradient-team-rvr-girls: linear-gradient(135deg, var(--team-rvr-girls-primary) 0%, var(--team-rvr-girls-secondary) 100%);
@@ -141,6 +146,11 @@
 .gradient-secondary { background: var(--gradient-secondary); }
 .gradient-accent { background: var(--gradient-accent); }
 .gradient-hero { background: var(--gradient-hero); }
+
+/* Mobile Gradients - Enhanced Maroon Dominance */
+.gradient-mobile-hero { background: var(--gradient-mobile-hero); }
+.gradient-mobile-primary { background: var(--gradient-mobile-primary); }
+.gradient-mobile-accent { background: var(--gradient-mobile-accent); }
 
 /* Mobile-First Improvements */
 @media (max-width: 768px) {

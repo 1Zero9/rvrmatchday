@@ -18,32 +18,36 @@ export default function Shop() {
 
   const quickActions = [
     {
+      icon: "🏪",
+      title: "Official Store",
+      description: "Shop authentic RVR merchandise",
+      href: "https://www.balondirect.com/product-category/rivervalley-rangers",
+      gradient: "orange" as const,
+      external: true
+    },
+    {
       icon: "👕",
       title: "Match Kit",
       description: "Official home & away jerseys",
-      href: "#kit-clothing",
-      gradient: "blue" as const
+      href: "https://www.balondirect.com/product-category/rivervalley-rangers",
+      gradient: "blue" as const,
+      external: true
     },
     {
       icon: "🏃",
       title: "Training Gear",
       description: "Polos, tracksuits & equipment",
-      href: "#training-gear",
-      gradient: "green" as const
+      href: "https://www.balondirect.com/product-category/rivervalley-rangers",
+      gradient: "green" as const,
+      external: true
     },
     {
       icon: "🎁",
-      title: "Accessories",
-      description: "Bags, scarves & club gifts",
-      href: "#accessories",
-      gradient: "purple" as const
-    },
-    {
-      icon: "🛒",
-      title: "View Cart",
-      description: "Review your selections",
-      href: "#cart",
-      gradient: "orange" as const
+      title: "Club Gifts",
+      description: "Bags, scarves & accessories",
+      href: "https://www.balondirect.com/product-category/rivervalley-rangers",
+      gradient: "purple" as const,
+      external: true
     }
   ];
 
@@ -127,6 +131,52 @@ export default function Shop() {
       imageSpecs="1920x1080px minimum, merchandise and team kit preferred"
     >
 
+      {/* Official Supplier Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="mb-8"
+      >
+        <GlassCard intensity="high" className="overflow-hidden bg-gradient-to-br from-orange-500/90 to-red-600/90 text-white border-orange-300/50">
+          <div className="p-8 text-center">
+            <div className="text-5xl mb-4">🏪</div>
+            <h2 className="text-3xl font-bold mb-4">Official Club Supplier</h2>
+            <p className="text-xl mb-6 opacity-95">
+              Shop authentic Rivervalley Rangers merchandise from our official partner
+            </p>
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/30">
+              <h3 className="text-2xl font-bold mb-2">Balon Direct</h3>
+              <p className="text-white/90 mb-4">
+                Your trusted supplier for all official RVR kit, training gear, and accessories
+              </p>
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <div className="text-2xl mb-1">✅</div>
+                  <p className="font-medium">Official Kit</p>
+                </div>
+                <div>
+                  <div className="text-2xl mb-1">🚚</div>
+                  <p className="font-medium">Fast Delivery</p>
+                </div>
+                <div>
+                  <div className="text-2xl mb-1">💯</div>
+                  <p className="font-medium">Quality Guaranteed</p>
+                </div>
+              </div>
+            </div>
+            <a
+              href="https://www.balondirect.com/product-category/rivervalley-rangers"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-white text-orange-600 font-black py-4 px-8 rounded-2xl text-lg hover:bg-orange-50 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-orange-500/30"
+            >
+              🛒 Shop Official Store
+            </a>
+          </div>
+        </GlassCard>
+      </motion.div>
+
       {/* Category Filter */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -161,9 +211,21 @@ export default function Shop() {
         transition={{ duration: 0.6, delay: 0.2 }}
         className="mb-12"
       >
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          {selectedCategory === 'All' ? 'All Products' : selectedCategory}
-        </h2>
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            {selectedCategory === 'All' ? 'Product Showcase' : selectedCategory}
+          </h2>
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 max-w-2xl mx-auto">
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <span className="text-2xl">🛒</span>
+              <span className="font-bold text-blue-800">Official Purchase Notice</span>
+            </div>
+            <p className="text-sm text-blue-700">
+              All official RVR merchandise should be purchased through our official supplier <strong>Balon Direct</strong>. 
+              The products below are for reference only.
+            </p>
+          </div>
+        </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product, index) => (
@@ -230,9 +292,14 @@ export default function Shop() {
                     </div>
                   </div>
                   
-                  <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                    Add to Cart
-                  </button>
+                  <a
+                    href="https://www.balondirect.com/product-category/rivervalley-rangers"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full bg-gradient-to-r from-orange-500 to-amber-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-orange-600 hover:to-amber-700 transition-all duration-300 text-center"
+                  >
+                    🛒 Shop at Balon Direct
+                  </a>
                 </div>
               </GlassCard>
             </motion.div>

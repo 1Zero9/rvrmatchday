@@ -223,7 +223,7 @@ export function ActionCard({
   size = 'md' 
 }: ActionCardProps) {
   const variants = {
-    primary: 'bg-[#972A4C]/10 border-[#972A4C]/30 text-[#972A4C] hover:bg-[#972A4C]/20',
+    primary: 'bg-[var(--club-primary)]/10 border-[var(--club-primary)]/30 text-[var(--club-primary)] hover:bg-[var(--club-primary)]/20',
     secondary: 'bg-[#5E7794]/10 border-[#5E7794]/30 text-[#5E7794] hover:bg-[#5E7794]/20',
     success: 'bg-green-50 border-green-200 text-green-900 hover:bg-green-100',
     warning: 'bg-orange-50 border-orange-200 text-orange-900 hover:bg-orange-100'
@@ -271,13 +271,13 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ logo, clubName, onMenuToggle, isMenuOpen }: MobileHeaderProps) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#972A4C] to-[#5E7794] shadow-lg">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[var(--club-primary)] to-[var(--club-secondary)] shadow-lg">
       <div className="flex items-center justify-between px-4 py-3">
         <a href="/home" className="flex items-center space-x-3 hover:opacity-90 transition-opacity">
           <img src={logo} alt={`${clubName} Logo`} className="h-8 w-8 drop-shadow-sm" />
           <div>
             <span className="font-bold text-sm text-white drop-shadow-sm">{clubName}</span>
-            <p className="text-xs text-[#98C0F0] font-medium">EST. 1981</p>
+            <p className="text-xs text-[var(--club-accent)] font-medium">EST. 1981</p>
           </div>
         </a>
         

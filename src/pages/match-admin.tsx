@@ -3,7 +3,7 @@
  * Simple step-by-step process for creating RVR teams and opponents
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -66,6 +66,9 @@ export default function MatchAdminNew() {
   const [positions, setPositions] = useState<string[]>([]);
   const [existingPlayers, setExistingPlayers] = useState<{id: string, name: string, position: string}[]>([]);
   const [newPlayerPosition, setNewPlayerPosition] = useState<string>('');
+  
+  // Refs for input elements
+  const venueInputRef = useRef<HTMLInputElement>(null);
 
   // Generate season options dynamically
   const generateSeasonOptions = () => {
@@ -1115,7 +1118,7 @@ export default function MatchAdminNew() {
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 relative">
                     <label className="text-sm font-bold text-blue-800 mb-2 block flex items-center gap-2">
                       🏆 League/Competition *
                     </label>
@@ -1130,7 +1133,54 @@ export default function MatchAdminNew() {
                       {leagues.map(league => (
                         <option key={league} value={league}>{league}</option>
                       ))}
+                      <option value="__ADD_NEW__" className="text-blue-600 font-medium">➕ Add New League...</option>
                     </select>
+                    
+                    {/* Inline Add Modal - Shows when "Add New" is selected */}
+                    {wizardData.league === '__ADD_NEW__' && (
+                      <div className="absolute top-full left-0 right-0 mt-1 p-3 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Enter new league (e.g. DDSL Div 3)"
+                            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            id="newLeagueInline"
+                            autoFocus
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                const input = e.target as HTMLInputElement;
+                                const value = input.value.trim();
+                                if (value && !leagues.includes(value)) {
+                                  setLeagues([...leagues, value]);
+                                  setWizardData(prev => ({ ...prev, league: value }));
+                                }
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const input = document.getElementById('newLeagueInline') as HTMLInputElement;
+                              const value = input.value.trim();
+                              if (value && !leagues.includes(value)) {
+                                setLeagues([...leagues, value]);
+                                setWizardData(prev => ({ ...prev, league: value }));
+                              }
+                            }}
+                            className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                          >
+                            Add
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setWizardData(prev => ({ ...prev, league: '' }))}
+                            className="px-3 py-2 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
@@ -1154,16 +1204,107 @@ export default function MatchAdminNew() {
                     <label className="text-sm font-bold text-green-800 mb-2 block flex items-center gap-2">
                       🏨 Home Venue *
                     </label>
-                    <select
-                      value={wizardData.homeVenue}
-                      onChange={(e) => setWizardData(prev => ({ ...prev, homeVenue: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-green-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                      <option value="">Select Venue</option>
-                      {venues.map(venue => (
-                        <option key={venue} value={venue}>{venue}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={wizardData.homeVenue}
+                        onChange={(e) => setWizardData(prev => ({ ...prev, homeVenue: e.target.value }))}
+                        className="w-full px-3 py-2 text-sm border border-green-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                      >
+                        <option value="">Select Venue</option>
+                        {venues.map(venue => (
+                          <option key={venue} value={venue}>{venue}</option>
+                        ))}
+                        <option value="__ADD_NEW__" className="text-blue-600 font-medium">➕ Add New Venue...</option>
+                      </select>
+                      
+                      {/* Inline Add Modal - Shows when "Add New" is selected */}
+                      {wizardData.homeVenue === '__ADD_NEW__' && (
+                        <div className="absolute top-full left-0 right-0 mt-1 p-3 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Enter new venue (e.g. Rivervalley Park)"
+                              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              ref={venueInputRef}
+                              autoFocus
+                              onKeyPress={async (e) => {
+                                if (e.key === 'Enter') {
+                                  const input = venueInputRef.current;
+                                  const value = input?.value?.trim() || '';
+                                  
+                                  if (!value) {
+                                    alert('Please enter a venue name');
+                                    return;
+                                  }
+                                  
+                                  if (venues.includes(value)) {
+                                    alert('This venue already exists!');
+                                    return;
+                                  }
+                                  
+                                  // Update state immediately for good UX
+                                  setVenues(prev => [...prev, value]);
+                                  setWizardData(prev => ({ ...prev, homeVenue: value }));
+                                  
+                                  // Clear input
+                                  if (input) input.value = '';
+                                  
+                                  // Save to database in background
+                                  try {
+                                    await saveVenueToDatabase(value);
+                                    console.log('✅ Venue saved successfully via Enter:', value);
+                                  } catch (error) {
+                                    console.error('❌ Error saving venue via Enter:', error);
+                                  }
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const input = venueInputRef.current;
+                                const value = input?.value?.trim() || '';
+                                
+                                if (!value) {
+                                  alert('Please enter a venue name');
+                                  return;
+                                }
+                                
+                                if (venues.includes(value)) {
+                                  alert('This venue already exists!');
+                                  return;
+                                }
+                                
+                                // Update state immediately for good UX
+                                setVenues(prev => [...prev, value]);
+                                setWizardData(prev => ({ ...prev, homeVenue: value }));
+                                
+                                // Clear input
+                                if (input) input.value = '';
+                                
+                                // Save to database in background
+                                try {
+                                  await saveVenueToDatabase(value);
+                                  console.log('✅ Venue saved successfully:', value);
+                                } catch (error) {
+                                  console.error('❌ Error saving venue:', error);
+                                }
+                              }}
+                              className="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                            >
+                              Add
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setWizardData(prev => ({ ...prev, homeVenue: '' }))}
+                              className="px-3 py-2 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -1409,15 +1550,22 @@ export default function MatchAdminNew() {
                   <p className="text-sm text-gray-600">Add players to build your team roster</p>
                 </div>
                 
-                {/* Two Column Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Improved Layout - More space for squad management */}
+                <div className="space-y-6">
                   
-                  {/* Left: Add Player Forms */}
+                  {/* Add Player Forms - Full Width with Grid Layout */}
                   <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                    <div className="space-y-4">
+                    <div className="mb-4">
+                      <h3 className="text-lg font-bold text-purple-800 mb-2 flex items-center gap-2">
+                        👥 Add Players to Squad
+                      </h3>
+                      <p className="text-sm text-purple-700">Choose from existing players or add new ones</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       
-                      {/* Select Existing Player */}
-                      <div>
+                      {/* Left Column: Select Existing Player */}
+                      <div className="space-y-4">
                         <label className="flex items-center gap-1 text-sm font-bold text-purple-800 mb-1">
                           ⚽ Select Existing
                         </label>
@@ -1450,8 +1598,11 @@ export default function MatchAdminNew() {
                         </select>
                       </div>
 
-                      {/* Add New Player */}
-                      <div>
+                      {/* Right Column: Add New Player & Tools */}
+                      <div className="space-y-4">
+                        
+                        {/* Add New Player */}
+                        <div>
                         <label className="flex items-center gap-1 text-sm font-bold text-purple-800 mb-1">
                           ➕ Add New
                         </label>
@@ -1604,82 +1755,101 @@ export default function MatchAdminNew() {
                         </button>
                       </div>
                     </div>
+                        </div> {/* End Right Column */}
+                      </div> {/* End Grid */}
                   </div>
 
-                  {/* Right: Players Sidebar */}
-                  <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-                    <label className="flex items-center gap-2 text-sm font-semibold text-orange-800 mb-3">
-                      ⚽ Squad ({wizardData.players.length})
-                    </label>
+                  {/* Squad Management - Full Width Section */}
+                  <div className="bg-orange-50 rounded-lg p-6 border border-orange-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <label className="flex items-center gap-2 text-lg font-bold text-orange-800">
+                        ⚽ Team Squad ({wizardData.players.length} players)
+                      </label>
+                      {wizardData.players.length > 0 && (
+                        <div className="text-sm text-orange-600">
+                          🏆 {wizardData.players.filter(p => p.isCaptain).length} Captain • 
+                          🎖️ {wizardData.players.filter(p => p.isViceCaptain).length} Vice Captain
+                        </div>
+                      )}
+                    </div>
                     
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                    <div className="max-h-[600px] overflow-y-auto">
                       {wizardData.players.length === 0 ? (
-                        <div className="text-center py-4">
-                          <div className="text-lg mb-1">👥</div>
-                          <p className="text-orange-600 text-sm">No players yet</p>
+                        <div className="text-center py-8">
+                          <div className="text-4xl mb-2">👥</div>
+                          <p className="text-orange-600 text-lg font-medium">No players yet</p>
+                          <p className="text-orange-500 text-sm mt-1">Use the forms above to add players to your squad</p>
                         </div>
                       ) : (
-                        wizardData.players.map((player, index) => (
-                          <div key={index} className="bg-white p-3 rounded-md shadow-sm border border-orange-200">
-                            <div className="flex justify-between items-start mb-1">
-                              <div className="flex-1 mr-1">
-                                <input
-                                  type="text"
-                                  value={player.name}
-                                  onChange={(e) => updatePlayer(index, 'name', e.target.value)}
-                                  placeholder="Name"
-                                  className="w-full px-1.5 py-1 text-sm border border-orange-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500/20 bg-white"
-                                />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                          {wizardData.players.map((player, index) => (
+                            <div key={index} className="bg-white p-3 rounded-lg shadow-sm border border-orange-200 hover:shadow-md transition-shadow">
+                              {/* Header Row: Name + Remove Button */}
+                              <div className="flex justify-between items-center mb-2">
+                                <div className="flex-1 mr-2">
+                                  <input
+                                    type="text"
+                                    value={player.name}
+                                    onChange={(e) => updatePlayer(index, 'name', e.target.value)}
+                                    placeholder="Player Name"
+                                    className="w-full px-2 py-1.5 text-sm font-medium border border-orange-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 bg-white placeholder-gray-400"
+                                  />
+                                </div>
+                                <button
+                                  onClick={() => removePlayer(index)}
+                                  className="text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors p-1 rounded text-sm font-bold"
+                                  title="Remove player"
+                                >
+                                  ✕
+                                </button>
                               </div>
-                              <button
-                                onClick={() => removePlayer(index)}
-                                className="text-red-600 hover:text-red-800 transition-colors px-1 py-0.5 hover:bg-red-50 rounded text-sm"
-                                title="Remove player"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                            
-                            <div className="flex gap-1 items-center">
-                              <select
-                                value={player.position}
-                                onChange={(e) => updatePlayer(index, 'position', e.target.value)}
-                                className="flex-1 px-1.5 py-1 text-sm border border-orange-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500/20 bg-white"
-                              >
-                                <option value="">Pos</option>
-                                {positions.map(pos => (
-                                  <option key={pos} value={pos}>{pos}</option>
-                                ))}
-                              </select>
                               
-                              <div className="flex gap-0.5">
-                                <label className="flex items-center text-sm" title="Captain">
+                              {/* Position Row */}
+                              <div className="mb-2">
+                                <select
+                                  value={player.position}
+                                  onChange={(e) => updatePlayer(index, 'position', e.target.value)}
+                                  className="w-full px-2 py-1.5 text-sm border border-orange-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 bg-white"
+                                >
+                                  <option value="" className="text-gray-400">Select Position</option>
+                                  {positions.map(pos => (
+                                    <option key={pos} value={pos}>{pos}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              
+                              {/* Captain & Vice Captain Row */}
+                              <div className="flex gap-3 justify-center">
+                                <label className="flex items-center gap-1 cursor-pointer" title="Captain">
                                   <input
                                     type="checkbox"
                                     checked={player.isCaptain}
                                     disabled={!player.isCaptain && wizardData.players.some(p => p.isCaptain)}
                                     onChange={(e) => updatePlayer(index, 'isCaptain', e.target.checked)}
-                                    className={`mr-0.5 w-2.5 h-2.5 ${!player.isCaptain && wizardData.players.some(p => p.isCaptain) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`w-3 h-3 ${!player.isCaptain && wizardData.players.some(p => p.isCaptain) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                   />
-                                  <span className={`text-sm ${!player.isCaptain && wizardData.players.some(p => p.isCaptain) ? 'opacity-50' : ''}`}>C</span>
+                                  <span className={`text-sm font-medium ${player.isCaptain ? 'text-yellow-600' : 'text-gray-600'} ${!player.isCaptain && wizardData.players.some(p => p.isCaptain) ? 'opacity-50' : ''}`}>
+                                    {player.isCaptain ? '👑' : '🔹'} Captain
+                                  </span>
                                 </label>
-                                <label className="flex items-center text-sm" title="Vice Captain">
+                                <label className="flex items-center gap-1 cursor-pointer" title="Vice Captain">
                                   <input
                                     type="checkbox"
                                     checked={player.isViceCaptain}
                                     disabled={!player.isViceCaptain && wizardData.players.some(p => p.isViceCaptain)}
                                     onChange={(e) => updatePlayer(index, 'isViceCaptain', e.target.checked)}
-                                    className={`mr-0.5 w-2.5 h-2.5 ${!player.isViceCaptain && wizardData.players.some(p => p.isViceCaptain) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`w-3 h-3 ${!player.isViceCaptain && wizardData.players.some(p => p.isViceCaptain) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                   />
-                                  <span className={`text-sm ${!player.isViceCaptain && wizardData.players.some(p => p.isViceCaptain) ? 'opacity-50' : ''}`}>VC</span>
+                                  <span className={`text-sm font-medium ${player.isViceCaptain ? 'text-blue-600' : 'text-gray-600'} ${!player.isViceCaptain && wizardData.players.some(p => p.isViceCaptain) ? 'opacity-50' : ''}`}>
+                                    {player.isViceCaptain ? '🥈' : '🔸'} Vice
+                                  </span>
                                 </label>
                               </div>
                             </div>
-                          </div>
-                        ))
+                          ))}
+                        </div>
                       )}
                     </div>
-                  </div>
                 </div>
 
                 <div className="flex justify-center items-center mt-6 gap-4">

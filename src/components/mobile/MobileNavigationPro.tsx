@@ -30,10 +30,10 @@ export default function MobileNavigationPro({
     logo: "/images/logo.png", 
     established: "1981",
     colors: {
-      primary: "#972A4C",
-      secondary: "#5E7794",
-      accent: "#98C0F0",
-      neutral: "#B6B7B6"
+      primary: "var(--club-primary)",
+      secondary: "var(--club-secondary)",
+      accent: "var(--club-accent)",
+      neutral: "var(--club-neutral)"
     }
   }
 }: MobileNavigationProProps) {
@@ -138,7 +138,7 @@ export default function MobileNavigationPro({
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.3, ease: 'easeInOut' }}
-            className="fixed left-0 top-12 bottom-0 w-80 max-w-[85vw] bg-gradient-to-br from-white via-gray-50 to-[#98C0F0]/10 z-50 shadow-2xl overflow-y-auto border-r-4 border-[#972A4C]"
+            className="fixed left-0 top-12 bottom-0 w-80 max-w-[85vw] bg-gradient-to-br from-white via-gray-50 to-[var(--club-accent)]/10 z-50 shadow-2xl overflow-y-auto border-r-4 border-[var(--club-primary)]"
           >
             <div className="p-6">
               
@@ -147,14 +147,14 @@ export default function MobileNavigationPro({
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-center mb-8 pb-6 border-b-2 border-[#972A4C]/20 bg-gradient-to-r from-[#972A4C]/5 to-[#5E7794]/5 rounded-lg p-4 mx-2"
+                className="text-center mb-8 pb-6 border-b-2 border-[var(--club-primary)]/20 bg-gradient-to-r from-[var(--club-primary)]/5 to-[var(--club-secondary)]/5 rounded-lg p-4 mx-2"
               >
                 <img 
                   src={clubData.logo} 
                   alt={`${clubData.name} Logo`}
                   className="w-16 h-16 mx-auto mb-3"
                 />
-                <h2 className="font-bold text-lg text-[#972A4C]">Rivervalley Rangers AFC</h2>
+                <h2 className="font-bold text-lg text-[var(--club-primary)]">Rivervalley Rangers AFC</h2>
                 <p className="text-sm text-[#5E7794] font-medium">Community Football Since {clubData.established}</p>
               </motion.div>
 
@@ -178,17 +178,17 @@ export default function MobileNavigationPro({
                       className={`
                         flex items-center p-4 rounded-xl transition-all duration-200
                         ${currentPage === item.href 
-                          ? `bg-gradient-to-r from-[#972A4C]/10 to-[#5E7794]/10 border-2 border-[#972A4C]/30 shadow-sm` 
+                          ? `bg-gradient-to-r from-[var(--club-primary)]/10 to-[var(--club-secondary)]/10 border-2 border-[var(--club-primary)]/30 shadow-sm` 
                           : 'hover:bg-gradient-to-r hover:from-[#98C0F0]/10 hover:to-white border-2 border-transparent'
                         }
                       `}
                     >
-                      <div className={`text-2xl mr-4 ${currentPage === item.href ? 'text-[#972A4C]' : 'text-[#5E7794]'}`}>{item.icon}</div>
+                      <div className={`text-2xl mr-4 ${currentPage === item.href ? 'text-[var(--club-primary)]' : 'text-[var(--club-secondary)]'}`}>{item.icon}</div>
                       <div className="flex-1">
-                        <div className={`font-semibold ${currentPage === item.href ? 'text-[#972A4C]' : 'text-gray-900'}`}>{item.label}</div>
+                        <div className={`font-semibold ${currentPage === item.href ? 'text-[var(--club-primary)]' : 'text-gray-900'}`}>{item.label}</div>
                         <div className={`text-xs ${currentPage === item.href ? 'text-[#5E7794]' : 'text-gray-500'}`}>{item.description}</div>
                       </div>
-                      <svg className={`w-5 h-5 ${currentPage === item.href ? 'text-[#972A4C]' : 'text-[#B6B7B6]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-5 h-5 ${currentPage === item.href ? 'text-[var(--club-primary)]' : 'text-[var(--club-neutral)]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </Link>
@@ -203,7 +203,7 @@ export default function MobileNavigationPro({
                 transition={{ delay: 0.6 }}
                 className="border-t border-gray-200 pt-6 mb-6"
               >
-                <h3 className="text-sm font-bold text-[#972A4C] mb-4 uppercase tracking-wide">
+                <h3 className="text-sm font-bold text-[var(--club-primary)] mb-4 uppercase tracking-wide">
                   Professional Tools
                 </h3>
                 
@@ -218,7 +218,7 @@ export default function MobileNavigationPro({
                       <Link
                         href={tool.href}
                         onClick={closeMenu}
-                        className="flex items-center p-3 rounded-lg bg-gradient-to-r from-[#972A4C] to-[#5E7794] text-white hover:from-[#972A4C]/90 hover:to-[#5E7794]/90 transition-all shadow-md"
+                        className="flex items-center p-3 rounded-lg bg-gradient-to-r from-[var(--club-primary)] to-[var(--club-secondary)] text-white hover:from-[var(--club-primary)]/90 hover:to-[var(--club-secondary)]/90 transition-all shadow-md"
                       >
                         <span className="text-xl mr-3">{tool.icon}</span>
                         <div className="flex-1">
@@ -241,7 +241,7 @@ export default function MobileNavigationPro({
                 transition={{ delay: 0.9 }}
                 className="border-t border-gray-200 pt-6 mb-6"
               >
-                <h3 className="text-sm font-bold text-[#972A4C] mb-4 uppercase tracking-wide">
+                <h3 className="text-sm font-bold text-[var(--club-primary)] mb-4 uppercase tracking-wide">
                   Quick Actions
                 </h3>
                 
@@ -249,7 +249,7 @@ export default function MobileNavigationPro({
                   <Link
                     href="/gallery"
                     onClick={closeMenu}
-                    className="p-3 bg-gradient-to-br from-[#98C0F0]/10 to-white rounded-lg text-center border border-[#B6B7B6]/30 hover:bg-gradient-to-br hover:from-[#98C0F0]/20 hover:to-[#972A4C]/5 transition-all shadow-sm"
+                    className="p-3 bg-gradient-to-br from-[var(--club-accent)]/10 to-white rounded-lg text-center border border-[var(--club-neutral)]/30 hover:bg-gradient-to-br hover:from-[var(--club-accent)]/20 hover:to-[var(--club-primary)]/5 transition-all shadow-sm"
                   >
                     <div className="text-lg mb-1">📸</div>
                     <div className="text-xs font-semibold text-[#5E7794]">Gallery</div>
@@ -257,7 +257,7 @@ export default function MobileNavigationPro({
                   <Link
                     href="/news"
                     onClick={closeMenu}
-                    className="p-3 bg-gradient-to-br from-[#98C0F0]/10 to-white rounded-lg text-center border border-[#B6B7B6]/30 hover:bg-gradient-to-br hover:from-[#98C0F0]/20 hover:to-[#972A4C]/5 transition-all shadow-sm"
+                    className="p-3 bg-gradient-to-br from-[var(--club-accent)]/10 to-white rounded-lg text-center border border-[var(--club-neutral)]/30 hover:bg-gradient-to-br hover:from-[var(--club-accent)]/20 hover:to-[var(--club-primary)]/5 transition-all shadow-sm"
                   >
                     <div className="text-lg mb-1">📰</div>
                     <div className="text-xs font-semibold text-[#5E7794]">News</div>
@@ -272,7 +272,7 @@ export default function MobileNavigationPro({
                 transition={{ delay: 1.1 }}
                 className="text-center border-t border-gray-200 pt-6"
               >
-                <h3 className="text-sm font-bold text-[#972A4C] mb-4">Follow Us</h3>
+                <h3 className="text-sm font-bold text-[var(--club-primary)] mb-4">Follow Us</h3>
                 <div className="flex justify-center space-x-4 mb-4">
                   <a 
                     href="https://www.facebook.com/RVRFC/" 
@@ -284,7 +284,7 @@ export default function MobileNavigationPro({
                   </a>
                   <a 
                     href="https://www.instagram.com/rvrfc1981/" 
-                    className="w-10 h-10 bg-gradient-to-br from-[#972A4C]/20 to-[#98C0F0]/10 rounded-full flex items-center justify-center hover:bg-gradient-to-br hover:from-[#972A4C]/30 hover:to-[#98C0F0]/20 transition-all shadow-sm"
+                    className="w-10 h-10 bg-gradient-to-br from-[var(--club-primary)]/20 to-[var(--club-accent)]/10 rounded-full flex items-center justify-center hover:bg-gradient-to-br hover:from-[var(--club-primary)]/30 hover:to-[var(--club-accent)]/20 transition-all shadow-sm"
                     target="_blank" 
                     rel="noopener noreferrer"
                   >

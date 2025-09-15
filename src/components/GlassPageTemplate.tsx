@@ -20,6 +20,7 @@ interface QuickAction {
   description: string;
   href: string;
   gradient: 'blue' | 'green' | 'purple' | 'orange';
+  external?: boolean;
 }
 
 interface GlassPageTemplateProps {
@@ -110,6 +111,7 @@ export default function GlassPageTemplate({
                 description={action.description}
                 href={action.href}
                 gradient={action.gradient}
+                external={action.external}
               />
             ))}
           </motion.div>

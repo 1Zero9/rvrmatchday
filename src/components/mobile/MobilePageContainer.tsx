@@ -27,12 +27,12 @@ export default function MobilePageContainer({
   contentClassName = ''
 }: MobilePageContainerProps) {
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-[#972A4C] via-[#5E7794] to-[#98C0F0] relative overflow-hidden ${className}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-[var(--club-primary)] via-[var(--club-secondary)] to-[var(--club-accent)] relative overflow-hidden ${className}`}>
       
       {/* Background Pattern */}
       <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[#98C0F0]/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-[#972A4C]/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[var(--club-accent)]/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-[var(--club-primary)]/20 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       {/* Header */}

@@ -36,7 +36,7 @@ export default function MobileHomePro() {
       description: 'All Squads & Ages',
       href: '/teams',
       icon: '👥',
-      gradient: 'from-[#972A4C] to-[#5E7794]',
+      gradient: 'from-[var(--club-primary)] to-[var(--club-secondary)]',
       size: 'large', // Featured app
       badge: null
     },
@@ -54,7 +54,7 @@ export default function MobileHomePro() {
       description: 'Coach Dashboard',
       href: '/match-central',
       icon: '🏆',
-      gradient: 'from-[#972A4C] to-[#98C0F0]',
+      gradient: 'from-[var(--club-primary)] to-[var(--club-accent)]',
       size: 'medium',
       badge: '🔒'
     },
@@ -63,7 +63,7 @@ export default function MobileHomePro() {
       description: 'Book Your Trial',
       href: '/join/trials',
       icon: '🎯',
-      gradient: 'from-[#98C0F0] to-[#972A4C]',
+      gradient: 'from-[var(--club-accent)] to-[var(--club-primary)]',
       size: 'medium',
       badge: null
     },
@@ -72,7 +72,7 @@ export default function MobileHomePro() {
       description: 'Match Photos',
       href: '/gallery',
       icon: '📸',
-      gradient: 'from-[#972A4C]/80 to-[#5E7794]',
+      gradient: 'from-[var(--club-primary)]/80 to-[var(--club-secondary)]',
       size: 'medium',
       badge: null
     },
@@ -171,12 +171,12 @@ export default function MobileHomePro() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#972A4C] via-[#972A4C] to-[#972A4C]/70 relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-[var(--club-primary)] via-[var(--club-primary)] to-[var(--club-primary)]/95 relative overflow-hidden pb-20">
       
       {/* Enhanced Background Pattern with Glass Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[#98C0F0]/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-[#972A4C]/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[var(--club-accent)]/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-[var(--club-primary)]/20 rounded-full blur-3xl animate-pulse delay-1000" />
         <div className="absolute top-3/4 left-3/4 w-48 h-48 bg-[#B6B7B6]/15 rounded-full blur-2xl animate-pulse delay-2000" />
         
         {/* Floating glass orbs */}

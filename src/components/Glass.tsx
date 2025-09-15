@@ -64,6 +64,7 @@ interface GlassActionCardProps {
   gradient?: 'blue' | 'green' | 'purple' | 'orange' | 'white' | 'club-primary' | 'club-secondary' | 'club-accent';
   size?: 'sm' | 'md' | 'lg';
   children?: ReactNode;
+  external?: boolean;
 }
 
 export function GlassActionCard({
@@ -73,7 +74,8 @@ export function GlassActionCard({
   href,
   gradient = 'white',
   size = 'md',
-  children
+  children,
+  external = false
 }: GlassActionCardProps) {
   const sizeStyles = {
     sm: 'p-4 text-sm',
@@ -88,7 +90,10 @@ export function GlassActionCard({
   };
 
   const Component = href ? motion.a : motion.div;
-  const linkProps = href ? { href } : {};
+  const linkProps = href ? { 
+    href,
+    ...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})
+  } : {};
 
   return (
     <Component

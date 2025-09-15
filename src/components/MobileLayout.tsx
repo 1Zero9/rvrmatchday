@@ -38,11 +38,11 @@ export default function MobileLayout({
       </main>
       
       {/* Brand Footer */}
-      <footer className="bg-gradient-to-r from-[#972A4C] to-[#5E7794] py-8 px-4 text-center">
+      <footer className="bg-gradient-to-r from-[var(--club-primary)] to-[var(--club-secondary)] py-8 px-4 text-center">
         <div className="text-xs text-white space-y-2">
           <p className="font-semibold">© 2025 Rivervalley Rangers AFC</p>
-          <p className="text-[#98C0F0] opacity-90">Powered by RVR Football Platform</p>
-          <p className="text-[#98C0F0] opacity-75 text-xs">Community Football Since 1981</p>
+          <p className="text-[var(--club-accent)] opacity-90">Powered by RVR Football Platform</p>
+          <p className="text-[var(--club-accent)] opacity-75 text-xs">Community Football Since 1981</p>
         </div>
       </footer>
     </div>
