@@ -60,20 +60,20 @@ export default function StandardLayout({ children, title, currentPage }: Standar
       {/* Desktop Layout - Only for desktop screens */}
       <div className="hidden md:block min-h-screen bg-gray-50">
         {/* Desktop Header Navigation */}
-        <header className="bg-club-primary text-white shadow-lg sticky top-0 z-40 border-b-4 border-club-accent">
+        <header className="bg-club-primary text-white shadow-lg sticky top-0 z-40 border-b-6 border-club-accent">
         <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;utf8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 fill=%22white%22%3e%3ccircle cx=%2220%22 cy=%2220%22 r=%222%22/%3e%3ccircle cx=%2280%22 cy=%2240%22 r=%221%22/%3e%3ccircle cx=%2240%22 cy=%2270%22 r=%221.5%22/%3e%3ccircle cx=%2290%22 cy=%2280%22 r=%221%22/%3e%3ccircle cx=%2210%22 cy=%2260%22 r=%221%22/%3e%3c/svg%3e')] bg-repeat"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="flex justify-between items-center h-16 md:h-24">
+          <div className="flex items-center h-16 md:h-24">
             
-            {/* Logo Section */}
-            <div className="flex items-center space-x-4 cursor-pointer group" onClick={handleLogoClick}>
+            {/* Logo Section - Bigger and on the left */}
+            <div className="flex items-center space-x-4 cursor-pointer group mr-8" onClick={handleLogoClick}>
               <div className="relative">
                 <Image 
                   src="/images/logo.png" 
                   alt="Rivervalley Rangers AFC Logo" 
-                  width={64}
-                  height={64}
-                  className="drop-shadow-lg group-hover:scale-105 transition-transform duration-200 md:w-16 md:h-16 w-10 h-10"
+                  width={80}
+                  height={80}
+                  className="drop-shadow-lg group-hover:scale-105 transition-transform duration-200 md:w-20 md:h-20 w-12 h-12"
                 />
                 <div className="absolute -top-2 -right-2 group/indicator">
                   <div className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg relative cursor-help">
@@ -102,8 +102,8 @@ export default function StandardLayout({ children, title, currentPage }: Standar
               </div>
             </div>
 
-            {/* Balanced Navigation */}
-            <nav className="hidden lg:flex items-center space-x-1">
+            {/* Centered Navigation */}
+            <nav className="hidden lg:flex items-center space-x-1 flex-1 justify-center">
               <Link href="/home" className="px-4 py-3 text-white hover:bg-club-primary-light rounded-lg transition-all duration-200 font-medium text-base">
                 🏠 Home
               </Link>

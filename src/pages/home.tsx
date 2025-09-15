@@ -65,37 +65,35 @@ export default function StandardHomepage() {
               </p>
             </motion.div>
             
-            {/* Content with Logo on Left - Properly Centered */}
-            <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 lg:gap-12">
-              
-              {/* Logo Section - Left Side */}
-              <motion.div 
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="flex-shrink-0 text-center lg:text-left"
-              >
-                <div className="relative">
-                  <Image 
-                    src="/images/logo.png" 
-                    alt="Rivervalley Rangers AFC Logo" 
-                    width={160}
-                    height={160}
-                    className="drop-shadow-2xl hover:scale-105 transition-transform duration-300 mx-auto lg:mx-0"
-                  />
-                  <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
-                </div>
-              </motion.div>
-
-              {/* Action Cards - Right Side */}
-              <div className="flex-1 w-full max-w-4xl">
+            {/* Separate Logo - Positioned to Left */}
+            <motion.div 
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="absolute -left-8 lg:-left-40 xl:left-0 top-1/2 transform -translate-y-1/2 hidden lg:block z-20"
+            >
+              <div className="relative">
+                <Image 
+                  src="/images/logo.png" 
+                  alt="Rivervalley Rangers AFC Logo" 
+                  width={220}
+                  height={220}
+                  className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
+              </div>
+            </motion.div>
+            
+            {/* Centered Action Cards - Independent */}
+            <div className="flex justify-center">
+              <div className="w-full max-w-4xl">
 
                 {/* Main Action Grid - Larger Boxes */}
                 <motion.div
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
-                  className="grid grid-cols-2 md:grid-cols-4 gap-4 mx-auto"
+                  className="grid grid-cols-2 md:grid-cols-4 gap-4 justify-center max-w-4xl mx-auto"
                 >
               
                   {/* Row 1: Large Join Club + Medium Fixtures + Medium Results */}
