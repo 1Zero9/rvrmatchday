@@ -1234,11 +1234,8 @@ export default function MatchCentral() {
       setIsAuthenticated(true);
       loadData();
     } else {
-      // Temporarily auto-authenticate for debugging
-      console.log('🔓 Auto-authenticating for debugging...');
-      setIsAuthenticated(true);
-      loadData();
-      // setLoading(false);
+      setIsAuthenticated(false);
+      setLoading(false);
     }
 
     // Handle hash routing

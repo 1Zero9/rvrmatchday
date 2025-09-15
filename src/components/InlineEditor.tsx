@@ -161,37 +161,38 @@ export function QuickLogin() {
   
   if (showLogin) {
     return (
-      <div className="space-y-2">
-        <div className="text-xs text-gray-600 font-medium">Editor Login</div>
+      <div className="space-y-2 bg-white p-3 rounded-lg border border-gray-200">
+        <div className="text-xs text-gray-800 font-medium">Editor Login</div>
         <input
           type="text"
           placeholder="Username"
           value={credentials.username}
           onChange={(e) => setCredentials(prev => ({ ...prev, username: e.target.value }))}
-          className="w-full p-2 border rounded text-xs"
+          className="w-full p-2 border border-gray-300 rounded text-xs text-gray-900 bg-white"
         />
         <input
           type="password"
           placeholder="Password"
           value={credentials.password}
           onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
-          className="w-full p-2 border rounded text-xs"
+          className="w-full p-2 border border-gray-300 rounded text-xs text-gray-900 bg-white"
           onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
         />
         <div className="flex gap-1">
           <button
             onClick={handleLogin}
-            className="bg-blue-600 text-white px-2 py-1 rounded text-xs flex-1"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs flex-1 transition-colors"
           >
             Login
           </button>
           <button
             onClick={() => setShowLogin(false)}
-            className="bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs"
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-2 py-1 rounded text-xs transition-colors"
           >
             Cancel
           </button>
         </div>
+        <div className="text-xs text-gray-500">Demo: admin / rvrfc2025</div>
       </div>
     )
   }
@@ -199,7 +200,7 @@ export function QuickLogin() {
   return (
     <button
       onClick={() => setShowLogin(true)}
-      className="w-full text-left text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary transition-colors text-sm py-1 px-2 rounded"
+      className="w-full text-left text-gray-800 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary transition-colors text-sm py-2 px-3 rounded font-medium"
     >
       🔑 Editor Login
     </button>
