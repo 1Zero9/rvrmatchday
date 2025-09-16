@@ -49,7 +49,7 @@ export default function GlassPageTemplate({
   heroIcon = "⚽",
   backgroundImage = "/images/homepg-image1.jpg",
   backgroundVideo,
-  heroHeight = "h-[50vh] min-h-[400px]",
+  heroHeight = "h-[40vh] min-h-[320px] md:h-[38vh] md:min-h-[300px]",
   quickActions = [],
   children,
   sectionName,
@@ -86,22 +86,22 @@ export default function GlassPageTemplate({
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center text-white mb-8"
+          className="text-center text-white mb-6"
         >
-          <div className="text-6xl mb-6">{heroIcon}</div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">{heroTitle}</h1>
-          <p className="text-xl md:text-2xl max-w-3xl mx-auto opacity-90">
+          <div className="text-4xl md:text-5xl mb-4">{heroIcon}</div>
+          <h1 className="text-3xl md:text-4xl font-bold mb-3">{heroTitle}</h1>
+          <p className="text-lg md:text-xl max-w-3xl mx-auto opacity-90">
             {heroSubtitle}
           </p>
         </motion.div>
 
-        {/* Quick Actions Grid */}
+        {/* Quick Actions Grid - Back Inside Hero with Compressed Spacing */}
         {quickActions.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className={`grid grid-cols-1 md:grid-cols-${Math.min(quickActions.length, 4)} gap-4 max-w-6xl mx-auto`}
+            className={`grid grid-cols-1 md:grid-cols-${Math.min(quickActions.length, 4)} gap-3 max-w-5xl mx-auto mt-4`}
           >
             {quickActions.map((action, index) => (
               <GlassActionCard
@@ -112,6 +112,7 @@ export default function GlassPageTemplate({
                 href={action.href}
                 gradient={action.gradient}
                 external={action.external}
+                size="sm"
               />
             ))}
           </motion.div>

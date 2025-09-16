@@ -29,6 +29,8 @@ interface WizardData {
   league: string;
   season: string;
   homeVenue: string;
+  directions: string[];
+  websiteUrl: string;
   coaches: string[];
   contactEmail: string;
   contactPhone: string;
@@ -112,6 +114,8 @@ export default function MatchAdminNew() {
       league: '',
       season: seasons.current,
       homeVenue: '',
+      directions: [],
+      websiteUrl: '',
       coaches: [],
       contactEmail: '',
       contactPhone: '',
@@ -157,6 +161,8 @@ export default function MatchAdminNew() {
           league: teamToEdit.league || '',
           season: teamToEdit.season || generateSeasonOptions().current,
           homeVenue: teamToEdit.homeVenue || '',
+          directions: (teamToEdit as any).directions || [],
+          websiteUrl: (teamToEdit as any).websiteUrl || (teamToEdit as any).website_url || '',
           coaches: Array.isArray(teamToEdit.coaches) ? teamToEdit.coaches : [],
           contactEmail: teamToEdit.contactEmail || '',
           contactPhone: teamToEdit.contactPhone || '',
@@ -554,6 +560,12 @@ export default function MatchAdminNew() {
       if (wizardData.homeVenue) {
         baseTeamData.home_venue = wizardData.homeVenue;
       }
+      if (wizardData.directions && wizardData.directions.length > 0) {
+        baseTeamData.directions = wizardData.directions;
+      }
+      if (wizardData.websiteUrl) {
+        baseTeamData.website_url = wizardData.websiteUrl;
+      }
       if (wizardData.contactEmail) {
         baseTeamData.contact_email = wizardData.contactEmail;
       }
@@ -757,6 +769,8 @@ export default function MatchAdminNew() {
       league: '',
       season: generateSeasonOptions().current,
       homeVenue: '',
+      directions: [],
+      websiteUrl: '',
       coaches: [],
       contactEmail: '',
       contactPhone: '',
@@ -1305,6 +1319,63 @@ export default function MatchAdminNew() {
                         </div>
                       )}
                     </div>
+                  </div>
+
+                  {/* Directions Section */}
+                  <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                    <label className="text-sm font-bold text-orange-800 mb-2 block flex items-center gap-2">
+                      🗺️ Directions (Google Maps URLs)
+                    </label>
+                    <div className="space-y-2">
+                      {wizardData.directions.map((direction, index) => (
+                        <div key={index} className="flex gap-2">
+                          <input
+                            type="url"
+                            placeholder="https://maps.google.com/..."
+                            value={direction}
+                            onChange={(e) => {
+                              const newDirections = [...wizardData.directions];
+                              newDirections[index] = e.target.value;
+                              setWizardData(prev => ({ ...prev, directions: newDirections }));
+                            }}
+                            className="flex-1 px-3 py-2 text-sm border border-orange-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newDirections = wizardData.directions.filter((_, i) => i !== index);
+                              setWizardData(prev => ({ ...prev, directions: newDirections }));
+                            }}
+                            className="px-2 py-2 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-colors"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWizardData(prev => ({ ...prev, directions: [...prev.directions, ''] }));
+                        }}
+                        className="w-full px-3 py-2 text-sm border-2 border-dashed border-orange-300 rounded-md text-orange-600 hover:bg-orange-100 transition-colors"
+                      >
+                        ➕ Add Direction
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Website URL Section */}
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <label className="text-sm font-bold text-blue-800 mb-2 block flex items-center gap-2">
+                      🌐 Website URL
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://www.example.com"
+                      value={wizardData.websiteUrl}
+                      onChange={(e) => setWizardData(prev => ({ ...prev, websiteUrl: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-blue-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                   </div>
 
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -1916,6 +1987,28 @@ export default function MatchAdminNew() {
                         <h4 className="font-semibold text-gray-700 mb-2">Contact & Venue</h4>
                         <div className="space-y-2 text-sm">
                           <p><strong>Home Venue:</strong> {wizardData.homeVenue || 'Not specified'}</p>
+                          {wizardData.directions.length > 0 && (
+                            <div>
+                              <strong>Directions:</strong>
+                              <ul className="ml-4 mt-1">
+                                {wizardData.directions.map((direction, index) => (
+                                  <li key={index}>
+                                    <a href={direction} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
+                                      🗺️ Google Maps {index + 1}
+                                    </a>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {wizardData.websiteUrl && (
+                            <p>
+                              <strong>Website:</strong> 
+                              <a href={wizardData.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                                {wizardData.websiteUrl}
+                              </a>
+                            </p>
+                          )}
                           <p><strong>Email:</strong> {wizardData.contactEmail || 'Not provided'}</p>
                           <p><strong>Phone:</strong> {wizardData.contactPhone || 'Not provided'}</p>
                         </div>

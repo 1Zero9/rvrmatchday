@@ -1,4 +1,6 @@
 import StandardLayout from '../components/StandardLayout';
+import GlassPageTemplate from '../components/GlassPageTemplate';
+import { GlassCard, GlassActionCard } from '../components/Glass';
 import MobileLayout from '../components/MobileLayout';
 import MobilePageContainer from '../components/mobile/MobilePageContainer';
 import NewsManager from '../components/NewsManager';
@@ -36,6 +38,31 @@ export default function NewsUpdates() {
   const [showNewsManager, setShowNewsManager] = useState(false);
   const [dynamicArticles, setDynamicArticles] = useState<NewsArticle[]>([]);
   const [canEdit, setCanEdit] = useState(false);
+  
+  // Quick actions for news page
+  const quickActions = [
+    {
+      icon: "📸",
+      title: "Photo Gallery",
+      description: "View match photos and memories",
+      href: "/gallery",
+      gradient: "purple" as const
+    },
+    {
+      icon: "📅",
+      title: "Events Calendar",
+      description: "Upcoming matches and events",
+      href: "/get-involved/events",
+      gradient: "blue" as const
+    },
+    {
+      icon: "⚽",
+      title: "Match Central",
+      description: "Live scores and results",
+      href: "/match-central",
+      gradient: "green" as const
+    }
+  ];
   
   // Check authentication
   useEffect(() => {
@@ -371,178 +398,203 @@ export default function NewsUpdates() {
 
       {/* Desktop Version */}
       <div className="hidden md:block">
-        <StandardLayout title="News & Updates">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12 relative"
+        <GlassPageTemplate
+          heroTitle="News & Updates"
+          heroSubtitle="Stay up to date with the latest news, events, and announcements from Rivervalley Rangers AFC"
+          heroIcon="📰"
+          backgroundImage="/images/homepg-image1.jpg"
+          heroHeight="h-[35vh] min-h-[300px]"
+          quickActions={quickActions}
+          sectionName="NEWS"
+          imageSpecs="1920x1080px, news/media related imagery"
         >
-          <div className="text-6xl mb-6">📰</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">News & Updates</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
-            Stay up to date with the latest news, events, and announcements from Rivervalley Rangers AFC
-          </p>
-          
-          {/* Editor Button */}
-          <AnimatePresence>
-            {canEdit && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                onClick={() => setShowNewsManager(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl"
-              >
-                <span className="text-lg">✏️</span>
-                Manage News
-                <span className="bg-white/20 text-xs px-2 py-1 rounded-full">
-                  {dynamicArticles.length}
-                </span>
-              </motion.button>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        <div className="grid lg:grid-cols-12 gap-8">
-          
-          {/* Manual News - Left Column */}
-          <div className="lg:col-span-7">
-            
-            {/* Featured Articles */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-8"
-            >
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Stories</h2>
-              
-              <div className="space-y-6">
-                {featuredArticles.map((article, index) => (
-                  <EditableNewsArticle
-                    key={article.id}
-                    article={article}
-                    onSave={handleSaveArticle}
-                    canEdit={canEdit}
-                    featured={true}
-                    getCategoryColor={getCategoryColor}
-                  />
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Recent Articles */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Recent Updates</h2>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                {regularArticles.map((article, index) => (
-                  <EditableNewsArticle
-                    key={article.id}
-                    article={article}
-                    onSave={handleSaveArticle}
-                    canEdit={canEdit}
-                    featured={false}
-                    getCategoryColor={getCategoryColor}
-                  />
-                ))}
-              </div>
-            </motion.div>
+          {/* Editor Button - Now inside glass container */}
+          <div className="mb-8">
+            <AnimatePresence>
+              {canEdit && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="text-center"
+                >
+                  <button
+                    onClick={() => setShowNewsManager(true)}
+                    className="inline-flex items-center gap-3 px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 text-white font-semibold rounded-2xl transition-all shadow-2xl hover:shadow-3xl hover:scale-105"
+                  >
+                    <span className="text-xl">✏️</span>
+                    <div className="text-left">
+                      <div className="font-bold">Manage News</div>
+                      <div className="text-sm text-white/80">{dynamicArticles.length} articles</div>
+                    </div>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Instagram Feed - Right Column */}
-          <div className="lg:col-span-5">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="mb-8"
-            >
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <span className="text-2xl mr-3">📸</span>
-                Latest from Instagram
-                <span className="ml-2 text-sm font-normal text-gray-500">@rvrfc1981</span>
-              </h2>
-              <InstagramWidget />
-            </motion.div>
+          {/* News Content in Glass Cards */}
+          <div className="grid lg:grid-cols-12 gap-8">
             
-            {/* Sidebar Content */}
-            <div>
-            
-            {/* Upcoming Events */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="bg-white rounded-lg shadow-lg p-6 mb-6"
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <span className="text-xl mr-2">📅</span>
-                Upcoming Events
-              </h3>
-              
-              <div className="space-y-4">
-                {upcomingEvents.map((event, index) => (
-                  <div key={event.id} className="border-l-4 border-blue-500 pl-4">
-                    <h4 className="font-medium text-gray-900 text-sm">{event.title}</h4>
-                    <p className="text-xs text-gray-600">
-                      {new Date(event.date).toLocaleDateString('en-GB')} • {event.time}
-                    </p>
-                    <p className="text-xs text-gray-500">{event.location}</p>
+            {/* Manual News - Left Column */}
+            <div className="lg:col-span-7">
+              <GlassCard className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="text-white text-xl">📰</span>
                   </div>
-                ))}
-              </div>
-              
-              <Link 
-                href="/get-involved/events"
-                className="block mt-4 bg-blue-600 text-white text-center font-semibold py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors"
-              >
-                View All Events
-              </Link>
-            </motion.div>
-
-            {/* Quick Links */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="bg-white rounded-lg shadow-lg p-6"
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Links</h3>
-              
-              <div className="space-y-2">
-                <Link href="/gallery" className="block text-gray-600 hover:text-blue-600 py-2 text-sm">
-                  📸 Photo Gallery
-                </Link>
-                <Link href="/get-involved/events" className="block text-gray-600 hover:text-blue-600 py-2 text-sm">
-                  📅 Events Calendar
-                </Link>
-                <Link href="/join/trials" className="block text-gray-600 hover:text-blue-600 py-2 text-sm">
-                  🎯 Player Registration
-                </Link>
-                <Link href="/get-involved/volunteering" className="block text-gray-600 hover:text-blue-600 py-2 text-sm">
-                  🙋 Volunteer Opportunities
-                </Link>
-                <Link href="/contact" className="block text-gray-600 hover:text-blue-600 py-2 text-sm">
-                  📞 Contact Us
-                </Link>
-              </div>
-            </motion.div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-1">Club News</h2>
+                    <p className="text-white/80 text-sm">Official updates and announcements</p>
+                  </div>
+                </div>
             
+                {/* Featured Articles */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="mb-8"
+                >
+                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="text-yellow-400">⭐</span>
+                    Featured Stories
+                  </h3>
+                  
+                  <div className="space-y-6">
+                    {featuredArticles.map((article, index) => (
+                      <EditableNewsArticle
+                        key={article.id}
+                        article={article}
+                        onSave={handleSaveArticle}
+                        canEdit={canEdit}
+                        featured={true}
+                        getCategoryColor={getCategoryColor}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* Recent Articles */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                >
+                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="text-blue-400">🕰️</span>
+                    Recent Updates
+                  </h3>
+                  
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {regularArticles.map((article, index) => (
+                      <EditableNewsArticle
+                        key={article.id}
+                        article={article}
+                        onSave={handleSaveArticle}
+                        canEdit={canEdit}
+                        featured={false}
+                        getCategoryColor={getCategoryColor}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              </GlassCard>
+          </div>
+
+            {/* Instagram Feed - Right Column */}
+            <div className="lg:col-span-5">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="mb-8"
+              >
+                <GlassCard className="p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                      <span className="text-white text-xl">📸</span>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+                        Latest from Instagram
+                        <span className="text-sm font-normal text-white/60">@rvrfc1981</span>
+                      </h2>
+                      <p className="text-white/80 text-sm">Real-time social media updates</p>
+                    </div>
+                  </div>
+                  <InstagramWidget />
+                </GlassCard>
+              </motion.div>
+              
+              {/* Upcoming Events */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="mb-6"
+              >
+                <GlassCard className="p-6">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="text-blue-400">📅</span>
+                    Upcoming Events
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {upcomingEvents.map((event, index) => (
+                      <div key={event.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                        <h4 className="font-medium text-white text-sm">{event.title}</h4>
+                        <p className="text-xs text-white/70">
+                          {new Date(event.date).toLocaleDateString('en-GB')} • {event.time}
+                        </p>
+                        <p className="text-xs text-white/60">{event.location}</p>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <Link 
+                    href="/get-involved/events"
+                    className="block mt-4 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-center font-semibold py-2 px-4 rounded-lg text-sm transition-all border border-white/20"
+                  >
+                    View All Events
+                  </Link>
+                </GlassCard>
+              </motion.div>
+
+              {/* Quick Links */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+              >
+                <GlassCard className="p-6">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="text-green-400">🔗</span>
+                    Quick Links
+                  </h3>
+                  
+                  <div className="space-y-2">
+                    <Link href="/gallery" className="block text-white/80 hover:text-white py-2 text-sm hover:bg-white/10 rounded px-2 transition-colors">
+                      📸 Photo Gallery
+                    </Link>
+                    <Link href="/get-involved/events" className="block text-white/80 hover:text-white py-2 text-sm hover:bg-white/10 rounded px-2 transition-colors">
+                      📅 Events Calendar
+                    </Link>
+                    <Link href="/join/trials" className="block text-white/80 hover:text-white py-2 text-sm hover:bg-white/10 rounded px-2 transition-colors">
+                      🎯 Player Registration
+                    </Link>
+                    <Link href="/get-involved/volunteering" className="block text-white/80 hover:text-white py-2 text-sm hover:bg-white/10 rounded px-2 transition-colors">
+                      🙋 Volunteer Opportunities
+                    </Link>
+                    <Link href="/contact" className="block text-white/80 hover:text-white py-2 text-sm hover:bg-white/10 rounded px-2 transition-colors">
+                      📞 Contact Us
+                    </Link>
+                  </div>
+                </GlassCard>
+              </motion.div>
             </div>
           </div>
-        </div>
-
-        </div>
-        </StandardLayout>
+        </GlassPageTemplate>
       </div>
       
       {/* News Manager Modal */}
