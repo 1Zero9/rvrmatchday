@@ -832,6 +832,37 @@ function CollapsibleTeamCard({ team, onEdit, onDelete }: {
                       </a>
                     </div>
                   )}
+                  {team.directions && team.directions.length > 0 && (
+                    <div>
+                      <span className="text-gray-500 text-sm">Directions:</span>
+                      <div className="mt-1 space-y-1">
+                        {team.directions.map((direction: string, index: number) => (
+                          <a 
+                            key={index}
+                            href={direction} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="block text-blue-600 hover:text-blue-800 text-xs truncate"
+                          >
+                            🗺️ Maps {index + 1}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {team.websiteUrl && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Website:</span>
+                      <a 
+                        href={team.websiteUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="font-medium text-blue-600 hover:text-blue-800 truncate max-w-32"
+                      >
+                        🌐 Visit Site
+                      </a>
+                    </div>
+                  )}
                   {team.coaches && team.coaches.length > 0 && (
                     <div>
                       <span className="text-gray-500 text-sm">Coaches:</span>
@@ -1064,6 +1095,8 @@ export default function MatchCentral() {
           season: team.season,
           league: team.league,
           homeVenue: team.home_venue,
+          directions: team.directions || [],
+          websiteUrl: team.website_url,
           contactEmail: team.contact_email,
           contactPhone: team.contact_phone,
           coaches: team.coaches || [],

@@ -41,6 +41,8 @@ export interface Team {
   // Additional fields for opponent teams and admin management
   isOpponent?: boolean;
   homeVenue?: string;
+  directions?: string[];
+  websiteUrl?: string;
   contactEmail?: string;
   contactPhone?: string;
   notes?: string;
