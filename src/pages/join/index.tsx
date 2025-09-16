@@ -9,10 +9,10 @@
  * membership options, and streamlined signup process.
  */
 
-import StandardLayout from '../../components/StandardLayout';
+import GlassPageTemplate from '../../components/GlassPageTemplate';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { GlassCard, GlassActionCard, GlassHero } from '../../components/Glass';
+import { GlassCard, GlassActionCard } from '../../components/Glass';
 
 export default function JoinIndex() {
   const joinOptions = [
@@ -51,85 +51,42 @@ export default function JoinIndex() {
   ];
 
   return (
-    <StandardLayout>
-      {/* 
-      ===================================================================
-      🎬 JOIN CLUB HERO CUSTOMIZATION (NON-CODER FRIENDLY)
-      ===================================================================
-      
-      TO ADD JOIN PAGE BACKGROUND IMAGE:
-      1. Save your image as: /public/images/join-hero.jpg
-      2. Replace the backgroundImage path below
-      
-      TO ADD VIDEO BACKGROUND:
-      1. Save video as: /public/videos/join-hero.mp4
-      2. Replace backgroundImage with backgroundVideo="/videos/join-hero.mp4"
-      
-      BEST JOIN PAGE BACKGROUNDS:
-      - Players of all ages together
-      - Training session with multiple age groups
-      - Team registration/sign-up event
-      - Community gathering at the club
-      - Diverse group of players celebrating
-      
-      IMAGE SPECS: 1920x1080px minimum, community/diversity focused
-      ===================================================================
-      */}
-      <GlassHero 
-        backgroundImage="/images/homepg-image1.jpg"
-        height="h-[60vh] min-h-[500px]"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center text-white mb-8"
-        >
-          <div className="text-6xl mb-6">⚽</div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Join Our Football Family</h1>
-          <p className="text-xl md:text-2xl max-w-3xl mx-auto opacity-90">
-            Whether you're 6 or 60, there's a place for you at Rivervalley Rangers AFC
-          </p>
-        </motion.div>
-
-        {/* Quick Join Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto"
-        >
-          <GlassActionCard
-            icon="👦"
-            title="Youth Teams"
-            description="Ages 6-17"
-            href="/join/youth"
-            gradient="blue"
-          />
-          <GlassActionCard
-            icon="👨"
-            title="Senior Teams"
-            description="Adult leagues"
-            href="/join/senior"
-            gradient="green"
-          />
-          <GlassActionCard
-            icon="⭐"
-            title="Elite Academy"
-            description="Advanced training"
-            href="/join/academy"
-            gradient="purple"
-          />
-          <GlassActionCard
-            icon="🎯"
-            title="Try-Outs"
-            description="Open trials"
-            href="/join/trials"
-            gradient="orange"
-          />
-        </motion.div>
-      </GlassHero>
-
+    <GlassPageTemplate
+      title="Join Our Football Family"
+      subtitle="Whether you're 6 or 60, there's a place for you at Rivervalley Rangers AFC"
+      icon="⚽"
+      backgroundImage="/images/homepg-image1.jpg"
+      actionCards={[
+        {
+          icon: "👦",
+          title: "Youth Teams", 
+          description: "Ages 6-17",
+          href: "/join/youth",
+          gradient: "blue"
+        },
+        {
+          icon: "👨",
+          title: "Senior Teams",
+          description: "Adult leagues", 
+          href: "/join/senior",
+          gradient: "green"
+        },
+        {
+          icon: "⭐",
+          title: "Elite Academy",
+          description: "Advanced training",
+          href: "/join/academy", 
+          gradient: "purple"
+        },
+        {
+          icon: "🎯",
+          title: "Try-Outs",
+          description: "Open trials",
+          href: "/join/trials",
+          gradient: "orange"
+        }
+      ]}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         {/* Join Options Grid - Glass Morphism */}
@@ -258,6 +215,6 @@ export default function JoinIndex() {
           </Link>
         </motion.div>
       </div>
-    </StandardLayout>
+    </GlassPageTemplate>
   );
 }

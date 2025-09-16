@@ -180,216 +180,434 @@ export default function StandardHomepage() {
             </div>
           </div>
           
-          {/* Scroll indicator */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
+          {/* Enhanced Scroll Indicator */}
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 1.5 }}
+            className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20"
+          >
+            <div className="flex flex-col items-center">
+              <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-full p-3 shadow-2xl animate-bounce hover:bg-white/30 transition-all duration-300 cursor-pointer group">
+                <svg className="w-6 h-6 text-white group-hover:text-green-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </div>
+              <div className="mt-2 text-white text-xs font-medium bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
+                Scroll Down
+              </div>
+            </div>
+          </motion.div>
         </section>
 
-        {/* Main Sponsors Section - High Visibility */}
-        <section className="bg-white py-16 border-b-4 border-green-600">
+        {/* Club Updates - Right Under Hero */}
+        <section className="py-8 bg-gradient-to-br from-gray-50 to-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Proudly Supported By Our Community Partners</h2>
-              <p className="text-lg text-gray-600">The businesses and organizations that make our club possible</p>
-            </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
+            <div className="grid lg:grid-cols-3 gap-4">
               
-              {/* MAIN SPONSOR - REPLACE THIS DIV */}
-              <div className="group cursor-pointer">
-                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
-                  <div className="text-center text-gray-600">
-                    <div className="text-2xl mb-2">🏢</div>
-                    <p className="text-xs font-bold">MAIN SPONSOR</p>
-                    <p className="text-xs">Logo Placeholder</p>
+              {/* Latest Result - Compact */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4 }}
+                className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-lg overflow-hidden border border-green-200"
+              >
+                <div className="bg-gradient-to-r from-green-600 to-green-700 px-4 py-2">
+                  <div className="flex items-center justify-between text-white">
+                    <span className="font-bold text-sm uppercase tracking-wide">Latest Win</span>
+                    <div className="text-lg">🏆</div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="group cursor-pointer">
-                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
-                  <div className="text-center text-gray-600">
-                    <div className="text-2xl mb-2">🛍️</div>
-                    <p className="text-xs font-bold">KIT SPONSOR</p>
-                    <p className="text-xs">Logo Placeholder</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="group cursor-pointer">
-                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
-                  <div className="text-center text-gray-600">
-                    <div className="text-2xl mb-2">🚗</div>
-                    <p className="text-xs font-bold">TRANSPORT PARTNER</p>
-                    <p className="text-xs">Logo Placeholder</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="group cursor-pointer">
-                <div className="bg-gray-100 rounded-lg p-8 h-32 flex items-center justify-center hover:shadow-lg transition-all">
-                  <div className="text-center text-gray-600">
-                    <div className="text-2xl mb-2">🍔</div>
-                    <p className="text-xs font-bold">REFRESHMENTS</p>
-                    <p className="text-xs">Logo Placeholder</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="text-center mt-8">
-              <Link href="/get-involved/sponsorship" className="inline-block bg-club-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-club-secondary transition-colors">
-                Become a Sponsor
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Community News & Quick Updates */}
-        <section className="py-16 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">What's Happening at Rivervalley Rangers</h2>
-              <p className="text-lg text-gray-600">Latest news, results, and community stories</p>
-            </div>
-            
-            <div className="grid lg:grid-cols-3 gap-8">
-              
-              {/* Featured Story */}
-              <div className="lg:col-span-2">
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                  
-                  {/* FEATURED NEWS PHOTO PLACEHOLDER - REPLACE THIS DIV */}
-                  <div className="h-64 bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
-                    <div className="text-white text-center">
-                      <div className="text-4xl mb-2">📸</div>
-                      <p className="text-sm font-bold">FEATURED STORY PHOTO</p>
-                      <p className="text-xs">See instructions above in code</p>
+                <div className="p-4">
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-2">Senior Team • Saturday</div>
+                    <div className="flex items-center justify-between text-lg font-bold mb-2">
+                      <span className="text-green-700">RVR FC</span>
+                      <div className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm">
+                        2 - 1
+                      </div>
+                      <span className="text-gray-700">Millbrook FC</span>
                     </div>
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center mb-2">
-                      <span className="bg-club-primary text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST NEWS</span>
-                      <span className="text-gray-500 text-sm">2 days ago</span>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">U16 Boys Reach County Cup Final</h3>
-                    <p className="text-gray-600 mb-4">
-                      Our U16 boys team made history last weekend by securing their place in the County Cup Final after a thrilling 3-2 victory against Milltown FC. The final will be played at...
-                    </p>
-                    <Link href="/news" className="text-green-600 font-semibold hover:text-green-700">
-                      Read Full Story →
+                    <Link href="/matchday" className="inline-block bg-green-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm">
+                      Match Report
                     </Link>
                   </div>
                 </div>
-              </div>
-              
-              {/* Quick Updates */}
-              <div className="space-y-6">
-                
-                {/* Latest Result */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center mb-3">
-                    <span className="bg-club-accent text-white px-2 py-1 rounded text-xs font-bold mr-2">LATEST RESULT</span>
+              </motion.div>
+
+              {/* Next Fixture - Compact */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl shadow-lg overflow-hidden border border-orange-200"
+              >
+                <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-4 py-2">
+                  <div className="flex items-center justify-between text-white">
+                    <span className="font-bold text-sm uppercase tracking-wide">Next Match</span>
+                    <div className="text-lg">⚽</div>
                   </div>
-                  <h4 className="font-bold text-gray-900 mb-2">RVR FC 2-1 Millbrook FC</h4>
-                  <p className="text-gray-600 text-sm mb-3">Great performance from the seniors on Saturday!</p>
-                  <Link href="/matchday" className="text-blue-600 text-sm font-semibold">
-                    View All Results →
-                  </Link>
                 </div>
-                
-                {/* Upcoming Fixture */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center mb-3">
-                    <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">NEXT MATCH</span>
+                <div className="p-4">
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-2">Saturday 15:00 • Home</div>
+                    <div className="flex items-center justify-between text-lg font-bold mb-2">
+                      <span className="text-orange-700">RVR FC</span>
+                      <div className="bg-orange-600 text-white px-3 py-1 rounded-lg text-sm">
+                        VS
+                      </div>
+                      <span className="text-gray-700">Oakwood Utd</span>
+                    </div>
+                    <Link href="/match-central" className="inline-block bg-orange-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-orange-700 transition-colors text-sm">
+                      Match Info
+                    </Link>
                   </div>
-                  <h4 className="font-bold text-gray-900 mb-2">RVR FC vs Oakwood United</h4>
-                  <p className="text-gray-600 text-sm mb-1">Saturday 3pm • Home</p>
-                  <p className="text-gray-600 text-sm mb-3">Come support the lads!</p>
-                  <Link href="/match-central/fixtures" className="text-orange-600 text-sm font-semibold">
-                    View All Fixtures →
-                  </Link>
                 </div>
-                
-                {/* Community Story */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center mb-3">
-                    <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold mr-2">COMMUNITY</span>
+              </motion.div>
+
+              {/* News Highlight - Compact */}
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden border border-blue-200"
+              >
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2">
+                  <div className="flex items-center justify-between text-white">
+                    <span className="font-bold text-sm uppercase tracking-wide">Club News</span>
+                    <div className="text-lg">📰</div>
                   </div>
-                  <h4 className="font-bold text-gray-900 mb-2">New Girls Teams Growing Fast</h4>
-                  <p className="text-gray-600 text-sm mb-3">50+ girls registered since launch in 2023</p>
-                  <Link href="/teams/girls" className="text-purple-600 text-sm font-semibold">
-                    Learn More →
-                  </Link>
                 </div>
-              </div>
+                <div className="p-4">
+                  <div className="text-center">
+                    <h3 className="text-sm font-bold text-gray-900 mb-2">U16 Boys Reach County Cup Final</h3>
+                    <p className="text-gray-600 text-xs mb-2">Historic achievement for our youth team</p>
+                    <Link href="/news" className="inline-block bg-blue-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm">
+                      Read More
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </section>
 
-        {/* Social Media Feeds */}
-        <section className="py-16 bg-white">
+        {/* Live Stats Bar - Dynamic Info */}
+        <section className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 py-8 border-t-4 border-green-500">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Follow Our Journey</h2>
-              <p className="text-lg text-gray-600">Stay connected with live updates from our social channels</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-white"
+              >
+                <div className="text-3xl font-bold text-green-400 mb-1">350+</div>
+                <div className="text-sm uppercase tracking-wide text-gray-300">Active Players</div>
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="text-white"
+              >
+                <div className="text-3xl font-bold text-green-400 mb-1">18</div>
+                <div className="text-sm uppercase tracking-wide text-gray-300">Teams</div>
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="text-white"
+              >
+                <div className="text-3xl font-bold text-green-400 mb-1">44</div>
+                <div className="text-sm uppercase tracking-wide text-gray-300">Years Strong</div>
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="text-white"
+              >
+                <div className="text-3xl font-bold text-green-400 mb-1">25</div>
+                <div className="text-sm uppercase tracking-wide text-gray-300">Qualified Coaches</div>
+              </motion.div>
             </div>
+          </div>
+        </section>
+
+
+        {/* Teams Showcase - Interactive */}
+        <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Teams</h2>
+              <p className="text-xl text-gray-600">From grassroots to senior level - football for everyone</p>
+            </motion.div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Youth Teams */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                whileHover={{ scale: 1.05, y: -10 }}
+                className="group"
+              >
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-transparent group-hover:border-green-300 transition-all duration-300">
+                  <div className="h-48 bg-gradient-to-br from-green-400 via-green-500 to-green-600 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black/30"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-white text-center">
+                        <div className="text-6xl mb-4">⚽</div>
+                        <h3 className="text-2xl font-bold">Youth Teams</h3>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">U8 - U18</span>
+                      <span className="text-2xl">⭐</span>
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-900 mb-3">Development Focus</h4>
+                    <p className="text-gray-600 mb-4">Building skills, character, and friendships through football. Professional coaching for all abilities.</p>
+                    <Link href="/teams/boys" className="block w-full text-center bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                      Explore Youth Teams
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Girls Teams */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                whileHover={{ scale: 1.05, y: -10 }}
+                className="group"
+              >
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-transparent group-hover:border-pink-300 transition-all duration-300">
+                  <div className="h-48 bg-gradient-to-br from-pink-400 via-pink-500 to-pink-600 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black/30"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-white text-center">
+                        <div className="text-6xl mb-4">⚽</div>
+                        <h3 className="text-2xl font-bold">Girls Teams</h3>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-sm font-bold">U8 - U16</span>
+                      <span className="text-2xl">🌟</span>
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-900 mb-3">Growing Strong</h4>
+                    <p className="text-gray-600 mb-4">Our fastest growing section! Empowering girls through sport in a supportive environment.</p>
+                    <Link href="/teams/girls" className="block w-full text-center bg-pink-600 text-white py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors">
+                      Join Girls Football
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Senior Teams */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                whileHover={{ scale: 1.05, y: -10 }}
+                className="group"
+              >
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-transparent group-hover:border-blue-300 transition-all duration-300">
+                  <div className="h-48 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black/30"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-white text-center">
+                        <div className="text-6xl mb-4">🏆</div>
+                        <h3 className="text-2xl font-bold">Senior Teams</h3>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">Adult</span>
+                      <span className="text-2xl">👑</span>
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-900 mb-3">Competitive Edge</h4>
+                    <p className="text-gray-600 mb-4">League and cup competitions. Experience the thrill of adult football with a welcoming club.</p>
+                    <Link href="/teams/seniors" className="block w-full text-center bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                      Senior Football
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Community Impact Section */}
+        <section className="py-16 bg-gradient-to-r from-green-600 via-green-700 to-green-800 text-white relative overflow-hidden">
+          <div className="absolute inset-0 opacity-30">
+            <div className="w-full h-full" style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'repeat'
+            }}></div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl font-bold mb-4">More Than Just Football</h2>
+              <p className="text-xl text-green-100">Building stronger communities through sport</p>
+            </motion.div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-center"
+              >
+                <div className="bg-white/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
+                  <span className="text-4xl">🤝</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Community First</h3>
+                <p className="text-green-100">Supporting local families and bringing the neighborhood together through shared passion for football.</p>
+              </motion.div>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="text-center"
+              >
+                <div className="bg-white/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
+                  <span className="text-4xl">🌱</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Youth Development</h3>
+                <p className="text-green-100">Nurturing young talent with professional coaching, building confidence and life skills on and off the pitch.</p>
+              </motion.div>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="text-center"
+              >
+                <div className="bg-white/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
+                  <span className="text-4xl">💚</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Inclusivity</h3>
+                <p className="text-green-100">Football for everyone - regardless of ability, background, or experience. Everyone has a home at Rangers.</p>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Social Media & Engagement */}
+        <section className="py-16 bg-gradient-to-br from-gray-50 to-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">Stay Connected</h2>
+              <p className="text-xl text-gray-600">Follow our journey across social media</p>
+            </motion.div>
             
             <div className="grid lg:grid-cols-3 gap-8">
               
-              {/* Instagram Feed */}
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg p-6 text-white">
-                <div className="flex items-center mb-4">
-                  <div className="text-2xl mr-3">📸</div>
-                  <h3 className="text-xl font-bold">Instagram</h3>
+              {/* Instagram */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="group"
+              >
+                <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center mb-6">
+                      <div className="text-4xl mr-4">📸</div>
+                      <h3 className="text-2xl font-bold">Instagram</h3>
+                    </div>
+                    <p className="mb-6 text-lg">Behind the scenes content, match photos, and player moments</p>
+                    <div className="bg-white/20 rounded-xl p-4 mb-6 backdrop-blur-sm">
+                      <p className="text-sm font-bold">@rvrfc1981</p>
+                      <p className="text-xs opacity-75">Daily updates & stories</p>
+                    </div>
+                    <a href="https://www.instagram.com/rvrfc1981/?hl=en" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-purple-600 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all duration-300 group-hover:scale-105">
+                      Follow Us
+                    </a>
+                  </div>
                 </div>
-                <p className="mb-4">Match photos, training sessions, and behind-the-scenes content</p>
-                <div className="bg-white/20 rounded-lg p-4 mb-4 backdrop-blur">
-                  <p className="text-sm opacity-90">📱 INSTAGRAM FEED INTEGRATION</p>
-                  <p className="text-xs opacity-75 mt-1">@rvrfc1981</p>
-                  <p className="text-xs opacity-75">https://www.instagram.com/rvrfc1981/?hl=en</p>
-                </div>
-                <a href="https://www.instagram.com/rvrfc1981/?hl=en" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-purple-600 px-4 py-2 rounded font-semibold hover:bg-gray-100">
-                  Follow Us
-                </a>
-              </div>
+              </motion.div>
               
-              {/* Main Facebook */}
-              <div className="bg-club-secondary rounded-lg p-6 text-white">
-                <div className="flex items-center mb-4">
-                  <div className="text-2xl mr-3">👥</div>
-                  <h3 className="text-xl font-bold">Facebook - Main Club</h3>
+              {/* Facebook Main */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="group"
+              >
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center mb-6">
+                      <div className="text-4xl mr-4">👥</div>
+                      <h3 className="text-2xl font-bold">Facebook</h3>
+                    </div>
+                    <p className="mb-6 text-lg">Club announcements, events, and community discussions</p>
+                    <div className="bg-white/20 rounded-xl p-4 mb-6 backdrop-blur-sm">
+                      <p className="text-sm font-bold">Main Club Page</p>
+                      <p className="text-xs opacity-75">News & events</p>
+                    </div>
+                    <a href="https://www.facebook.com/RVRFC/" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all duration-300 group-hover:scale-105">
+                      Like Our Page
+                    </a>
+                  </div>
                 </div>
-                <p className="mb-4">Club announcements, events, and community discussions</p>
-                <div className="bg-white/20 rounded-lg p-4 mb-4 backdrop-blur">
-                  <p className="text-sm opacity-90">📱 FACEBOOK FEED INTEGRATION</p>
-                  <p className="text-xs opacity-75 mt-1">Main Club Page</p>
-                  <p className="text-xs opacity-75">https://www.facebook.com/RVRFC/</p>
-                </div>
-                <a href="https://www.facebook.com/RVRFC/" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-blue-600 px-4 py-2 rounded font-semibold hover:bg-gray-100">
-                  Like Our Page
-                </a>
-              </div>
+              </motion.div>
               
-              {/* Seniors Facebook */}
-              <div className="bg-club-primary rounded-lg p-6 text-white">
-                <div className="flex items-center mb-4">
-                  <div className="text-2xl mr-3">🏆</div>
-                  <h3 className="text-xl font-bold">Facebook - Seniors</h3>
+              {/* WhatsApp Community */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="group"
+              >
+                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center mb-6">
+                      <div className="text-4xl mr-4">💬</div>
+                      <h3 className="text-2xl font-bold">Join Our Community</h3>
+                    </div>
+                    <p className="mb-6 text-lg">Direct contact with coaches and instant match updates</p>
+                    <div className="bg-white/20 rounded-xl p-4 mb-6 backdrop-blur-sm">
+                      <p className="text-sm font-bold">WhatsApp Groups</p>
+                      <p className="text-xs opacity-75">Team communications</p>
+                    </div>
+                    <Link href="/contact" className="inline-block bg-white text-green-600 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all duration-300 group-hover:scale-105">
+                      Get Contact Info
+                    </Link>
+                  </div>
                 </div>
-                <p className="mb-4">Senior team news, match reports, and player updates</p>
-                <div className="bg-white/20 rounded-lg p-4 mb-4 backdrop-blur">
-                  <p className="text-sm opacity-90">📱 FACEBOOK FEED INTEGRATION</p>
-                  <p className="text-xs opacity-75 mt-1">Seniors Team Page</p>
-                  <p className="text-xs opacity-75">https://www.facebook.com/RVRSeniors/</p>
-                </div>
-                <a href="https://www.facebook.com/RVRSeniors/" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-green-600 px-4 py-2 rounded font-semibold hover:bg-gray-100">
-                  Follow Seniors
-                </a>
-              </div>
+              </motion.div>
             </div>
           </div>
         </section>
@@ -427,6 +645,87 @@ export default function StandardHomepage() {
             <div className="text-center mt-8">
               <Link href="/gallery" className="inline-block bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-900 transition-colors">
                 View Full Gallery
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Sponsors Section - Moved to End */}
+        <section className="bg-white py-12 border-b-4 border-green-600">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-8"
+            >
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">Our Community Partners</h2>
+              <p className="text-gray-600">Supporting grassroots football in our community</p>
+            </motion.div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-center">
+              
+              {/* MAIN SPONSOR - REPLACE THIS DIV */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+                className="group cursor-pointer"
+              >
+                <div className="bg-gray-100 rounded-lg p-6 h-24 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-xl mb-1">🏢</div>
+                    <p className="text-xs font-bold">MAIN SPONSOR</p>
+                  </div>
+                </div>
+              </motion.div>
+              
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                className="group cursor-pointer"
+              >
+                <div className="bg-gray-100 rounded-lg p-6 h-24 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-xl mb-1">🛍️</div>
+                    <p className="text-xs font-bold">KIT SPONSOR</p>
+                  </div>
+                </div>
+              </motion.div>
+              
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="group cursor-pointer"
+              >
+                <div className="bg-gray-100 rounded-lg p-6 h-24 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-xl mb-1">🚗</div>
+                    <p className="text-xs font-bold">TRANSPORT</p>
+                  </div>
+                </div>
+              </motion.div>
+              
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                className="group cursor-pointer"
+              >
+                <div className="bg-gray-100 rounded-lg p-6 h-24 flex items-center justify-center hover:shadow-lg transition-all">
+                  <div className="text-center text-gray-600">
+                    <div className="text-xl mb-1">🍔</div>
+                    <p className="text-xs font-bold">REFRESHMENTS</p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+            
+            <div className="text-center mt-6">
+              <Link href="/get-involved/sponsorship" className="inline-block bg-club-primary text-white px-6 py-2 rounded-lg font-semibold hover:bg-club-secondary transition-colors text-sm">
+                Become a Sponsor
               </Link>
             </div>
           </div>
