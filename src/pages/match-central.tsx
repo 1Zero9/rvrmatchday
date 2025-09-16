@@ -19,6 +19,7 @@ import { supabase } from "../lib/supabase";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
 import { VERSION_CONFIG } from "../config/version";
 import { MatchTypeBadge } from "../components/MatchTypeBadge";
+import { getMatchTypeCardColors } from "../lib/match-type-colors";
 
 // Chart.js imports and setup
 import {
@@ -2024,8 +2025,13 @@ export default function MatchCentral() {
               {upcomingMatches.map((match) => {
                 const team = teams.find(t => t.id === match.teamId);
                 const needsRecording = isMatchUnrecorded(match);
+                const matchTypeColors = getMatchTypeCardColors(match.matchType);
                 return (
-                  <div key={match.id} className={`bg-white rounded-lg border shadow-sm p-3 ${needsRecording ? 'border-amber-400 bg-amber-50' : ''}`}>
+                  <div key={match.id} className={`rounded-lg border shadow-sm p-3 ${
+                    needsRecording 
+                      ? 'border-amber-400 bg-amber-50' 
+                      : `${matchTypeColors.background} ${matchTypeColors.border}`
+                  }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className={`text-sm font-bold flex items-center gap-2 ${needsRecording ? 'text-amber-800' : 'text-gray-900'}`}>
@@ -2557,7 +2563,12 @@ export default function MatchCentral() {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.2, delay: index * 0.03 }}
-                          className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
+                          className={`rounded-lg shadow-sm border hover:shadow-md transition-shadow overflow-hidden cursor-pointer ${
+                            (() => {
+                              const matchTypeColors = getMatchTypeCardColors(match.matchType);
+                              return `${matchTypeColors.background} ${matchTypeColors.border}`;
+                            })()
+                          }`}
                           onClick={() => toggleMatchExpand(match.id)}
                         >
                           <div className={`h-1 ${
@@ -3123,6 +3134,7 @@ export default function MatchCentral() {
                       upcomingMatches.map((match, index) => {
                         const team = teams.find(t => t.id === match.teamId);
                         const needsRecording = isMatchUnrecorded(match);
+                        const matchTypeColors = getMatchTypeCardColors(match.matchType);
                         return (
                           <motion.div 
                             key={match.id} 
@@ -3133,14 +3145,14 @@ export default function MatchCentral() {
                             className={`rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 overflow-hidden relative ${
                               needsRecording 
                                 ? 'bg-gradient-to-br from-amber-50 via-amber-100 to-orange-50 border-amber-300 hover:border-amber-400' 
-                                : 'bg-gradient-to-br from-white via-gray-50 to-purple-50 border-purple-100 hover:border-purple-200'
+                                : `${matchTypeColors.background} ${matchTypeColors.border}`
                             }`}
                           >
                             {/* Match Indicator Strip */}
                             <div className={`absolute left-0 top-0 bottom-0 w-2 rounded-l-xl ${
                               needsRecording 
                                 ? 'bg-gradient-to-b from-amber-400 to-red-500' 
-                                : 'bg-gradient-to-b from-blue-400 to-purple-600'
+                                : matchTypeColors.accent
                             }`}></div>
                             
                             {/* Unrecorded Match Warning Badge */}

@@ -37,7 +37,17 @@ export default function InlineEditor({
   // Check for demo auth state
   useEffect(() => {
     const demoAuth = localStorage.getItem('rvr_demo_auth')
-    setCanEdit(!!demoAuth)
+    if (demoAuth) {
+      try {
+        const authData = JSON.parse(demoAuth);
+        setCanEdit(authData.role === 'admin' || authData.role === 'editor');
+      } catch {
+        // Fallback for old simple auth
+        setCanEdit(true);
+      }
+    } else {
+      setCanEdit(false);
+    }
   }, [])
   
   const handleEdit = () => {
@@ -71,7 +81,9 @@ export default function InlineEditor({
   
   return (
     <>
-      <Component className={`relative group ${className}`}>
+      <Component className={`relative group ${className} ${
+        canEdit ? 'bg-yellow-50/50 border border-yellow-200/60 rounded-md shadow-sm hover:bg-yellow-50 hover:border-yellow-300 hover:shadow-md transition-all duration-200' : ''
+      }`}>
         {/* Display content */}
         {renderMarkdown && content ? (
           <MarkdownContent content={content} />
@@ -89,13 +101,19 @@ export default function InlineEditor({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               onClick={handleEdit}
-              className="absolute -top-2 -right-2 bg-blue-600 hover:bg-blue-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all opacity-0 group-hover:opacity-100 shadow-lg"
+              className="absolute -top-2 -right-2 bg-blue-600 hover:bg-blue-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all opacity-0 group-hover:opacity-100 shadow-lg z-10"
               title="Edit content"
             >
               ✏️
             </motion.button>
           )}
         </AnimatePresence>
+        
+        {/* Subtle edit indicator for editors */}
+        {canEdit && (
+          <div className="absolute top-1 left-1 w-2 h-2 bg-yellow-400 rounded-full opacity-40 group-hover:opacity-80 transition-opacity duration-200" 
+               title="Editable content" />
+        )}
       </Component>
 
       {/* Edit Modal */}
@@ -126,14 +144,22 @@ export function QuickLogin() {
   }, [])
   
   const handleLogin = () => {
-    // Simple demo login - username: admin, password: rvrfc2025
+    // Demo login with role support
+    let role = null;
     if (credentials.username === 'admin' && credentials.password === 'rvrfc2025') {
-      localStorage.setItem('rvr_demo_auth', 'true')
-      setIsLoggedIn(true)
-      setShowLogin(false)
-      setCredentials({ username: '', password: '' })
+      role = 'admin';
+    } else if (credentials.username === 'editor' && credentials.password === 'rvrfc2025') {
+      role = 'editor';
+    }
+    
+    if (role) {
+      const authData = { role, username: credentials.username, loginTime: new Date().toISOString() };
+      localStorage.setItem('rvr_demo_auth', JSON.stringify(authData));
+      setIsLoggedIn(true);
+      setShowLogin(false);
+      setCredentials({ username: '', password: '' });
     } else {
-      alert('Invalid credentials. Try username: admin, password: rvrfc2025')
+      alert('Invalid credentials. Try:\nAdmin: admin / rvrfc2025\nEditor: editor / rvrfc2025');
     }
   }
   
@@ -143,11 +169,19 @@ export function QuickLogin() {
   }
   
   if (isLoggedIn) {
+    const authData = JSON.parse(localStorage.getItem('rvr_demo_auth') || '{}');
+    const role = authData.role || 'editor';
+    const isAdmin = role === 'admin';
+    
     return (
-      <div className="flex items-center justify-between text-sm text-gray-700 bg-green-50 rounded-lg p-2">
+      <div className={`flex items-center justify-between text-sm text-gray-700 rounded-lg p-2 ${
+        isAdmin ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'
+      }`}>
         <div className="flex items-center gap-2">
-          <span className="text-green-600">✓</span>
-          <span className="font-medium">Editor Mode</span>
+          <span className={isAdmin ? 'text-red-600' : 'text-green-600'}>
+            {isAdmin ? '👑' : '✏️'}
+          </span>
+          <span className="font-medium capitalize">{role} Mode</span>
         </div>
         <button
           onClick={handleLogout}

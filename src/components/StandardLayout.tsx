@@ -17,7 +17,8 @@ import Footer from "./Footer";
 import DeveloperCredits from "./DeveloperCredits";
 import Header from "./Header";
 import MobileLayout from "./MobileLayout";
-import { QuickLogin } from "./InlineEditor";
+import RoleIndicator from "./RoleIndicator";
+import LoginButton from "./LoginButton";
 
 interface StandardLayoutProps {
   children: ReactNode;
@@ -39,6 +40,9 @@ export default function StandardLayout({ children, title, currentPage }: Standar
     <>
       {/* Mobile Layout - Only for mobile screens */}
       <div className="block md:hidden">
+        {/* Role Indicator Overlay Banner - Mobile */}
+        <RoleIndicator />
+        
         <MobileLayout 
           currentPage={currentPage}
           clubData={{
@@ -59,6 +63,9 @@ export default function StandardLayout({ children, title, currentPage }: Standar
 
       {/* Desktop Layout - Only for desktop screens */}
       <div className="hidden md:block min-h-screen bg-gray-50">
+        {/* Role Indicator Overlay Banner */}
+        <RoleIndicator />
+        
         {/* Desktop Header Navigation */}
         <header className="bg-club-primary text-white shadow-lg sticky top-0 z-40 border-b-6 border-club-accent">
         <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;utf8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 fill=%22white%22%3e%3ccircle cx=%2220%22 cy=%2220%22 r=%222%22/%3e%3ccircle cx=%2280%22 cy=%2240%22 r=%221%22/%3e%3ccircle cx=%2240%22 cy=%2270%22 r=%221.5%22/%3e%3ccircle cx=%2290%22 cy=%2280%22 r=%221%22/%3e%3ccircle cx=%2210%22 cy=%2260%22 r=%221%22/%3e%3c/svg%3e')] bg-repeat"></div>
@@ -192,12 +199,9 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                   <Link href="/get-involved/events" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
                     🎉 Events
                   </Link>
-                  <Link href="/boot-room" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
+                  <Link href="/boot-room" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary">
                     👢 Boot Room
                   </Link>
-                  <div className="px-4 py-3">
-                    <QuickLogin />
-                  </div>
                 </div>
               </div>
 
@@ -313,6 +317,9 @@ export default function StandardLayout({ children, title, currentPage }: Standar
         
         {/* Developer Credits - Minimal Branding */}
         <DeveloperCredits variant="minimal" />
+        
+        {/* Floating Login Button */}
+        <LoginButton />
       </div>
     </>
   );
