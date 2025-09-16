@@ -1289,6 +1289,12 @@ export default function MatchCentral() {
     }
   };
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('match-central-auth');
+    setAuthPassword('');
+  };
+
   // Get actual match data for fixtures and results - Fixed to match Matchday logic
   const getUpcomingMatches = () => {
     return allMatches
@@ -1888,6 +1894,14 @@ export default function MatchCentral() {
                 <span>📅</span>
                 <span className="text-sm">Schedule</span>
               </a>
+              <button
+                onClick={handleLogout}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1"
+                title="Logout from Match Central"
+              >
+                <span>🔓</span>
+                <span className="text-sm">Logout</span>
+              </button>
             </div>
           </div>
         </div>
@@ -2269,6 +2283,14 @@ export default function MatchCentral() {
                       <span className="text-lg">📅</span>
                       <span className="hidden sm:inline">Schedule</span>
                     </a>
+                    <button
+                      onClick={handleLogout}
+                      className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center space-x-2 shadow-lg hover:shadow-xl"
+                      title="Logout from Match Central"
+                    >
+                      <span className="text-lg">🔓</span>
+                      <span className="hidden sm:inline">Logout</span>
+                    </button>
                   </div>
                 </div>
               </div>
