@@ -59,6 +59,17 @@ local_*.sql
 # vercel
 .vercel
 
+# Sales and marketing materials (confidential/local only)
+*sales*
+*marketing*
+*pricing*
+*SALES*
+*MARKETING*
+*PRICING*
+PRODUCT_SALES*.md
+MARKETING_PACKAGE.md
+TECHNICAL_COMPONENT_BREAKDOWN.md
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
