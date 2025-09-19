@@ -144,13 +144,9 @@ export function QuickLogin() {
   }, [])
   
   const handleLogin = () => {
-    // Demo login with role support
-    let role = null;
-    if (credentials.username === 'admin' && credentials.password === 'rvrfc2025') {
-      role = 'admin';
-    } else if (credentials.username === 'editor' && credentials.password === 'rvrfc2025') {
-      role = 'editor';
-    }
+    // SECURITY UPDATE: Redirect to secure authentication
+    window.location.href = '/login';
+    return;
     
     if (role) {
       const authData = { role, username: credentials.username, loginTime: new Date().toISOString() };
@@ -159,7 +155,7 @@ export function QuickLogin() {
       setShowLogin(false);
       setCredentials({ username: '', password: '' });
     } else {
-      alert('Invalid credentials. Try:\nAdmin: admin / rvrfc2025\nEditor: editor / rvrfc2025');
+      alert('Invalid credentials. Please contact the club administrator for access.');
     }
   }
   
@@ -226,7 +222,7 @@ export function QuickLogin() {
             Cancel
           </button>
         </div>
-        <div className="text-xs text-gray-500">Demo: admin / rvrfc2025</div>
+        <div className="text-xs text-gray-500">Contact administrator for access</div>
       </div>
     )
   }

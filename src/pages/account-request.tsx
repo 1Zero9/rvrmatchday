@@ -17,9 +17,6 @@ interface AccountRequest {
   role: 'coach' | 'manager' | 'parent' | 'volunteer';
   teamInterest: string[];
   experience: string;
-  reason: string;
-  garda_vetting: boolean;
-  safeguarding_course: boolean;
 }
 
 export default function AccountRequest() {
@@ -33,15 +30,13 @@ export default function AccountRequest() {
     phone: '',
     role: 'parent',
     teamInterest: [],
-    experience: '',
-    reason: '',
-    garda_vetting: false,
-    safeguarding_course: false
+    experience: ''
   });
 
   const availableTeams = [
-    'U10 Boys', 'U12 Boys', 'U14 Boys', 'U16 Boys', 'U18 Boys',
-    'U12 Girls', 'U14 Girls', 'U16 Girls',
+    'U8 Boys', 'U9 Boys', 'U10 Boys', 'U12 Boys', 'U14 Boys', 'U16 Boys', 'U18 Boys',
+    'U8 Girls', 'U9 Girls', 'U12 Girls', 'U14 Girls', 'U16 Girls',
+    'Junior Academy U8s', 'Junior Academy U9s',
     'Senior Men', 'Senior Women', 'Veterans (O35)',
     'Inclusive Football'
   ];
@@ -62,33 +57,71 @@ export default function AccountRequest() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate mandatory fields
+    if (!formData.email || !formData.firstName || !formData.lastName || !formData.phone || !formData.role || formData.teamInterest.length === 0) {
+      alert('Please fill in all mandatory fields (highlighted in blue)');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       // Create account request record
-      const { error } = await supabase
+      const requestData = {
+        email: formData.email,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone: formData.phone,
+        requested_role: formData.role,
+        team_interest: formData.teamInterest,
+        experience: formData.experience || null,
+        status: 'pending'
+      };
+
+      const { data: insertData, error } = await supabase
         .from('account_requests')
-        .insert({
-          email: formData.email,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          phone: formData.phone,
-          requested_role: formData.role,
-          team_interest: formData.teamInterest,
-          experience: formData.experience,
-          reason: formData.reason,
-          garda_vetting: formData.garda_vetting,
-          safeguarding_course: formData.safeguarding_course,
-          status: 'pending',
-          requested_at: new Date().toISOString()
+        .insert(requestData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database error details:', error);
+        alert(`Database error: ${error.message || 'Unknown error'}. Please check console for details.`);
+        throw error;
+      }
+
+      // Send email notification to admins
+      try {
+        const response = await fetch('/api/email/send-notification', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'account_request_admin',
+            data: {
+              requestId: insertData.id,
+              applicantName: `${formData.firstName} ${formData.lastName}`,
+              applicantEmail: formData.email,
+              requestedRole: formData.role,
+              teamInterest: formData.teamInterest
+            }
+          })
         });
 
-      if (error) throw error;
+        if (!response.ok) {
+          console.warn('Email notification failed:', await response.text());
+        }
+      } catch (emailError) {
+        console.warn('Failed to send admin notification email:', emailError);
+        // Don't fail the request if email fails
+      }
 
       setSubmitted(true);
     } catch (error) {
       console.error('Error submitting request:', error);
-      alert('Error submitting request. Please try again.');
+      alert('Error submitting request. Please try again. If the problem persists, please contact us directly.');
     } finally {
       setSubmitting(false);
     }
@@ -97,29 +130,40 @@ export default function AccountRequest() {
   if (submitted) {
     return (
       <StandardLayout>
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center py-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 text-center"
+            transition={{ duration: 0.5 }}
+            className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4"
           >
-            <div className="text-6xl mb-4">✅</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Request Submitted!</h1>
-            <p className="text-gray-600 mb-6">
-              Your account request has been submitted successfully. A club administrator will review your request and contact you within 2-3 business days.
-            </p>
-            <div className="space-y-3">
-              <button
-                onClick={() => router.push('/match-central')}
-                className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
-              >
-                Continue to Match Central
-              </button>
+            <div className="text-center">
+              <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl text-white">✓</span>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">Request Submitted!</h1>
+              <p className="text-gray-600 mb-6">
+                Thank you for your interest in joining Rivervalley Rangers AFC. Your account request has been submitted successfully.
+              </p>
+              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                <div className="flex">
+                  <div className="ml-3">
+                    <p className="text-sm text-blue-700">
+                      <strong>What happens next:</strong>
+                    </p>
+                    <ul className="mt-2 text-sm text-blue-600 space-y-1">
+                      <li>• Our administrators will review your application</li>
+                      <li>• You'll receive an email within 2-3 business days</li>
+                      <li>• If approved, you'll get login credentials and welcome information</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
               <button
                 onClick={() => router.push('/home')}
-                className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
               >
-                Back to Home
+                Return to Homepage
               </button>
             </div>
           </motion.div>
@@ -128,141 +172,158 @@ export default function AccountRequest() {
     );
   }
 
+  // Check if all mandatory fields are filled
+  const mandatoryFieldsFilled = formData.email && formData.firstName && formData.lastName && formData.phone && formData.role && formData.teamInterest.length > 0;
+
   return (
     <StandardLayout>
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8">
-        <div className="max-w-2xl mx-auto px-4">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Request Account Access</h1>
-            <p className="text-gray-600">Join the RVR Match Central system to access team management tools</p>
-          </div>
-
+          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg shadow-lg p-8"
+            transition={{ duration: 0.6 }}
+            className="text-center mb-8"
+          >
+            <div className="text-6xl mb-6">⚽</div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Join Rivervalley Rangers AFC</h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Request access to our club management system. Complete the form below and we'll review your application.
+            </p>
+          </motion.div>
+
+          {/* Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="bg-white rounded-2xl shadow-2xl p-8"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
               
-              {/* Personal Information */}
-              <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                  <span className="mr-3">👤</span>
-                  Personal Information
-                </h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Mandatory Fields Notice */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center">
+                  <span className="text-2xl mr-3">ℹ️</span>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      First Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.firstName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Last Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.lastName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="+353 xx xxx xxxx"
-                    />
+                    <h3 className="text-lg font-semibold text-blue-900">Required Information</h3>
+                    <p className="text-blue-700 text-sm mt-1">
+                      All fields marked with a <span className="text-blue-600 font-bold">blue label</span> are mandatory and must be completed.
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Role Selection */}
-              <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                  <span className="mr-3">🎯</span>
-                  Role & Access Level
-                </h2>
+              <div className="grid md:grid-cols-2 gap-6">
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    { value: 'coach', label: 'Coach', desc: 'Full team management and match recording', icon: '🧑‍🏫' },
-                    { value: 'manager', label: 'Team Manager', desc: 'Match recording and team coordination', icon: '📋' },
-                    { value: 'parent', label: 'Parent/Guardian', desc: 'View matches and statistics for your child', icon: '👨‍👩‍👧‍👦' },
-                    { value: 'volunteer', label: 'Club Volunteer', desc: 'Help with match day operations', icon: '🤝' }
-                  ].map((role) => (
-                    <label key={role.value} className="cursor-pointer">
-                      <div className={`border-2 rounded-lg p-4 transition-all ${
-                        formData.role === role.value 
-                          ? 'border-green-500 bg-green-50' 
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}>
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="radio"
-                            name="role"
-                            value={role.value}
-                            checked={formData.role === role.value}
-                            onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as any }))}
-                            className="text-green-600"
-                          />
-                          <div className="text-2xl">{role.icon}</div>
-                          <div>
-                            <div className="font-medium text-gray-900">{role.label}</div>
-                            <div className="text-sm text-gray-600">{role.desc}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </label>
-                  ))}
+                {/* First Name */}
+                <div>
+                  <label className="block text-sm font-bold text-blue-600 mb-2">
+                    First Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                    placeholder="Enter your first name"
+                  />
+                </div>
+
+                {/* Last Name */}
+                <div>
+                  <label className="block text-sm font-bold text-blue-600 mb-2">
+                    Last Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                    placeholder="Enter your last name"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-bold text-blue-600 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    className="w-full px-4 py-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="your.email@example.com"
+                  />
+                </div>
+
+                {/* Phone Number */}
+                <div>
+                  <label className="block text-sm font-bold text-blue-600 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    className="w-full px-4 py-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="+353 87 123 4567"
+                  />
+                </div>
+
+                {/* Role */}
+                <div>
+                  <label className="block text-sm font-bold text-blue-600 mb-2">
+                    Role *
+                  </label>
+                  <select
+                    required
+                    className="w-full px-4 py-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    value={formData.role}
+                    onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as any }))}
+                  >
+                    <option value="parent">Parent/Guardian</option>
+                    <option value="coach">Coach</option>
+                    <option value="manager">Team Manager</option>
+                    <option value="volunteer">Volunteer</option>
+                  </select>
+                </div>
+
+                {/* Experience */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Football Experience (Optional)
+                  </label>
+                  <textarea
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    value={formData.experience}
+                    onChange={(e) => setFormData(prev => ({ ...prev, experience: e.target.value }))}
+                    placeholder="Brief description of your football background or experience with youth teams..."
+                  />
                 </div>
               </div>
 
               {/* Team Interest */}
               <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                  <span className="mr-3">⚽</span>
-                  Team Interest
-                </h2>
-                
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <label className="block text-sm font-bold text-blue-600 mb-4">
+                  Team Interest * (Select at least one)
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {availableTeams.map((team) => (
                     <label key={team} className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="checkbox"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         checked={formData.teamInterest.includes(team)}
                         onChange={(e) => handleTeamInterestChange(team, e.target.checked)}
-                        className="text-green-600 rounded"
                       />
                       <span className="text-sm text-gray-700">{team}</span>
                     </label>
@@ -270,97 +331,65 @@ export default function AccountRequest() {
                 </div>
               </div>
 
-              {/* Experience & Reason */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Football Experience/Background
-                  </label>
-                  <textarea
-                    value={formData.experience}
-                    onChange={(e) => setFormData(prev => ({ ...prev, experience: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    rows={3}
-                    placeholder="Tell us about your football background, coaching experience, or involvement with youth football..."
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Why do you want access to Match Central? *
-                  </label>
-                  <textarea
-                    required
-                    value={formData.reason}
-                    onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    rows={3}
-                    placeholder="Explain how you plan to use the system and your connection to RVR FC..."
-                  />
-                </div>
-              </div>
-
-              {/* Compliance (for coaches/managers) */}
-              {(formData.role === 'coach' || formData.role === 'manager') && (
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <span className="mr-3">🛡️</span>
-                    Compliance & Safety
-                  </h2>
-                  
-                  <div className="space-y-3">
-                    <label className="flex items-start space-x-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.garda_vetting}
-                        onChange={(e) => setFormData(prev => ({ ...prev, garda_vetting: e.target.checked }))}
-                        className="text-green-600 rounded mt-1"
-                      />
-                      <div>
-                        <span className="text-sm font-medium text-gray-900">Garda Vetting Completed</span>
-                        <p className="text-xs text-gray-600">Required for all coaching and management roles</p>
-                      </div>
-                    </label>
-                    
-                    <label className="flex items-start space-x-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.safeguarding_course}
-                        onChange={(e) => setFormData(prev => ({ ...prev, safeguarding_course: e.target.checked }))}
-                        className="text-green-600 rounded mt-1"
-                      />
-                      <div>
-                        <span className="text-sm font-medium text-gray-900">Safeguarding Course Completed</span>
-                        <p className="text-xs text-gray-600">Child protection training certification</p>
-                      </div>
-                    </label>
+              {/* Disclaimer */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <span className="text-2xl mr-3">⚠️</span>
+                  <div>
+                    <h3 className="text-lg font-semibold text-yellow-900 mb-2">Important Information</h3>
+                    <div className="text-yellow-800 text-sm space-y-2">
+                      <p>
+                        <strong>Additional Requirements:</strong> Depending on your role, we may require additional documentation including:
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 ml-4">
+                        <li>Garda Vetting (for coaches and volunteers working with children)</li>
+                        <li>Safeguarding course completion certificate</li>
+                        <li>Coaching qualifications (for coaching roles)</li>
+                        <li>References from previous clubs or organizations</li>
+                      </ul>
+                      <p className="mt-3">
+                        <strong>Data Protection:</strong> Your information will be used solely for club administration and communication purposes in accordance with GDPR regulations.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              )}
+              </div>
 
-              {/* Submit */}
-              <div className="border-t pt-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <h3 className="font-medium text-blue-900 mb-2">What happens next?</h3>
-                  <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Your request will be reviewed by a club administrator</li>
-                    <li>• You'll receive an email within 2-3 business days</li>
-                    <li>• If approved, you'll get login credentials and system access</li>
-                    <li>• Coaches may require additional verification and training</li>
-                  </ul>
-                </div>
-                
+              {/* Submit Button */}
+              <div className="pt-6">
                 <button
                   type="submit"
-                  disabled={submitting || !formData.email || !formData.firstName || !formData.lastName || !formData.reason}
-                  className="w-full px-6 py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-lg font-bold transition-colors"
+                  disabled={submitting || !mandatoryFieldsFilled}
+                  className={`w-full py-4 px-6 rounded-lg font-bold text-lg transition-all ${
+                    mandatoryFieldsFilled && !submitting
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
-                  {submitting ? 'Submitting Request...' : 'Submit Account Request'}
+                  {submitting ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Submitting Request...
+                    </span>
+                  ) : mandatoryFieldsFilled ? (
+                    'Submit Account Request'
+                  ) : (
+                    'Please Complete All Mandatory Fields'
+                  )}
                 </button>
               </div>
+
+              {/* Form Status */}
+              {!mandatoryFieldsFilled && (
+                <div className="text-center text-sm text-gray-500">
+                  Please fill in all fields marked with blue labels to submit your request
+                </div>
+              )}
             </form>
           </motion.div>
-
         </div>
       </div>
     </StandardLayout>

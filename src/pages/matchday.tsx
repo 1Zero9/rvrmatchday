@@ -1056,11 +1056,140 @@ export default function MatchDay() {
               </motion.button>
 
               {/* Epic Match Card */}
-              <div className="bg-white rounded-3xl shadow-2xl p-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-bold mb-4">Epic Match View</h2>
-                  <p className="text-gray-600">Match details would appear here</p>
+              <div className="bg-gradient-to-br from-white via-gray-50 to-white rounded-3xl shadow-2xl overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-club-primary to-club-secondary p-6 text-white">
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">⚽</div>
+                    <h2 className="text-2xl font-bold mb-1">Epic Match</h2>
+                    <p className="text-white/80">
+                      {fullScreenMatch && teams.find(t => t.id === fullScreenMatch.teamId)?.name}
+                    </p>
+                  </div>
                 </div>
+
+                {/* Match Details */}
+                {fullScreenMatch && (
+                  <div className="p-6 space-y-6">
+                    {/* Teams & Score */}
+                    <div className="text-center">
+                      <div className="mb-4">
+                        <div className="text-sm text-gray-500 mb-2">
+                          {new Date(fullScreenMatch.scheduledDate).toLocaleDateString('en-GB', {
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                          })}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {new Date(fullScreenMatch.scheduledDate).toLocaleTimeString('en-GB', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-center space-x-6 mb-6">
+                        <div className="text-center flex-1">
+                          <div className="font-bold text-lg text-gray-900">
+                            {teams.find(t => t.id === fullScreenMatch.teamId)?.name}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {fullScreenMatch.isHomeMatch ? 'HOME' : 'AWAY'}
+                          </div>
+                        </div>
+                        
+                        <div className="text-center">
+                          {fullScreenMatch.status === 'Finished' && fullScreenMatch.homeScore !== undefined && fullScreenMatch.awayScore !== undefined ? (
+                            <div className="text-4xl font-bold text-gray-900">
+                              {fullScreenMatch.isHomeMatch ? fullScreenMatch.homeScore : fullScreenMatch.awayScore}
+                              <span className="text-gray-400 mx-2">-</span>
+                              {fullScreenMatch.isHomeMatch ? fullScreenMatch.awayScore : fullScreenMatch.homeScore}
+                            </div>
+                          ) : (
+                            <div className="text-2xl font-bold text-blue-600">VS</div>
+                          )}
+                        </div>
+                        
+                        <div className="text-center flex-1">
+                          <div className="font-bold text-lg text-gray-900">
+                            {fullScreenMatch.opponent}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {!fullScreenMatch.isHomeMatch ? 'HOME' : 'AWAY'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Result Badge */}
+                      {fullScreenMatch.status === 'Finished' && fullScreenMatch.homeScore !== undefined && fullScreenMatch.awayScore !== undefined && (
+                        <div className="mb-6">
+                          {(() => {
+                            const result = getMatchResult(fullScreenMatch);
+                            return (
+                              <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full font-bold ${
+                                result.result === 'W' ? 'bg-green-100 text-green-700' :
+                                result.result === 'L' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                <span className="text-xl">
+                                  {result.result === 'W' ? '🏆' : result.result === 'L' ? '💪' : '🤝'}
+                                </span>
+                                <span>
+                                  {result.result === 'W' ? 'VICTORY' : result.result === 'L' ? 'DEFEAT' : 'DRAW'}
+                                </span>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Match Info */}
+                    <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Competition</span>
+                        <div className="flex items-center space-x-2">
+                          <MatchTypeBadge matchType={fullScreenMatch.matchType} />
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Venue</span>
+                        <span className="text-sm font-medium text-gray-900">{fullScreenMatch.venue}</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Status</span>
+                        <span className={`text-sm font-medium ${
+                          fullScreenMatch.status === 'Finished' ? 'text-green-600' :
+                          fullScreenMatch.status === 'Live' ? 'text-red-600' : 'text-blue-600'
+                        }`}>
+                          {fullScreenMatch.status.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => {
+                          window.open('/match-recorder', '_blank');
+                        }}
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl font-bold hover:from-blue-600 hover:to-blue-700 transition-all"
+                      >
+                        📊 Match Recorder
+                      </button>
+                      
+                      <button
+                        onClick={closeFullScreenMatch}
+                        className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-bold hover:bg-gray-200 transition-all"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>

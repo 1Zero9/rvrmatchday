@@ -139,7 +139,7 @@ export default function MobileNavigation({ currentPage }: MobileNavigationProps)
                   >
                     🔒 Access Match Central
                   </Link>
-                  <p className="text-xs text-blue-200 text-center mt-2">Password: rvrfc2025</p>
+                  <p className="text-xs text-blue-200 text-center mt-2">Password protected access</p>
                 </div>
               </div>
 

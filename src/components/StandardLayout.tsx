@@ -14,7 +14,6 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState, ReactNode } from "react";
 import Footer from "./Footer";
-import DeveloperCredits from "./DeveloperCredits";
 import Header from "./Header";
 import MobileLayout from "./MobileLayout";
 import RoleIndicator from "./RoleIndicator";
@@ -73,14 +72,14 @@ export default function StandardLayout({ children, title, currentPage }: Standar
           <div className="flex items-center h-16 md:h-24">
             
             {/* Logo Section - Bigger and on the left */}
-            <div className="flex items-center space-x-4 cursor-pointer group mr-8" onClick={handleLogoClick}>
+            <div className="flex items-center space-x-3 cursor-pointer group mr-8 flex-shrink-0" onClick={handleLogoClick}>
               <div className="relative">
                 <Image 
                   src="/images/logo.png" 
                   alt="Rivervalley Rangers AFC Logo" 
-                  width={80}
-                  height={80}
-                  className="drop-shadow-lg group-hover:scale-105 transition-transform duration-200 md:w-20 md:h-20 w-12 h-12"
+                  width={64}
+                  height={64}
+                  className="drop-shadow-lg group-hover:scale-105 transition-transform duration-200 w-12 h-12 md:w-16 md:h-16"
                 />
                 <div className="absolute -top-2 -right-2 group/indicator">
                   <div className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg relative cursor-help">
@@ -98,7 +97,7 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                 </div>
               </div>
               <div>
-                <h1 className="font-bold text-sm md:text-xl text-white group-hover:text-slate-200 transition-colors duration-200">
+                <h1 className="font-bold text-sm md:text-lg text-white group-hover:text-slate-200 transition-colors duration-200 whitespace-nowrap">
                   Rivervalley Rangers
                 </h1>
                 <p className="text-slate-300 text-xs md:text-sm font-medium flex items-center space-x-2">
@@ -111,12 +110,12 @@ export default function StandardLayout({ children, title, currentPage }: Standar
 
             {/* Centered Navigation */}
             <nav className="hidden lg:flex items-center space-x-1 flex-1 justify-center">
-              <Link href="/home" className="px-4 py-3 text-white hover:bg-club-primary-light rounded-lg transition-all duration-200 font-medium text-base">
+              <Link href="/home" className="px-4 py-3 text-white hover:bg-club-primary-light rounded-lg transition-all duration-200 font-medium text-base whitespace-nowrap">
                 🏠 Home
               </Link>
               
               <div className="relative group">
-                <button className="px-4 py-3 text-white hover:bg-club-primary-light rounded-lg transition-all duration-200 font-medium flex items-center text-base">
+                <button className="px-4 py-3 text-white hover:bg-club-primary-light rounded-lg transition-all duration-200 font-medium flex items-center text-base whitespace-nowrap">
                   🏛️ About
                   <svg className="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -133,13 +132,16 @@ export default function StandardLayout({ children, title, currentPage }: Standar
               </div>
 
               <div className="relative group">
-                <button className="px-4 py-3 text-white hover:bg-club-secondary-light rounded-lg transition-all duration-200 font-medium flex items-center text-base">
+                <button className="px-4 py-3 text-white hover:bg-club-secondary-light rounded-lg transition-all duration-200 font-medium flex items-center text-base whitespace-nowrap">
                   👥 Teams
                   <svg className="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
                 <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                  <Link href="/matchday" className="block px-4 py-3 text-gray-700 hover:bg-blue-500 hover:bg-opacity-20 hover:text-blue-600 border-b border-gray-100 font-medium bg-blue-50">
+                    📱 Fixtures & Results (Parents)
+                  </Link>
                   <Link href="/teams" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium">
                     👥 All Teams
                   </Link>
@@ -164,17 +166,17 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                 </div>
               </div>
 
-              <Link href="/matchday" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base">
+              <Link href="/matchday" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base whitespace-nowrap">
                 ⚽ MatchDay
               </Link>
 
-              <Link href="/match-central" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base flex items-center space-x-2">
+              <Link href="/match-central" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base flex items-center space-x-2 whitespace-nowrap">
                 <span>🔒</span>
                 <span>Match Central</span>
               </Link>
 
               <div className="relative group">
-                <button className="px-4 py-3 text-white hover:bg-club-primary-dark rounded-lg transition-all duration-200 font-medium flex items-center text-base">
+                <button className="px-4 py-3 text-white hover:bg-club-primary-dark rounded-lg transition-all duration-200 font-medium flex items-center text-base whitespace-nowrap">
                   🌟 More
                   <svg className="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -206,7 +208,7 @@ export default function StandardLayout({ children, title, currentPage }: Standar
               </div>
 
               <div className="relative group">
-                <button className="px-4 py-3 text-white hover:bg-club-neutral-dark rounded-lg transition-all duration-200 font-medium flex items-center text-base">
+                <button className="px-4 py-3 text-white hover:bg-club-neutral-dark rounded-lg transition-all duration-200 font-medium flex items-center text-base whitespace-nowrap">
                   📞 Contact
                   <svg className="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -232,21 +234,27 @@ export default function StandardLayout({ children, title, currentPage }: Standar
               </div>
             </nav>
 
-            {/* Mobile Menu Button - For tablet size only */}
-            <button 
-              className="lg:hidden text-white bg-club-primary p-2 rounded-lg hover:bg-club-primary-light transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
+            {/* Right side actions */}
+            <div className="flex items-center space-x-3 ml-auto flex-shrink-0">
+              {/* Smart Login/Admin Button */}
+              <LoginButton />
+              
+              {/* Mobile Menu Button - For tablet size only */}
+              <button 
+                className="lg:hidden text-white bg-club-primary p-2 rounded-lg hover:bg-club-primary-light transition-colors"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -265,6 +273,9 @@ export default function StandardLayout({ children, title, currentPage }: Standar
               </Link>
               <Link href="/about" className="block py-3 text-white hover:bg-club-primary-light rounded px-3 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 🏛️ About
+              </Link>
+              <Link href="/matchday" className="block py-3 text-white hover:bg-blue-600 rounded px-3 font-medium bg-blue-500/20" onClick={() => setMobileMenuOpen(false)}>
+                📱 Fixtures & Results (Parents)
               </Link>
               <Link href="/teams" className="block py-3 text-white hover:bg-club-primary-light rounded px-3 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 👥 Teams
@@ -314,12 +325,6 @@ export default function StandardLayout({ children, title, currentPage }: Standar
 
         {/* Enhanced Footer Component - Consistent across all pages */}
         <Footer />
-        
-        {/* Developer Credits - Minimal Branding */}
-        <DeveloperCredits variant="minimal" />
-        
-        {/* Floating Login Button */}
-        <LoginButton />
       </div>
     </>
   );

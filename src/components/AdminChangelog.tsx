@@ -32,25 +32,108 @@ interface ChangelogEntry {
 
 const changelogData: ChangelogEntry[] = [
   {
-    version: "2.6.0",
-    title: "Consistent Footer System & UX Improvements", 
-    date: "2025-01-26",
+    version: "3.2.0",
+    title: "Unified Account Management System",
+    date: "2025-09-19",
     type: "major",
-    impact: "improvement",
-    filesChanged: 5,
-    linesAdded: 98,
-    linesRemoved: 125,
+    impact: "feature",
+    filesChanged: 15,
+    linesAdded: 850,
+    linesRemoved: 120,
     changes: [
       {
-        category: "Footer System Unification",
-        icon: "🔄",
+        category: "Account Management",
+        icon: "👥",
         color: "text-blue-600",
         items: [
-          "Replaced StandardLayout static footer with enhanced Footer component for consistency across all pages",
-          "Removed useFloatingFooter parameter complexity - now all pages use the same expandable footer",
-          "Unified 'More Info' popup functionality available on every page, not just home page",
-          "Admin access link integrated into unified footer system for easy access from any page",
-          "Fixed footer branding colors to match club palette throughout expanded sections"
+          "Created unified account management combining requests and user management",
+          "Built comprehensive Active Directory-like user management system",
+          "Added statistics dashboard with real-time user counts",
+          "Implemented user actions: activate, deactivate, password reset",
+          "Created toggle view between account requests and existing users"
+        ]
+      },
+      {
+        category: "Navigation Enhancement",
+        icon: "⚙️",
+        color: "text-orange-600",
+        items: [
+          "Consolidated redundant Admin/Login buttons into single smart button",
+          "Smart button changes based on user role and login status",
+          "Admin users see 'Admin' button that goes to dashboard",
+          "Non-admin users see role-specific logout buttons",
+          "Improved navigation UX and reduced confusion"
+        ]
+      },
+      {
+        category: "API & Database",
+        icon: "🔧",
+        color: "text-green-600",
+        items: [
+          "Fixed Row Level Security issues with admin client implementation",
+          "Enhanced error handling for user management operations",
+          "Added comprehensive user existence checking",
+          "Implemented secure password reset with temporary passwords",
+          "Created audit logging framework (ready for enhanced schema)"
+        ]
+      },
+      {
+        category: "Security & Admin Tools",
+        icon: "🛡️",
+        color: "text-red-600",
+        items: [
+          "Built enterprise-grade user management interface",
+          "Added visual status indicators and security alerts",
+          "Implemented role-based action controls",
+          "Created test user management system",
+          "Enhanced admin access patterns and security"
+        ]
+      }
+    ]
+  },
+  {
+    version: "3.1.0",
+    title: "Complete Authentication System Restructure",
+    date: new Date().toISOString().split('T')[0], // Today's date
+    type: "major",
+    impact: "feature",
+    filesChanged: 8,
+    linesAdded: 450,
+    linesRemoved: 89,
+    changes: [
+      {
+        category: "Authentication System",
+        icon: "🔐",
+        color: "text-red-600",
+        items: [
+          "Restructured Match Central to simple username/password login system",
+          "Created unified registration page with role selection and disclaimers",
+          "Fixed admin authentication to work with Match Central login system",
+          "Added admin-only user setup interface for manual account creation",
+          "Removed conflicting OneZeroNine popup button from bottom right corner"
+        ]
+      },
+      {
+        category: "User Management",
+        icon: "👥",
+        color: "text-green-600",
+        items: [
+          "Created comprehensive account registration workflow",
+          "Added role-based form validation with mandatory fields",
+          "Implemented admin manual user creation with email notifications",
+          "Fixed database RLS policies for public account requests",
+          "Enhanced account admin interface with better error handling"
+        ]
+      },
+      {
+        category: "Database & Infrastructure",
+        icon: "🗄️",
+        color: "text-blue-600",
+        items: [
+          "Organized SQL scripts into structured database folder",
+          "Created database migration scripts for account requests schema",
+          "Fixed Row Level Security policies for account submissions",
+          "Updated role constraints to include admin and editor roles"
         ]
       },
       {

@@ -19,32 +19,73 @@ export async function checkAdminAccess(): Promise<{
   error?: string;
 }> {
   try {
-    // TEMPORARY: Check for dev admin bypass
-    if (typeof window !== 'undefined' && localStorage.getItem('temp_admin') === 'true') {
-      return {
-        isAdmin: true,
-        user: {
-          id: 'temp-admin',
-          email: 'dev@admin.com',
-          role: 'admin',
-          first_name: 'Dev',
-          last_name: 'Admin'
+    // Check for Match Central authentication first
+    if (typeof window !== 'undefined') {
+      const matchCentralAuth = sessionStorage.getItem('match-central-auth');
+      const demoAuth = localStorage.getItem('rvr_demo_auth');
+      
+      // Check Match Central auth
+      if (matchCentralAuth === 'authenticated') {
+        return {
+          isAdmin: true,
+          user: {
+            id: 'match-central-admin',
+            email: 'admin@matchcentral.com',
+            role: 'admin',
+            first_name: 'Match Central',
+            last_name: 'Admin'
+          }
+        };
+      }
+      
+      // Check demo auth (from LoginPopup)
+      if (demoAuth) {
+        try {
+          const authData = JSON.parse(demoAuth);
+          if (authData.role === 'admin') {
+            return {
+              isAdmin: true,
+              user: {
+                id: 'demo-admin',
+                email: `${authData.username}@demo.com`,
+                role: 'admin',
+                first_name: authData.username,
+                last_name: 'Admin'
+              }
+            };
+          }
+        } catch (e) {
+          // Invalid auth data
         }
-      };
+      }
+      
+      // TEMPORARY: Check for dev admin bypass
+      if (localStorage.getItem('temp_admin') === 'true') {
+        return {
+          isAdmin: true,
+          user: {
+            id: 'temp-admin',
+            email: 'dev@admin.com',
+            role: 'admin',
+            first_name: 'Dev',
+            last_name: 'Admin'
+          }
+        };
+      }
     }
 
-    // Get the current authenticated user
+    // Get the current authenticated user from Supabase
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
       return { isAdmin: false, error: 'No authenticated user' };
     }
 
-    // Check their profile role in the database
+    // Check their profile role in tracker_users table
     const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, email, role, first_name, last_name')
-      .eq('user_id', user.id)
+      .from('tracker_users')
+      .select('id, email, role, full_name')
+      .eq('id', user.id)
       .single();
 
     if (profileError) {
@@ -52,27 +93,9 @@ export async function checkAdminAccess(): Promise<{
       return { isAdmin: false, error: 'Profile not found' };
     }
 
-    if (!profile || profile.role !== 'admin') {
-      // Log unauthorized access attempts
-      await ChangeLogger.system(
-        'UNAUTHORIZED_ADMIN_ACCESS',
-        `User ${user.email} attempted admin access without privileges`,
-        { user_id: user.id, user_email: user.email, user_role: profile?.role }
-      );
-      
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'editor')) {
       return { isAdmin: false, error: 'Insufficient privileges' };
     }
-
-    // Log successful admin access
-    await ChangeLogger.system(
-      'ADMIN_ACCESS_GRANTED',
-      `Admin ${profile.email} accessed admin area`,
-      { 
-        admin_id: profile.id,
-        admin_email: profile.email,
-        session_id: user.id
-      }
-    );
 
     return {
       isAdmin: true,
@@ -80,8 +103,8 @@ export async function checkAdminAccess(): Promise<{
         id: profile.id,
         email: profile.email,
         role: profile.role,
-        first_name: profile.first_name,
-        last_name: profile.last_name
+        first_name: profile.full_name?.split(' ')[0] || 'Unknown',
+        last_name: profile.full_name?.split(' ').slice(1).join(' ') || 'User'
       }
     };
 

@@ -14,13 +14,10 @@ interface AccountRequest {
   email: string;
   first_name: string;
   last_name: string;
-  phone?: string;
+  phone: string;
   requested_role: 'coach' | 'manager' | 'parent' | 'volunteer';
   team_interest: string[];
   experience?: string;
-  reason: string;
-  garda_vetting: boolean;
-  safeguarding_course: boolean;
   status: 'pending' | 'approved' | 'denied';
   requested_at: string;
   reviewed_at?: string;
@@ -112,8 +109,51 @@ export default function AccountAdmin() {
 
         if (profileError) throw profileError;
 
-        // TODO: Send welcome email with temporary password
+        // Send welcome email with temporary password
+        try {
+          await fetch('/api/email/send-notification', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: 'account_approved',
+              data: {
+                applicantEmail: selectedRequest.email,
+                applicantName: `${selectedRequest.first_name} ${selectedRequest.last_name}`,
+                approvedRole: selectedRequest.requested_role,
+                assignedTeams: selectedRequest.team_interest || [],
+                generatePassword: false, // We already generated it
+                tempPassword: tempPassword
+              }
+            })
+          });
+        } catch (emailError) {
+          console.warn('Failed to send approval email:', emailError);
+        }
+        
         console.log(`User approved - temp password: ${tempPassword}`);
+      } else if (decision === 'denied') {
+        // Send rejection email
+        try {
+          await fetch('/api/email/send-notification', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: 'account_rejected',
+              data: {
+                applicantEmail: selectedRequest.email,
+                applicantName: `${selectedRequest.first_name} ${selectedRequest.last_name}`,
+                requestedRole: selectedRequest.requested_role,
+                rejectionReason: reviewNotes || undefined
+              }
+            })
+          });
+        } catch (emailError) {
+          console.warn('Failed to send rejection email:', emailError);
+        }
       }
 
       // Refresh the list
@@ -228,8 +268,8 @@ export default function AccountAdmin() {
                         </div>
                         
                         <div className="mt-2 text-sm">
-                          <p className="font-medium text-gray-700">Reason:</p>
-                          <p className="text-gray-600">{request.reason}</p>
+                          <p className="font-medium text-gray-700">Phone:</p>
+                          <p className="text-gray-600">{request.phone}</p>
                         </div>
                         
                         {request.experience && (
@@ -240,13 +280,8 @@ export default function AccountAdmin() {
                         )}
                         
                         {(request.requested_role === 'coach' || request.requested_role === 'manager') && (
-                          <div className="mt-2 flex space-x-4 text-sm">
-                            <span className={`flex items-center ${request.garda_vetting ? 'text-green-600' : 'text-red-600'}`}>
-                              {request.garda_vetting ? '✅' : '❌'} Garda Vetting
-                            </span>
-                            <span className={`flex items-center ${request.safeguarding_course ? 'text-green-600' : 'text-red-600'}`}>
-                              {request.safeguarding_course ? '✅' : '❌'} Safeguarding Course
-                            </span>
+                          <div className="mt-2 text-xs text-yellow-700 bg-yellow-50 p-2 rounded">
+                            <strong>Note:</strong> Additional vetting and qualifications may be required for this role.
                           </div>
                         )}
                       </div>
@@ -348,11 +383,15 @@ export default function AccountAdmin() {
                   </div>
                 </div>
                 
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h3 className="font-medium text-gray-900 mb-2">Reason for Access</h3>
-                  <p className="text-sm text-gray-700">{selectedRequest.reason}</p>
-                </div>
                 
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h3 className="font-medium text-gray-900 mb-2">Contact Information</h3>
+                  <div className="space-y-1 text-sm">
+                    <div><strong>Email:</strong> {selectedRequest.email}</div>
+                    <div><strong>Phone:</strong> {selectedRequest.phone}</div>
+                  </div>
+                </div>
+
                 {selectedRequest.experience && (
                   <div className="bg-green-50 rounded-lg p-4">
                     <h3 className="font-medium text-gray-900 mb-2">Experience/Background</h3>
@@ -362,14 +401,12 @@ export default function AccountAdmin() {
                 
                 {(selectedRequest.requested_role === 'coach' || selectedRequest.requested_role === 'manager') && (
                   <div className="bg-yellow-50 rounded-lg p-4">
-                    <h3 className="font-medium text-gray-900 mb-2">Compliance Status</h3>
-                    <div className="space-y-1 text-sm">
-                      <div className={selectedRequest.garda_vetting ? 'text-green-600' : 'text-red-600'}>
-                        {selectedRequest.garda_vetting ? '✅' : '❌'} Garda Vetting Completed
-                      </div>
-                      <div className={selectedRequest.safeguarding_course ? 'text-green-600' : 'text-red-600'}>
-                        {selectedRequest.safeguarding_course ? '✅' : '❌'} Safeguarding Course Completed
-                      </div>
+                    <h3 className="font-medium text-gray-900 mb-2">Additional Requirements</h3>
+                    <div className="space-y-1 text-sm text-yellow-800">
+                      <div>⚠️ Garda Vetting will be required for this role</div>
+                      <div>⚠️ Safeguarding course completion may be required</div>
+                      <div>⚠️ Coaching qualifications may be required</div>
+                      <p className="mt-2 text-xs">Note: These requirements will be confirmed after approval.</p>
                     </div>
                   </div>
                 )}

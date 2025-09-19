@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import UserNotification from "./UserNotification";
+import { useAuth } from "./SecureAuth";
 
 interface HeaderProps {
   currentSection?: string;
@@ -9,6 +11,7 @@ interface HeaderProps {
 export default function Header({ currentSection = "public" }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, profile } = useAuth();
 
   // Modern scroll behavior - header stays visible but changes background
   useEffect(() => {
@@ -53,17 +56,17 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
         return [
           { href: "/matchday", label: "MatchDay", color: "" },
           { 
-            href: "/match-central", 
+            href: "/matchday", 
             label: "Matches", 
             color: "",
             dropdown: [
-              { href: "/match-central/login", label: "🔒 Match Central", desc: "Password protected match management (rvrfc2025)" },
-              { href: "/dashboard", label: "Dashboard", desc: "Club overview dashboard" },
-              { href: "/match-central/fixtures", label: "Fixtures", desc: "Upcoming matches & schedule" },
-              { href: "/match-central/results", label: "Results", desc: "Latest match results" },
-              { href: "/match-central/tables", label: "Tables", desc: "League standings" },
-              { href: "/tracker", label: "🎯 Match Tracker", desc: "Authenticated tracker dashboard" },
-              { href: "/secure-match-recorder", label: "🔒 Secure Recorder", desc: "Authorized match recording" }
+              { href: "/login?returnTo=/match-central", label: "🔒 Match Central", desc: "Secure match management system" },
+              { href: "/welcome", label: "Dashboard", desc: "User dashboard" },
+              { href: "/login?returnTo=/match-central", label: "Fixtures", desc: "Upcoming matches & schedule" },
+              { href: "/login?returnTo=/match-central", label: "Results", desc: "Latest match results" },
+              { href: "/login?returnTo=/match-central", label: "Tables", desc: "League standings" },
+              { href: "/login?returnTo=/match-recorder", label: "🎯 Match Recorder", desc: "Authorized match recording" },
+              { href: "/matchday", label: "🌐 Public MatchDay", desc: "Public match information" }
             ]
           },
           { 
@@ -134,27 +137,62 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
   const navItems = getNavItems();
   const isKidsSection = currentSection === "kids";
   
-  // Header with background image and overlay for readability
-  const headerStyle = isKidsSection 
-    ? {} 
-    : {
-        backgroundImage: 'url(/images/headerbg.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+  // Get role-based header styling
+  const getRoleHeaderStyle = () => {
+    if (!user || !profile) {
+      // Default for non-logged in users
+      return {
+        classes: isKidsSection 
+          ? `bg-gradient-to-r from-kids-yellow via-kids-orange to-kids-purple ${isScrolled ? 'backdrop-blur-sm' : ''}`
+          : `bg-club-primary/90 backdrop-blur-md border-b border-white/10 ${isScrolled ? 'bg-club-primary/95 shadow-xl backdrop-blur-lg' : ''} transition-all duration-300`,
+        style: isKidsSection ? {} : {
+          backgroundImage: 'url(/images/headerbg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }
       };
+    }
 
-  const headerClasses = isKidsSection 
-    ? `bg-gradient-to-r from-kids-yellow via-kids-orange to-kids-purple ${isScrolled ? 'backdrop-blur-sm' : ''}`
-    : `bg-club-primary/90 backdrop-blur-md border-b border-white/10 ${isScrolled ? 'bg-club-primary/95 shadow-xl backdrop-blur-lg' : ''} transition-all duration-300`;
-  
-  const textColorClass = 'text-white text-shadow'; // Always white text with image background
+    // Role-based header colors for logged-in users
+    const roleStyles = {
+      'admin': {
+        classes: `bg-gradient-to-r from-red-600 to-red-700 border-b-4 border-red-800 ${isScrolled ? 'from-red-700 to-red-800 shadow-2xl' : ''} transition-all duration-300`,
+        style: {}
+      },
+      'editor': {
+        classes: `bg-gradient-to-r from-purple-600 to-purple-700 border-b-4 border-purple-800 ${isScrolled ? 'from-purple-700 to-purple-800 shadow-2xl' : ''} transition-all duration-300`,
+        style: {}
+      },
+      'coach': {
+        classes: `bg-gradient-to-r from-green-600 to-green-700 border-b-4 border-green-800 ${isScrolled ? 'from-green-700 to-green-800 shadow-2xl' : ''} transition-all duration-300`,
+        style: {}
+      },
+      'manager': {
+        classes: `bg-gradient-to-r from-blue-600 to-blue-700 border-b-4 border-blue-800 ${isScrolled ? 'from-blue-700 to-blue-800 shadow-2xl' : ''} transition-all duration-300`,
+        style: {}
+      },
+      'parent': {
+        classes: `bg-gradient-to-r from-orange-600 to-orange-700 border-b-4 border-orange-800 ${isScrolled ? 'from-orange-700 to-orange-800 shadow-2xl' : ''} transition-all duration-300`,
+        style: {}
+      },
+      'volunteer': {
+        classes: `bg-gradient-to-r from-teal-600 to-teal-700 border-b-4 border-teal-800 ${isScrolled ? 'from-teal-700 to-teal-800 shadow-2xl' : ''} transition-all duration-300`,
+        style: {}
+      }
+    };
+
+    return roleStyles[profile.role?.toLowerCase()] || roleStyles['admin'];
+  };
+
+  const { classes: headerClasses, style: headerStyle } = getRoleHeaderStyle();
+  const textColorClass = 'text-white text-shadow font-semibold'; // Always white text with role colors
 
   return (
     <>
       {/* Mobile Header - Clean Design for All Pages */}
       <div className="block md:hidden">
-        <div className="fixed top-0 left-0 w-full z-50 shadow-lg text-white" style={{background: 'linear-gradient(to right, #972A4C, #7A2240)'}}>
+        <div className={`fixed top-0 left-0 w-full z-50 shadow-lg text-white ${headerClasses}`} style={headerStyle}>
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center space-x-3">
               <Link href="/" className="flex items-center space-x-2">
@@ -222,7 +260,7 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
                         <p className="text-xs text-blue-200">Password Protected</p>
                       </div>
                       <Link 
-                        href="/match-central/login"
+                        href="/login?returnTo=/match-central"
                         onClick={() => setIsOpen(false)}
                         className="block bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded text-center text-sm font-medium transition-all duration-200"
                       >
@@ -326,21 +364,25 @@ export default function Header({ currentSection = "public" }: HeaderProps) {
           ))}
         </nav>
 
-        {/* Action Buttons */}
-        <div className="hidden md:flex space-x-3">
-          {currentSection === "public" && (
-            <>
-              <Link href="/coach/login" className="bg-primary-600 px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors font-semibold text-white">
-                Coaches
-              </Link>
-              <Link href="/members/login" className="bg-accent-teal px-4 py-2 rounded-lg hover:bg-accent-teal/80 transition-colors font-semibold">
-                Members
-              </Link>
-              <Link href="/kids" className="bg-kids-orange px-4 py-2 rounded-lg hover:bg-kids-orange/80 transition-colors font-semibold">
-                Kids Zone
-              </Link>
-            </>
-          )}
+        {/* User Notification & Action Buttons */}
+        <div className="flex items-center space-x-4">
+          <UserNotification />
+          
+          <div className="hidden md:flex space-x-3">
+            {currentSection === "public" && (
+              <>
+                <Link href="/login" className="bg-primary-600 px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors font-semibold text-white">
+                  Coaches
+                </Link>
+                <Link href="/login" className="bg-accent-teal px-4 py-2 rounded-lg hover:bg-accent-teal/80 transition-colors font-semibold">
+                  Members
+                </Link>
+                <Link href="/kids" className="bg-kids-orange px-4 py-2 rounded-lg hover:bg-kids-orange/80 transition-colors font-semibold">
+                  Kids Zone
+                </Link>
+              </>
+            )}
+          </div>
         </div>
 
       </div>

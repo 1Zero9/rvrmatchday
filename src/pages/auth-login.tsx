@@ -49,13 +49,9 @@ export default function AuthLogin() {
   };
 
   const handleFallbackAuth = () => {
-    if (fallbackPassword === 'rvrfc2025') {
-      // Fallback authentication success
-      sessionStorage.setItem('match-central-auth', 'authenticated');
-      router.push('/match-central');
-    } else {
-      setError('Incorrect password. Please contact the club administrator.');
-    }
+    // SECURITY UPDATE: Deprecated insecure authentication - redirect to secure login
+    router.push('/login');
+    return;
   };
 
   return (

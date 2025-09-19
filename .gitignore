@@ -41,14 +41,20 @@ yarn-error.log*
 !.env.local.example
 
 # Database and sensitive files
-*.sql
 *-old.*
 *backup*
 *secret*
 *password*
 *credential*
-database/
 admin-setup.*
+
+# Database files (allow setup/migration scripts but ignore temp/private ones)
+database/temp/
+database/private/
+database/dumps/
+*.sql.bak
+*_backup.sql
+local_*.sql
 
 # vercel
 .vercel
