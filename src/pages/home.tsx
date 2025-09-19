@@ -1,13 +1,27 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import StandardLayout from "../components/StandardLayout";
 import MobileLayout from "../components/MobileLayout";
 import MobileHomePro from "../components/mobile/MobileHomePro";
+import AdminNotificationPopup from "../components/AdminNotificationPopup";
+import { AuthProvider } from "../components/SecureAuth";
 
 export default function StandardHomepage() {
+  const [showVideo, setShowVideo] = useState(true);
+  const [videoEnded, setVideoEnded] = useState(false);
+
+  const handleVideoEnd = () => {
+    setVideoEnded(true);
+    // Fade out video after a brief delay
+    setTimeout(() => {
+      setShowVideo(false);
+    }, 500);
+  };
+
   return (
-    <>
+    <AuthProvider>
       {/* Mobile Version - Professional */}
       <div className="block md:hidden">
         <MobileLayout 
@@ -39,13 +53,34 @@ export default function StandardHomepage() {
           
           {/* Hero Background */}
           <div className="absolute inset-0">
-               <img 
-                 src="/images/hero/halftime2.jpg" 
-                 alt="Rivervalley Rangers AFC - Team celebration"
-                 className="w-full h-full object-cover"
-               />
-               <div className="absolute inset-0 bg-black/40"></div>
-             </div>
+            {/* Video Background */}
+            {showVideo && (
+              <motion.video
+                autoPlay
+                muted
+                playsInline
+                onEnded={handleVideoEnd}
+                className="w-full h-full object-cover"
+                animate={{ opacity: videoEnded ? 0 : 1 }}
+                transition={{ duration: 1 }}
+              >
+                <source src="/images/hero/rvr-drone-5.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </motion.video>
+            )}
+            
+            {/* Fallback Image - fades in when video ends */}
+            <motion.img 
+              src="/images/hero/astro-ward.png" 
+              alt="Rivervalley Rangers AFC - Astro Pitch"
+              className="w-full h-full object-cover"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: showVideo ? 0 : 1 }}
+              transition={{ duration: 1 }}
+            />
+            
+            <div className="absolute inset-0 bg-black/40"></div>
+          </div>
           
           {/* Hero Content Overlay - Enhanced with Action Grid */}
           <div className="relative z-10 w-full px-4 max-w-7xl mx-auto">
@@ -756,6 +791,9 @@ export default function StandardHomepage() {
           </main>
         </StandardLayout>
       </div>
-    </>
+
+      {/* Admin Notification Popup */}
+      <AdminNotificationPopup />
+    </AuthProvider>
   );
 }
