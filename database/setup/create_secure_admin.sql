@@ -32,7 +32,7 @@ INSERT INTO tracker_users (
 
 -- Then create auth user in Supabase dashboard with:
 -- Email: admin@rvr.ie
--- Password: SecureAdminPass2025!
+-- Password: [SET YOUR SECURE PASSWORD HERE]
 
 -- Enable Row Level Security for tracker_users
 ALTER TABLE tracker_users ENABLE ROW LEVEL SECURITY;

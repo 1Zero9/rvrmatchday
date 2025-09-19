@@ -7,11 +7,11 @@
 -- Go to Supabase Dashboard > Authentication > Users
 -- Click "Add User" and create the following accounts:
 --
--- 1. coach@rvr.ie          (Password: coach2025rvr)
--- 2. manager@rvr.ie        (Password: manager2025rvr)  
--- 3. editor@rvr.ie         (Password: editor2025rvr)
--- 4. parent@rvr.ie         (Password: parent2025rvr)
--- 5. volunteer@rvr.ie      (Password: volunteer2025rvr)
+-- 1. coach@rvr.ie          (Password: [SET SECURE PASSWORD])
+-- 2. manager@rvr.ie        (Password: [SET SECURE PASSWORD])  
+-- 3. editor@rvr.ie         (Password: [SET SECURE PASSWORD])
+-- 4. parent@rvr.ie         (Password: [SET SECURE PASSWORD])
+-- 5. volunteer@rvr.ie      (Password: [SET SECURE PASSWORD])
 
 
 -- ================================================
