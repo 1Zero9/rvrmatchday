@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -65,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setUser(demoUser);
                 setProfile(demoProfile);
                 setLoading(false);
+                setInitialized(true);
                 clearTimeout(globalTimeout);
               }
               return;
@@ -90,12 +92,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await loadUserProfile(session.user.id, session.user);
         } else {
           setLoading(false);
+          setInitialized(true);
         }
         
       } catch (error) {
         console.error('Auth initialization failed:', error);
         if (mounted) {
           setLoading(false);
+          setInitialized(true);
         }
       } finally {
         clearTimeout(globalTimeout);
@@ -108,7 +112,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let subscription: any;
     try {
       const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log('Auth state change:', { event, userId: session?.user?.id, mounted });
         if (!mounted) return;
+        
+        // Prevent redundant updates if already initialized
+        if (initialized && session?.user?.id === user?.id && profile) {
+          console.log('Skipping redundant auth update');
+          return;
+        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -118,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setProfile(null);
           setLoading(false);
+          setInitialized(true);
         }
       });
       subscription = data.subscription;
@@ -132,9 +144,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         subscription.unsubscribe();
       }
     };
-  }, []);
+  }, []); // Only run once on mount
 
   const loadUserProfile = async (userId: string, currentUser?: User) => {
+    console.log('Loading user profile for:', userId);
     try {
       // Set a shorter timeout for the database query
       const timeoutPromise = new Promise((_, reject) => 
@@ -187,7 +200,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(null);
       }
     } finally {
+      console.log('Profile loading complete, setting loading to false');
       setLoading(false);
+      setInitialized(true);
     }
   };
 
