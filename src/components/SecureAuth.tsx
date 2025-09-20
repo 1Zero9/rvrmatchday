@@ -146,6 +146,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []); // Only run once on mount
 
+  // Debug effect to track profile changes
+  useEffect(() => {
+    if (profile) {
+      console.log('Profile updated:', { role: profile.role, email: profile.email, id: profile.id });
+    }
+  }, [profile]);
+
   const loadUserProfile = async (userId: string, currentUser?: User) => {
     console.log('Loading user profile for:', userId);
     try {

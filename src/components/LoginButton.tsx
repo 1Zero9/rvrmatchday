@@ -10,6 +10,7 @@ import { useAuth } from './SecureAuth';
 
 export default function LoginButton() {
   const router = useRouter();
+  const [stableProfile, setStableProfile] = React.useState(null);
   
   // Safely try to use auth context, fallback if not available
   let user = null;
@@ -25,10 +26,19 @@ export default function LoginButton() {
     // AuthProvider not available, continue with fallback values
   }
 
+  // Update stable profile only when we have a valid profile
+  React.useEffect(() => {
+    if (profile && profile.role) {
+      setStableProfile(profile);
+    }
+  }, [profile]);
+
   const handleButtonClick = () => {
     if (user) {
+      // Use stable profile for decisions
+      const currentProfile = stableProfile || profile;
       // If admin is logged in, go to admin dashboard
-      if (profile?.role?.toLowerCase() === 'admin') {
+      if (currentProfile?.role?.toLowerCase() === 'admin') {
         router.push('/admin');
       } else {
         // User is logged in but not admin - sign them out
@@ -42,8 +52,9 @@ export default function LoginButton() {
 
   // Determine main button styling based on auth state
   const getMainButtonStyles = () => {
-    if (user && profile) {
-      switch (profile.role?.toLowerCase()) {
+    const currentProfile = stableProfile || profile;
+    if (user && currentProfile) {
+      switch (currentProfile.role?.toLowerCase()) {
         case 'admin':
           return {
             gradient: 'from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700',
@@ -79,7 +90,8 @@ export default function LoginButton() {
   };
 
   const mainButtonStyles = getMainButtonStyles();
-  const userName = profile?.full_name?.split(' ')[0] || profile?.username || 'User';
+  const currentProfile = stableProfile || profile;
+  const userName = currentProfile?.full_name?.split(' ')[0] || currentProfile?.username || 'User';
 
   return (
     <motion.button
@@ -90,7 +102,7 @@ export default function LoginButton() {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       title={user ? 
-        (profile?.role?.toLowerCase() === 'admin' ? `Admin Dashboard - ${userName}` : `Logout ${userName} (${profile?.role})`) 
+        (currentProfile?.role?.toLowerCase() === 'admin' ? `Admin Dashboard - ${userName}` : `Logout ${userName} (${currentProfile?.role})`) 
         : 'Access secure login'}
     >
       <span className="text-base">{mainButtonStyles.icon}</span>
