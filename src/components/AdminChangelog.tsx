@@ -32,6 +32,54 @@ interface ChangelogEntry {
 
 const changelogData: ChangelogEntry[] = [
   {
+    version: "6.1.0",
+    title: "Marketing Panel & Modular Architecture Demo",
+    date: "2025-09-19",
+    type: "major",
+    impact: "feature",
+    filesChanged: 8,
+    linesAdded: 650,
+    linesRemoved: 25,
+    changes: [
+      {
+        category: "Marketing & Sales Tools",
+        icon: "🎯",
+        color: "text-blue-600",
+        items: [
+          "Created interactive Marketing Panel with module simulator",
+          "Built Modular Demo page showcasing Lego-like architecture",
+          "Added admin quick links to marketing tools",
+          "Implemented price-free feature demonstration",
+          "Real-time module configuration preview"
+        ]
+      },
+      {
+        category: "Modular System Implementation",
+        icon: "🧩",
+        color: "text-purple-600",
+        items: [
+          "Complete module configuration system (modules.ts)",
+          "ModuleManager class for controlling features",
+          "Modular navigation with dynamic menu updates",
+          "Module admin panel with dependency management",
+          "Higher-order component for page protection"
+        ]
+      },
+      {
+        category: "Business Architecture",
+        icon: "💼",
+        color: "text-green-600",
+        items: [
+          "Defined 7 core business modules",
+          "Package tiers: Starter, Professional, Enterprise",
+          "Dependency validation and management",
+          "White-label customization framework",
+          "Revenue optimization through modular pricing"
+        ]
+      }
+    ]
+  },
+  {
     version: "3.2.0",
     title: "Unified Account Management System",
     date: "2025-09-19",

@@ -18,6 +18,45 @@ export default function MobileHomePro() {
   const [teamsCount, setTeamsCount] = useState(0);
   const [playersCount, setPlayersCount] = useState(0);
   const [yearsCount, setYearsCount] = useState(0);
+  
+  // Video hero state for mobile optimization
+  const [showVideo, setShowVideo] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Mobile detection and video optimization
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(userAgent);
+      const isSlowConnection = navigator.connection && (navigator.connection.effectiveType === 'slow-2g' || navigator.connection.effectiveType === '2g');
+      
+      setIsMobile(isMobileDevice);
+      
+      // Only show video on good connections and if user hasn't seen it recently
+      const hasSeenVideo = sessionStorage.getItem('rvr-video-seen');
+      if (!isSlowConnection && !hasSeenVideo && isMobileDevice) {
+        setVideoLoading(true);
+        setShowVideo(true);
+      }
+    };
+    
+    checkMobile();
+  }, []);
+
+  const handleVideoEnd = () => {
+    setVideoEnded(true);
+    setVideoLoading(false);
+    sessionStorage.setItem('rvr-video-seen', 'true');
+    setTimeout(() => {
+      setShowVideo(false);
+    }, 500);
+  };
+
+  const handleVideoLoad = () => {
+    setVideoLoading(false);
+  };
 
   useEffect(() => {
     // Update time every minute
@@ -217,13 +256,54 @@ export default function MobileHomePro() {
   return (
     <div className="min-h-screen relative overflow-hidden pb-20">
       
-      {/* Mobile Background Image with Blur */}
+      {/* Mobile Video/Image Hero Background */}
       <div className="absolute inset-0">
-        <img 
+        {/* Video Background - Mobile Optimized */}
+        {showVideo && isMobile && (
+          <>
+            <motion.video
+              autoPlay
+              muted
+              playsInline
+              preload="metadata"
+              onEnded={handleVideoEnd}
+              onLoadedData={handleVideoLoad}
+              className="w-full h-full object-cover brightness-110"
+              animate={{ opacity: videoEnded ? 0 : 1 }}
+              transition={{ duration: 1 }}
+              style={{ 
+                // Mobile optimization - reduce quality for performance
+                filter: 'brightness(1.1) contrast(0.9)'
+              }}
+            >
+              <source src="/images/hero/rvr-drone-5.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </motion.video>
+            
+            {/* Video Loading Indicator */}
+            {videoLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full"></div>
+                    <span className="text-white text-sm font-medium">Loading video...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        
+        {/* Fallback Image - shows when video ends or on slow connections */}
+        <motion.img 
           src="/images/hero/halftime2.jpg" 
           alt="Football field background"
           className="w-full h-full object-cover brightness-110"
+          initial={{ opacity: showVideo && isMobile ? 0 : 1 }}
+          animate={{ opacity: showVideo && isMobile ? 0 : 1 }}
+          transition={{ duration: 1 }}
         />
+        
         <div className="absolute inset-0 bg-black/40"></div>
       </div>
       

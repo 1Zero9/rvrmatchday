@@ -200,6 +200,29 @@ function AdminToolsTab() {
         </div>
       </div>
 
+      {/* Marketing & Development Tools */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">🎯 Marketing & Development Tools</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <Link href="/marketing-panel" target="_blank" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded hover:from-blue-700 hover:to-indigo-700 text-center">
+            🎮 Marketing Panel
+          </Link>
+          <Link href="/modular-demo" target="_blank" className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded hover:from-purple-700 hover:to-pink-700 text-center">
+            🧩 Modular Demo
+          </Link>
+          <Link href="/modules" target="_blank" className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-4 py-2 rounded hover:from-orange-700 hover:to-red-700 text-center">
+            📦 Business Modules
+          </Link>
+        </div>
+        <div className="mt-4 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+          <p className="text-sm text-blue-800">
+            <strong>Marketing Panel:</strong> Interactive module simulator for sales demos (price-free)<br/>
+            <strong>Modular Demo:</strong> Technical architecture demonstration<br/>
+            <strong>Business Modules:</strong> Full product pricing and revenue model
+          </p>
+        </div>
+      </div>
+
       {/* Duplicate Cleaner */}
       <DuplicateCleanerTool />
     </div>
