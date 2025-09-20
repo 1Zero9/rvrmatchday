@@ -1,7 +1,6 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
-@import "./colors.css";
 
 :root {
   --background: #ffffff;
@@ -10,6 +9,112 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* === CLUB BRAND COLORS === */
+  
+  /* Primary Brand - Burgundy/Maroon */
+  --club-primary: #972A4C;
+  --club-primary-light: #C44771;
+  --club-primary-lighter: #D86BA8;
+  --club-primary-dark: #872440;
+  --club-primary-darker: #6B1D33;
+  
+  /* Secondary Brand - Muted Blue-Gray */
+  --club-secondary: #5E7794;
+  --club-secondary-light: #7A92AD;
+  --club-secondary-lighter: #96ADC6;
+  --club-secondary-dark: #4A5F78;
+  --club-secondary-darker: #36475C;
+  
+  /* Accent - Light Blue */
+  --club-accent: #98C0F0;
+  --club-accent-light: #B5D1F5;
+  --club-accent-lighter: #D2E2FA;
+  --club-accent-dark: #7BAEEB;
+  --club-accent-darker: #5E9CE6;
+  
+  /* Neutral - Light Gray */
+  --club-neutral: #B6B7B6;
+  --club-neutral-light: #CACBCA;
+  --club-neutral-lighter: #DEDEDE;
+  --club-neutral-dark: #9D9E9D;
+  --club-neutral-darker: #848584;
+  
+  /* === COMPLEMENTARY UX COLORS === */
+  
+  /* Success Colors (complement to burgundy) */
+  --success: #2D7A4C;
+  --success-light: #47B872;
+  --success-bg: #F0F9F4;
+  
+  /* Warning Colors (complement to blue-gray) */
+  --warning: #F59E0B;
+  --warning-light: #FCD34D;
+  --warning-bg: #FFFBEB;
+  
+  /* Error Colors (complement to light blue) */
+  --error: #DC2626;
+  --error-light: #F87171;
+  --error-bg: #FEF2F2;
+  
+  /* Info Colors (using club accent) */
+  --info: var(--club-accent);
+  --info-light: var(--club-accent-light);
+  --info-bg: #F0F8FF;
+  
+  /* === TEAM COLOR SCHEMES === */
+  
+  /* RVR Main Teams - Brand Colors */
+  --team-rvr-primary: var(--club-primary);
+  --team-rvr-secondary: var(--club-primary-light);
+  --team-rvr-accent: var(--club-secondary);
+  --team-rvr-text: #FFFFFF;
+  --team-rvr-bg: rgba(163, 42, 76, 0.1);
+  --team-rvr-border: var(--club-primary);
+  
+  /* RVR Girls - Brand Colors + Pink */
+  --team-rvr-girls-primary: #C44771;
+  --team-rvr-girls-secondary: #E91E63;
+  --team-rvr-girls-accent: #F8BBD9;
+  --team-rvr-girls-text: #FFFFFF;
+  --team-rvr-girls-bg: rgba(196, 71, 113, 0.1);
+  --team-rvr-girls-border: #C44771;
+  
+  /* Opponents - Neutral Gray-Blue */
+  --team-opponent-primary: #64748B;
+  --team-opponent-secondary: #94A3B8;
+  --team-opponent-accent: #CBD5E1;
+  --team-opponent-text: #FFFFFF;
+  --team-opponent-bg: rgba(100, 116, 139, 0.1);
+  --team-opponent-border: #64748B;
+
+  /* === GRADIENTS === */
+  --gradient-primary: linear-gradient(135deg, var(--club-primary) 0%, var(--club-primary-light) 100%);
+  --gradient-secondary: linear-gradient(135deg, var(--club-secondary) 0%, var(--club-secondary-light) 100%);
+  --gradient-accent: linear-gradient(135deg, var(--club-accent) 0%, var(--club-accent-light) 100%);
+  --gradient-hero: linear-gradient(135deg, var(--club-primary) 0%, var(--club-secondary) 50%, var(--club-accent) 100%);
+  
+  /* Mobile-Optimized Gradients - Stronger Maroon Dominance */
+  --gradient-mobile-hero: linear-gradient(135deg, var(--club-primary) 0%, var(--club-primary) 60%, var(--club-primary-light) 100%);
+  --gradient-mobile-primary: linear-gradient(135deg, var(--club-primary) 0%, var(--club-secondary) 100%);
+  --gradient-mobile-accent: linear-gradient(135deg, var(--club-primary) 0%, var(--club-accent) 100%);
+  
+  /* Team Gradients */
+  --gradient-team-rvr: linear-gradient(135deg, var(--team-rvr-primary) 0%, var(--team-rvr-secondary) 100%);
+  --gradient-team-rvr-girls: linear-gradient(135deg, var(--team-rvr-girls-primary) 0%, var(--team-rvr-girls-secondary) 100%);
+  --gradient-team-opponent: linear-gradient(135deg, var(--team-opponent-primary) 0%, var(--team-opponent-secondary) 100%);
+  
+  /* === GLASS MORPHISM VARIANTS === */
+  --glass-primary: rgba(151, 42, 76, 0.1);
+  --glass-secondary: rgba(94, 119, 148, 0.1);
+  --glass-accent: rgba(152, 192, 240, 0.1);
+  --glass-neutral: rgba(182, 183, 182, 0.1);
+  
+  /* === TEXT COLORS === */
+  --text-on-primary: #FFFFFF;
+  --text-on-secondary: #FFFFFF;
+  --text-on-accent: #1F2937;
+  --text-on-neutral: #374151;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -130,3 +235,20 @@ body {
     0 8px 32px 0 rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
+
+/* === CLUB COLOR UTILITY CLASSES === */
+
+/* Background Colors */
+.bg-club-primary { background-color: var(--club-primary); }
+.bg-club-secondary { background-color: var(--club-secondary); }
+.bg-club-accent { background-color: var(--club-accent); }
+
+/* Text Colors */
+.text-club-primary { color: var(--club-primary); }
+.text-club-secondary { color: var(--club-secondary); }
+.text-club-accent { color: var(--club-accent); }
+
+/* Team Colors */
+.bg-team-rvr { background-color: var(--team-rvr-primary); color: var(--team-rvr-text); }
+.bg-team-rvr-girls { background-color: var(--team-rvr-girls-primary); color: var(--team-rvr-girls-text); }
+.bg-team-opponent { background-color: var(--team-opponent-primary); color: var(--team-opponent-text); }
