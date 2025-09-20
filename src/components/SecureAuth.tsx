@@ -565,9 +565,17 @@ export function RequireAuth({
   if (!user || !profile) {
     // Redirect to the centralized login page
     React.useEffect(() => {
+      console.log('RequireAuth redirecting to login:', { user: !!user, profile: !!profile, loading });
       const currentPath = router.asPath;
+      
+      // Don't redirect if already on login page or if loading
+      if (currentPath.startsWith('/login') || loading) {
+        console.log('Skipping redirect:', { onLoginPage: currentPath.startsWith('/login'), loading });
+        return;
+      }
+      
       router.push(`/login?returnTo=${encodeURIComponent(currentPath)}`);
-    }, [router]);
+    }, [router, user, profile, loading]);
 
     return fallback || (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">

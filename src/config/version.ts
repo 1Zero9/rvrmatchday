@@ -11,10 +11,10 @@
 export const VERSION_CONFIG = {
   // Current Version Information
   current: {
-    version: "6.0.13",
+    version: "6.0.14",
     codename: "Development Build - Match Tracking",
     releaseDate: "2025-09-20",
-    buildNumber: "2025.09.20.090"
+    buildNumber: "2025.09.20.466"
   },
 
   // Release Information

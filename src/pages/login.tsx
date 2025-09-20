@@ -28,12 +28,10 @@ function LoginPageContent() {
       
       const returnTo = router.query.returnTo as string || '/welcome';
       
-      // Use router.push for better navigation
-      setTimeout(() => {
-        router.push(returnTo);
-      }, 1000); // Small delay to show success message
+      // Use router.push immediately, no delay
+      router.push(returnTo);
     }
-  }, [user, profile, loading, router, redirecting]);
+  }, [user, profile, loading, redirecting]); // Remove router from dependencies
 
   if (loading) {
     return (
