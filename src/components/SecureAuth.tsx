@@ -42,15 +42,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Check for demo session first
     if (typeof window !== 'undefined') {
       const demoSession = localStorage.getItem('demo_session');
       if (demoSession) {
         try {
           const { user: demoUser, profile: demoProfile } = JSON.parse(demoSession);
-          setUser(demoUser);
-          setProfile(demoProfile);
-          setLoading(false);
+          if (mounted) {
+            setUser(demoUser);
+            setProfile(demoProfile);
+            setLoading(false);
+          }
           return;
         } catch (error) {
           localStorage.removeItem('demo_session');
@@ -60,6 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -67,10 +73,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setLoading(false);
       }
+    }).catch((error) => {
+      console.error('Failed to get session:', error);
+      if (mounted) {
+        setLoading(false);
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -82,7 +95,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loadUserProfile = async (userId: string, currentUser?: User) => {
@@ -146,49 +162,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Check for demo accounts first (fallback for production)
-      if (email === 'demo@rvrfc.com' && password === 'demo123') {
-        // Create a fake user and session for demo purposes
-        const demoUser = {
-          id: 'demo-user',
-          email: 'demo@rvrfc.com',
-          user_metadata: { full_name: 'Demo User' }
-        } as User;
-        
-        const demoProfile: UserProfile = {
-          id: 'demo-user',
-          email: 'demo@rvrfc.com',
-          username: 'demo',
-          full_name: 'Demo User',
-          role: 'coach',
-          teams: ['First Team', 'Reserves'],
-          permissions: ['match:view', 'match:record', 'match:edit'],
-          is_active: true
-        };
-        
-        setUser(demoUser);
-        setProfile(demoProfile);
-        setLoading(false);
-        
-        // Store demo session in localStorage for persistence
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('demo_session', JSON.stringify({ user: demoUser, profile: demoProfile }));
-        }
-        
-        return { success: true };
-      }
-
+      // First, try normal Supabase authentication
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        // If normal auth fails, check for demo accounts as fallback
+        if (email === 'demo@rvrfc.com' && password === 'demo123') {
+          console.log('Using demo account fallback');
+          
+          // Create a fake user and session for demo purposes
+          const demoUser = {
+            id: 'demo-user',
+            email: 'demo@rvrfc.com',
+            user_metadata: { full_name: 'Demo User' }
+          } as User;
+          
+          const demoProfile: UserProfile = {
+            id: 'demo-user',
+            email: 'demo@rvrfc.com',
+            username: 'demo',
+            full_name: 'Demo User',
+            role: 'coach',
+            teams: ['First Team', 'Reserves'],
+            permissions: ['match:view', 'match:record', 'match:edit'],
+            is_active: true
+          };
+          
+          setUser(demoUser);
+          setProfile(demoProfile);
+          setLoading(false);
+          
+          // Store demo session in localStorage for persistence
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('demo_session', JSON.stringify({ user: demoUser, profile: demoProfile }));
+          }
+          
+          return { success: true };
+        }
+        
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (error) {
+      console.error('Authentication error:', error);
       return { success: false, error: 'Authentication failed' };
     }
   };
