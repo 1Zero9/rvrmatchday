@@ -2,7 +2,6 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "@/styles/globals.css";
-import "@/styles/colors.css";
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
