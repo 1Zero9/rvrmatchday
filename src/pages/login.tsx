@@ -7,44 +7,57 @@
  * AI Collaboration: Claude (Anthropic)
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import StandardLayout from '../components/StandardLayout';
-import { AuthProvider, SecureLogin, useAuth } from '../components/SecureAuth';
+import { SecureLogin, useAuth } from '../components/SecureAuth';
 
 function LoginPageContent() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
+  const [redirecting, setRedirecting] = React.useState(false);
 
   useEffect(() => {
-    if (user && !loading) {
-      // Redirect to intended destination or welcome dashboard
+    console.log('Login page state:', { user: !!user, profile: !!profile, loading, redirecting });
+    
+    if (user && profile && !loading && !redirecting) {
+      console.log('User is authenticated, redirecting...');
+      setRedirecting(true);
+      
       const returnTo = router.query.returnTo as string || '/welcome';
-      // Immediate redirect to prevent flash
-      window.location.href = returnTo;
+      
+      // Use router.push for better navigation
+      setTimeout(() => {
+        router.push(returnTo);
+      }, 1000); // Small delay to show success message
     }
-  }, [user, loading, router]);
+  }, [user, profile, loading, router, redirecting]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-lg font-medium text-gray-600">Loading...</p>
+          <p className="text-lg font-medium text-gray-600">Checking authentication...</p>
         </div>
       </div>
     );
   }
 
-  if (user) {
+  if (user && profile) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">✅</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Already Signed In</h1>
-          <p className="text-gray-600 mb-4">Redirecting you to your dashboard...</p>
+          <p className="text-gray-600 mb-4">
+            {redirecting ? 'Redirecting...' : 'Redirecting you to your dashboard...'}
+          </p>
+          {redirecting && (
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mt-4"></div>
+          )}
         </div>
       </div>
     );
@@ -82,10 +95,8 @@ function LoginPageContent() {
 
 export default function LoginPage() {
   return (
-    <AuthProvider>
-      <StandardLayout>
-        <LoginPageContent />
-      </StandardLayout>
-    </AuthProvider>
+    <StandardLayout>
+      <LoginPageContent />
+    </StandardLayout>
   );
 }
