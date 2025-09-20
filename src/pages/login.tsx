@@ -18,23 +18,23 @@ function LoginPageContent() {
   const router = useRouter();
   const { user, profile, loading } = useAuth();
   const [redirecting, setRedirecting] = React.useState(false);
-  const [hasTriedRedirect, setHasTriedRedirect] = React.useState(false);
 
   useEffect(() => {
-    console.log('Login page state:', { user: !!user, profile: !!profile, loading, redirecting, hasTriedRedirect });
+    console.log('Login page state:', { user: !!user, profile: !!profile, loading, redirecting });
     
-    // Only try to redirect once
-    if (user && profile && !loading && !redirecting && !hasTriedRedirect) {
+    // Prevent redirect loop - only redirect if we have stable auth state
+    if (user && profile && !loading && !redirecting) {
       console.log('User is authenticated, redirecting...');
       setRedirecting(true);
-      setHasTriedRedirect(true);
       
       const returnTo = router.query.returnTo as string || '/welcome';
       
-      // Use router.replace instead of push to prevent back navigation issues
-      router.replace(returnTo);
+      // Use setTimeout to ensure state is stable before redirect
+      setTimeout(() => {
+        router.replace(returnTo);
+      }, 100);
     }
-  }, [user, profile, loading, redirecting, hasTriedRedirect]); // Add hasTriedRedirect to dependencies
+  }, [user, profile, loading, router, redirecting]);
 
   if (loading) {
     return (
