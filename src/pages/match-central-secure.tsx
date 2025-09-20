@@ -8,15 +8,13 @@
  */
 
 import React from 'react';
-import { AuthProvider, RequireAuth } from '../components/SecureAuth';
+import { RequireAuth } from '../components/SecureAuth';
 import MatchCentralContent from './match-central';
 
 export default function SecureMatchCentral() {
   return (
-    <AuthProvider>
-      <RequireAuth>
-        <MatchCentralContent />
-      </RequireAuth>
-    </AuthProvider>
+    <RequireAuth>
+      <MatchCentralContent />
+    </RequireAuth>
   );
 }

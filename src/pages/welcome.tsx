@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import StandardLayout from '../components/StandardLayout';
-import { AuthProvider, RequireAuth, useAuth } from '../components/SecureAuth';
+import { RequireAuth, useAuth } from '../components/SecureAuth';
 
 function WelcomeContent() {
   const router = useRouter();
@@ -379,10 +379,8 @@ function WelcomeContent() {
 
 export default function Welcome() {
   return (
-    <AuthProvider>
-      <RequireAuth>
-        <WelcomeContent />
-      </RequireAuth>
-    </AuthProvider>
+    <RequireAuth>
+      <WelcomeContent />
+    </RequireAuth>
   );
 }

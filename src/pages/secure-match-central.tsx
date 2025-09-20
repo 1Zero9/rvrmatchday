@@ -10,7 +10,7 @@
 import React from "react";
 import { useRouter } from "next/router";
 import StandardLayout from "../components/StandardLayout";
-import { AuthProvider, RequireAuth } from '../components/SecureAuth';
+import { RequireAuth } from '../components/SecureAuth';
 
 // Import the existing match central content
 import MatchCentralContent from './match-central';
@@ -19,8 +19,7 @@ export default function SecureMatchCentral() {
   const router = useRouter();
 
   return (
-    <AuthProvider>
-      <StandardLayout title="Match Central - Secure Access">
+    <StandardLayout title="Match Central - Secure Access">
         <RequireAuth
           requiredPermission="match_central_access"
           fallback={
@@ -80,6 +79,5 @@ export default function SecureMatchCentral() {
           <MatchCentralContent />
         </RequireAuth>
       </StandardLayout>
-    </AuthProvider>
   );
 }

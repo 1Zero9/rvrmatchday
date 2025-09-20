@@ -482,10 +482,22 @@ export function RequireAuth({
   const router = useRouter();
   const [timeoutReached, setTimeoutReached] = React.useState(false);
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('RequireAuth state:', { 
+      user: !!user, 
+      profile: !!profile, 
+      loading, 
+      timeoutReached,
+      currentPath: router.asPath 
+    });
+  }, [user, profile, loading, timeoutReached, router.asPath]);
+
   // Set timeout for loading state to prevent infinite spinner
   React.useEffect(() => {
     const timer = setTimeout(() => {
       if (loading) {
+        console.warn('RequireAuth timeout reached, loading still true');
         setTimeoutReached(true);
       }
     }, 10000); // 10 seconds timeout

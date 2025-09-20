@@ -404,10 +404,8 @@ function AdminDashboardContent() {
 // Secure wrapper for admin dashboard
 export default function AdminDashboard() {
   return (
-    <AuthProvider>
-      <RequireAuth>
-        <AdminDashboardContent />
-      </RequireAuth>
-    </AuthProvider>
+    <RequireAuth>
+      <AdminDashboardContent />
+    </RequireAuth>
   );
 }

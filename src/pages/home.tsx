@@ -6,8 +6,6 @@ import StandardLayout from "../components/StandardLayout";
 import MobileLayout from "../components/MobileLayout";
 import MobileHomePro from "../components/mobile/MobileHomePro";
 import AdminNotificationPopup from "../components/AdminNotificationPopup";
-import { AuthProvider } from "../components/SecureAuth";
-
 export default function StandardHomepage() {
   const [showVideo, setShowVideo] = useState(true);
   const [videoEnded, setVideoEnded] = useState(false);
@@ -21,7 +19,7 @@ export default function StandardHomepage() {
   };
 
   return (
-    <AuthProvider>
+    <>
       {/* Mobile Version - Professional */}
       <div className="block md:hidden">
         <MobileLayout 
@@ -794,6 +792,6 @@ export default function StandardHomepage() {
 
       {/* Admin Notification Popup */}
       <AdminNotificationPopup />
-    </AuthProvider>
+    </>
   );
 }
