@@ -43,69 +43,102 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
-    // Check for demo session first
-    if (typeof window !== 'undefined') {
-      const demoSession = localStorage.getItem('demo_session');
-      if (demoSession) {
-        try {
-          const { user: demoUser, profile: demoProfile } = JSON.parse(demoSession);
-          if (mounted) {
-            setUser(demoUser);
-            setProfile(demoProfile);
-            setLoading(false);
+    // Set a global timeout to ensure loading never gets stuck
+    const globalTimeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn('Authentication initialization timeout reached');
+        setLoading(false);
+      }
+    }, 8000); // 8 second global timeout
+
+    const initAuth = async () => {
+      try {
+        // Check for demo session first
+        if (typeof window !== 'undefined') {
+          const demoSession = localStorage.getItem('demo_session');
+          if (demoSession) {
+            try {
+              const { user: demoUser, profile: demoProfile } = JSON.parse(demoSession);
+              if (mounted) {
+                setUser(demoUser);
+                setProfile(demoProfile);
+                setLoading(false);
+                clearTimeout(globalTimeout);
+              }
+              return;
+            } catch (error) {
+              localStorage.removeItem('demo_session');
+            }
           }
-          return;
-        } catch (error) {
-          localStorage.removeItem('demo_session');
         }
+
+        // Try Supabase auth with timeout
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Supabase timeout')), 5000)
+        );
+
+        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        
+        if (!mounted) return;
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await loadUserProfile(session.user.id, session.user);
+        } else {
+          setLoading(false);
+        }
+        
+      } catch (error) {
+        console.error('Auth initialization failed:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      } finally {
+        clearTimeout(globalTimeout);
       }
+    };
+
+    initAuth();
+
+    // Listen for auth changes with error handling
+    let subscription: any;
+    try {
+      const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!mounted) return;
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await loadUserProfile(session.user.id, session.user);
+        } else {
+          setProfile(null);
+          setLoading(false);
+        }
+      });
+      subscription = data.subscription;
+    } catch (error) {
+      console.error('Failed to setup auth listener:', error);
     }
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        loadUserProfile(session.user.id, session.user);
-      } else {
-        setLoading(false);
-      }
-    }).catch((error) => {
-      console.error('Failed to get session:', error);
-      if (mounted) {
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await loadUserProfile(session.user.id, session.user);
-      } else {
-        setProfile(null);
-        setLoading(false);
-      }
-    });
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      clearTimeout(globalTimeout);
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, []);
 
   const loadUserProfile = async (userId: string, currentUser?: User) => {
     try {
-      // Set a reasonable timeout for the database query
+      // Set a shorter timeout for the database query
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile load timeout')), 10000)
+        setTimeout(() => reject(new Error('Profile load timeout')), 3000) // Reduced to 3 seconds
       );
 
       const queryPromise = supabase
@@ -117,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
 
       if (error) {
-        console.error('Error loading user profile:', error);
+        console.warn('Database profile lookup failed, using fallback:', error.message);
         // Create a basic fallback profile for authenticated users
         const currentUserData = currentUser || user;
         const fallbackProfile: UserProfile = {
@@ -131,13 +164,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           is_active: true
         };
         setProfile(fallbackProfile);
-        console.log('Using fallback profile for authenticated user');
       } else {
         setProfile(data);
       }
     } catch (error) {
-      console.error('Profile load failed:', error);
-      // Still create fallback profile for authenticated users
+      console.warn('Profile load completely failed, using basic fallback:', error);
+      // Always create fallback profile for authenticated users
       const currentUserData = currentUser || user;
       if (currentUserData) {
         const fallbackProfile: UserProfile = {
@@ -151,7 +183,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           is_active: true
         };
         setProfile(fallbackProfile);
-        console.log('Using fallback profile due to database error');
       } else {
         setProfile(null);
       }
@@ -457,7 +488,7 @@ export function RequireAuth({
       if (loading) {
         setTimeoutReached(true);
       }
-    }, 15000); // 15 seconds timeout
+    }, 10000); // 10 seconds timeout
 
     return () => clearTimeout(timer);
   }, [loading]);
