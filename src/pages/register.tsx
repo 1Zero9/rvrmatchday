@@ -267,36 +267,62 @@ export default function Register() {
             </div>
           </motion.div>
         </div>
-      </StandardLayout>
+      </div>
     );
   }
 
   // Processing Step
   if (currentStep === 'processing') {
     return (
-      <StandardLayout>
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center py-8">
+      <div className="min-h-screen overflow-hidden relative">
+        <DynamicBackground />
+        
+        {/* Mouse cursor glow effect */}
+        <motion.div
+          className="fixed w-96 h-96 rounded-full pointer-events-none z-10"
+          style={{
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)',
+            left: mousePosition.x - 192,
+            top: mousePosition.y - 192,
+          }}
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+        
+        <div className="relative z-20 min-h-screen flex items-center justify-center py-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4"
+            className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl p-8 max-w-2xl w-full mx-4"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 100px rgba(59, 130, 246, 0.3)',
+            }}
           >
             <div className="text-center">
-              <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl text-white">✓</span>
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">Registration Submitted!</h1>
-              <p className="text-gray-600 mb-6">
+              <motion.div 
+                className="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 relative"
+                animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur-lg opacity-50 animate-pulse"></div>
+                <span className="text-3xl text-white relative z-10">✓</span>
+              </motion.div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent mb-4">Registration Submitted!</h1>
+              <p className="text-white/80 mb-6">
                 Thank you for registering with Rivervalley Rangers AFC. Your account request has been submitted for review.
               </p>
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+              <div className="bg-blue-500/20 backdrop-blur-sm border-l-4 border-blue-400 p-4 mb-6 rounded-r-lg">
                 <div className="flex">
                   <div className="ml-3">
-                    <p className="text-sm text-blue-700">
+                    <p className="text-sm text-blue-200">
                       <strong>Next Steps:</strong>
                     </p>
-                    <ul className="mt-2 text-sm text-blue-600 space-y-1">
+                    <ul className="mt-2 text-sm text-blue-100 space-y-1">
                       <li>• Club administrators will review your application</li>
                       <li>• You'll receive an email within 2-3 business days</li>
                       <li>• Administrative roles may require additional verification</li>
@@ -306,23 +332,30 @@ export default function Register() {
                 </div>
               </div>
               <div className="space-y-3">
-                <button
-                  onClick={() => router.push('/match-central')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                <motion.button
+                  onClick={() => router.push('/match-central-secure')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-xl"
+                  style={{
+                    boxShadow: '0 10px 25px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2)',
+                  }}
                 >
                   Return to Match Central
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={() => router.push('/home')}
-                  className="ml-3 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="ml-3 bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-lg transition-all"
                 >
                   Return to Homepage
-                </button>
+                </motion.button>
               </div>
             </div>
           </motion.div>
         </div>
-      </StandardLayout>
+      </div>
     );
   }
 
@@ -553,6 +586,6 @@ export default function Register() {
           </motion.div>
         </div>
       </div>
-    </StandardLayout>
+    </div>
   );
 }

@@ -425,18 +425,6 @@ export function SecureLogin() {
 
       <div className="mt-8 text-center space-y-6">
         <div className="border-t border-white/20 pt-6 space-y-4">
-          <div className="bg-green-600/20 backdrop-blur-sm border border-green-400/30 rounded-lg p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <span className="text-lg">🎭</span>
-              <span className="font-semibold text-green-200">Demo Account</span>
-            </div>
-            <div className="text-green-100 text-xs space-y-1">
-              <p><strong>Email:</strong> demo@rvrfc.com</p>
-              <p><strong>Password:</strong> demo123</p>
-              <p className="text-green-200">For testing and demonstration purposes</p>
-            </div>
-          </div>
-          
           <button
             onClick={async () => {
               const email = prompt('Enter your email address:');
