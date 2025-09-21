@@ -1700,11 +1700,14 @@ function CollapsibleTeamCard({
                     </span>
                     <Link 
                       href="/admin" 
-                      className="text-gray-400 hover:text-gray-600 text-sm flex items-center space-x-1 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-200 hover:shadow-md transition-all"
+                      className="text-black hover:text-gray-800 text-sm flex items-center space-x-1 bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 hover:from-yellow-400 hover:via-yellow-500 hover:to-yellow-600 px-4 py-2 rounded-full shadow-xl border-2 border-yellow-600 hover:border-yellow-700 hover:shadow-2xl transition-all animate-pulse font-bold"
                       title="Admin Tools & Diagnostics"
+                      style={{
+                        boxShadow: '0 0 20px rgba(255, 235, 59, 0.6), 0 4px 15px rgba(0, 0, 0, 0.3)'
+                      }}
                     >
-                      <span>🔧</span>
-                      <span>Tools</span>
+                      <span className="animate-bounce text-lg">🛠️</span>
+                      <span className="font-black uppercase tracking-wide">TOOLS</span>
                     </Link>
                   </div>
                   <p className="text-gray-600 mt-1">Complete football match management system</p>

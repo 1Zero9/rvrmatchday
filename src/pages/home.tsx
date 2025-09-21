@@ -6,7 +6,9 @@ import StandardLayout from "../components/StandardLayout";
 import MobileLayout from "../components/MobileLayout";
 import MobileHomePro from "../components/mobile/MobileHomePro";
 import AdminNotificationPopup from "../components/AdminNotificationPopup";
+import { useAuth } from "../components/SecureAuth";
 export default function StandardHomepage() {
+  const { isAdmin, user } = useAuth();
   const [showVideo, setShowVideo] = useState(true);
   const [videoEnded, setVideoEnded] = useState(false);
   const [showFloatingScroll, setShowFloatingScroll] = useState(false);
@@ -79,6 +81,35 @@ export default function StandardHomepage() {
         
         {/* Hero Section - Authentic Community Feel */}
         <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+          
+          {/* Top Left Admin Area - Only for Logged-in Admins */}
+          {isAdmin && user && (
+            <div className="fixed top-6 left-6 z-50 flex flex-col space-y-4">
+              {/* Bright Tools CTA */}
+              <motion.div
+                initial={{ opacity: 0, x: -100, y: -50 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ duration: 1, delay: 0.5 }}
+              >
+                <Link 
+                  href="/admin" 
+                  className="text-black hover:text-gray-800 text-sm flex items-center space-x-2 bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 hover:from-yellow-400 hover:via-yellow-500 hover:to-yellow-600 px-5 py-3 rounded-full shadow-2xl border-2 border-yellow-600 hover:border-yellow-700 hover:shadow-2xl transition-all animate-pulse font-bold"
+                  title="Admin Tools & Diagnostics"
+                  style={{
+                    boxShadow: '0 0 25px rgba(255, 235, 59, 0.8), 0 6px 20px rgba(0, 0, 0, 0.4)'
+                  }}
+                >
+                  <span className="animate-bounce text-xl">🛠️</span>
+                  <span className="font-black uppercase tracking-wide text-base">ADMIN TOOLS</span>
+                </Link>
+              </motion.div>
+
+              {/* Admin Notification Popup - Repositioned */}
+              <div className="relative">
+                <AdminNotificationPopup />
+              </div>
+            </div>
+          )}
           
           {/* Hero Background */}
           <div className="absolute inset-0">
@@ -852,8 +883,6 @@ export default function StandardHomepage() {
         </motion.div>
       )}
 
-      {/* Admin Notification Popup */}
-      <AdminNotificationPopup />
     </>
   );
 }

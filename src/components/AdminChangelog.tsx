@@ -32,6 +32,53 @@ interface ChangelogEntry {
 
 const changelogData: ChangelogEntry[] = [
   {
+    version: "6.2.1",
+    title: "Navigation & UX Improvements",
+    date: "2025-09-21",
+    type: "minor",
+    impact: "improvement",
+    filesChanged: 3,
+    linesAdded: 125,
+    linesRemoved: 85,
+    changes: [
+      {
+        category: "Navigation Enhancement",
+        icon: "🧭",
+        color: "text-blue-600",
+        items: [
+          "Merged Match Central and Login buttons into single smart button",
+          "Role-based button behavior: Admin → Admin Dashboard, Coach/Manager/Editor → Match Central",
+          "Public users see clean 'Match Central' entry point with login flow",
+          "Removed redundant navigation buttons for cleaner interface",
+          "Context-aware tooltips and dynamic button styling"
+        ]
+      },
+      {
+        category: "Admin Experience",
+        icon: "🛡️",
+        color: "text-orange-600",
+        items: [
+          "Added authentication controls for admin tools visibility",
+          "Admin tools and notifications only show for logged-in admins",
+          "Clean public view without admin clutter",
+          "Bright yellow pulsing admin tools CTA positioned in top-left",
+          "Professional club-first experience with hidden enterprise tools"
+        ]
+      },
+      {
+        category: "Menu Structure",
+        icon: "📋",
+        color: "text-purple-600",
+        items: [
+          "Removed 'Fixtures & Results' from Teams dropdown menu",
+          "Cleaned up both desktop and mobile navigation menus",
+          "Streamlined Teams menu focuses on team information only",
+          "Improved navigation hierarchy and user flow"
+        ]
+      }
+    ]
+  },
+  {
     version: "6.2.0",
     title: "Enterprise User Management System",
     date: "2025-09-21",

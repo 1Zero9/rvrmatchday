@@ -89,7 +89,7 @@ export default function AdminNotificationPopup() {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8, y: 50 }}
         transition={{ duration: 0.5, type: "spring", damping: 20 }}
-        className="fixed bottom-6 right-6 z-50 max-w-sm"
+        className="relative max-w-sm"
       >
         <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-2xl shadow-2xl border-2 border-orange-300 overflow-hidden">
           {/* Header */}

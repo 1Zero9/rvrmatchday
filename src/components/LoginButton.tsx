@@ -40,13 +40,16 @@ export default function LoginButton() {
       // If admin is logged in, go to admin dashboard
       if (currentProfile?.role?.toLowerCase() === 'admin') {
         router.push('/admin');
+      } else if (['coach', 'manager', 'editor'].includes(currentProfile?.role?.toLowerCase())) {
+        // Non-admin users with access go to Match Central
+        router.push('/match-central-secure');
       } else {
-        // User is logged in but not admin - sign them out
+        // Other users get signed out
         signOut();
       }
     } else {
-      // User is not logged in - redirect to secure login
-      router.push('/login?returnTo=/welcome');
+      // User is not logged in - redirect to secure login with return to Match Central
+      router.push('/login?returnTo=/match-central-secure');
     }
   };
 
@@ -65,14 +68,14 @@ export default function LoginButton() {
           return {
             gradient: 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
             icon: '✏️',
-            label: 'Editor Logout'
+            label: 'Match Central'
           };
         case 'coach':
         case 'manager':
           return {
             gradient: 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
             icon: '⚽',
-            label: 'Coach Logout'
+            label: 'Match Central'
           };
         default:
           return {
@@ -84,8 +87,8 @@ export default function LoginButton() {
     }
     return {
       gradient: 'from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600',
-      icon: '🔐',
-      label: 'Login'
+      icon: '🔒',
+      label: 'Match Central'
     };
   };
 
@@ -102,8 +105,10 @@ export default function LoginButton() {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       title={user ? 
-        (currentProfile?.role?.toLowerCase() === 'admin' ? `Admin Dashboard - ${userName}` : `Logout ${userName} (${currentProfile?.role})`) 
-        : 'Access secure login'}
+        (currentProfile?.role?.toLowerCase() === 'admin' ? `Admin Dashboard - ${userName}` : 
+         ['coach', 'manager', 'editor'].includes(currentProfile?.role?.toLowerCase()) ? `Match Central - ${userName}` :
+         `Logout ${userName} (${currentProfile?.role})`) 
+        : 'Access Match Central (login required)'}
     >
       <span className="text-base">{mainButtonStyles.icon}</span>
       <span className="text-sm">

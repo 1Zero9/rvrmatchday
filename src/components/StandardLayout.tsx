@@ -139,9 +139,6 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                   </svg>
                 </button>
                 <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                  <Link href="/matchday" className="block px-4 py-3 text-gray-700 hover:bg-blue-500 hover:bg-opacity-20 hover:text-blue-600 border-b border-gray-100 font-medium bg-blue-50">
-                    📱 Fixtures & Results (Parents)
-                  </Link>
                   <Link href="/teams" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium">
                     👥 All Teams
                   </Link>
@@ -170,10 +167,6 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                 ⚽ MatchDay
               </Link>
 
-              <Link href="/match-central-secure" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base flex items-center space-x-2 whitespace-nowrap">
-                <span>🔒</span>
-                <span>Match Central</span>
-              </Link>
 
               <div className="relative group">
                 <button className="px-4 py-3 text-white hover:bg-club-primary-dark rounded-lg transition-all duration-200 font-medium flex items-center text-base whitespace-nowrap">
@@ -274,9 +267,6 @@ export default function StandardLayout({ children, title, currentPage }: Standar
               <Link href="/about" className="block py-3 text-white hover:bg-club-primary-light rounded px-3 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 🏛️ About
               </Link>
-              <Link href="/matchday" className="block py-3 text-white hover:bg-blue-600 rounded px-3 font-medium bg-blue-500/20" onClick={() => setMobileMenuOpen(false)}>
-                📱 Fixtures & Results (Parents)
-              </Link>
               <Link href="/teams" className="block py-3 text-white hover:bg-club-primary-light rounded px-3 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 👥 Teams
               </Link>
@@ -285,10 +275,6 @@ export default function StandardLayout({ children, title, currentPage }: Standar
               <div className="border-t border-club-primary-light mt-3 pt-3">
                 <Link href="/matchday" className="block py-3 text-white hover:bg-green-600 rounded px-3 font-medium bg-green-500/20" onClick={() => setMobileMenuOpen(false)}>
                   ⚽ MatchDay
-                </Link>
-                <Link href="/match-central-secure" className="block py-3 text-white hover:bg-blue-600 rounded px-3 font-medium bg-blue-500/20 flex items-center space-x-2" onClick={() => setMobileMenuOpen(false)}>
-                  <span>🔒</span>
-                  <span>Match Central</span>
                 </Link>
               </div>
               
