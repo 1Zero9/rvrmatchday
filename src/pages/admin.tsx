@@ -185,8 +185,8 @@ function AdminToolsTab() {
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4">🔗 Quick Admin Links</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Link href="/account-admin" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-center">
-            👥 Account Requests
+          <Link href="/user-management" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-center">
+            👥 User Management
           </Link>
           <Link href="/match-central-secure" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center">
             ⚽ Match Central

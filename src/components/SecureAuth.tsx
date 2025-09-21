@@ -343,22 +343,22 @@ export function SecureLogin() {
   };
 
   return (
-    <div className="p-8 w-full text-center text-white">
-      {/* Club Header */}
-      <div className="mb-8">
-        <div className="text-4xl mb-3">⚽</div>
-        <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
-        <p className="text-white/80">Sign in to Match Central</p>
+    <div className="p-6 w-full text-center text-white">
+      {/* Club Header - 25% smaller */}
+      <div className="mb-6">
+        <div className="text-3xl mb-2">⚽</div>
+        <h1 className="text-xl font-bold mb-1">Welcome Back</h1>
+        <p className="text-white/80 text-sm">Sign in to Match Central</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/50 text-white placeholder-white/70 text-center"
+            className="w-full px-4 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/50 text-white placeholder-white/70 text-center"
             placeholder="Email Address"
             autoComplete="email"
           />
@@ -370,7 +370,7 @@ export function SecureLogin() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/50 text-white placeholder-white/70 text-center"
+            className="w-full px-4 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/50 text-white placeholder-white/70 text-center"
             placeholder="Password"
             autoComplete="current-password"
           />
@@ -407,7 +407,7 @@ export function SecureLogin() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-club-primary hover:bg-club-secondary text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50"
+          className="w-full bg-club-primary hover:bg-club-secondary text-white font-bold py-2.5 px-6 rounded-lg transition-all disabled:opacity-50"
         >
           {loading ? (
             <span className="flex items-center justify-center">
@@ -423,8 +423,8 @@ export function SecureLogin() {
         </button>
       </form>
 
-      <div className="mt-8 text-center space-y-6">
-        <div className="border-t border-white/20 pt-6 space-y-4">
+      <div className="mt-6 text-center space-y-4">
+        <div className="border-t border-white/20 pt-4 space-y-3">
           <button
             onClick={async () => {
               const email = prompt('Enter your email address:');
@@ -439,7 +439,7 @@ export function SecureLogin() {
                 }
               }
             }}
-            className="inline-flex items-center gap-2 bg-orange-600/20 backdrop-blur-sm border border-orange-400/30 hover:bg-orange-600/30 text-orange-200 hover:text-orange-100 font-semibold px-4 py-2 rounded-lg transition-all duration-300 shadow-lg"
+            className="inline-flex items-center gap-2 bg-orange-600/20 backdrop-blur-sm border border-orange-400/30 hover:bg-orange-600/30 text-orange-200 hover:text-orange-100 font-semibold px-3 py-1.5 rounded-lg transition-all duration-300 shadow-lg text-sm"
           >
             <span>🔑</span>
             <span>Reset Password</span>
@@ -452,14 +452,14 @@ export function SecureLogin() {
           </p>
           <a
             href="/register"
-            className="inline-flex items-center gap-2 bg-blue-600/20 backdrop-blur-sm border border-blue-400/30 hover:bg-blue-600/30 text-blue-200 hover:text-blue-100 font-bold px-6 py-3 rounded-lg transition-all duration-300 shadow-lg hover:scale-105"
+            className="inline-flex items-center gap-2 bg-blue-600/20 backdrop-blur-sm border border-blue-400/30 hover:bg-blue-600/30 text-blue-200 hover:text-blue-100 font-bold px-5 py-2.5 rounded-lg transition-all duration-300 shadow-lg hover:scale-105"
           >
             <span>👥</span>
             <span>Register for Account</span>
           </a>
         </div>
         
-        <div className="border-t border-white/20 pt-4">
+        <div className="border-t border-white/20 pt-3">
           <Link
             href="/home"
             className="inline-flex items-center gap-2 text-white/70 hover:text-white font-medium text-sm hover:underline"

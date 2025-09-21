@@ -161,6 +161,30 @@ function WelcomeContent() {
       color: 'from-indigo-500 to-purple-600',
       href: '/tracker',
       roles: ['admin', 'coach', 'manager']
+    },
+    {
+      title: 'User Management',
+      description: 'Enterprise user administration dashboard',
+      icon: '👥',
+      color: 'from-purple-500 to-pink-600',
+      href: '/user-management',
+      roles: ['admin']
+    },
+    {
+      title: 'Site Tools',
+      description: 'Database, backups & system tools',
+      icon: '🔧',
+      color: 'from-gray-500 to-slate-600',
+      href: '/admin#site-tools',
+      roles: ['admin']
+    },
+    {
+      title: 'Content Editor',
+      description: 'Edit website content & news',
+      icon: '✏️',
+      color: 'from-yellow-500 to-amber-600',
+      href: '/admin#content-editor',
+      roles: ['admin', 'editor']
     }
   ];
 
@@ -207,7 +231,7 @@ function WelcomeContent() {
           initial={{ opacity: 0, y: -100 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="relative pt-20 pb-16"
+          className="relative pt-12 pb-8"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* 🚀 EPIC 3D Hero Section */}
@@ -236,7 +260,7 @@ function WelcomeContent() {
                 animate={{ opacity: 1, scale: 1, rotateX: 0 }}
                 transition={{ duration: 1.2, ease: "easeOut" }}
                 whileHover={{ scale: 1.02, rotateY: 5 }}
-                className="relative bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl p-8 max-w-4xl mx-auto transform-gpu perspective-1000"
+                className="relative bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl p-6 max-w-3xl mx-auto transform-gpu perspective-1000"
                 style={{
                   background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
                   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 100px rgba(59, 130, 246, 0.3)',
@@ -244,20 +268,20 @@ function WelcomeContent() {
               >
                 {/* Holographic Logo */}
                 <motion.div 
-                  className="relative inline-block mb-8"
+                  className="relative inline-block mb-6"
                   initial={{ rotateY: -180, scale: 0 }}
                   animate={{ rotateY: 0, scale: 1 }}
                   transition={{ duration: 1.5, delay: 0.3 }}
                   whileHover={{ rotateY: 15, scale: 1.1 }}
                 >
-                  <div className="relative w-24 h-24 mx-auto">
+                  <div className="relative w-18 h-18 mx-auto">
                     {/* Glow effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full blur-xl opacity-40 animate-pulse"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full blur-lg opacity-40 animate-pulse"></div>
                     
                     {/* Main logo */}
-                    <div className="relative w-24 h-24 bg-gradient-to-br from-white/20 to-white/5 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-2xl">
+                    <div className="relative w-18 h-18 bg-gradient-to-br from-white/20 to-white/5 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-2xl">
                       <motion.div 
-                        className="text-4xl"
+                        className="text-3xl"
                         animate={{ rotateY: [0, 360] }}
                         transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                       >
@@ -267,14 +291,14 @@ function WelcomeContent() {
                     
                     {/* Floating role badge */}
                     <motion.div 
-                      className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/50"
+                      className="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/50"
                       animate={{ 
-                        y: [0, -5, 0],
+                        y: [0, -3, 0],
                         rotate: [0, 10, -10, 0],
                       }}
                       transition={{ duration: 3, repeat: Infinity }}
                     >
-                      <span className="text-lg">
+                      <span className="text-sm">
                         {profile?.role === 'admin' ? '🛡️' : 
                          profile?.role === 'editor' ? '✏️' :
                          profile?.role === 'coach' ? '⚽' :
@@ -289,10 +313,10 @@ function WelcomeContent() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.8 }}
-                  className="space-y-4"
+                  className="space-y-3"
                 >
                   <motion.h1 
-                    className="text-4xl md:text-6xl font-black bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent mb-4"
+                    className="text-3xl md:text-4xl font-black bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent mb-3"
                     animate={{ 
                       backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
                     }}
@@ -313,7 +337,7 @@ function WelcomeContent() {
                   </motion.h1>
                   
                   <motion.div 
-                    className="text-xl md:text-2xl text-cyan-100 font-medium"
+                    className="text-lg md:text-xl text-cyan-100 font-medium"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.2 }}
@@ -327,24 +351,24 @@ function WelcomeContent() {
         </motion.div>
 
         {/* 🎮 Epic Action Grid */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
           <motion.div
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 1.5 }}
-            className="text-center mb-12"
+            className="text-center mb-8"
           >
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-3">
               Your Mission Control
             </h2>
-            <p className="text-xl text-white/70">
+            <p className="text-lg text-white/70">
               Choose your next action, {profile?.role || 'Commander'}
             </p>
           </motion.div>
 
           {/* 🚀 3D Action Cards - Horizontal Layout */}
           <motion.div 
-            className="flex gap-4 overflow-x-auto scrollbar-hide pb-8 mb-16"
+            className="flex gap-4 justify-center overflow-x-auto scrollbar-hide pb-6 mb-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1.8 }}
@@ -447,12 +471,12 @@ function WelcomeContent() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 2.5 }}
-            className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl"
+            className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/20 p-6 shadow-2xl"
             style={{
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 50px rgba(59, 130, 246, 0.1)',
             }}
           >
-            <div className="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
+            <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
               {/* User Profile */}
               <div className="flex items-center space-x-6">
                 <motion.div 

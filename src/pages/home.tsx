@@ -9,6 +9,7 @@ import AdminNotificationPopup from "../components/AdminNotificationPopup";
 export default function StandardHomepage() {
   const [showVideo, setShowVideo] = useState(true);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [showFloatingScroll, setShowFloatingScroll] = useState(false);
 
   const handleVideoEnd = () => {
     setVideoEnded(true);
@@ -16,6 +17,36 @@ export default function StandardHomepage() {
     setTimeout(() => {
       setShowVideo(false);
     }, 500);
+  };
+
+  // Handle scroll to show/hide floating scroll button
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroSection = document.querySelector('section');
+      if (heroSection) {
+        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
+        const scrollPosition = window.scrollY + window.innerHeight / 2;
+        setShowFloatingScroll(scrollPosition > heroBottom);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToNextSection = () => {
+    const sections = document.querySelectorAll('section');
+    const currentScrollY = window.scrollY;
+    
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      const sectionTop = section.offsetTop;
+      
+      if (sectionTop > currentScrollY + 100) {
+        section.scrollIntoView({ behavior: 'smooth' });
+        break;
+      }
+    }
   };
 
   return (
@@ -209,32 +240,39 @@ export default function StandardHomepage() {
                     </Link>
                   </motion.div>
                 </motion.div>
+                
+                {/* Enhanced Neon Scroll Indicator - Under Hero Boxes */}
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 1.5 }}
+                  className="flex justify-center mt-8"
+                >
+                  <div className="flex flex-col items-center">
+                    <button
+                      onClick={scrollToNextSection}
+                      className="bg-white/20 backdrop-blur-md border border-white/30 rounded-full p-3 shadow-2xl animate-bounce hover:bg-white/30 transition-all duration-300 cursor-pointer group relative overflow-hidden hover:shadow-green-400/50 hover:shadow-2xl"
+                    >
+                      {/* Neon glow effect on hover */}
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300 blur-sm"></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                      
+                      <svg className="w-6 h-6 text-white group-hover:text-green-200 transition-colors relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                      </svg>
+                    </button>
+                    <div className="mt-2 text-white text-xs font-medium bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20 group-hover:text-green-200 transition-colors">
+                      Scroll Down
+                    </div>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </div>
-          
-          {/* Enhanced Scroll Indicator */}
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.5 }}
-            className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20"
-          >
-            <div className="flex flex-col items-center">
-              <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-full p-3 shadow-2xl animate-bounce hover:bg-white/30 transition-all duration-300 cursor-pointer group">
-                <svg className="w-6 h-6 text-white group-hover:text-green-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-              </div>
-              <div className="mt-2 text-white text-xs font-medium bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
-                Scroll Down
-              </div>
-            </div>
-          </motion.div>
         </section>
 
         {/* Club Updates - Right Under Hero */}
-        <section className="py-8 bg-gradient-to-br from-gray-50 to-white border-b border-gray-200">
+        <section id="club-updates" className="py-8 bg-gradient-to-br from-gray-50 to-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <div className="grid lg:grid-cols-3 gap-4">
@@ -789,6 +827,30 @@ export default function StandardHomepage() {
           </main>
         </StandardLayout>
       </div>
+
+      {/* Floating Scroll Button - Follows user down page */}
+      {showFloatingScroll && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0 }}
+          transition={{ duration: 0.3 }}
+          className="fixed bottom-8 right-8 z-50"
+        >
+          <button
+            onClick={scrollToNextSection}
+            className="bg-white/20 backdrop-blur-md border border-white/30 rounded-full p-4 shadow-2xl hover:bg-white/30 transition-all duration-300 cursor-pointer group relative overflow-hidden hover:shadow-green-400/50 hover:shadow-2xl"
+          >
+            {/* Neon glow effect on hover */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300 blur-sm"></div>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+            
+            <svg className="w-6 h-6 text-gray-900 group-hover:text-green-600 transition-colors relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </button>
+        </motion.div>
+      )}
 
       {/* Admin Notification Popup */}
       <AdminNotificationPopup />

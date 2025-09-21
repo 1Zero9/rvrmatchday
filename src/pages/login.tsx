@@ -65,7 +65,7 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="relative overflow-hidden" style={{ minHeight: 'calc(100vh - 120px)' }}>
+    <div className="relative overflow-hidden h-screen">
       {/* Hero Background Image */}
       <div className="absolute inset-0">
         <img 
@@ -76,13 +76,13 @@ function LoginPageContent() {
         <div className="absolute inset-0 bg-black/40"></div>
       </div>
 
-      {/* Main Content */}
-      <div className="relative z-10 flex items-center justify-center px-4 py-16" style={{ minHeight: 'calc(100vh - 120px)' }}>
+      {/* Main Content - Perfectly Centered */}
+      <div className="relative z-10 flex items-center justify-center h-full px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full max-w-md"
+          className="w-full max-w-sm mx-auto"
         >
           {/* Glass morphism login card - matching home page style */}
           <div className="bg-white/15 backdrop-blur-md border border-white/30 rounded-xl shadow-2xl">

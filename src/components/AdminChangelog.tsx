@@ -32,6 +32,69 @@ interface ChangelogEntry {
 
 const changelogData: ChangelogEntry[] = [
   {
+    version: "6.2.0",
+    title: "Enterprise User Management System",
+    date: "2025-09-21",
+    type: "major",
+    impact: "feature",
+    filesChanged: 12,
+    linesAdded: 850,
+    linesRemoved: 150,
+    changes: [
+      {
+        category: "User Management",
+        icon: "👥",
+        color: "text-purple-600",
+        items: [
+          "Created comprehensive enterprise-grade user management system",
+          "Added table-based user directory with role indicators and status columns",
+          "Implemented click-to-edit user detail modals with full profile management",
+          "Added role management with dropdown selection (admin, coach, manager, parent, volunteer)",
+          "Built account enable/disable functionality with status toggles",
+          "Integrated password management (reset email, temporary password generation)",
+          "Added user search and filtering by role with quick filter buttons",
+          "Created audit trail and security event tracking per user"
+        ]
+      },
+      {
+        category: "User Interface",
+        icon: "🎨",
+        color: "text-blue-600",
+        items: [
+          "Designed professional table layout for user listing",
+          "Added role-specific avatar colors and admin crown badges",
+          "Implemented hover effects and row selection highlighting",
+          "Created comprehensive edit forms with save/cancel actions",
+          "Added pending account requests management table",
+          "Built responsive modal design with clean professional styling"
+        ]
+      },
+      {
+        category: "Security & Administration",
+        icon: "🔒",
+        color: "text-red-600",
+        items: [
+          "Added user-specific audit logging and activity tracking",
+          "Implemented security event monitoring with risk level indicators",
+          "Created account status management with activation controls",
+          "Added permission-based access control for user management",
+          "Built comprehensive user profile viewing and editing system"
+        ]
+      },
+      {
+        category: "Data Management",
+        icon: "📊",
+        color: "text-green-600",
+        items: [
+          "Enhanced user data structure with teams, permissions, and activity stats",
+          "Added login tracking and failed attempt monitoring",
+          "Implemented user statistics dashboard with real-time counts",
+          "Created filtering and search capabilities across user directory"
+        ]
+      }
+    ]
+  },
+  {
     version: "6.1.0",
     title: "Marketing Panel & Modular Architecture Demo",
     date: "2025-09-19",

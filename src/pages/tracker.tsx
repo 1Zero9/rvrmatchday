@@ -12,10 +12,9 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import Head from "next/head";
-import TrackerAuthWrapper from "../components/TrackerAuthWrapper";
+import { RequireAuth, useAuth } from "../components/SecureAuth";
 import { supabase } from "../lib/supabase";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
-import { TrackerUser, hasPermission, canAccessTeam, PERMISSIONS } from "../lib/tracker-auth";
 
 export default function TrackerDashboard() {
   return (
@@ -25,15 +24,16 @@ export default function TrackerDashboard() {
         <meta name="description" content="RVR Football Club match tracking system" />
       </Head>
 
-      <TrackerAuthWrapper requiresAuth={true}>
-        {(user: any) => <TrackerContent user={user} />}
-      </TrackerAuthWrapper>
+      <RequireAuth>
+        <TrackerContent />
+      </RequireAuth>
     </>
   );
 }
 
-function TrackerContent({ user }: { user: any }) {
+function TrackerContent() {
   const router = useRouter();
+  const { user, profile } = useAuth();
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamSummaries, setTeamSummaries] = useState<TeamSummary[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
@@ -43,9 +43,14 @@ function TrackerContent({ user }: { user: any }) {
 
   useEffect(() => {
     loadData();
-  }, [user]);
+  }, [profile]);
 
   const loadData = async () => {
+    // Don't load data if profile is not ready yet
+    if (!profile) {
+      return;
+    }
+
     try {
       const { data: teamsData, error: teamsError } = await supabase
         .from('teams')
@@ -87,9 +92,13 @@ function TrackerContent({ user }: { user: any }) {
           updatedAt: new Date(team.updated_at || team.created_at)
         })) || [];
         
-        const accessibleTeams = user.teams.includes('*') 
+        // Safe access to profile teams with fallbacks
+        const userTeams = profile?.teams || [];
+        const isAdmin = profile?.role === 'admin';
+        
+        const accessibleTeams = isAdmin || userTeams.includes('*') 
           ? allTeams 
-          : allTeams.filter(team => supabaseCanAccessTeam(user, team.id));
+          : allTeams.filter(team => userTeams.includes(team.id));
         
         setTeams(accessibleTeams);
       }
@@ -116,9 +125,9 @@ function TrackerContent({ user }: { user: any }) {
           awayScore: match.away_score
         })) || [];
         
-        const accessibleMatches = user.teams.includes('*')
+        const accessibleMatches = isAdmin || userTeams.includes('*')
           ? allMatches
-          : allMatches.filter(match => supabaseCanAccessTeam(user, match.teamId));
+          : allMatches.filter(match => userTeams.includes(match.teamId));
         
         setMatches(accessibleMatches);
       }
@@ -180,7 +189,7 @@ function TrackerContent({ user }: { user: any }) {
               </div>
               <h1 className="text-4xl font-bold mb-4">Match Tracker Dashboard</h1>
               <p className="text-club-accent text-xl max-w-2xl mx-auto">
-                Welcome back, {user.full_name}! Track matches, record events, and analyze performance.
+                Welcome back, {profile?.full_name}! Track matches, record events, and analyze performance.
               </p>
             </div>
 
@@ -247,7 +256,7 @@ function TrackerContent({ user }: { user: any }) {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            {supabaseHasPermission(user, 'create_matches') && (
+            {(profile?.role === 'admin' || profile?.role === 'coach' || profile?.role === 'manager') && (
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -275,7 +284,7 @@ function TrackerContent({ user }: { user: any }) {
               </div>
             </motion.button>
 
-            {supabaseHasPermission(user, 'manage_teams') && (
+            {(profile?.role === 'admin' || profile?.role === 'coach' || profile?.role === 'manager') && (
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -328,7 +337,7 @@ function TrackerContent({ user }: { user: any }) {
                         )}
                       </div>
                       <div className="flex space-x-3">
-                        {supabaseHasPermission(user, 'record_events') && (
+                        {(profile?.role === 'admin' || profile?.role === 'coach' || profile?.role === 'manager') && (
                           <button
                             onClick={() => router.push(`/matches/${match.id}/record`)}
                             className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
@@ -358,7 +367,7 @@ function TrackerContent({ user }: { user: any }) {
               <div className="text-6xl mb-4">📅</div>
               <h3 className="text-xl font-bold mb-2">No Upcoming Matches</h3>
               <p className="text-gray-600 mb-6">Create your first match to get started</p>
-              {supabaseHasPermission(user, 'create_matches') && (
+              {(profile?.role === 'admin' || profile?.role === 'coach' || profile?.role === 'manager') && (
                 <button
                   onClick={() => router.push('/matches/new?tracker=true')}
                   className="bg-club-primary hover:bg-club-secondary text-white px-6 py-3 rounded-lg font-semibold transition-colors"
@@ -394,7 +403,7 @@ function TrackerContent({ user }: { user: any }) {
                         </div>
                       </div>
                       <div className="flex space-x-3">
-                        {supabaseHasPermission(user, 'record_events') && (
+                        {(profile?.role === 'admin' || profile?.role === 'coach' || profile?.role === 'manager') && (
                           <button
                             onClick={() => router.push(`/matches/${match.id}/record`)}
                             className="bg-club-primary hover:bg-club-secondary text-white px-4 py-2 rounded-lg font-medium transition-colors"
