@@ -31,8 +31,8 @@ export default function MobileBottomNav({ className = '' }: MobileBottomNavProps
       id: 'matches',
       label: 'Matches',
       icon: '🏆',
-      href: '/match-central',
-      isActive: router.pathname === '/match-central'
+      href: '/match-central-secure',
+      isActive: router.pathname === '/match-central-secure'
     },
     {
       id: 'record',
@@ -96,7 +96,7 @@ export function useMobileBottomNav() {
   // Show on main app pages, hide on auth/setup pages
   const showBottomNav = [
     '/home',
-    '/match-central',
+    '/match-central-secure',
     '/match-admin', 
     '/match-recorder',
     '/teams/girls',

@@ -1,21 +1,79 @@
 /**
- * Secure Welcome Dashboard
- * Personalized landing page after login
+ * 🚀 EPIC Welcome Dashboard
+ * Next-gen personalized command center
  */
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
-import StandardLayout from '../components/StandardLayout';
 import { RequireAuth, useAuth } from '../components/SecureAuth';
+
+// Dynamic gradient background
+function DynamicBackground() {
+  return (
+    <div className="fixed inset-0 -z-10">
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900"
+        animate={{
+          background: [
+            "linear-gradient(45deg, #1a1a2e, #16213e, #0f3460)",
+            "linear-gradient(45deg, #16213e, #0f3460, #533483)",
+            "linear-gradient(45deg, #0f3460, #533483, #1a1a2e)",
+          ],
+        }}
+        transition={{ duration: 8, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"
+        animate={{ opacity: [0.3, 0.7, 0.3] }}
+        transition={{ duration: 4, repeat: Infinity }}
+      />
+      
+      {/* Floating particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 15 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 bg-white/20 rounded-full"
+            animate={{
+              x: [0, Math.random() * 100 - 50],
+              y: [0, Math.random() * 100 - 50],
+              opacity: [0, 1, 0],
+            }}
+            transition={{
+              duration: Math.random() * 3 + 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function WelcomeContent() {
   const router = useRouter();
   const { user, profile, signOut } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastActivity, setLastActivity] = useState(Date.now());
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  // Auto-logout after 5 minutes of inactivity
+  // Mouse tracking for interactive elements
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Auto-logout and activity tracking
   useEffect(() => {
     const updateActivity = () => {
       setLastActivity(Date.now());
@@ -23,7 +81,7 @@ function WelcomeContent() {
 
     const checkInactivity = () => {
       const now = Date.now();
-      const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+      const fiveMinutes = 5 * 60 * 1000;
       
       if (now - lastActivity > fiveMinutes) {
         alert('Session expired due to inactivity. You will be logged out.');
@@ -37,13 +95,8 @@ function WelcomeContent() {
       document.addEventListener(event, updateActivity, true);
     });
 
-    // Check inactivity every 30 seconds
     const inactivityTimer = setInterval(checkInactivity, 30000);
-
-    // Update clock every second
-    const clockTimer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+    const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
 
     return () => {
       events.forEach(event => {
@@ -74,7 +127,8 @@ function WelcomeContent() {
       description: 'Manage matches, teams & results',
       icon: '⚽',
       color: 'from-green-500 to-emerald-600',
-      href: '/match-central'
+      href: '/match-central-secure',
+      roles: ['admin', 'coach', 'manager']
     },
     {
       title: 'Admin Dashboard',
@@ -82,27 +136,36 @@ function WelcomeContent() {
       icon: '🛠️',
       color: 'from-blue-500 to-indigo-600',
       href: '/admin',
-      adminOnly: true
-    },
-    {
-      title: 'Account Requests',
-      description: 'Review pending user requests',
-      icon: '👥',
-      color: 'from-purple-500 to-violet-600',
-      href: '/account-admin',
-      adminOnly: true
+      roles: ['admin']
     },
     {
       title: 'Match Recorder',
       description: 'Record live match events',
       icon: '📝',
       color: 'from-orange-500 to-red-600',
-      href: '/match-recorder'
+      href: '/match-recorder',
+      roles: ['admin', 'coach', 'manager']
+    },
+    {
+      title: 'Team Management',
+      description: 'Manage your team roster',
+      icon: '👥',
+      color: 'from-teal-500 to-cyan-600',
+      href: '/match-admin',
+      roles: ['coach', 'manager']
+    },
+    {
+      title: 'Reports & Stats',
+      description: 'View team performance',
+      icon: '📊',
+      color: 'from-indigo-500 to-purple-600',
+      href: '/tracker',
+      roles: ['admin', 'coach', 'manager']
     }
   ];
 
   const filteredActions = quickActions.filter(action => 
-    !action.adminOnly || profile?.role === 'admin'
+    action.roles.includes(profile?.role || 'volunteer')
   );
 
   const timeUntilLogout = () => {
@@ -114,266 +177,395 @@ function WelcomeContent() {
   };
 
   return (
-    <StandardLayout title="Welcome Dashboard">
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          
-          {/* Dramatic Welcome Header */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="text-center mb-16"
-          >
-            {/* Hero Welcome Section */}
-            <div className="relative">
-              {/* Background Gradient Blur */}
-              <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 via-blue-400/20 to-purple-400/20 blur-3xl"></div>
-              
-              {/* Main Content */}
-              <div className="relative bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/50 p-12 max-w-4xl mx-auto">
-                
-                {/* Club Logo + Role Icon */}
+    <div className="min-h-screen overflow-hidden relative">
+      {/* Custom scrollbar hiding styles */}
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
+      <DynamicBackground />
+      
+      {/* Mouse cursor glow effect */}
+      <motion.div
+        className="fixed w-96 h-96 rounded-full pointer-events-none z-10"
+        style={{
+          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)',
+          left: mousePosition.x - 192,
+          top: mousePosition.y - 192,
+        }}
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0.6, 0.3],
+        }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+
+      <div className="relative z-20 min-h-screen">
+        {/* Epic Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -100 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="relative pt-20 pb-16"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* 🚀 EPIC 3D Hero Section */}
+            <div className="text-center relative">
+              {/* Floating Elements */}
+              <motion.div
+                className="absolute -top-10 -left-10 w-20 h-20 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full opacity-20"
+                animate={{
+                  y: [0, -20, 0],
+                  rotate: [0, 180, 360],
+                }}
+                transition={{ duration: 6, repeat: Infinity }}
+              />
+              <motion.div
+                className="absolute -top-5 -right-5 w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full opacity-30"
+                animate={{
+                  y: [0, 15, 0],
+                  rotate: [0, -180, -360],
+                }}
+                transition={{ duration: 4, repeat: Infinity }}
+              />
+
+              {/* Main Hero Card */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, rotateX: 45 }}
+                animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+                whileHover={{ scale: 1.02, rotateY: 5 }}
+                className="relative bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl p-8 max-w-4xl mx-auto transform-gpu perspective-1000"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 100px rgba(59, 130, 246, 0.3)',
+                }}
+              >
+                {/* Holographic Logo */}
                 <motion.div 
                   className="relative inline-block mb-8"
-                  initial={{ rotate: -180, scale: 0 }}
-                  animate={{ rotate: 0, scale: 1 }}
-                  transition={{ duration: 1.2, delay: 0.3 }}
+                  initial={{ rotateY: -180, scale: 0 }}
+                  animate={{ rotateY: 0, scale: 1 }}
+                  transition={{ duration: 1.5, delay: 0.3 }}
+                  whileHover={{ rotateY: 15, scale: 1.1 }}
                 >
-                  <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mx-auto shadow-2xl border-4 border-gray-100 overflow-hidden">
-                    <div className="w-28 h-28 flex items-center justify-center text-6xl">⚽</div>
-                  </div>
-                  {/* Role Icon Overlay */}
-                  <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center shadow-xl border-4 border-white">
-                    <span className="text-2xl">
-                      {profile?.role === 'admin' ? '🛡️' : 
-                       profile?.role === 'editor' ? '✏️' :
-                       profile?.role === 'coach' ? '⚽' :
-                       profile?.role === 'manager' ? '📋' : '👤'}
-                    </span>
+                  <div className="relative w-24 h-24 mx-auto">
+                    {/* Glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full blur-xl opacity-40 animate-pulse"></div>
+                    
+                    {/* Main logo */}
+                    <div className="relative w-24 h-24 bg-gradient-to-br from-white/20 to-white/5 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-2xl">
+                      <motion.div 
+                        className="text-4xl"
+                        animate={{ rotateY: [0, 360] }}
+                        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                      >
+                        ⚽
+                      </motion.div>
+                    </div>
+                    
+                    {/* Floating role badge */}
+                    <motion.div 
+                      className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/50"
+                      animate={{ 
+                        y: [0, -5, 0],
+                        rotate: [0, 10, -10, 0],
+                      }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                    >
+                      <span className="text-lg">
+                        {profile?.role === 'admin' ? '🛡️' : 
+                         profile?.role === 'editor' ? '✏️' :
+                         profile?.role === 'coach' ? '⚽' :
+                         profile?.role === 'manager' ? '📋' : '👤'}
+                      </span>
+                    </motion.div>
                   </div>
                 </motion.div>
                 
-                {/* Welcome Message */}
+                {/* Epic Welcome Text */}
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.6 }}
+                  transition={{ duration: 1, delay: 0.8 }}
+                  className="space-y-4"
                 >
-                  <h1 className="text-5xl md:text-7xl font-black text-gray-900 mb-4 leading-tight">
-                    {getGreeting()},
-                  </h1>
-                  <h2 className="text-4xl md:text-6xl font-bold mb-6">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 animate-pulse">
-                      {getFirstName()}
-                    </span>
-                    <span className="text-yellow-500 ml-2">!</span>
-                  </h2>
+                  <motion.h1 
+                    className="text-4xl md:text-6xl font-black bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent mb-4"
+                    animate={{ 
+                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                    }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    style={{
+                      backgroundSize: '200% 200%',
+                      textShadow: '0 0 30px rgba(59, 130, 246, 0.5)',
+                    }}
+                  >
+                    {getGreeting()}
+                    <br />
+                    <motion.span
+                      animate={{ color: ['#ffffff', '#06b6d4', '#3b82f6', '#ffffff'] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      {getFirstName()}! 
+                    </motion.span>
+                  </motion.h1>
                   
-                  <div className="text-xl md:text-2xl text-gray-600 mb-8 font-medium">
-                    Welcome to your <span className="font-bold text-green-600">Rivervalley Rangers</span> dashboard
-                  </div>
+                  <motion.div 
+                    className="text-xl md:text-2xl text-cyan-100 font-medium"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.2 }}
+                  >
+                    Welcome to your <span className="font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Command Center</span>
+                  </motion.div>
                 </motion.div>
-              </div>
+              </motion.div>
             </div>
-            {/* Dramatic Role Badge */}
-            <motion.div 
-              className="mb-12"
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.9 }}
-            >
-              {(() => {
-                const roleConfigs = {
-                  'admin': {
-                    label: 'SITE ADMINISTRATOR',
-                    color: 'bg-gradient-to-r from-red-500 via-red-600 to-red-700',
-                    icon: '🛡️',
-                    description: 'Full system access & management',
-                    border: 'border-red-300',
-                    textColor: 'text-red-700',
-                    shadow: 'shadow-red-500/50'
-                  },
-                  'editor': {
-                    label: 'CONTENT EDITOR',
-                    color: 'bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700',
-                    icon: '✏️',
-                    description: 'Edit content & manage posts',
-                    border: 'border-purple-200',
-                    textColor: 'text-purple-700',
-                    shadow: 'shadow-purple-500/50'
-                  },
-                  'coach': {
-                    label: 'TEAM COACH',
-                    color: 'bg-gradient-to-r from-green-500 via-green-600 to-green-700',
-                    icon: '⚽',
-                    description: 'Manage teams & training',
-                    border: 'border-green-200',
-                    textColor: 'text-green-700',
-                    shadow: 'shadow-green-500/50'
-                  },
-                  'manager': {
-                    label: 'TEAM MANAGER',
-                    color: 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700',
-                    icon: '📋',
-                    description: 'Team administration & logistics',
-                    border: 'border-blue-200',
-                    textColor: 'text-blue-700',
-                    shadow: 'shadow-blue-500/50'
-                  },
-                  'parent': {
-                    label: 'PARENT/GUARDIAN',
-                    color: 'bg-gradient-to-r from-orange-500 to-orange-600',
-                    icon: '👨‍👩‍👧‍👦',
-                    description: 'View child team information',
-                    border: 'border-orange-200',
-                    textColor: 'text-orange-700'
-                  },
-                  'volunteer': {
-                    label: 'CLUB VOLUNTEER',
-                    color: 'bg-gradient-to-r from-teal-500 to-teal-600',
-                    icon: '🤝',
-                    description: 'Support club activities',
-                    border: 'border-teal-200',
-                    textColor: 'text-teal-700'
-                  }
-                };
-                
-                const config = roleConfigs[profile?.role?.toLowerCase()] || {
-                  label: 'CLUB MEMBER',
-                  color: 'bg-gradient-to-r from-gray-500 to-gray-600',
-                  icon: '👤',
-                  description: 'General club access',
-                  border: 'border-gray-200',
-                  textColor: 'text-gray-700'
-                };
+          </div>
+        </motion.div>
 
-                return (
-                  <div className="relative max-w-2xl mx-auto">
-                    {/* Main Role Card */}
-                    <div className={`bg-white rounded-3xl p-8 border-2 ${config.border} shadow-2xl`}>
-                      <div className="text-center">
-                        {/* Large Role Icon */}
-                        <div className={`inline-block ${config.color} text-white p-6 rounded-full text-5xl shadow-2xl mb-6`}>
-                          {config.icon}
-                        </div>
-                        
-                        {/* Role Title */}
-                        <h3 className={`text-3xl md:text-4xl font-black ${config.textColor} mb-3 tracking-wide`}>
-                          {config.label}
-                        </h3>
-                        
-                        {/* Description */}
-                        <p className="text-lg text-gray-600 font-medium mb-4">
-                          {config.description}
-                        </p>
-                        
-                        {/* Access Level Indicator */}
-                        <div className={`inline-flex items-center ${config.color} text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg`}>
-                          <span className="w-2 h-2 bg-white rounded-full mr-2"></span>
-                          ACCESS GRANTED
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-            </motion.div>
-          </motion.div>
-            
-          <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
-              <div className="flex items-center">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                <span>Session Active</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                <span>{currentTime.toLocaleTimeString()}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
-                <span>Auto-logout: {timeUntilLogout()}</span>
-              </div>
-            </div>
-
-          {/* Quick Actions Grid */}
+        {/* 🎮 Epic Action Grid */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
+            transition={{ duration: 1, delay: 1.5 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent mb-4">
+              Your Mission Control
+            </h2>
+            <p className="text-xl text-white/70">
+              Choose your next action, {profile?.role || 'Commander'}
+            </p>
+          </motion.div>
+
+          {/* 🚀 3D Action Cards - Horizontal Layout */}
+          <motion.div 
+            className="flex gap-4 overflow-x-auto scrollbar-hide pb-8 mb-16"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.8 }}
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
           >
             {filteredActions.map((action, index) => (
               <motion.div
                 key={action.title}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: 0.3 + (index * 0.1) }}
-                whileHover={{ scale: 1.05, y: -5 }}
+                initial={{ opacity: 0, y: 100, rotateY: -45 }}
+                animate={{ opacity: 1, y: 0, rotateY: 0 }}
+                transition={{ 
+                  duration: 0.8, 
+                  delay: 2 + (index * 0.2),
+                  type: "spring",
+                  stiffness: 100 
+                }}
+                whileHover={{ 
+                  scale: 1.05,
+                  y: -10,
+                  rotateY: 5,
+                  rotateX: 5,
+                }}
                 whileTap={{ scale: 0.95 }}
-                className="group cursor-pointer"
+                className="group cursor-pointer perspective-1000 flex-shrink-0 w-56"
                 onClick={() => router.push(action.href)}
               >
-                <div className={`bg-gradient-to-br ${action.color} rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-3xl group-hover:scale-110 transition-transform duration-300">
-                      {action.icon}
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
+                <div 
+                  className="relative overflow-hidden rounded-2xl backdrop-blur-xl border border-white/20 shadow-2xl transform-gpu"
+                  style={{
+                    background: `linear-gradient(135deg, ${action.color.includes('green') ? 'rgba(34, 197, 94, 0.2)' : 
+                      action.color.includes('blue') ? 'rgba(59, 130, 246, 0.2)' :
+                      action.color.includes('purple') ? 'rgba(147, 51, 234, 0.2)' :
+                      action.color.includes('orange') ? 'rgba(249, 115, 22, 0.2)' :
+                      action.color.includes('teal') ? 'rgba(20, 184, 166, 0.2)' :
+                      'rgba(99, 102, 241, 0.2)'} 0%, rgba(255,255,255,0.05) 100%)`,
+                    boxShadow: `0 25px 50px -12px ${action.color.includes('green') ? 'rgba(34, 197, 94, 0.3)' : 
+                      action.color.includes('blue') ? 'rgba(59, 130, 246, 0.3)' :
+                      action.color.includes('purple') ? 'rgba(147, 51, 234, 0.3)' :
+                      action.color.includes('orange') ? 'rgba(249, 115, 22, 0.3)' :
+                      action.color.includes('teal') ? 'rgba(20, 184, 166, 0.3)' :
+                      'rgba(99, 102, 241, 0.3)'}, 0 0 30px ${action.color.includes('green') ? 'rgba(34, 197, 94, 0.2)' : 
+                      action.color.includes('blue') ? 'rgba(59, 130, 246, 0.2)' :
+                      action.color.includes('purple') ? 'rgba(147, 51, 234, 0.2)' :
+                      action.color.includes('orange') ? 'rgba(249, 115, 22, 0.2)' :
+                      action.color.includes('teal') ? 'rgba(20, 184, 166, 0.2)' :
+                      'rgba(99, 102, 241, 0.2)'}`,
+                  }}
+                >
+                  <div className="relative p-5">
+                    {/* Icon with glow */}
+                    <motion.div 
+                      className="text-4xl mb-4 relative"
+                      whileHover={{ scale: 1.2, rotate: 10 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <div className="absolute inset-0 text-4xl blur-lg opacity-50">
+                        {action.icon}
+                      </div>
+                      <div className="relative">
+                        {action.icon}
+                      </div>
+                    </motion.div>
+                    
+                    {/* Content */}
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-200 transition-colors">
+                        {action.title}
+                      </h3>
+                      <p className="text-white/80 text-xs leading-relaxed mb-3">
+                        {action.description}
+                      </p>
+                      
+                      {/* Launch button */}
+                      <motion.div
+                        className="flex items-center text-cyan-300 font-semibold text-xs"
+                        whileHover={{ x: 3 }}
+                      >
+                        <span>Launch</span>
+                        <motion.div
+                          animate={{ x: [0, 3, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </motion.div>
+                      </motion.div>
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">{action.title}</h3>
-                  <p className="text-sm opacity-90">{action.description}</p>
                 </div>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Session Info & Logout */}
+          {/* 🚀 Futuristic Status Panel */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-white rounded-2xl shadow-lg p-6"
+            transition={{ duration: 1, delay: 2.5 }}
+            className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl"
+            style={{
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 50px rgba(59, 130, 246, 0.1)',
+            }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full flex items-center justify-center">
-                  <span className="text-xl text-white">👤</span>
-                </div>
+            <div className="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
+              {/* User Profile */}
+              <div className="flex items-center space-x-6">
+                <motion.div 
+                  className="relative"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                >
+                  <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full blur-lg opacity-50 animate-pulse"></div>
+                    <span className="text-2xl relative z-10">👤</span>
+                  </div>
+                  {/* Online indicator */}
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white/20 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  </div>
+                </motion.div>
+                
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{profile?.full_name}</h3>
-                  <p className="text-sm text-gray-600">{profile?.email}</p>
-                  <p className="text-xs text-gray-500 capitalize">Role: {profile?.role}</p>
+                  <h3 className="text-xl font-bold text-white mb-1">{profile?.full_name}</h3>
+                  <p className="text-cyan-200 text-sm font-medium">{profile?.email}</p>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <span className="px-3 py-1 bg-gradient-to-r from-emerald-400/20 to-cyan-400/20 border border-emerald-400/30 rounded-full text-emerald-300 text-xs font-semibold uppercase tracking-wide">
+                      {profile?.role}
+                    </span>
+                    <motion.div
+                      className="flex items-center space-x-1 text-green-400 text-xs"
+                      animate={{ opacity: [1, 0.5, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                      <span>ACTIVE</span>
+                    </motion.div>
+                  </div>
                 </div>
               </div>
               
-              <button
-                onClick={signOut}
-                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2"
-              >
-                <span>🔓</span>
-                <span>Secure Logout</span>
-              </button>
+              {/* Session Info */}
+              <div className="text-center md:text-right">
+                <div className="text-white/60 text-sm mb-3 space-y-1">
+                  <div className="flex items-center justify-center md:justify-end space-x-2">
+                    <span>🕒</span>
+                    <span>{currentTime.toLocaleTimeString()}</span>
+                  </div>
+                  <div className="flex items-center justify-center md:justify-end space-x-2">
+                    <span>⏳</span>
+                    <span>Auto-logout: {timeUntilLogout()}</span>
+                  </div>
+                </div>
+                
+                {/* Epic Logout Button */}
+                <motion.button
+                  onClick={signOut}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 flex items-center space-x-3 shadow-xl"
+                  style={{
+                    boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3), 0 0 20px rgba(239, 68, 68, 0.2)',
+                  }}
+                >
+                  <motion.span
+                    animate={{ rotate: [0, 15, -15, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    🔓
+                  </motion.span>
+                  <span>Secure Logout</span>
+                  <motion.div
+                    animate={{ x: [0, 3, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    ➤
+                  </motion.div>
+                </motion.button>
+              </div>
             </div>
           </motion.div>
 
-          {/* Footer Info */}
+          {/* Security Footer */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="text-center mt-8 text-sm text-gray-500"
+            transition={{ duration: 1, delay: 3 }}
+            className="text-center mt-12 space-y-3"
           >
-            <p>🔒 Secure session • Auto-logout after 5 minutes of inactivity</p>
-            <p className="mt-1">Session timer resets with any mouse, keyboard, or touch activity</p>
+            <div className="flex items-center justify-center space-x-6 text-white/40 text-sm">
+              <div className="flex items-center space-x-2">
+                <motion.div
+                  className="w-2 h-2 bg-green-400 rounded-full"
+                  animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <span>Secure Connection</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <motion.div
+                  className="w-2 h-2 bg-blue-400 rounded-full"
+                  animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
+                />
+                <span>Real-time Sync</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <motion.div
+                  className="w-2 h-2 bg-purple-400 rounded-full"
+                  animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
+                  transition={{ duration: 1.8, repeat: Infinity, delay: 1 }}
+                />
+                <span>Activity Monitoring</span>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
-    </StandardLayout>
+    </div>
   );
 }
 

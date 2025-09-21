@@ -46,7 +46,7 @@ export default function LoginButton() {
       }
     } else {
       // User is not logged in - redirect to secure login
-      router.push('/login?returnTo=/match-central');
+      router.push('/login?returnTo=/welcome');
     }
   };
 

@@ -188,7 +188,7 @@ function AdminToolsTab() {
           <Link href="/account-admin" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-center">
             👥 Account Requests
           </Link>
-          <Link href="/match-central" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center">
+          <Link href="/match-central-secure" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center">
             ⚽ Match Central
           </Link>
           <Link href="/account-request" className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-center">

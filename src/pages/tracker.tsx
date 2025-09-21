@@ -16,7 +16,6 @@ import TrackerAuthWrapper from "../components/TrackerAuthWrapper";
 import { supabase } from "../lib/supabase";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
 import { TrackerUser, hasPermission, canAccessTeam, PERMISSIONS } from "../lib/tracker-auth";
-import { SupabaseTrackerUser, hasPermission as supabaseHasPermission, canAccessTeam as supabaseCanAccessTeam } from "../lib/supabase-auth";
 
 export default function TrackerDashboard() {
   return (
@@ -27,13 +26,13 @@ export default function TrackerDashboard() {
       </Head>
 
       <TrackerAuthWrapper requiresAuth={true}>
-        {(user: SupabaseTrackerUser) => <TrackerContent user={user} />}
+        {(user: any) => <TrackerContent user={user} />}
       </TrackerAuthWrapper>
     </>
   );
 }
 
-function TrackerContent({ user }: { user: SupabaseTrackerUser }) {
+function TrackerContent({ user }: { user: any }) {
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamSummaries, setTeamSummaries] = useState<TeamSummary[]>([]);

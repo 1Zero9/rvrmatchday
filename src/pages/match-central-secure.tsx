@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { RequireAuth } from '../components/SecureAuth';
-import MatchCentralContent from './match-central';
+import MatchCentralContent from '../components/MatchCentralContent';
 
 export default function SecureMatchCentral() {
   return (

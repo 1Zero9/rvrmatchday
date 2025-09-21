@@ -13,7 +13,7 @@ import StandardLayout from "../components/StandardLayout";
 import { RequireAuth } from '../components/SecureAuth';
 
 // Import the existing match central content
-import MatchCentralContent from './match-central';
+import MatchCentralContent from '../components/MatchCentralContent';
 
 export default function SecureMatchCentral() {
   const router = useRouter();

@@ -10,14 +10,15 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { signInWithEmail, signUpUser, SupabaseTrackerUser } from '../lib/supabase-auth';
+import { useAuth } from './SecureAuth';
 
 interface SupabaseTrackerLoginProps {
-  onLogin: (user: SupabaseTrackerUser) => void;
+  onLogin: (user: any) => void;
   onGuestAccess?: () => void;
 }
 
 export default function SupabaseTrackerLogin({ onLogin, onGuestAccess }: SupabaseTrackerLoginProps) {
+  const { signIn, user, profile } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [credentials, setCredentials] = useState({
     email: '',
@@ -49,27 +50,16 @@ export default function SupabaseTrackerLogin({ onLogin, onGuestAccess }: Supabas
           return;
         }
 
-        const user = await signUpUser(credentials.email, credentials.password, {
-          username: credentials.username,
-          full_name: credentials.fullName,
-          role: credentials.role,
-          teams: [], // Will be assigned by admin
-          permissions: credentials.role === 'parent' ? ['view_matches', 'view_stats'] : ['view_matches']
-        });
-
-        if (user) {
-          onLogin(user);
-        } else {
-          setError('Registration failed. Please try again.');
-        }
+        // Sign up not implemented in SecureAuth yet
+        setError('Registration feature not available. Please contact admin for account creation.');
       } else {
-        // Sign in flow
-        const session = await signInWithEmail(credentials.email, credentials.password);
+        // Sign in flow using SecureAuth
+        const result = await signIn(credentials.email, credentials.password);
         
-        if (session) {
-          onLogin(session.user);
+        if (result.success && user && profile) {
+          onLogin(profile);
         } else {
-          setError('Invalid email or password');
+          setError(result.error || 'Invalid email or password');
         }
       }
     } catch (err) {

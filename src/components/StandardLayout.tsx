@@ -170,7 +170,7 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                 ⚽ MatchDay
               </Link>
 
-              <Link href="/match-central" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base flex items-center space-x-2 whitespace-nowrap">
+              <Link href="/match-central-secure" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base flex items-center space-x-2 whitespace-nowrap">
                 <span>🔒</span>
                 <span>Match Central</span>
               </Link>
@@ -286,7 +286,7 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                 <Link href="/matchday" className="block py-3 text-white hover:bg-green-600 rounded px-3 font-medium bg-green-500/20" onClick={() => setMobileMenuOpen(false)}>
                   ⚽ MatchDay
                 </Link>
-                <Link href="/match-central" className="block py-3 text-white hover:bg-blue-600 rounded px-3 font-medium bg-blue-500/20 flex items-center space-x-2" onClick={() => setMobileMenuOpen(false)}>
+                <Link href="/match-central-secure" className="block py-3 text-white hover:bg-blue-600 rounded px-3 font-medium bg-blue-500/20 flex items-center space-x-2" onClick={() => setMobileMenuOpen(false)}>
                   <span>🔒</span>
                   <span>Match Central</span>
                 </Link>

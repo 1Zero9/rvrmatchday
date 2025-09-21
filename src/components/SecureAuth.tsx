@@ -504,6 +504,8 @@ export function RequireAuth({
   const router = useRouter();
   const [timeoutReached, setTimeoutReached] = React.useState(false);
 
+  // IMPORTANT: ALL HOOKS MUST BE CALLED CONSISTENTLY ON EVERY RENDER
+  
   // Debug logging
   React.useEffect(() => {
     console.log('RequireAuth state:', { 
@@ -527,17 +529,31 @@ export function RequireAuth({
     return () => clearTimeout(timer);
   }, [loading]);
 
-  if (loading && !timeoutReached) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-lg font-medium text-gray-600">Loading authentication...</p>
-          <p className="text-sm text-gray-500 mt-2">Please wait while we verify your credentials</p>
-        </div>
-      </div>
-    );
-  }
+  // Redirect to the centralized login page if not authenticated
+  React.useEffect(() => {
+    // Always run the effect, but only redirect when conditions are met
+    if (!user || !profile) {
+      console.log('RequireAuth redirecting to login:', { user: !!user, profile: !!profile, loading });
+      const currentPath = router.asPath;
+      
+      // Don't redirect if already on login page, if loading, or if user/profile are changing
+      if (currentPath.startsWith('/login') || loading || timeoutReached) {
+        console.log('Skipping redirect:', { onLoginPage: currentPath.startsWith('/login'), loading, timeoutReached });
+        return;
+      }
+      
+      // Add a small delay to prevent redirect loops
+      const timer = setTimeout(() => {
+        router.replace(`/login?returnTo=${encodeURIComponent(currentPath)}`);
+      }, 50);
+      
+      return () => clearTimeout(timer);
+    }
+    // Return cleanup function even when not redirecting to maintain consistent hook behavior
+    return undefined;
+  }, [router, user, profile, loading, timeoutReached]);
+
+  // ALL HOOKS CALLED - NOW HANDLE CONDITIONAL RENDERING
 
   // If timeout reached and still loading, show error with option to retry
   if (loading && timeoutReached) {
@@ -570,25 +586,6 @@ export function RequireAuth({
   }
 
   if (!user || !profile) {
-    // Redirect to the centralized login page
-    React.useEffect(() => {
-      console.log('RequireAuth redirecting to login:', { user: !!user, profile: !!profile, loading });
-      const currentPath = router.asPath;
-      
-      // Don't redirect if already on login page, if loading, or if user/profile are changing
-      if (currentPath.startsWith('/login') || loading || timeoutReached) {
-        console.log('Skipping redirect:', { onLoginPage: currentPath.startsWith('/login'), loading, timeoutReached });
-        return;
-      }
-      
-      // Add a small delay to prevent redirect loops
-      const timer = setTimeout(() => {
-        router.replace(`/login?returnTo=${encodeURIComponent(currentPath)}`);
-      }, 50);
-      
-      return () => clearTimeout(timer);
-    }, [router, user, profile, loading, timeoutReached]);
-
     return fallback || (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
