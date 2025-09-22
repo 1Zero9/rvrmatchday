@@ -7,7 +7,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './SecureAuth';
-import '../styles/admin-grid.css';
 
 interface AccountRequest {
   id: string;
