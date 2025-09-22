@@ -7,11 +7,15 @@ import MobileLayout from "../components/MobileLayout";
 import MobileHomePro from "../components/mobile/MobileHomePro";
 import AdminNotificationPopup from "../components/AdminNotificationPopup";
 import { useAuth } from "../components/SecureAuth";
+import { useHomepageData, formatMatchDate, formatMatchTime } from "../hooks/useHomepageData";
 export default function StandardHomepage() {
   const { isAdmin, user } = useAuth();
   const [showVideo, setShowVideo] = useState(true);
   const [videoEnded, setVideoEnded] = useState(false);
   const [showFloatingScroll, setShowFloatingScroll] = useState(false);
+  
+  // Fetch dynamic data for the hero boxes
+  const { latestResult, nextFixture, latestNews, loading } = useHomepageData();
 
   const handleVideoEnd = () => {
     setVideoEnded(true);
@@ -308,37 +312,100 @@ export default function StandardHomepage() {
             
             <div className="grid lg:grid-cols-3 gap-4">
               
-              {/* Latest Result - Compact */}
+              {/* Latest Result - Dynamic */}
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4 }}
-                className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-lg overflow-hidden border border-green-200"
+                className={`rounded-xl shadow-lg overflow-hidden border ${
+                  loading 
+                    ? 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
+                    : latestResult?.result === 'win' 
+                      ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
+                      : latestResult?.result === 'loss'
+                        ? 'bg-gradient-to-br from-red-50 to-red-100 border-red-200'
+                        : 'bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200'
+                }`}
               >
-                <div className="bg-gradient-to-r from-green-600 to-green-700 px-4 py-2">
+                <div className={`px-4 py-2 ${
+                  loading 
+                    ? 'bg-gradient-to-r from-gray-600 to-gray-700'
+                    : latestResult?.result === 'win' 
+                      ? 'bg-gradient-to-r from-green-600 to-green-700'
+                      : latestResult?.result === 'loss'
+                        ? 'bg-gradient-to-r from-red-600 to-red-700'
+                        : 'bg-gradient-to-r from-yellow-600 to-yellow-700'
+                }`}>
                   <div className="flex items-center justify-between text-white">
-                    <span className="font-bold text-sm uppercase tracking-wide">Latest Win</span>
-                    <div className="text-lg">🏆</div>
+                    <span className="font-bold text-sm uppercase tracking-wide">
+                      {loading 
+                        ? 'Loading...' 
+                        : latestResult?.result === 'win' 
+                          ? 'Latest Win' 
+                          : latestResult?.result === 'loss'
+                            ? 'Latest Match'
+                            : 'Latest Draw'
+                      }
+                    </span>
+                    <div className="text-lg">
+                      {latestResult?.result === 'win' ? '🏆' : latestResult?.result === 'loss' ? '⚽' : '🤝'}
+                    </div>
                   </div>
                 </div>
                 <div className="p-4">
-                  <div className="text-center">
-                    <div className="text-xs text-gray-500 mb-2">Senior Team • Saturday</div>
-                    <div className="flex items-center justify-between text-lg font-bold mb-2">
-                      <span className="text-green-700">RVR FC</span>
-                      <div className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm">
-                        2 - 1
+                  {loading ? (
+                    <div className="text-center">
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                        <div className="h-6 bg-gray-300 rounded mb-2"></div>
+                        <div className="h-8 bg-gray-300 rounded"></div>
                       </div>
-                      <span className="text-gray-700">Millbrook FC</span>
                     </div>
-                    <Link href="/matchday" className="inline-block bg-green-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm">
-                      Match Report
-                    </Link>
-                  </div>
+                  ) : latestResult ? (
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500 mb-2">
+                        {latestResult.matchType} • {formatMatchDate(latestResult.matchDate)}
+                      </div>
+                      <div className="flex items-center justify-between text-lg font-bold mb-2">
+                        <span className={latestResult.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}>
+                          {latestResult.homeTeam}
+                        </span>
+                        <div className={`text-white px-3 py-1 rounded-lg text-sm ${
+                          latestResult.result === 'win' 
+                            ? 'bg-green-600' 
+                            : latestResult.result === 'loss'
+                              ? 'bg-red-600'
+                              : 'bg-yellow-600'
+                        }`}>
+                          {latestResult.homeScore} - {latestResult.awayScore}
+                        </div>
+                        <span className={!latestResult.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}>
+                          {latestResult.awayTeam}
+                        </span>
+                      </div>
+                      <Link 
+                        href={`/matchday`} 
+                        className={`inline-block text-white px-4 py-1 rounded-lg font-semibold transition-colors text-sm ${
+                          latestResult.result === 'win' 
+                            ? 'bg-green-600 hover:bg-green-700' 
+                            : latestResult.result === 'loss'
+                              ? 'bg-red-600 hover:bg-red-700'
+                              : 'bg-yellow-600 hover:bg-yellow-700'
+                        }`}
+                      >
+                        Match Report
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500">
+                      <div className="text-2xl mb-2">⚽</div>
+                      <div className="text-sm">No recent results</div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
 
-              {/* Next Fixture - Compact */}
+              {/* Next Fixture - Dynamic */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -352,23 +419,56 @@ export default function StandardHomepage() {
                   </div>
                 </div>
                 <div className="p-4">
-                  <div className="text-center">
-                    <div className="text-xs text-gray-500 mb-2">Saturday 15:00 • Home</div>
-                    <div className="flex items-center justify-between text-lg font-bold mb-2">
-                      <span className="text-orange-700">RVR FC</span>
-                      <div className="bg-orange-600 text-white px-3 py-1 rounded-lg text-sm">
-                        VS
+                  {loading ? (
+                    <div className="text-center">
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                        <div className="h-6 bg-gray-300 rounded mb-2"></div>
+                        <div className="h-8 bg-gray-300 rounded"></div>
                       </div>
-                      <span className="text-gray-700">Oakwood Utd</span>
                     </div>
-                    <Link href="/match-central" className="inline-block bg-orange-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-orange-700 transition-colors text-sm">
-                      Match Info
-                    </Link>
-                  </div>
+                  ) : nextFixture ? (
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500 mb-2">
+                        {formatMatchDate(nextFixture.matchDate)} {formatMatchTime(nextFixture.matchTime)} • {nextFixture.isHomeMatch ? 'Home' : 'Away'}
+                      </div>
+                      <div className="flex items-center justify-between text-lg font-bold mb-2">
+                        <span className={nextFixture.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}>
+                          {nextFixture.homeTeam}
+                        </span>
+                        <div className="bg-orange-600 text-white px-3 py-1 rounded-lg text-sm">
+                          VS
+                        </div>
+                        <span className={!nextFixture.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}>
+                          {nextFixture.awayTeam}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500 mb-2">
+                        {nextFixture.venue}
+                      </div>
+                      <Link 
+                        href="/match-central" 
+                        className="inline-block bg-orange-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-orange-700 transition-colors text-sm"
+                      >
+                        Match Info
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500">
+                      <div className="text-2xl mb-2">📅</div>
+                      <div className="text-sm">No upcoming fixtures</div>
+                      <Link 
+                        href="/match-central" 
+                        className="inline-block bg-orange-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-orange-700 transition-colors text-sm mt-2"
+                      >
+                        View Fixtures
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </motion.div>
 
-              {/* News Highlight - Compact */}
+              {/* News Highlight - Dynamic */}
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -382,13 +482,44 @@ export default function StandardHomepage() {
                   </div>
                 </div>
                 <div className="p-4">
-                  <div className="text-center">
-                    <h3 className="text-sm font-bold text-gray-900 mb-2">U16 Boys Reach County Cup Final</h3>
-                    <p className="text-gray-600 text-xs mb-2">Historic achievement for our youth team</p>
-                    <Link href="/news" className="inline-block bg-blue-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm">
-                      Read More
-                    </Link>
-                  </div>
+                  {loading ? (
+                    <div className="text-center">
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                        <div className="h-3 bg-gray-300 rounded mb-2"></div>
+                        <div className="h-8 bg-gray-300 rounded"></div>
+                      </div>
+                    </div>
+                  ) : latestNews ? (
+                    <div className="text-center">
+                      <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2">
+                        {latestNews.title}
+                      </h3>
+                      <p className="text-gray-600 text-xs mb-2 line-clamp-2">
+                        {latestNews.excerpt}
+                      </p>
+                      <div className="text-xs text-gray-500 mb-2">
+                        {latestNews.category} • {formatMatchDate(latestNews.publishDate)}
+                      </div>
+                      <Link 
+                        href="/news" 
+                        className="inline-block bg-blue-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm"
+                      >
+                        Read More
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500">
+                      <div className="text-2xl mb-2">📰</div>
+                      <div className="text-sm">No recent news</div>
+                      <Link 
+                        href="/news" 
+                        className="inline-block bg-blue-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm mt-2"
+                      >
+                        View News
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </div>
