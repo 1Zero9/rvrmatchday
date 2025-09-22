@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
+import TicketModal from './TicketModal';
 
 interface SpecialEvent {
   id: string;
@@ -47,6 +48,7 @@ export default function SpecialEventsPopup() {
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [showTicketModal, setShowTicketModal] = useState(false);
 
   useEffect(() => {
     const checkSpecialEvents = async () => {
@@ -113,14 +115,14 @@ export default function SpecialEventsPopup() {
 
     checkSpecialEvents();
 
-    // Rotate through events and colors every 4 seconds
+    // Rotate through events and colors every 8 seconds
     const rotation = setInterval(() => {
       if (events.length > 1) {
         setCurrentEventIndex((prev) => (prev + 1) % events.length);
       }
       // Always cycle colors regardless of number of events
       setCurrentColorIndex((prev) => (prev + 1) % colorCycle.length);
-    }, 4000);
+    }, 8000);
 
     return () => clearInterval(rotation);
   }, [events.length]);
@@ -134,13 +136,8 @@ export default function SpecialEventsPopup() {
     sessionStorage.setItem(sessionKey, 'true');
   };
 
-  const handleGetTickets = (event: SpecialEvent) => {
-    // Could link to ticketing system or contact info
-    if (event.contact_info) {
-      alert(`Contact: ${event.contact_info}`);
-    } else {
-      alert('Contact club for tickets: info@rivervalleyrangers.ie');
-    }
+  const handleGetTickets = () => {
+    setShowTicketModal(true);
   };
 
   if (!showPopup || dismissed || events.length === 0) {
@@ -239,7 +236,7 @@ export default function SpecialEventsPopup() {
             {/* Action buttons */}
             <div className="flex space-x-2">
               <button
-                onClick={() => handleGetTickets(currentEvent)}
+                onClick={handleGetTickets}
                 className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-bold py-2 px-4 rounded-lg transition-all border border-white/30"
               >
                 Get Tickets
@@ -273,6 +270,13 @@ export default function SpecialEventsPopup() {
           </motion.div>
         ) : null}
       </motion.div>
+      
+      {/* Ticket Modal */}
+      <TicketModal 
+        isOpen={showTicketModal}
+        onClose={() => setShowTicketModal(false)}
+        event={currentEvent}
+      />
     </AnimatePresence>
   );
 }

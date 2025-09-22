@@ -8,6 +8,7 @@ import AdminSiteMap from '../components/AdminSiteMap';
 import UnifiedAccountManagement from '../components/UnifiedAccountManagement';
 import SessionRecording from '../components/SessionRecording';
 import SiteStatusReport from '../components/admin/SiteStatusReport';
+import SpecialEventsManager from '../components/admin/SpecialEventsManager';
 import { supabase } from '../lib/supabase';
 import { AuthProvider, RequireAuth, useAuth } from '../components/SecureAuth';
 
@@ -313,6 +314,7 @@ function AdminDashboardContent() {
               {[
                 { id: 'dashboard', label: '📊 Dashboard', icon: '📊' },
                 { id: 'accounts', label: '👥 Account Management', icon: '👥', hasNotification: pendingRequestsCount > 0, notificationCount: pendingRequestsCount },
+                { id: 'events', label: '🎉 Special Events', icon: '🎉' },
                 { id: 'todos', label: '✅ Tasks', icon: '✅' },
                 { id: 'changelog', label: '📝 Changelog', icon: '📝' },
                 { id: 'sitemap', label: '🗺️ Site Map', icon: '🗺️' },
@@ -359,6 +361,16 @@ function AdminDashboardContent() {
             transition={{ duration: 0.5 }}
           >
             <UnifiedAccountManagement />
+          </motion.div>
+        )}
+
+        {activeTab === 'events' && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <SpecialEventsManager />
           </motion.div>
         )}
 

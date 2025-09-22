@@ -338,12 +338,12 @@ export default function StandardHomepage() {
                 </div>
               </div>
               
-              {/* Special Events CTA - Fixed Position Right Side */}
+              {/* Special Events CTA - Fixed Position Far Right */}
               <motion.div 
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="hidden lg:block absolute right-0 top-4 w-80"
+                className="hidden xl:block absolute -right-4 top-4 w-80"
               >
                 <SpecialEventsPopup />
               </motion.div>
