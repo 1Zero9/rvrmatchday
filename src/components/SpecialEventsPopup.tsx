@@ -29,16 +29,22 @@ const eventIcons = {
   other: '🎊'
 };
 
-const eventColors = {
-  low: 'from-blue-500 to-blue-600',
-  medium: 'from-green-500 to-green-600', 
-  high: 'from-orange-500 to-orange-600',
-  urgent: 'from-red-500 to-red-600'
-};
+// Color cycling array - will cycle through these colors regardless of event type
+const colorCycle = [
+  'from-blue-500 to-blue-600',
+  'from-green-500 to-green-600',
+  'from-purple-500 to-purple-600',
+  'from-orange-500 to-orange-600',
+  'from-pink-500 to-pink-600',
+  'from-teal-500 to-teal-600',
+  'from-red-500 to-red-600',
+  'from-indigo-500 to-indigo-600'
+];
 
 export default function SpecialEventsPopup() {
   const [events, setEvents] = useState<SpecialEvent[]>([]);
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const [currentColorIndex, setCurrentColorIndex] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -60,7 +66,7 @@ export default function SpecialEventsPopup() {
           const fallbackEvents: SpecialEvent[] = [
             {
               id: 'race-night-2025',
-              title: '🏇 Race Night 2025',
+              title: 'Race Night 2025',
               description: 'Join us for an exciting evening of virtual horse racing!',
               date: '2025-10-15',
               time: '19:30',
@@ -73,7 +79,7 @@ export default function SpecialEventsPopup() {
             },
             {
               id: 'christmas-bingo',
-              title: '🎱 Christmas Bingo',
+              title: 'Christmas Bingo',
               description: 'Christmas bingo with fantastic prizes!',
               date: '2025-12-20',
               time: '20:00',
@@ -107,14 +113,16 @@ export default function SpecialEventsPopup() {
 
     checkSpecialEvents();
 
-    // Rotate through events every 8 seconds
-    const eventRotation = setInterval(() => {
+    // Rotate through events and colors every 4 seconds
+    const rotation = setInterval(() => {
       if (events.length > 1) {
         setCurrentEventIndex((prev) => (prev + 1) % events.length);
       }
-    }, 8000);
+      // Always cycle colors regardless of number of events
+      setCurrentColorIndex((prev) => (prev + 1) % colorCycle.length);
+    }, 4000);
 
-    return () => clearInterval(eventRotation);
+    return () => clearInterval(rotation);
   }, [events.length]);
 
   const handleDismiss = () => {
@@ -140,25 +148,24 @@ export default function SpecialEventsPopup() {
   }
 
   const currentEvent = events[currentEventIndex];
+  const currentColor = colorCycle[currentColorIndex];
   const eventDate = new Date(currentEvent.date);
   const daysUntil = Math.ceil((eventDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
 
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, scale: 0.8, x: 50 }}
-        animate={{ opacity: 1, scale: 1, x: 0 }}
-        exit={{ opacity: 0, scale: 0.8, x: 50 }}
+        initial={{ opacity: 0, scale: 0.8, y: 30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.8, y: 30 }}
         transition={{ duration: 0.6, type: "spring", damping: 20 }}
-        className="relative max-w-sm"
+        className="relative max-w-md"
       >
-        <div className={`bg-gradient-to-br ${eventColors[currentEvent.priority]} text-white rounded-2xl shadow-2xl border-2 border-white/30 overflow-hidden`}>
+        <div className={`bg-gradient-to-br ${currentColor} text-white rounded-2xl shadow-2xl border-2 border-white/30 overflow-hidden`}>
           {/* Header */}
           <div className="bg-black/20 p-4 flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className="text-2xl animate-bounce">
-                {eventIcons[currentEvent.event_type]}
-              </span>
+              <span className="text-2xl">🎉</span>
               <span className="font-bold text-lg">Special Event</span>
             </div>
             <div className="flex items-center space-x-2">

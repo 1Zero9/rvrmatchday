@@ -124,16 +124,6 @@ export default function StandardHomepage() {
             </div>
           )}
 
-          {/* Top Right Special Events Area - For All Users */}
-          <div className="fixed top-6 right-6 z-50 flex flex-col space-y-4">
-            <motion.div
-              initial={{ opacity: 0, x: 100, y: -50 }}
-              animate={{ opacity: 1, x: 0, y: 0 }}
-              transition={{ duration: 1, delay: 0.8 }}
-            >
-              <SpecialEventsPopup />
-            </motion.div>
-          </div>
           
           {/* Hero Background */}
           <div className="absolute inset-0">
@@ -166,29 +156,29 @@ export default function StandardHomepage() {
             <div className="absolute inset-0 bg-black/40"></div>
           </div>
           
-          {/* Hero Content Overlay - Enhanced with Action Grid */}
+          {/* Hero Content Overlay - Enhanced Layout with Logo Left, CTA Right */}
           <div className="relative z-10 w-full px-4 max-w-7xl mx-auto">
             
-            {/* Club Header with Integrated Logo */}
+            {/* Club Header - Centered */}
             <motion.div
               initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               className="text-center text-white mb-8"
             >
-              {/* Logo positioned above title */}
+              {/* Mobile Logo - Only shown on smaller screens */}
               <motion.div 
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="flex justify-center mb-6"
+                className="flex justify-center mb-6 lg:hidden"
               >
                 <div className="relative">
                   <Image 
                     src="/images/logo.png" 
                     alt="Rivervalley Rangers AFC Logo" 
-                    width={120}
-                    height={120}
+                    width={100}
+                    height={100}
                     className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
@@ -203,9 +193,30 @@ export default function StandardHomepage() {
               </p>
             </motion.div>
             
-            {/* Centered Action Cards - Independent */}
-            <div className="flex justify-center">
-              <div className="w-full max-w-4xl">
+            {/* Hero Layout: Logo Left | Action Cards Center | CTA Right */}
+            <div className="flex justify-between items-start max-w-7xl mx-auto">
+              
+              {/* Logo - Left Side */}
+              <motion.div 
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="hidden lg:flex flex-col items-center mt-4"
+              >
+                <div className="relative mb-4">
+                  <Image 
+                    src="/images/logo.png" 
+                    alt="Rivervalley Rangers AFC Logo" 
+                    width={140}
+                    height={140}
+                    className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
+                </div>
+              </motion.div>
+              
+              {/* Centered Action Cards */}
+              <div className="flex-1 max-w-4xl mx-8">
 
                 {/* Main Action Grid - Larger Boxes */}
                 <motion.div
@@ -322,9 +333,21 @@ export default function StandardHomepage() {
                   </div>
                 </motion.div>
               </div>
+              
+              {/* Special Events CTA - Right Side */}
+              <motion.div 
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="hidden lg:flex flex-col items-center mt-4"
+              >
+                <SpecialEventsPopup />
+              </motion.div>
+              
             </div>
           </div>
         </section>
+
 
         {/* Club Updates - Right Under Hero */}
         <section id="club-updates" className="py-8 bg-gradient-to-br from-gray-50 to-white border-b border-gray-200">
