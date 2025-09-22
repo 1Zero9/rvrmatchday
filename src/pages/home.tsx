@@ -193,30 +193,33 @@ export default function StandardHomepage() {
               </p>
             </motion.div>
             
-            {/* Hero Layout: Logo Left | Action Cards Center | CTA Right */}
-            <div className="flex justify-between items-start max-w-7xl mx-auto">
+            {/* Hero Layout with Proper Centering */}
+            <div className="relative max-w-7xl mx-auto">
               
-              {/* Logo - Left Side */}
+              {/* Logo - Absolute Left Position */}
               <motion.div 
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="hidden lg:flex flex-col items-center mt-4"
+                className="hidden lg:block absolute left-0 top-4 w-48"
               >
-                <div className="relative mb-4">
-                  <Image 
-                    src="/images/logo.png" 
-                    alt="Rivervalley Rangers AFC Logo" 
-                    width={140}
-                    height={140}
-                    className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
+                <div className="flex flex-col items-center">
+                  <div className="relative mb-4">
+                    <Image 
+                      src="/images/logo.png" 
+                      alt="Rivervalley Rangers AFC Logo" 
+                      width={140}
+                      height={140}
+                      className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
+                  </div>
                 </div>
               </motion.div>
               
-              {/* Centered Action Cards */}
-              <div className="flex-1 max-w-4xl mx-8">
+              {/* Centered Action Cards - Aligned with Title */}
+              <div className="flex justify-center">
+                <div className="w-full max-w-4xl">
 
                 {/* Main Action Grid - Larger Boxes */}
                 <motion.div
@@ -332,14 +335,15 @@ export default function StandardHomepage() {
                     </div>
                   </div>
                 </motion.div>
+                </div>
               </div>
               
-              {/* Special Events CTA - Right Side */}
+              {/* Special Events CTA - Fixed Position Right Side */}
               <motion.div 
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="hidden lg:flex flex-col items-center mt-4"
+                className="hidden lg:block absolute right-0 top-4 w-80"
               >
                 <SpecialEventsPopup />
               </motion.div>

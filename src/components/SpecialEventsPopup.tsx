@@ -159,7 +159,7 @@ export default function SpecialEventsPopup() {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8, y: 30 }}
         transition={{ duration: 0.6, type: "spring", damping: 20 }}
-        className="relative max-w-md"
+        className="relative w-72"
       >
         <div className={`bg-gradient-to-br ${currentColor} text-white rounded-2xl shadow-2xl border-2 border-white/30 overflow-hidden`}>
           {/* Header */}
