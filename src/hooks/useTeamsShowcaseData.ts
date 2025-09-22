@@ -77,10 +77,14 @@ export function useTeamsShowcaseData(): TeamsShowcaseData {
           .eq('is_active', true)
           .eq('is_opponent', false);
 
-        // Get player counts by team type
+        // Get player counts by joining with teams to get team demographics
         const { data: players, error: playersError } = await supabase
           .from('players')
-          .select('id, age_group, gender')
+          .select(`
+            id, 
+            team_id,
+            teams!players_team_id_fkey(id, age_group, gender)
+          `)
           .eq('is_active', true);
 
         if (teamsError) {
@@ -102,9 +106,10 @@ export function useTeamsShowcaseData(): TeamsShowcaseData {
           (team.gender === 'Male' || team.gender === 'Boys' || !team.gender)
         );
         const youthPlayers = playersData.filter(player => 
-          player.age_group && 
-          player.age_group.includes('U') && 
-          (player.gender === 'Male' || player.gender === 'Boys' || !player.gender)
+          player.teams && 
+          player.teams.age_group && 
+          player.teams.age_group.includes('U') && 
+          (player.teams.gender === 'Male' || player.teams.gender === 'Boys' || !player.teams.gender)
         );
 
         // Girls teams
@@ -112,7 +117,8 @@ export function useTeamsShowcaseData(): TeamsShowcaseData {
           team.gender === 'Female' || team.gender === 'Girls'
         );
         const girlsPlayers = playersData.filter(player => 
-          player.gender === 'Female' || player.gender === 'Girls'
+          player.teams && 
+          (player.teams.gender === 'Female' || player.teams.gender === 'Girls')
         );
 
         // Senior teams (Adult or no age group specified and not girls)
@@ -121,8 +127,9 @@ export function useTeamsShowcaseData(): TeamsShowcaseData {
           team.gender !== 'Female' && team.gender !== 'Girls'
         );
         const seniorPlayers = playersData.filter(player => 
-          (!player.age_group || player.age_group === 'Adult' || player.age_group === 'Senior') &&
-          player.gender !== 'Female' && player.gender !== 'Girls'
+          player.teams && 
+          (!player.teams.age_group || player.teams.age_group === 'Adult' || player.teams.age_group === 'Senior') &&
+          player.teams.gender !== 'Female' && player.teams.gender !== 'Girls'
         );
 
         setData(prev => ({

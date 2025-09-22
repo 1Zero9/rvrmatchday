@@ -6,6 +6,7 @@ import StandardLayout from "../components/StandardLayout";
 import MobileLayout from "../components/MobileLayout";
 import MobileHomePro from "../components/mobile/MobileHomePro";
 import AdminNotificationPopup from "../components/AdminNotificationPopup";
+import SpecialEventsPopup from "../components/SpecialEventsPopup";
 import { useAuth } from "../components/SecureAuth";
 import { useHomepageData, formatMatchDate, formatMatchTime } from "../hooks/useHomepageData";
 import { useStatsData, formatStatNumber } from "../hooks/useStatsData";
@@ -122,6 +123,17 @@ export default function StandardHomepage() {
               </div>
             </div>
           )}
+
+          {/* Top Right Special Events Area - For All Users */}
+          <div className="fixed top-6 right-6 z-50 flex flex-col space-y-4">
+            <motion.div
+              initial={{ opacity: 0, x: 100, y: -50 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              transition={{ duration: 1, delay: 0.8 }}
+            >
+              <SpecialEventsPopup />
+            </motion.div>
+          </div>
           
           {/* Hero Background */}
           <div className="absolute inset-0">
@@ -157,38 +169,38 @@ export default function StandardHomepage() {
           {/* Hero Content Overlay - Enhanced with Action Grid */}
           <div className="relative z-10 w-full px-4 max-w-7xl mx-auto">
             
-            {/* Club Header - Back to Top */}
+            {/* Club Header with Integrated Logo */}
             <motion.div
               initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               className="text-center text-white mb-8"
             >
+              {/* Logo positioned above title */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="flex justify-center mb-6"
+              >
+                <div className="relative">
+                  <Image 
+                    src="/images/logo.png" 
+                    alt="Rivervalley Rangers AFC Logo" 
+                    width={120}
+                    height={120}
+                    className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
+                </div>
+              </motion.div>
+              
               <h1 className="text-4xl md:text-6xl font-bold mb-4 text-shadow-lg">
                 Rivervalley Rangers AFC
               </h1>
               <p className="text-xl md:text-2xl font-medium text-green-200">
                 Building Community Through Football Since 1981
               </p>
-            </motion.div>
-            
-            {/* Separate Logo - Positioned to Left */}
-            <motion.div 
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="absolute -left-8 lg:-left-40 xl:left-0 top-1/2 transform -translate-y-1/2 hidden lg:block z-20"
-            >
-              <div className="relative">
-                <Image 
-                  src="/images/logo.png" 
-                  alt="Rivervalley Rangers AFC Logo" 
-                  width={170}
-                  height={170}
-                  className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
-              </div>
             </motion.div>
             
             {/* Centered Action Cards - Independent */}
