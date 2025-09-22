@@ -32,7 +32,8 @@ export const TEMPLATE_PACKAGES: Record<TemplatePackage, string[]> = {
   professional: [
     "core-website",
     "event-management", 
-    "match-management"
+    "match-management",
+    "admin-tools"
   ],
   
   // 💼 BUSINESS ($499/month)
@@ -41,7 +42,8 @@ export const TEMPLATE_PACKAGES: Record<TemplatePackage, string[]> = {
     "core-website",
     "event-management",
     "match-management", 
-    "user-management"
+    "user-management",
+    "admin-tools"
   ],
   
   // 🏢 ENTERPRISE ($999/month)
@@ -50,7 +52,8 @@ export const TEMPLATE_PACKAGES: Record<TemplatePackage, string[]> = {
     "core-website",
     "event-management",
     "match-management",
-    "user-management", 
+    "user-management",
+    "admin-tools", 
     "analytics",
     "advanced-security",
     "api-access",
@@ -73,7 +76,8 @@ export const CURRENT_PACKAGE: TemplatePackage = "business";
 export const CUSTOM_MODULES: string[] = [
   "core-website",
   "match-management", 
-  "user-management"
+  "user-management",
+  "admin-tools"
   // Add/remove modules as needed
 ];
 

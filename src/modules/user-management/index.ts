@@ -333,20 +333,15 @@ export const USER_MANAGEMENT_CONFIG: ModuleConfig = {
   }
 };
 
-// Export module components
+// Export standalone module components
+export { default as UserManagementApp } from './components/UserManagementApp';
+
+// Export module types
+export * from './types';
+
+// Legacy exports for backward compatibility
 export { default as UnifiedAccountManagement } from '../../components/UnifiedAccountManagement';
 export { default as AdminUserManagement } from '../../components/AdminUserManagement';
 export { default as AdminAccountReview } from '../../components/AdminAccountReview';
-
-// Export module utilities
-export * from './lib/user-utils';
-export * from './lib/role-utils';
-export * from './lib/audit-utils';
-export * from './types/user-types';
-
-// Export module hooks  
-export { useUserManagement } from './hooks/useUserManagement';
-export { useRoleManagement } from './hooks/useRoleManagement';
-export { useAuditLogs } from './hooks/useAuditLogs';
 
 export default USER_MANAGEMENT_CONFIG;
