@@ -8,6 +8,8 @@ import MobileHomePro from "../components/mobile/MobileHomePro";
 import AdminNotificationPopup from "../components/AdminNotificationPopup";
 import { useAuth } from "../components/SecureAuth";
 import { useHomepageData, formatMatchDate, formatMatchTime } from "../hooks/useHomepageData";
+import { useStatsData, formatStatNumber } from "../hooks/useStatsData";
+import { useTeamsShowcaseData } from "../hooks/useTeamsShowcaseData";
 export default function StandardHomepage() {
   const { isAdmin, user } = useAuth();
   const [showVideo, setShowVideo] = useState(true);
@@ -16,6 +18,12 @@ export default function StandardHomepage() {
   
   // Fetch dynamic data for the hero boxes
   const { latestResult, nextFixture, latestNews, loading } = useHomepageData();
+  
+  // Fetch dynamic stats data
+  const { activePlayers, totalTeams, yearsEstablished, qualifiedCoaches, loading: statsLoading } = useStatsData();
+  
+  // Fetch dynamic teams showcase data
+  const { youth, girls, senior, loading: teamsLoading } = useTeamsShowcaseData();
 
   const handleVideoEnd = () => {
     setVideoEnded(true);
@@ -536,7 +544,13 @@ export default function StandardHomepage() {
                 transition={{ duration: 0.6 }}
                 className="text-white"
               >
-                <div className="text-3xl font-bold text-green-400 mb-1">350+</div>
+                <div className="text-3xl font-bold text-green-400 mb-1">
+                  {statsLoading ? (
+                    <div className="animate-pulse bg-green-400/30 rounded h-8 w-16 mx-auto"></div>
+                  ) : (
+                    formatStatNumber(activePlayers)
+                  )}
+                </div>
                 <div className="text-sm uppercase tracking-wide text-gray-300">Active Players</div>
               </motion.div>
               <motion.div 
@@ -545,7 +559,13 @@ export default function StandardHomepage() {
                 transition={{ duration: 0.6, delay: 0.1 }}
                 className="text-white"
               >
-                <div className="text-3xl font-bold text-green-400 mb-1">18</div>
+                <div className="text-3xl font-bold text-green-400 mb-1">
+                  {statsLoading ? (
+                    <div className="animate-pulse bg-green-400/30 rounded h-8 w-12 mx-auto"></div>
+                  ) : (
+                    totalTeams
+                  )}
+                </div>
                 <div className="text-sm uppercase tracking-wide text-gray-300">Teams</div>
               </motion.div>
               <motion.div 
@@ -554,7 +574,7 @@ export default function StandardHomepage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="text-white"
               >
-                <div className="text-3xl font-bold text-green-400 mb-1">44</div>
+                <div className="text-3xl font-bold text-green-400 mb-1">{yearsEstablished}</div>
                 <div className="text-sm uppercase tracking-wide text-gray-300">Years Strong</div>
               </motion.div>
               <motion.div 
@@ -563,7 +583,13 @@ export default function StandardHomepage() {
                 transition={{ duration: 0.6, delay: 0.3 }}
                 className="text-white"
               >
-                <div className="text-3xl font-bold text-green-400 mb-1">25</div>
+                <div className="text-3xl font-bold text-green-400 mb-1">
+                  {statsLoading ? (
+                    <div className="animate-pulse bg-green-400/30 rounded h-8 w-12 mx-auto"></div>
+                  ) : (
+                    qualifiedCoaches
+                  )}
+                </div>
                 <div className="text-sm uppercase tracking-wide text-gray-300">Qualified Coaches</div>
               </motion.div>
             </div>
@@ -605,12 +631,24 @@ export default function StandardHomepage() {
                   </div>
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">U8 - U18</span>
+                      <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">{youth.ageGroups}</span>
                       <span className="text-2xl">⭐</span>
                     </div>
                     <h4 className="text-xl font-bold text-gray-900 mb-3">Development Focus</h4>
-                    <p className="text-gray-600 mb-4">Building skills, character, and friendships through football. Professional coaching for all abilities.</p>
-                    <Link href="/teams/boys" className="block w-full text-center bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                    <p className="text-gray-600 mb-4">{youth.description}</p>
+                    {teamsLoading ? (
+                      <div className="mb-4 text-center">
+                        <div className="animate-pulse">
+                          <div className="h-4 bg-gray-300 rounded w-3/4 mx-auto mb-2"></div>
+                          <div className="h-4 bg-gray-300 rounded w-1/2 mx-auto"></div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-4 text-center text-sm text-gray-600">
+                        <span className="font-bold text-green-600">{youth.teamCount}</span> teams • <span className="font-bold text-green-600">{youth.playerCount}</span> players
+                      </div>
+                    )}
+                    <Link href={youth.link} className={`block w-full text-center ${youth.buttonColor} text-white py-3 rounded-lg font-semibold transition-colors`}>
                       Explore Youth Teams
                     </Link>
                   </div>
@@ -637,12 +675,24 @@ export default function StandardHomepage() {
                   </div>
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-sm font-bold">U8 - U16</span>
+                      <span className="bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-sm font-bold">{girls.ageGroups}</span>
                       <span className="text-2xl">🌟</span>
                     </div>
                     <h4 className="text-xl font-bold text-gray-900 mb-3">Growing Strong</h4>
-                    <p className="text-gray-600 mb-4">Our fastest growing section! Empowering girls through sport in a supportive environment.</p>
-                    <Link href="/teams/girls" className="block w-full text-center bg-pink-600 text-white py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors">
+                    <p className="text-gray-600 mb-4">{girls.description}</p>
+                    {teamsLoading ? (
+                      <div className="mb-4 text-center">
+                        <div className="animate-pulse">
+                          <div className="h-4 bg-gray-300 rounded w-3/4 mx-auto mb-2"></div>
+                          <div className="h-4 bg-gray-300 rounded w-1/2 mx-auto"></div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-4 text-center text-sm text-gray-600">
+                        <span className="font-bold text-pink-600">{girls.teamCount}</span> teams • <span className="font-bold text-pink-600">{girls.playerCount}</span> players
+                      </div>
+                    )}
+                    <Link href={girls.link} className={`block w-full text-center ${girls.buttonColor} text-white py-3 rounded-lg font-semibold transition-colors`}>
                       Join Girls Football
                     </Link>
                   </div>
@@ -669,12 +719,24 @@ export default function StandardHomepage() {
                   </div>
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">Adult</span>
+                      <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">{senior.ageGroups}</span>
                       <span className="text-2xl">👑</span>
                     </div>
                     <h4 className="text-xl font-bold text-gray-900 mb-3">Competitive Edge</h4>
-                    <p className="text-gray-600 mb-4">League and cup competitions. Experience the thrill of adult football with a welcoming club.</p>
-                    <Link href="/teams/seniors" className="block w-full text-center bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    <p className="text-gray-600 mb-4">{senior.description}</p>
+                    {teamsLoading ? (
+                      <div className="mb-4 text-center">
+                        <div className="animate-pulse">
+                          <div className="h-4 bg-gray-300 rounded w-3/4 mx-auto mb-2"></div>
+                          <div className="h-4 bg-gray-300 rounded w-1/2 mx-auto"></div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-4 text-center text-sm text-gray-600">
+                        <span className="font-bold text-blue-600">{senior.teamCount}</span> teams • <span className="font-bold text-blue-600">{senior.playerCount}</span> players
+                      </div>
+                    )}
+                    <Link href={senior.link} className={`block w-full text-center ${senior.buttonColor} text-white py-3 rounded-lg font-semibold transition-colors`}>
                       Senior Football
                     </Link>
                   </div>
