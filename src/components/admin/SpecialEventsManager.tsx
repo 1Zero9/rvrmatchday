@@ -12,14 +12,25 @@ interface SpecialEvent {
   id: string;
   title: string;
   description: string;
+  excerpt?: string;
   date: string;
   time?: string;
+  end_date?: string;
+  end_time?: string;
   venue?: string;
   ticket_price?: number;
   contact_info?: string;
-  event_type: 'race_night' | 'bingo' | 'fundraiser' | 'social' | 'other';
+  image_url?: string;
+  event_type: 'race_night' | 'bingo' | 'fundraiser' | 'social' | 'workshop' | 'tournament' | 'meeting' | 'other';
   is_active: boolean;
   priority: 'low' | 'medium' | 'high' | 'urgent';
+  featured: boolean;
+  max_attendees?: number;
+  current_attendees?: number;
+  registration_required?: boolean;
+  registration_link?: string;
+  tags?: string[];
+  views?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -29,6 +40,9 @@ const eventTypes = [
   { value: 'bingo', label: 'Bingo', icon: '🎱' },
   { value: 'fundraiser', label: 'Fundraiser', icon: '💰' },
   { value: 'social', label: 'Social Event', icon: '🎉' },
+  { value: 'workshop', label: 'Workshop', icon: '🎓' },
+  { value: 'tournament', label: 'Tournament', icon: '🏆' },
+  { value: 'meeting', label: 'Meeting', icon: '👥' },
   { value: 'other', label: 'Other', icon: '🎊' }
 ];
 
@@ -50,15 +64,36 @@ export default function SpecialEventsManager() {
   const [formData, setFormData] = useState<Partial<SpecialEvent>>({
     title: '',
     description: '',
+    excerpt: '',
     date: '',
     time: '',
+    end_date: '',
+    end_time: '',
     venue: '',
     ticket_price: 0,
     contact_info: '',
+    image_url: '',
     event_type: 'other',
     priority: 'medium',
-    is_active: true
+    is_active: true,
+    featured: false,
+    max_attendees: undefined,
+    current_attendees: 0,
+    registration_required: false,
+    registration_link: '',
+    tags: []
   });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploading, setUploading] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+  const [confirmMessage, setConfirmMessage] = useState('');
+  const [confirmTitle, setConfirmTitle] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
 
   useEffect(() => {
     if (isAdmin) {
@@ -76,8 +111,49 @@ export default function SpecialEventsManager() {
 
       if (error) {
         console.error('Error fetching events:', error);
-        setError('Failed to load events. The special_events table may not exist yet.');
-        setEvents([]);
+        setError('Database not connected. Using demo events. To use real database, run the migration script.');
+        // Create demo events for development
+        const demoEvents: SpecialEvent[] = [
+          {
+            id: 'demo-1',
+            title: 'Annual Fundraising Race Night',
+            description: 'Join us for an exciting evening of horse racing entertainment! Place your bets on our virtual races while enjoying food, drinks, and great company.',
+            excerpt: 'Virtual horse racing with food, drinks and prizes. Supporting youth academy programs.',
+            date: '2025-11-15',
+            time: '19:00',
+            venue: 'Club House Main Hall',
+            ticket_price: 15.00,
+            event_type: 'race_night',
+            priority: 'high',
+            is_active: true,
+            featured: true,
+            image_url: '/images/homepg-image1.jpg',
+            tags: ['fundraising', 'racing', 'social', 'food'],
+            views: 89,
+            created_at: '2025-09-20T10:00:00Z',
+            updated_at: '2025-09-20T10:00:00Z'
+          },
+          {
+            id: 'demo-2',
+            title: 'Monthly Bingo Night',
+            description: 'Come join our monthly bingo session with fantastic prizes and refreshments available. All ages welcome for a fun family evening out.',
+            excerpt: 'Monthly bingo with great prizes and refreshments. Family-friendly event.',
+            date: '2025-10-12',
+            time: '20:00',
+            venue: 'Club House',
+            ticket_price: 8.00,
+            event_type: 'bingo',
+            priority: 'medium',
+            is_active: true,
+            featured: false,
+            image_url: '/images/homepage-hero.jpg',
+            tags: ['bingo', 'family', 'prizes', 'monthly'],
+            views: 156,
+            created_at: '2025-09-18T15:30:00Z',
+            updated_at: '2025-09-18T15:30:00Z'
+          }
+        ];
+        setEvents(demoEvents);
       } else {
         setEvents(data || []);
         setError(null);
@@ -206,7 +282,7 @@ export default function SpecialEventsManager() {
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold mb-2">Special Events Manager</h2>
-            <p className="text-white/90">Manage notifications and promotional events</p>
+            <p className="text-white/90">Create promotional cards that drive traffic to events page</p>
           </div>
           <button
             onClick={() => {
@@ -349,9 +425,12 @@ export default function SpecialEventsManager() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6">
-                <h3 className="text-xl font-bold mb-4">
+                <h3 className="text-xl font-bold mb-2">
                   {editingEvent ? 'Edit Event' : 'Create New Event'}
                 </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Create promotional cards that appear on the home page. Clicking "View Events" will direct users to /get-involved/events page.
+                </p>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -397,7 +476,7 @@ export default function SpecialEventsManager() {
                       value={formData.description}
                       onChange={(e) => setFormData({...formData, description: e.target.value})}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-club-primary"
-                      placeholder="Brief description of the event..."
+                      placeholder="Compelling promotional text to attract visitors..."
                     />
                   </div>
                   
@@ -461,7 +540,7 @@ export default function SpecialEventsManager() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Ticket Price (€)
+                        Ticket Price (€) - Display Only
                       </label>
                       <input
                         type="number"
@@ -472,19 +551,20 @@ export default function SpecialEventsManager() {
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-club-primary"
                         placeholder="0.00"
                       />
+                      <p className="text-xs text-gray-500 mt-1">Price shown in card for reference only. Actual purchases handled on events page.</p>
                     </div>
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Contact Information
+                      Contact Information (Optional)
                     </label>
                     <input
                       type="text"
                       value={formData.contact_info}
                       onChange={(e) => setFormData({...formData, contact_info: e.target.value})}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-club-primary"
-                      placeholder="e.g., Call John: 087-123-4567"
+                      placeholder="e.g., For more info: events@rivervalleyrangers.ie"
                     />
                   </div>
                   

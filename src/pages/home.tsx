@@ -127,18 +127,24 @@ export default function StandardHomepage() {
           
           {/* Hero Background */}
           <div className="absolute inset-0">
-            {/* Video Background */}
+            {/* Video Background - Optimized for performance */}
             {showVideo && (
               <motion.video
                 autoPlay
                 muted
                 playsInline
+                preload="metadata"
                 onEnded={handleVideoEnd}
                 className="w-full h-full object-cover"
                 animate={{ opacity: videoEnded ? 0 : 1 }}
                 transition={{ duration: 1 }}
+                style={{ 
+                  willChange: 'opacity',
+                  backfaceVisibility: 'hidden',
+                  transform: 'translateZ(0)'
+                }}
               >
-                <source src="/images/hero/rvr-drone-5.mp4" type="video/mp4" />
+                <source src="/images/hero/rvr-drone-4b.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </motion.video>
             )}
@@ -179,6 +185,7 @@ export default function StandardHomepage() {
                     alt="Rivervalley Rangers AFC Logo" 
                     width={100}
                     height={100}
+                    priority
                     className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
@@ -193,31 +200,30 @@ export default function StandardHomepage() {
               </p>
             </motion.div>
             
-            {/* Hero Layout with Proper Centering */}
-            <div className="relative max-w-7xl mx-auto">
+            {/* Hero Layout - Absolute positioning for better control */}
+            <div className="relative w-full max-w-7xl mx-auto px-4">
               
-              {/* Logo - Absolute Left Position */}
+              {/* Logo - Far Left Position, 15% larger */}
               <motion.div 
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="hidden lg:block absolute left-0 top-4 w-48"
+                className="hidden xl:block absolute -left-8 top-4"
               >
-                <div className="flex flex-col items-center">
-                  <div className="relative mb-4">
-                    <Image 
-                      src="/images/logo.png" 
-                      alt="Rivervalley Rangers AFC Logo" 
-                      width={140}
-                      height={140}
-                      className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
-                  </div>
+                <div className="relative">
+                  <Image 
+                    src="/images/logo.png" 
+                    alt="Rivervalley Rangers AFC Logo" 
+                    width={161}
+                    height={161}
+                    priority
+                    className="drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-white/10 rounded-full blur-xl -z-10"></div>
                 </div>
               </motion.div>
               
-              {/* Centered Action Cards - Aligned with Title */}
+              {/* Centered Action Cards */}
               <div className="flex justify-center">
                 <div className="w-full max-w-4xl">
 
@@ -338,12 +344,13 @@ export default function StandardHomepage() {
                 </div>
               </div>
               
-              {/* Special Events CTA - Fixed Position Far Right */}
+              {/* Special Events - Floating Draggable Window */}
               <motion.div 
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="hidden xl:block absolute -right-4 top-4 w-80"
+                className="hidden xl:block fixed right-8 top-32 z-40"
+                style={{ height: '410px' }}
               >
                 <SpecialEventsPopup />
               </motion.div>
@@ -656,6 +663,7 @@ export default function StandardHomepage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
                 whileHover={{ scale: 1.05, y: -10 }}
+                viewport={{ once: true, margin: "-100px" }}
                 className="group"
               >
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-transparent group-hover:border-green-300 transition-all duration-300">
@@ -700,6 +708,7 @@ export default function StandardHomepage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
                 whileHover={{ scale: 1.05, y: -10 }}
+                viewport={{ once: true, margin: "-100px" }}
                 className="group"
               >
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-transparent group-hover:border-pink-300 transition-all duration-300">
@@ -744,6 +753,7 @@ export default function StandardHomepage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
                 whileHover={{ scale: 1.05, y: -10 }}
+                viewport={{ once: true, margin: "-100px" }}
                 className="group"
               >
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-transparent group-hover:border-blue-300 transition-all duration-300">

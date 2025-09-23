@@ -1,68 +1,243 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import GlassPageTemplate from '../components/GlassPageTemplate';
 import { GlassCard } from '../components/Glass';
+import { supabase } from '../lib/supabase';
+import { sendVolunteerSignupNotification } from '../lib/emailNotifications';
+
+interface VolunteerOpportunity {
+  id: string;
+  title: string;
+  description: string;
+  excerpt: string;
+  category: 'coaching' | 'events' | 'administration' | 'fundraising' | 'facilities' | 'youth' | 'general';
+  location?: string;
+  date?: string;
+  time?: string;
+  duration_hours?: number;
+  required_skills?: string[];
+  max_volunteers: number;
+  current_signups: number;
+  is_active: boolean;
+  contact_person?: string;
+  contact_email?: string;
+  requirements?: string;
+  benefits?: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+}
+
+interface VolunteerSignupForm {
+  volunteer_name: string;
+  volunteer_email: string;
+  volunteer_phone: string;
+  age_group: string;
+  previous_experience: string;
+  availability_notes: string;
+  motivation: string;
+  emergency_contact_name: string;
+  emergency_contact_phone: string;
+}
+
+const categories = [
+  { value: 'coaching', label: 'Coaching', icon: '⚽' },
+  { value: 'events', label: 'Events', icon: '🎉' },
+  { value: 'administration', label: 'Administration', icon: '📋' },
+  { value: 'fundraising', label: 'Fundraising', icon: '💰' },
+  { value: 'facilities', label: 'Facilities', icon: '🔧' },
+  { value: 'youth', label: 'Youth', icon: '👦' },
+  { value: 'general', label: 'General', icon: '🤝' }
+];
+
+const ageGroups = [
+  { value: 'under_16', label: 'Under 16' },
+  { value: '16_25', label: '16-25' },
+  { value: '26_35', label: '26-35' },
+  { value: '36_50', label: '36-50' },
+  { value: '51_65', label: '51-65' },
+  { value: 'over_65', label: 'Over 65' }
+];
 
 export default function Volunteering() {
-  const [activeTab, setActiveTab] = useState<'opportunities' | 'benefits' | 'signup' | 'recognition'>('opportunities');
+  const [activeTab, setActiveTab] = useState<'opportunities' | 'benefits' | 'signup'>('opportunities');
+  const [opportunities, setOpportunities] = useState<VolunteerOpportunity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<VolunteerOpportunity | null>(null);
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
+  
+  const [signupForm, setSignupForm] = useState<VolunteerSignupForm>({
+    volunteer_name: '',
+    volunteer_email: '',
+    volunteer_phone: '',
+    age_group: '',
+    previous_experience: '',
+    availability_notes: '',
+    motivation: '',
+    emergency_contact_name: '',
+    emergency_contact_phone: ''
+  });
 
-  const opportunities = [
-    {
-      title: 'Match Day Helper',
-      commitment: '2-3 hours per match day',
-      description: 'Help with setup, refreshments, and ensuring match day runs smoothly',
-      skills: 'Friendly attitude, basic organization',
-      impact: 'Direct support for players and families',
-      urgency: 'high',
-      volunteers: { current: 8, needed: 12 }
-    },
-    {
-      title: 'Fundraising Committee',
-      commitment: '2-4 hours per month',
-      description: 'Plan and organize club fundraising events and initiatives',
-      skills: 'Event planning, creativity, communication',
-      impact: 'Help secure club\'s financial future',
-      urgency: 'medium',
-      volunteers: { current: 5, needed: 8 }
-    },
-    {
-      title: 'Social Media Team',
-      commitment: '1-2 hours per week',
-      description: 'Share club news, match photos, and engage with our community online',
-      skills: 'Social media savvy, photography, writing',
-      impact: 'Boost club visibility and engagement',
-      urgency: 'medium',
-      volunteers: { current: 3, needed: 6 }
-    },
-    {
-      title: 'Kit Manager',
-      commitment: '3-4 hours per month',
-      description: 'Manage equipment, coordinate kit orders, and maintain inventory',
-      skills: 'Organization, attention to detail',
-      impact: 'Ensure all players are properly equipped',
-      urgency: 'high',
-      volunteers: { current: 2, needed: 4 }
-    },
-    {
-      title: 'Transport Coordinator',
-      commitment: 'As needed basis',
-      description: 'Help organize carpools and transport for away matches',
-      skills: 'Good communication, planning skills',
-      impact: 'Ensure no player misses a match',
-      urgency: 'low',
-      volunteers: { current: 12, needed: 15 }
-    },
-    {
-      title: 'First Aid Support',
-      commitment: 'Match days + training',
-      description: 'Provide first aid support during matches and training sessions',
-      skills: 'First Aid certification (training provided)',
-      impact: 'Essential player safety support',
-      urgency: 'high',
-      volunteers: { current: 4, needed: 8 }
+  useEffect(() => {
+    fetchOpportunities();
+  }, []);
+
+  const fetchOpportunities = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('volunteer_opportunities')
+        .select('*')
+        .eq('is_active', true)
+        .order('priority', { ascending: false })
+        .order('date', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching volunteer opportunities:', error);
+        setError('Database connection failed. Using demo opportunities.');
+        // Create demo opportunities for development
+        const demoOpportunities: VolunteerOpportunity[] = [
+          {
+            id: 'demo-1',
+            title: 'Match Day Assistant Coach',
+            description: 'Help our coaching staff during home matches by assisting with equipment setup, player coordination, and sideline support. Perfect for those interested in gaining coaching experience.',
+            excerpt: 'Assist coaching staff during home matches with equipment and player support.',
+            category: 'coaching',
+            location: 'Home Ground',
+            date: '2025-10-05',
+            time: '13:00',
+            duration_hours: 4,
+            required_skills: ['basic football knowledge', 'communication skills'],
+            max_volunteers: 2,
+            current_signups: 1,
+            is_active: true,
+            contact_person: 'John Smith',
+            contact_email: 'coaching@rvrafc.ie',
+            requirements: 'Must be over 18. Garda vetting required for youth matches.',
+            benefits: 'Coaching experience, match day meals provided, club training opportunities.',
+            priority: 'high'
+          },
+          {
+            id: 'demo-2',
+            title: 'Fundraising Event Setup Crew',
+            description: 'Join our setup team for the annual fundraising race night. Help with venue preparation, table arrangement, decorations, and equipment setup. Great way to meet other volunteers.',
+            excerpt: 'Help set up venue and equipment for annual fundraising race night.',
+            category: 'fundraising',
+            location: 'Club House Main Hall',
+            date: '2025-11-15',
+            time: '16:00',
+            duration_hours: 3,
+            required_skills: ['physical work', 'teamwork'],
+            max_volunteers: 6,
+            current_signups: 2,
+            is_active: true,
+            contact_person: 'Mary O\'Connor',
+            contact_email: 'events@rvrafc.ie',
+            requirements: 'Able to lift and move furniture. Safety briefing required.',
+            benefits: 'Free entry to event, volunteer appreciation dinner, club merchandise.',
+            priority: 'medium'
+          }
+        ];
+        setOpportunities(demoOpportunities);
+      } else {
+        setOpportunities(data || []);
+        setError(null);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Failed to load volunteer opportunities');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleSignup = (opportunity: VolunteerOpportunity) => {
+    setSelectedOpportunity(opportunity);
+    setShowSignupModal(true);
+  };
+
+  const submitSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedOpportunity) return;
+    
+    try {
+      setLoading(true);
+      
+      const signupData = {
+        opportunity_id: selectedOpportunity.id,
+        ...signupForm,
+        signed_up_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      // Check if it's a demo opportunity
+      if (selectedOpportunity.id.startsWith('demo-')) {
+        // For demo, just show success message
+        console.log('Demo signup submitted:', signupData);
+      } else {
+        const { error } = await supabase
+          .from('volunteer_signups')
+          .insert([{
+            ...signupData,
+            id: crypto.randomUUID(),
+            status: 'pending'
+          }]);
+
+        if (error) throw error;
+        
+        // Send email notification to admins
+        await sendVolunteerSignupNotification({
+          volunteer_name: signupForm.volunteer_name,
+          volunteer_email: signupForm.volunteer_email,
+          volunteer_phone: signupForm.volunteer_phone,
+          opportunity_title: selectedOpportunity.title,
+          motivation: signupForm.motivation,
+          signed_up_at: new Date().toISOString()
+        });
+      }
+
+      // Reset form and show success
+      setSignupForm({
+        volunteer_name: '',
+        volunteer_email: '',
+        volunteer_phone: '',
+        age_group: '',
+        previous_experience: '',
+        availability_notes: '',
+        motivation: '',
+        emergency_contact_name: '',
+        emergency_contact_phone: ''
+      });
+      setShowSignupModal(false);
+      setSignupSuccess(true);
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => setSignupSuccess(false), 5000);
+      
+    } catch (err) {
+      console.error('Error submitting signup:', err);
+      setError('Failed to submit signup. Please try again or contact us directly.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCategoryInfo = (category: string) => {
+    return categories.find(c => c.value === category) || categories[categories.length - 1];
+  };
+
+  const getPriorityInfo = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return { label: 'Urgent Need', color: 'bg-red-100 text-red-800 border-red-200' };
+      case 'high': return { label: 'High Priority', color: 'bg-orange-100 text-orange-800 border-orange-200' };
+      case 'medium': return { label: 'Active Recruitment', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' };
+      case 'low': return { label: 'Always Welcome', color: 'bg-green-100 text-green-800 border-green-200' };
+      default: return { label: 'Open', color: 'bg-gray-100 text-gray-800 border-gray-200' };
+    }
+  };
+
 
   const benefits = [
     {
@@ -94,44 +269,7 @@ export default function Volunteering() {
     }
   ];
 
-  const recognitionProgram = [
-    {
-      award: 'Volunteer of the Month',
-      description: 'Monthly recognition for outstanding contribution',
-      perks: ['Special parking spot', 'Club merchandise', 'Social media feature'],
-      icon: '🏆'
-    },
-    {
-      award: 'Annual Volunteer Award',
-      description: 'Yearly celebration of our most dedicated volunteers',
-      perks: ['Trophy presentation', 'Family dinner voucher', 'Club hall of fame'],
-      icon: '🌟'
-    },
-    {
-      award: 'Long Service Recognition',
-      description: 'Appreciation for multi-year commitment',
-      perks: ['Commemorative plaque', 'Lifetime membership benefits', 'Special club event'],
-      icon: '🎖️'
-    }
-  ];
 
-  const getUrgencyColor = (urgency: string) => {
-    switch (urgency) {
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getUrgencyLabel = (urgency: string) => {
-    switch (urgency) {
-      case 'high': return 'Urgent Need';
-      case 'medium': return 'Active Recruitment';
-      case 'low': return 'Always Welcome';
-      default: return 'Open';
-    }
-  };
 
   const quickActions = [
     {
@@ -154,13 +292,6 @@ export default function Volunteering() {
       description: "What you'll get back",
       href: "#benefits",
       gradient: "purple" as const
-    },
-    {
-      icon: "🏆",
-      title: "Recognition",
-      description: "Celebrating our heroes",
-      href: "#recognition",
-      gradient: "orange" as const
     }
   ];
 
@@ -182,12 +313,11 @@ export default function Volunteering() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 mb-8"
           >
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               {[
                 { id: 'opportunities', label: 'Opportunities', icon: '🎯', desc: 'Ways to help' },
                 { id: 'benefits', label: 'Why Volunteer?', icon: '💝', desc: 'What you get' },
-                { id: 'signup', label: 'Get Started', icon: '✋', desc: 'Join us today' },
-                { id: 'recognition', label: 'Recognition', icon: '🏆', desc: 'We appreciate you' }
+                { id: 'signup', label: 'Get Started', icon: '✋', desc: 'Join us today' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -206,6 +336,24 @@ export default function Volunteering() {
             </div>
           </motion.div>
 
+          {/* Success Message */}
+          {signupSuccess && (
+            <motion.div
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">✅</span>
+                <div>
+                  <p className="font-semibold">Signup Successful!</p>
+                  <p className="text-sm text-green-100">We'll review your application and get back to you soon.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* Opportunities Tab */}
           {activeTab === 'opportunities' && (
             <motion.div
@@ -217,74 +365,133 @@ export default function Volunteering() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                   <span className="mr-3">🎯</span>
                   Volunteer Opportunities
+                  {opportunities.length > 0 && (
+                    <span className="ml-3 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
+                      {opportunities.length} Available
+                    </span>
+                  )}
                 </h2>
                 
-                <div className="grid gap-6">
-                  {opportunities.map((opp, index) => (
-                    <motion.div
-                      key={opp.title}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.1 }}
-                      className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                        <div className="lg:w-2/3">
-                          <div className="flex flex-wrap items-center gap-3 mb-3">
-                            <h3 className="text-xl font-semibold text-gray-900">{opp.title}</h3>
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getUrgencyColor(opp.urgency)}`}>
-                              {getUrgencyLabel(opp.urgency)}
-                            </span>
+                {error && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                    <p className="text-yellow-800 text-center">{error}</p>
+                  </div>
+                )}
+                
+                {loading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-gray-600 mt-2">Loading opportunities...</p>
+                  </div>
+                ) : opportunities.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-6xl mb-4">🤝</div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">No Opportunities Available</h3>
+                    <p className="text-gray-600">Check back soon for new volunteer opportunities!</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-6">
+                    {opportunities.map((opp, index) => {
+                      const categoryInfo = getCategoryInfo(opp.category);
+                      const priorityInfo = getPriorityInfo(opp.priority);
+                      return (
+                        <motion.div
+                          key={opp.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.6, delay: index * 0.1 }}
+                          className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                            <div className="lg:w-2/3">
+                              <div className="flex flex-wrap items-center gap-3 mb-3">
+                                <h3 className="text-xl font-semibold text-gray-900">{opp.title}</h3>
+                                
+                                {/* Category Badge */}
+                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                                  <span>{categoryInfo.icon}</span>
+                                  <span>{categoryInfo.label}</span>
+                                </span>
+                                
+                                {/* Priority Badge */}
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${priorityInfo.color}`}>
+                                  {priorityInfo.label}
+                                </span>
+                              </div>
+                              
+                              <p className="text-gray-700 mb-4">{opp.description}</p>
+                              
+                              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                                {opp.duration_hours && (
+                                  <div>
+                                    <span className="font-medium text-blue-700">⏰ Duration: </span>
+                                    <span className="text-gray-600">{opp.duration_hours}h</span>
+                                  </div>
+                                )}
+                                {opp.location && (
+                                  <div>
+                                    <span className="font-medium text-green-700">📍 Location: </span>
+                                    <span className="text-gray-600">{opp.location}</span>
+                                  </div>
+                                )}
+                                {opp.date && (
+                                  <div>
+                                    <span className="font-medium text-purple-700">📅 Date: </span>
+                                    <span className="text-gray-600">{new Date(opp.date).toLocaleDateString()}</span>
+                                  </div>
+                                )}
+                                {opp.required_skills && opp.required_skills.length > 0 && (
+                                  <div>
+                                    <span className="font-medium text-orange-700">💪 Skills: </span>
+                                    <span className="text-gray-600">{opp.required_skills.slice(0, 2).join(', ')}{opp.required_skills.length > 2 ? '...' : ''}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="lg:w-1/3 mt-4 lg:mt-0 lg:text-right">
+                              <div className="bg-white rounded-lg p-4 shadow-sm mb-4">
+                                <div className="text-2xl font-bold text-blue-600">
+                                  {opp.current_signups} / {opp.max_volunteers}
+                                </div>
+                                <div className="text-xs text-gray-500">Signed up / Needed</div>
+                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                  <div 
+                                    className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                                    style={{ width: `${Math.min((opp.current_signups / opp.max_volunteers) * 100, 100)}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                              <button 
+                                onClick={() => handleSignup(opp)}
+                                disabled={opp.current_signups >= opp.max_volunteers}
+                                className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                                  opp.current_signups >= opp.max_volunteers
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                }`}
+                              >
+                                {opp.current_signups >= opp.max_volunteers ? 'Full' : 'Sign Up'}
+                              </button>
+                            </div>
                           </div>
-                          
-                          <p className="text-gray-700 mb-4">{opp.description}</p>
-                          
-                          <div className="grid md:grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <span className="font-medium text-blue-700">⏰ Time: </span>
-                              <span className="text-gray-600">{opp.commitment}</span>
-                            </div>
-                            <div>
-                              <span className="font-medium text-green-700">💪 Skills: </span>
-                              <span className="text-gray-600">{opp.skills}</span>
-                            </div>
-                            <div>
-                              <span className="font-medium text-purple-700">💫 Impact: </span>
-                              <span className="text-gray-600">{opp.impact}</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="lg:w-1/3 mt-4 lg:mt-0 lg:text-right">
-                          <div className="bg-white rounded-lg p-4 shadow-sm mb-4">
-                            <div className="text-2xl font-bold text-blue-600">
-                              {opp.volunteers.current} / {opp.volunteers.needed}
-                            </div>
-                            <div className="text-xs text-gray-500">Current / Needed</div>
-                            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                              <div 
-                                className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                                style={{ width: `${(opp.volunteers.current / opp.volunteers.needed) * 100}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                          <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
-                            I'm Interested
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 <div className="mt-8 bg-green-50 rounded-xl p-6 border border-green-200 text-center">
                   <h3 className="text-lg font-semibold text-green-900 mb-2">🌟 Can't find what you're looking for?</h3>
                   <p className="text-green-700 mb-4">
                     We're always open to new ideas! Have a skill or passion you'd like to share with our club community?
                   </p>
-                  <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors">
+                  <a 
+                    href="mailto:volunteers@rvrafc.ie?subject=New Volunteer Opportunity Suggestion"
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors inline-block"
+                  >
                     Suggest New Opportunity
-                  </button>
+                  </a>
                 </div>
               </div>
             </motion.div>
@@ -366,10 +573,10 @@ export default function Volunteering() {
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">🚀 Getting Started is Easy</h3>
                     <div className="space-y-4">
                       {[
-                        { step: 1, title: 'Express Interest', desc: 'Fill out our simple volunteer form or contact us directly' },
-                        { step: 2, title: 'Chat with Us', desc: 'We\'ll have a friendly conversation about your interests and availability' },
-                        { step: 3, title: 'Try It Out', desc: 'Start with a small commitment to see if it\'s a good fit' },
-                        { step: 4, title: 'Join the Team', desc: 'Become a regular part of our volunteer community' }
+                        { step: 1, title: 'Browse Opportunities', desc: 'Look through our available volunteer positions and find one that interests you' },
+                        { step: 2, title: 'Sign Up Online', desc: 'Click "Sign Up" on any opportunity and fill out our simple application form' },
+                        { step: 3, title: 'Admin Review', desc: 'Our volunteer coordinators will review your application and contact you' },
+                        { step: 4, title: 'Get Started', desc: 'Once approved, you\'ll receive all the details to begin volunteering' }
                       ].map((item) => (
                         <div key={item.step} className="flex items-start">
                           <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-4 mt-1 flex-shrink-0">
@@ -382,140 +589,288 @@ export default function Volunteering() {
                         </div>
                       ))}
                     </div>
+                    
+                    <div className="mt-8 bg-blue-50 rounded-lg p-6 border border-blue-200">
+                      <h4 className="font-semibold text-blue-900 mb-2">💡 Tips for Success</h4>
+                      <ul className="text-sm text-blue-800 space-y-1">
+                        <li>• Be specific about your availability and interests</li>
+                        <li>• Don't worry if you're new - we provide training!</li>
+                        <li>• Start small and grow your involvement over time</li>
+                        <li>• Connect with other volunteers - it's more fun together!</li>
+                      </ul>
+                    </div>
                   </div>
                   
                   <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6 border border-green-100">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">📝 Quick Interest Form</h3>
-                    <form className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">📋 Current Opportunities Summary</h3>
+                    
+                    {loading ? (
+                      <div className="text-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                        <p className="text-sm text-gray-600 mt-2">Loading...</p>
+                      </div>
+                    ) : opportunities.length === 0 ? (
+                      <p className="text-center text-gray-600 py-4">No opportunities currently available</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {opportunities.slice(0, 3).map((opp) => {
+                          const categoryInfo = getCategoryInfo(opp.category);
+                          return (
+                            <div key={opp.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">{categoryInfo.icon}</span>
+                                  <h4 className="font-medium text-gray-900 text-sm">{opp.title}</h4>
+                                </div>
+                                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                                  {opp.current_signups}/{opp.max_volunteers}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-600 mb-3">{opp.excerpt}</p>
+                              <button
+                                onClick={() => handleSignup(opp)}
+                                disabled={opp.current_signups >= opp.max_volunteers}
+                                className={`w-full py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                                  opp.current_signups >= opp.max_volunteers
+                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                }`}
+                              >
+                                {opp.current_signups >= opp.max_volunteers ? 'Full' : 'Sign Up Now'}
+                              </button>
+                            </div>
+                          );
+                        })}
+                        
+                        {opportunities.length > 3 && (
+                          <div className="text-center pt-2">
+                            <button
+                              onClick={() => setActiveTab('opportunities')}
+                              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                            >
+                              View all {opportunities.length} opportunities →
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="mt-6 pt-4 border-t border-gray-200 text-center text-xs text-gray-500">
+                      Questions? Email us at <a href="mailto:volunteers@rvrafc.ie" className="text-blue-600 hover:underline">volunteers@rvrafc.ie</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+
+          {/* Signup Modal */}
+          <AnimatePresence>
+            {showSignupModal && selectedOpportunity && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                onClick={() => setShowSignupModal(false)}
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-6">
+                    <div className="flex justify-between items-start">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Your Name *</label>
-                        <input
-                          type="text"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Enter your name"
-                        />
+                        <h3 className="text-xl font-bold mb-2">🤝 Volunteer Signup</h3>
+                        <p className="text-blue-100 text-sm">{selectedOpportunity.title}</p>
+                      </div>
+                      <button
+                        onClick={() => setShowSignupModal(false)}
+                        className="text-white/80 hover:text-white text-2xl font-bold transition-colors"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6">
+                    {/* Opportunity Summary */}
+                    <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                      <h4 className="font-semibold text-gray-900 mb-2">Opportunity Details</h4>
+                      <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                        <div>📍 <strong>Location:</strong> {selectedOpportunity.location || 'TBD'}</div>
+                        <div>⏱️ <strong>Duration:</strong> {selectedOpportunity.duration_hours ? `${selectedOpportunity.duration_hours}h` : 'Flexible'}</div>
+                        {selectedOpportunity.date && (
+                          <div>📅 <strong>Date:</strong> {new Date(selectedOpportunity.date).toLocaleDateString()}</div>
+                        )}
+                        <div>👥 <strong>Spots:</strong> {selectedOpportunity.current_signups}/{selectedOpportunity.max_volunteers}</div>
+                      </div>
+                      <p className="text-sm text-gray-700 mt-3">{selectedOpportunity.description}</p>
+                    </div>
+                    
+                    <form onSubmit={submitSignup} className="space-y-4">
+                      {/* Personal Information */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Full Name *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={signupForm.volunteer_name}
+                            onChange={(e) => setSignupForm({...signupForm, volunteer_name: e.target.value})}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            placeholder="Your full name"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Email Address *
+                          </label>
+                          <input
+                            type="email"
+                            required
+                            value={signupForm.volunteer_email}
+                            onChange={(e) => setSignupForm({...signupForm, volunteer_email: e.target.value})}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            placeholder="your.email@example.com"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Phone Number
+                          </label>
+                          <input
+                            type="tel"
+                            value={signupForm.volunteer_phone}
+                            onChange={(e) => setSignupForm({...signupForm, volunteer_phone: e.target.value})}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            placeholder="+353 87 123 4567"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Age Group
+                          </label>
+                          <select
+                            value={signupForm.age_group}
+                            onChange={(e) => setSignupForm({...signupForm, age_group: e.target.value})}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          >
+                            <option value="">Select age group</option>
+                            {ageGroups.map(group => (
+                              <option key={group.value} value={group.value}>{group.label}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                        <input
-                          type="email"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="your.email@example.com"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Phone (Optional)</label>
-                        <input
-                          type="tel"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Your phone number"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Areas of Interest</label>
-                        <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                          <option value="">Select an area</option>
-                          <option value="match-day">Match Day Helper</option>
-                          <option value="fundraising">Fundraising</option>
-                          <option value="social-media">Social Media</option>
-                          <option value="kit">Kit Management</option>
-                          <option value="transport">Transport</option>
-                          <option value="first-aid">First Aid</option>
-                          <option value="other">Something else</option>
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Tell us about yourself (Optional)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Previous Experience
+                        </label>
                         <textarea
                           rows={3}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-                          placeholder="Any skills, experience, or questions you'd like to share..."
+                          value={signupForm.previous_experience}
+                          onChange={(e) => setSignupForm({...signupForm, previous_experience: e.target.value})}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          placeholder="Tell us about any relevant experience you have..."
                         />
                       </div>
                       
-                      <button
-                        type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
-                      >
-                        Submit Interest
-                      </button>
-                    </form>
-                    
-                    <div className="mt-4 text-center text-xs text-gray-500">
-                      Or email us directly at <a href="mailto:volunteers@rvrafc.ie" className="text-blue-600 hover:underline">volunteers@rvrafc.ie</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Recognition Tab */}
-          {activeTab === 'recognition' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                  <span className="mr-3">🏆</span>
-                  Volunteer Recognition
-                </h2>
-                
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
-                  {recognitionProgram.map((program, index) => (
-                    <motion.div
-                      key={program.award}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.2 }}
-                      className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200 text-center"
-                    >
-                      <div className="text-4xl mb-4">{program.icon}</div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">{program.award}</h3>
-                      <p className="text-sm text-gray-700 mb-4">{program.description}</p>
-                      <div className="space-y-2">
-                        {program.perks.map((perk, perkIndex) => (
-                          <div key={perkIndex} className="text-xs text-orange-800 bg-orange-100 rounded-full px-3 py-1">
-                            {perk}
-                          </div>
-                        ))}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Why do you want to volunteer? *
+                        </label>
+                        <textarea
+                          rows={3}
+                          required
+                          value={signupForm.motivation}
+                          onChange={(e) => setSignupForm({...signupForm, motivation: e.target.value})}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          placeholder="Share your motivation for volunteering with us..."
+                        />
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
-
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 border border-blue-200">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">🌟 Current Volunteer Spotlights</h3>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="bg-white rounded-lg p-6 shadow-sm text-center">
-                      <div className="text-4xl mb-3">🥇</div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Volunteer of the Month</h4>
-                      <p className="text-blue-600 font-medium mb-2">Emma Thompson</p>
-                      <p className="text-sm text-gray-600">
-                        "Emma has been incredible organizing our match day refreshments. 
-                        Her attention to detail and friendly smile make every match day special!"
-                      </p>
-                    </div>
-                    <div className="bg-white rounded-lg p-6 shadow-sm text-center">
-                      <div className="text-4xl mb-3">🎖️</div>
-                      <h4 className="font-semibold text-gray-900 mb-2">5-Year Service Award</h4>
-                      <p className="text-purple-600 font-medium mb-2">David & Lisa Murphy</p>
-                      <p className="text-sm text-gray-600">
-                        "Five years of dedicated service in fundraising, transport coordination, and so much more. 
-                        True club legends!"
-                      </p>
-                    </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Availability Notes
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={signupForm.availability_notes}
+                          onChange={(e) => setSignupForm({...signupForm, availability_notes: e.target.value})}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          placeholder="When are you typically available? Any schedule constraints?"
+                        />
+                      </div>
+                      
+                      {/* Emergency Contact */}
+                      <div className="border-t pt-4">
+                        <h4 className="font-medium text-gray-900 mb-3">Emergency Contact (Optional)</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Contact Name
+                            </label>
+                            <input
+                              type="text"
+                              value={signupForm.emergency_contact_name}
+                              onChange={(e) => setSignupForm({...signupForm, emergency_contact_name: e.target.value})}
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                              placeholder="Emergency contact name"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Contact Phone
+                            </label>
+                            <input
+                              type="tel"
+                              value={signupForm.emergency_contact_phone}
+                              onChange={(e) => setSignupForm({...signupForm, emergency_contact_phone: e.target.value})}
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                              placeholder="Emergency contact phone"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end space-x-3 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => setShowSignupModal(false)}
+                          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={loading}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-all disabled:opacity-50"
+                        >
+                          {loading ? 'Submitting...' : 'Submit Application'}
+                        </button>
+                      </div>
+                    </form>
                   </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
     </GlassPageTemplate>
   );
