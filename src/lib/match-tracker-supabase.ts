@@ -199,7 +199,7 @@ export class MatchTrackerSupabase {
       .from('match_events')
       .select('*')
       .eq('match_id', matchId)
-      .order('minute');
+      .order('event_minute');
 
     if (error) {
       console.error('Error fetching match events:', error);

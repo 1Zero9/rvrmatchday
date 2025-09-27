@@ -37,11 +37,8 @@ export default function LoginButton() {
     if (user) {
       // Use stable profile for decisions
       const currentProfile = stableProfile || profile;
-      // If admin is logged in, go to admin dashboard
-      if (currentProfile?.role?.toLowerCase() === 'admin') {
-        router.push('/admin');
-      } else if (['coach', 'manager', 'editor'].includes(currentProfile?.role?.toLowerCase())) {
-        // Non-admin users with access go to Match Central
+      // All authorized users (including admins) go to Match Central as primary workflow
+      if (['admin', 'coach', 'manager', 'editor'].includes(currentProfile?.role?.toLowerCase())) {
         router.push('/match-central-secure');
       } else {
         // Other users get signed out
@@ -61,8 +58,8 @@ export default function LoginButton() {
         case 'admin':
           return {
             gradient: 'from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700',
-            icon: '⚙️',
-            label: 'Admin'
+            icon: '⚽',
+            label: 'Match Central'
           };
         case 'editor':
           return {
@@ -105,8 +102,7 @@ export default function LoginButton() {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       title={user ? 
-        (currentProfile?.role?.toLowerCase() === 'admin' ? `Admin Dashboard - ${userName}` : 
-         ['coach', 'manager', 'editor'].includes(currentProfile?.role?.toLowerCase()) ? `Match Central - ${userName}` :
+        (['admin', 'coach', 'manager', 'editor'].includes(currentProfile?.role?.toLowerCase()) ? `Match Central - ${userName}` :
          `Logout ${userName} (${currentProfile?.role})`) 
         : 'Access Match Central (login required)'}
     >

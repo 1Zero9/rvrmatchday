@@ -22,7 +22,7 @@ interface CreateUserRequest {
   email: string;
   full_name: string;
   username: string;
-  role: 'admin' | 'editor' | 'coach' | 'parent';
+  role: 'admin' | 'parent';
   is_active: boolean;
   adminUserId: string;
 }

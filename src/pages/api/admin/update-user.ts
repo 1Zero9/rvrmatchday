@@ -23,7 +23,7 @@ interface UpdateUserRequest {
   updates: {
     full_name?: string;
     username?: string;
-    role?: 'admin' | 'editor' | 'coach' | 'manager' | 'parent' | 'volunteer';
+    role?: 'admin' | 'parent';
     is_active?: boolean;
   };
   adminUserId: string;

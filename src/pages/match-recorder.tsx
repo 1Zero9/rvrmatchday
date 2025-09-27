@@ -89,18 +89,23 @@ export default function MatchRecorderSimple() {
   // Load venues from database
   const loadVenues = async () => {
     try {
+      console.log('🏟️ Loading venues from database...');
+      
       // First try to get venues from a venues table
       const { data: venuesData, error: venuesError } = await supabase
         .from('venues')
         .select('name')
         .order('name');
 
-      if (venuesData && !venuesError) {
+      if (venuesData && !venuesError && venuesData.length > 0) {
         const venueNames = venuesData.map(v => v.name);
-        setVenues(venueNames);
+        console.log('🏟️ Loaded venues from venues table:', venueNames);
+        setVenues(['Home Ground', ...venueNames]);
         return;
       }
 
+      console.log('🏟️ Venues table not found or empty, trying fallback...');
+      
       // Fallback: get unique venues from existing matches
       const { data: matchesData, error: matchesError } = await supabase
         .from('matches')
@@ -110,12 +115,21 @@ export default function MatchRecorderSimple() {
       if (matchesData && !matchesError) {
         const uniqueVenues = [...new Set(matchesData.map(m => m.venue).filter(Boolean))];
         if (uniqueVenues.length > 0) {
-          setVenues(['Home Ground', ...uniqueVenues.sort()]);
+          const finalVenues = ['Home Ground', 'Phoenix Park', 'Away Ground', ...uniqueVenues.sort()];
+          console.log('🏟️ Using venues from matches:', finalVenues);
+          setVenues(finalVenues);
+        } else {
+          console.log('🏟️ Using default venues');
+          setVenues(['Home Ground', 'Phoenix Park', 'Away Ground', 'Training Ground']);
         }
+      } else {
+        console.log('🏟️ Error loading from matches, using defaults');
+        setVenues(['Home Ground', 'Phoenix Park', 'Away Ground', 'Training Ground']);
       }
     } catch (error) {
       console.error('Error loading venues:', error);
-      // Keep default venues
+      console.log('🏟️ Exception occurred, using default venues');
+      setVenues(['Home Ground', 'Phoenix Park', 'Away Ground', 'Training Ground']);
     }
   };
 
@@ -206,6 +220,37 @@ export default function MatchRecorderSimple() {
       loadMatchForEdit(editId);
     }
   }, [router.query.edit, teams]);
+
+  // Load players when the selected team changes
+  useEffect(() => {
+    const loadPlayersForTeam = async () => {
+      if (quickResult.homeTeam && quickResult.homeTeam !== 'custom') {
+        try {
+          const { data: playersData, error } = await supabase
+            .from('players')
+            .select('*')
+            .eq('team_id', quickResult.homeTeam)
+            .eq('is_active', true)
+            .order('first_name');
+
+          if (error) {
+            console.error('Error loading players:', error);
+            setPlayers([]);
+          } else {
+            console.log('🏃 Loaded players for team:', quickResult.homeTeam, playersData?.length || 0);
+            setPlayers(playersData || []);
+          }
+        } catch (error) {
+          console.error('Error in loadPlayersForTeam:', error);
+          setPlayers([]);
+        }
+      } else {
+        setPlayers([]);
+      }
+    };
+
+    loadPlayersForTeam();
+  }, [quickResult.homeTeam]);
 
   const loadData = async () => {
     try {
@@ -347,6 +392,12 @@ export default function MatchRecorderSimple() {
           goalScorers: goalScorers,
           selectedSquad: matchToEdit.selectedSquad || []
         };
+        
+        console.log('🏗️ Setting match details for edit:', {
+          rawReferee: matchToEdit.referee,
+          convertedReferee: matchToEdit.referee === 'Yes',
+          detailsToSet: detailsToSet
+        });
         
         setDetails(detailsToSet);
         setDetailsLoaded(true);
@@ -807,6 +858,7 @@ export default function MatchRecorderSimple() {
                     quickResult={quickResult}
                     editingMatch={editingMatch}
                     teams={teams}
+                    players={players}
                     onBack={() => setStep('result')}
                     onSave={saveResult}
                     isFutureMatch={isFutureMatch}
@@ -1258,6 +1310,7 @@ export default function MatchRecorderSimple() {
               quickResult={quickResult}
               editingMatch={editingMatch}
               teams={teams}
+              players={players}
               onBack={() => setStep('result')}
               onSave={saveResult}
               isFutureMatch={isFutureMatch}

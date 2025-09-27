@@ -227,7 +227,21 @@ export default function VolunteerSignupManager() {
   };
 
   const handleDelete = async (signupId: string) => {
-    const deleteAction = async () => {
+    const signupToDelete = signups.find(s => s.id === signupId);
+    if (!signupToDelete) return;
+    
+    const adminActions = (window as any).adminActions;
+    
+    if (adminActions && adminActions.addUndoableNotification) {
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete ${signupToDelete.volunteer_name}'s signup?\n\n` +
+        `This will:\n• Remove the signup permanently\n• Can be undone within 10 seconds\n\n` +
+        `Opportunity: ${signupToDelete.opportunity_title}\n` +
+        `Email: ${signupToDelete.volunteer_email}`
+      );
+      
+      if (!confirmDelete) return;
+      
       try {
         // Check if it's a demo signup
         if (signupId.startsWith('demo-')) {
@@ -242,18 +256,58 @@ export default function VolunteerSignupManager() {
 
         if (error) throw error;
         
-        await fetchSignups();
+        // Remove from local state immediately for responsive UI
+        setSignups(prev => prev.filter(s => s.id !== signupId));
+        
+        // Create undo action
+        const undoAction = {
+          type: 'delete_signup' as const,
+          data: signupToDelete,
+          table: 'volunteer_signups',
+          description: `Restored signup for ${signupToDelete.volunteer_name}`
+        };
+        
+        // Add to unified undo system
+        adminActions.addUndoableNotification(
+          `🗑️ Volunteer signup for "${signupToDelete.volunteer_name}" has been deleted`,
+          undoAction,
+          10000
+        );
+        
       } catch (err) {
         console.error('Error deleting signup:', err);
         setError('Failed to delete signup');
       }
-    };
+    } else {
+      // Fallback to custom confirmation modal if admin actions not available
+      const deleteAction = async () => {
+        try {
+          // Check if it's a demo signup
+          if (signupId.startsWith('demo-')) {
+            setSignups(prevSignups => prevSignups.filter(signup => signup.id !== signupId));
+            return;
+          }
 
-    showConfirmDialog(
-      '🗑️ Delete Signup',
-      'Are you sure you want to delete this volunteer signup? This action cannot be undone.',
-      deleteAction
-    );
+          const { error } = await supabase
+            .from('volunteer_signups')
+            .delete()
+            .eq('id', signupId);
+
+          if (error) throw error;
+          
+          await fetchSignups();
+        } catch (err) {
+          console.error('Error deleting signup:', err);
+          setError('Failed to delete signup');
+        }
+      };
+
+      showConfirmDialog(
+        '🗑️ Delete Signup',
+        'Are you sure you want to delete this volunteer signup? This action cannot be undone.',
+        deleteAction
+      );
+    }
   };
 
   const getStatusInfo = (status: string) => {

@@ -246,7 +246,21 @@ export default function VolunteerManager() {
   };
 
   const handleDelete = async (opportunityId: string) => {
-    const deleteAction = async () => {
+    const opportunityToDelete = opportunities.find(o => o.id === opportunityId);
+    if (!opportunityToDelete) return;
+    
+    const adminActions = (window as any).adminActions;
+    
+    if (adminActions && adminActions.addUndoableNotification) {
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete "${opportunityToDelete.title}"?\n\n` +
+        `This will:\n• Remove the opportunity permanently\n• Delete all associated signups\n• Can be undone within 10 seconds\n\n` +
+        `Category: ${opportunityToDelete.category}\n` +
+        `Volunteers: ${opportunityToDelete.current_signups}/${opportunityToDelete.max_volunteers}`
+      );
+      
+      if (!confirmDelete) return;
+      
       try {
         // Check if it's a demo opportunity
         if (opportunityId.startsWith('demo-')) {
@@ -263,18 +277,60 @@ export default function VolunteerManager() {
 
         if (error) throw error;
         
-        await fetchOpportunities();
+        // Remove from local state immediately for responsive UI
+        setOpportunities(prev => prev.filter(o => o.id !== opportunityId));
+        
+        // Create undo action
+        const undoAction = {
+          type: 'delete_volunteer' as const,
+          data: opportunityToDelete,
+          table: 'volunteer_opportunities',
+          description: `Restored volunteer opportunity "${opportunityToDelete.title}"`
+        };
+        
+        // Add to unified undo system
+        adminActions.addUndoableNotification(
+          `🗑️ Volunteer opportunity "${opportunityToDelete.title}" has been deleted`,
+          undoAction,
+          10000
+        );
+        
       } catch (err) {
         console.error('Error deleting opportunity:', err);
         setError('Failed to delete volunteer opportunity');
       }
-    };
+    } else {
+      // Fallback to custom confirmation modal if admin actions not available
+      const deleteAction = async () => {
+        try {
+          // Check if it's a demo opportunity
+          if (opportunityId.startsWith('demo-')) {
+            setOpportunities(prevOpportunities => 
+              prevOpportunities.filter(opportunity => opportunity.id !== opportunityId)
+            );
+            return;
+          }
 
-    showConfirmDialog(
-      '🗑️ Delete Volunteer Opportunity',
-      'Are you sure you want to delete this volunteer opportunity? This will also delete all associated signups and cannot be undone.',
-      deleteAction
-    );
+          const { error } = await supabase
+            .from('volunteer_opportunities')
+            .delete()
+            .eq('id', opportunityId);
+
+          if (error) throw error;
+          
+          await fetchOpportunities();
+        } catch (err) {
+          console.error('Error deleting opportunity:', err);
+          setError('Failed to delete volunteer opportunity');
+        }
+      };
+
+      showConfirmDialog(
+        '🗑️ Delete Volunteer Opportunity',
+        'Are you sure you want to delete this volunteer opportunity? This will also delete all associated signups and cannot be undone.',
+        deleteAction
+      );
+    }
   };
 
   const toggleActive = async (opportunity: VolunteerOpportunity) => {

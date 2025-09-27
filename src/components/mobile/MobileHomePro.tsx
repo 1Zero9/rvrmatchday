@@ -11,8 +11,21 @@ import { MobileHero, ActionCard, ContentCard } from '../../design/MobileDesignSy
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../SecureAuth';
 
 export default function MobileHomePro() {
+  // Auth context - safely handle if not available
+  let user = null;
+  let profile = null;
+  
+  try {
+    const authContext = useAuth();
+    user = authContext.user;
+    profile = authContext.profile;
+  } catch (error) {
+    // AuthProvider not available, continue with fallback values
+  }
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const [greeting, setGreeting] = useState('');
   const [teamsCount, setTeamsCount] = useState(0);
@@ -172,7 +185,7 @@ export default function MobileHomePro() {
   const adminAppIcon = {
     name: 'Match Central',
     description: 'Coach Dashboard',
-    href: '/match-central',
+    href: '/match-central-secure',
     icon: '🏆',
     gradient: 'from-amber-500 to-orange-600',
     size: 'small',
@@ -551,34 +564,36 @@ export default function MobileHomePro() {
           </div>
         </motion.div>
 
-        {/* Admin/Coach Access - Bottom Section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 0.4 }}
-          className="text-center mt-6 mx-4 mb-4"
-        >
-          <div className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-lg">
-            <div className="relative z-10">
-              <div className="text-xl mb-2">🔐</div>
-              <h3 className="text-white/70 font-medium text-sm mb-3">Coach & Admin Access</h3>
-              
-              {/* Match Central as small discrete button */}
-              <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 1.7, type: "spring", stiffness: 100 }}
-                className="inline-block mb-3"
-              >
-                <AppIcon app={adminAppIcon} index={0} />
-              </motion.div>
-              
-              <p className="text-white/60 text-xs leading-relaxed">
-                Tools for coaches, team managers, and club officials
-              </p>
+        {/* Admin/Coach Access - Bottom Section - Show for all authenticated users */}
+        {user && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5, duration: 0.4 }}
+            className="text-center mt-6 mx-4 mb-4"
+          >
+            <div className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-lg">
+              <div className="relative z-10">
+                <div className="text-xl mb-2">⚽</div>
+                <h3 className="text-white/70 font-medium text-sm mb-3">Match Central Access</h3>
+                
+                {/* Match Central as small discrete button */}
+                <motion.div
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 1.7, type: "spring", stiffness: 100 }}
+                  className="inline-block mb-3"
+                >
+                  <AppIcon app={adminAppIcon} index={0} />
+                </motion.div>
+                
+                <p className="text-white/60 text-xs leading-relaxed">
+                  Welcome back, {profile?.full_name?.split(' ')[0] || profile?.username || 'User'}! Access your dashboard.
+                </p>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
       </div>
     </div>

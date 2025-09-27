@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import StandardLayout from '../components/StandardLayout';
+import CaptchaProtection, { useCaptcha } from '../components/CaptchaProtection';
 
 interface RegistrationData {
   email: string;
@@ -200,6 +201,7 @@ export default function Register() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<WizardStep>('personal');
   const [submitting, setSubmitting] = useState(false);
+  const { captchaToken, isVerified: isCaptchaVerified, handleVerify: handleCaptchaVerify } = useCaptcha();
   const [formData, setFormData] = useState<RegistrationData>({
     email: '',
     firstName: '',
@@ -253,13 +255,18 @@ export default function Register() {
       case 'legal':
         return Object.values(formData.legalAgreements).every(agreed => agreed);
       case 'confirmation':
-        return true;
+        return isCaptchaVerified;
       default:
         return false;
     }
   };
 
   const handleFinalSubmit = async () => {
+    if (!isCaptchaVerified || !captchaToken) {
+      alert('Please complete the security verification before submitting.');
+      return;
+    }
+    
     setSubmitting(true);
     setCurrentStep('processing');
 
@@ -747,6 +754,15 @@ export default function Register() {
                       <p className="text-blue-200 text-xs">
                         <strong>Next:</strong> Admin review within 2-3 business days.
                       </p>
+                    </div>
+
+                    {/* Security Verification */}
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                      <CaptchaProtection
+                        onVerify={handleCaptchaVerify}
+                        theme="dark"
+                        className="captcha-dark-theme"
+                      />
                     </div>
                   </motion.div>
                 )}

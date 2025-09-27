@@ -16,6 +16,8 @@ import StandardLayout from "./StandardLayout";
 import CelebrationResultCard from "./CelebrationResultCard";
 import MobileBottomNav from "./MobileBottomNav";
 import AdvancedTeamFilter from "./AdvancedTeamFilter";
+import LoginButton from "./LoginButton";
+import { useAuth } from "./SecureAuth";
 import { supabase } from "../lib/supabase";
 import { Team, TeamSummary, Match } from "../types/match-tracker";
 import { VERSION_CONFIG } from "../config/version";
@@ -153,65 +155,277 @@ function MatchPlayersDisplay({ match }: { match: Match }) {
 // Expanded Match Details Component
 function MatchExpandedDetails({ match }: { match: Match }) {
   const [events, setEvents] = useState<any[]>([]);
+  const [cards, setCards] = useState<any[]>([]);
   const [players, setPlayers] = useState<any[]>([]);
+  const [playerLookup, setPlayerLookup] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     const loadMatchDetails = async () => {
       try {
+        console.log('🔍 Loading match details for:', match.id);
+
         // Load match events
         const { data: eventsData } = await supabase
           .from('match_events')
           .select('*')
           .eq('match_id', match.id)
+          .order('event_minute');
+
+        // Load cards from cards table
+        const { data: cardsData } = await supabase
+          .from('cards')
+          .select('*')
+          .eq('match_id', match.id)
           .order('minute');
 
-        // Load selected players
-        if (match.selected_squad) {
+        console.log('📋 Match events loaded:', eventsData?.length || 0);
+        console.log('🟨🟥 Cards loaded:', cardsData?.length || 0);
+
+        // Load all players to create a lookup map
+        const { data: allPlayersData } = await supabase
+          .from('players')
+          .select('id, first_name, last_name, position');
+
+        const lookup = new Map<string, string>();
+        if (allPlayersData) {
+          allPlayersData.forEach(player => {
+            const fullName = `${player.first_name || ''} ${player.last_name && player.last_name !== 'null' ? player.last_name : ''}`.trim();
+            lookup.set(player.id, fullName);
+          });
+        }
+        setPlayerLookup(lookup);
+
+        // Load selected players for squad display
+        if (match.selectedSquad) {
           let playerIds: string[] = [];
-          if (Array.isArray(match.selected_squad)) {
-            playerIds = match.selected_squad;
-          } else if (typeof match.selected_squad === 'string') {
+          if (Array.isArray(match.selectedSquad)) {
+            playerIds = match.selectedSquad;
+          } else if (typeof match.selectedSquad === 'string') {
             try {
-              playerIds = JSON.parse(match.selected_squad);
+              playerIds = JSON.parse(match.selectedSquad);
             } catch (e) {
+              console.error('Failed to parse selectedSquad string:', e);
               playerIds = [];
             }
           }
 
           if (playerIds.length > 0) {
-            const { data: playersData } = await supabase
-              .from('players')
-              .select('*')
-              .in('id', playerIds);
-            
-            setPlayers(playersData || []);
+            const selectedPlayers = playerIds.map(id => {
+              const playerData = allPlayersData?.find(p => p.id === id);
+              const playerName = lookup.get(id);
+              return {
+                id,
+                name: playerName || 'Unknown Player',
+                position: playerData?.position || 'Player'
+              };
+            });
+            setPlayers(selectedPlayers);
           }
         }
 
         setEvents(eventsData || []);
+        setCards(cardsData || []);
       } catch (error) {
         console.error('Error loading match details:', error);
       }
     };
 
     loadMatchDetails();
-  }, [match.id, match.selected_squad]);
+  }, [match.id, match.selectedSquad]);
+
+  // Separate events by type for better display
+  const goalEvents = events.filter(event => event.event_type === 'Goal');
+  const cardEventsFromEvents = events.filter(event => event.event_type === 'Yellow Card' || event.event_type === 'Red Card');
+  const substitutionEvents = events.filter(event => event.event_type === 'Substitution');
+  const otherEvents = events.filter(event => 
+    !['Goal', 'Yellow Card', 'Red Card', 'Substitution'].includes(event.event_type)
+  );
+
+  // Combine cards from both sources (cards table and legacy match_events)
+  const allCards = [
+    ...cards.map(card => ({
+      minute: card.minute,
+      type: card.card,
+      playerName: card.player_name || playerLookup.get(card.player_id) || 'Unknown Player',
+      reason: card.reason,
+      isAutomatic: card.is_automatic_red,
+      isStraight: card.is_straight_red,
+      source: 'cards_table'
+    })),
+    ...cardEventsFromEvents.map(event => ({
+      minute: event.event_minute || event.minute,
+      type: event.event_type === 'Yellow Card' ? 'yellow' : 'red',
+      playerName: event.player_name,
+      reason: event.notes,
+      isAutomatic: false,
+      isStraight: false,
+      source: 'match_events'
+    }))
+  ].sort((a, b) => a.minute - b.minute);
 
   return (
     <div className="space-y-4">
-      {/* Match Events */}
-      {events.length > 0 && (
-        <div>
-          <h5 className="font-bold text-gray-800 mb-2">⚽ Match Events</h5>
-          <div className="space-y-2 max-h-32 overflow-y-auto">
-            {events.map((event, index) => (
+      {/* Compact Match Overview */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-xs">
+          {/* Left Side - Match Info */}
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-blue-700 font-medium">Competition:</span>
+              <span className="text-blue-900">{match.matchType || 'League'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-blue-700 font-medium">Venue:</span>
+              <span className="text-blue-900">{match.venue || (match.isHomeMatch ? 'Home' : 'Away')}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-blue-700 font-medium">Date:</span>
+              <span className="text-blue-900">{new Date(match.scheduledDate).toLocaleDateString()}</span>
+            </div>
+            {match.referee && (
+              <div className="flex justify-between">
+                <span className="text-blue-700 font-medium">Referee:</span>
+                <span className="text-blue-900">{match.referee === 'Yes' ? '✅' : '❌'}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Right Side - Score & Key Info */}
+          <div className="space-y-2">
+            <div className="text-center">
+              <div className="text-blue-700 font-medium text-xs">Final Score</div>
+              <div className="text-blue-900 font-bold text-lg">
+                {match.homeScore !== undefined && match.awayScore !== undefined 
+                  ? `${match.homeScore} - ${match.awayScore}` 
+                  : 'Not recorded'}
+              </div>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-blue-700 font-medium">Weather:</span>
+              <span className="text-blue-900">{match.weather || 'Not recorded'}</span>
+            </div>
+            {match.playerOfTheMatch && (
+              <div className="text-center">
+                <div className="text-blue-700 font-medium text-xs">⭐ Player of Match</div>
+                <div className="text-blue-900 font-semibold">{match.playerOfTheMatch}</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Compact Goals & Cards Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Goals */}
+        {goalEvents.length > 0 && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <h6 className="font-bold text-green-900 mb-2 text-sm">⚽ Goals ({goalEvents.length})</h6>
+            <div className="space-y-2">
+              {goalEvents.map((event, index) => {
+                // Extract assist info
+                let assistName = event.event_data?.assistPlayerName;
+                
+                if (!assistName && event.notes && event.notes.includes('Assist:')) {
+                  // Simple string parsing: "Assist: Finn" -> "Finn"
+                  const parts = event.notes.split('Assist:');
+                  if (parts.length > 1) {
+                    assistName = parts[1].trim();
+                  }
+                }
+
+                return (
+                  <div key={index} className="flex items-center justify-between bg-white rounded p-2 border border-green-100 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 bg-green-500 text-white font-bold rounded-full flex items-center justify-center text-xs">
+                        {event.event_minute || event.minute}'
+                      </span>
+                      <div>
+                        <div className="font-medium text-green-900">{event.player_name}</div>
+                        {assistName && (
+                          <div className="text-green-700 font-medium text-xs">
+                            🎯 {assistName}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Cards */}
+        {allCards.length > 0 && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <h6 className="font-bold text-yellow-900 mb-2 text-sm">🟨🟥 Cards ({allCards.length})</h6>
+            <div className="space-y-2">
+              {allCards.map((card, index) => (
+                <div key={index} className="flex items-center justify-between bg-white rounded p-2 border border-yellow-100 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 bg-gray-100 text-gray-700 font-bold rounded-full flex items-center justify-center text-xs">
+                      {card.minute}'
+                    </span>
+                    <div className={`w-4 h-5 rounded-sm ${card.type === 'yellow' ? 'bg-yellow-400' : 'bg-red-500'}`}></div>
+                    <div>
+                      <div className="font-medium text-yellow-900">{card.playerName}</div>
+                      {card.reason && (
+                        <div className="text-yellow-700 truncate max-w-24">{card.reason}</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+
+      {/* Additional Info - Substitutions & Squad */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Substitutions */}
+        {substitutionEvents.length > 0 && (
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+            <h6 className="font-bold text-purple-900 mb-2 text-sm">🔄 Substitutions ({substitutionEvents.length})</h6>
+            <div className="space-y-2">
+              {substitutionEvents.map((event, index) => (
+                <div key={index} className="flex items-center gap-2 bg-white rounded p-2 border border-purple-100 text-xs">
+                  <span className="w-6 h-6 bg-purple-100 text-purple-700 font-bold rounded-full flex items-center justify-center">
+                    {event.event_minute || event.minute}'
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-red-600">⬇️ {event.event_data?.playerOut || 'Out'}</span>
+                    <span className="text-purple-600">→</span>
+                    <span className="text-green-600">⬆️ {event.player_name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* Other Events */}
+      {otherEvents.length > 0 && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <h5 className="font-bold text-gray-800 mb-3 flex items-center">
+            📝 Other Events ({otherEvents.length})
+          </h5>
+          <div className="space-y-2">
+            {otherEvents.map((event, index) => (
               <div key={index} className="flex items-center gap-2 text-sm">
-                <span className="w-8 text-xs bg-gray-100 px-1 py-0.5 rounded text-center">
-                  {event.minute}'
+                <span className="w-8 text-xs bg-gray-200 px-1 py-0.5 rounded text-center">
+                  {event.event_minute || event.minute}'
                 </span>
-                <span>{event.event_type}</span>
+                <span className="font-medium">{event.event_type}</span>
                 {event.player_name && (
                   <span className="text-gray-600">- {event.player_name}</span>
+                )}
+                {event.notes && (
+                  <span className="text-xs text-gray-500 italic">({event.notes})</span>
                 )}
               </div>
             ))}
@@ -219,22 +433,61 @@ function MatchExpandedDetails({ match }: { match: Match }) {
         </div>
       )}
 
-      {/* Selected Squad */}
+      {/* Match Notes */}
+      {match.notes && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h5 className="font-bold text-blue-900 mb-3 flex items-center">
+            📝 Match Notes
+          </h5>
+          <div className="text-blue-800 text-sm leading-relaxed whitespace-pre-wrap">
+            {match.notes}
+          </div>
+        </div>
+      )}
+
+      {/* Match Squad */}
       {players.length > 0 && (
-        <div>
-          <h5 className="font-bold text-gray-800 mb-2">👥 Selected Squad ({players.length})</h5>
-          <div className="grid grid-cols-3 gap-1 text-xs max-h-24 overflow-y-auto">
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+          <h5 className="font-bold text-indigo-900 mb-3 flex items-center">
+            👥 Match Squad ({players.length} players)
+          </h5>
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {players.map((player) => (
-              <div key={player.id} className="bg-gray-50 p-1 rounded text-center">
-                <div className="font-medium truncate">
-                  {`${player.first_name || ''}${player.last_name && player.last_name !== 'null' ? ` ${player.last_name}` : ''}`.trim() || 'Unknown'}
+              <div key={player.id} className="bg-white border border-indigo-100 rounded-lg p-2 text-center">
+                <div className="font-medium text-indigo-900 text-xs truncate">
+                  {player.name}
                 </div>
-                <div className="text-gray-500 text-xs">{player.position || 'Player'}</div>
+                <div className="text-indigo-600 text-xs mt-1">{player.position || 'Player'}</div>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Match Statistics Summary */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h5 className="font-bold text-gray-800 mb-3 flex items-center">
+          📊 Match Statistics
+        </h5>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">{goalEvents.length}</div>
+            <div className="text-gray-600">Goals</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-yellow-600">{allCards.filter(card => card.type === 'yellow').length}</div>
+            <div className="text-gray-600">Yellow Cards</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-red-600">{allCards.filter(card => card.type === 'red').length}</div>
+            <div className="text-gray-600">Red Cards</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-purple-600">{substitutionEvents.length}</div>
+            <div className="text-gray-600">Substitutions</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -444,6 +697,7 @@ function CollapsibleTeamCard({
   );
 }export default function MatchCentralContent() {
   const router = useRouter();
+  const { user, profile, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamSummaries, setTeamSummaries] = useState<TeamSummary[]>([]);
@@ -715,7 +969,7 @@ function CollapsibleTeamCard({
           weather: dbMatch.weather,
           notes: dbMatch.notes,
           selectedSquad: dbMatch.selected_squad || [],
-          playerOfTheMatch: dbMatch.player_of_the_match,
+          playerOfTheMatch: dbMatch.player_of_match || dbMatch.player_of_the_match,
           yellowCards: dbMatch.yellow_cards,
           redCards: dbMatch.red_cards,
           attendance: dbMatch.attendance,
@@ -726,6 +980,18 @@ function CollapsibleTeamCard({
         console.log('Loaded matches from database:', transformedMatches);
         console.log('🔍 Checking for matches with squad data:');
         transformedMatches.forEach((match, index) => {
+          console.log(`📊 Match ${index + 1} Details:`, {
+            id: match.id,
+            team: match.teamId,
+            opponent: match.opponent,
+            status: match.status,
+            homeScore: match.homeScore,
+            awayScore: match.awayScore,
+            selectedSquad: match.selectedSquad,
+            hasSquadData: match.selectedSquad && match.selectedSquad.length > 0,
+            playerOfTheMatch: match.playerOfTheMatch,
+            notes: match.notes
+          });
           if (match.selectedSquad && match.selectedSquad.length > 0) {
             console.log(`✅ Match ${index + 1}: ${match.teamId} vs ${match.opponent} - Squad: ${match.selectedSquad.length} players`, match.selectedSquad);
           } else {
@@ -834,7 +1100,24 @@ function CollapsibleTeamCard({
     return finished;
   };
 
-  const filteredOverviewResults = React.useMemo(() => getFilteredOverviewResults(), [advancedTeamFilter, matchTypeFilter, allMatches]);
+  const filteredOverviewResults = React.useMemo(() => {
+    const results = getFilteredOverviewResults();
+    console.log('🎯 Filtered Overview Results:', {
+      totalMatches: allMatches.length,
+      finishedMatches: allMatches.filter(m => m.status === 'Finished').length,
+      filteredResults: results.length,
+      advancedTeamFilter,
+      matchTypeFilter,
+      sampleResult: results[0] ? {
+        id: results[0].id,
+        opponent: results[0].opponent,
+        status: results[0].status,
+        homeScore: results[0].homeScore,
+        awayScore: results[0].awayScore
+      } : 'No results'
+    });
+    return results;
+  }, [advancedTeamFilter, matchTypeFilter, allMatches]);
 
   // Generate league table from match results
   const getLeagueTable = () => {
@@ -1366,41 +1649,43 @@ function CollapsibleTeamCard({
   return (
     <div className="min-h-screen">
       {/* Mobile-Only Design */}
-      <div className="block md:hidden bg-white pb-32">
-        {/* Simplified Mobile Header */}
-        <div className="bg-club-primary text-white p-4">
+      <div className="block md:hidden bg-white pb-16">
+        {/* Compact Mobile Header */}
+        <div className="bg-club-primary text-white p-2">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-bold">Match Central</h1>
-            <div className="flex gap-2">
+            <h1 className="text-base font-bold">Match Central</h1>
+            <div className="flex gap-1">
               <a
                 href="/match-recorder?mode=record"
-                className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1"
-                title="Record past or today's match"
+                className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-medium transition-all flex items-center gap-1"
+                title="Record match"
               >
                 <span>📝</span>
-                <span className="text-sm">Record</span>
+                <span>Record</span>
               </a>
               <a
                 href="/match-recorder?mode=schedule"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1"
-                title="Schedule future match"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-all flex items-center gap-1"
+                title="Schedule match"
               >
                 <span>📅</span>
-                <span className="text-sm">Schedule</span>
+                <span>Schedule</span>
               </a>
-              {/* Logout handled by main header */}
+              <div className="scale-75">
+                <LoginButton />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Colored Tab Navigation */}
-        <div className="bg-gray-50 border-b border-gray-200 px-4 py-3">
-          <nav className="flex gap-2 overflow-x-auto">
+        {/* Compact Tab Navigation */}
+        <div className="bg-gray-50 border-b border-gray-200 px-2 py-2">
+          <nav className="flex gap-1 overflow-x-auto">
             <button
               onClick={() => handleTabChange('overview')}
-              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm flex items-center gap-2 whitespace-nowrap ${
+              className={`px-3 py-1 rounded-lg font-medium text-xs transition-all flex items-center gap-1 whitespace-nowrap ${
                 activeTab === 'overview'
-                  ? 'bg-green-600 hover:bg-green-700 text-white transform scale-105'
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
                   : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
               }`}
             >
@@ -1409,9 +1694,9 @@ function CollapsibleTeamCard({
             </button>
             <button
               onClick={() => handleTabChange('fixtures')}
-              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm flex items-center gap-2 whitespace-nowrap ${
+              className={`px-3 py-1 rounded-lg font-medium text-xs transition-all flex items-center gap-1 whitespace-nowrap ${
                 activeTab === 'fixtures'
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white transform scale-105'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
                   : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
               }`}
             >
@@ -1420,9 +1705,9 @@ function CollapsibleTeamCard({
             </button>
             <button
               onClick={() => handleTabChange('statistics')}
-              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm flex items-center gap-2 whitespace-nowrap ${
+              className={`px-3 py-1 rounded-lg font-medium text-xs transition-all flex items-center gap-1 whitespace-nowrap ${
                 activeTab === 'statistics'
-                  ? 'bg-orange-600 hover:bg-orange-700 text-white transform scale-105'
+                  ? 'bg-orange-600 hover:bg-orange-700 text-white'
                   : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
               }`}
             >
@@ -1433,7 +1718,7 @@ function CollapsibleTeamCard({
         </div>
 
         {/* Mobile Content */}
-        <div className="p-4 pb-24">
+        <div className="p-2 pb-20">
           {/* Mobile Overview */}
           {activeTab === 'overview' && (
             <div>
@@ -1471,7 +1756,7 @@ function CollapsibleTeamCard({
               </div>
 
               {/* Mobile Match Cards */}
-              <div className="space-y-3">
+              <div className="space-y-1">
                 {filteredOverviewResults.length === 0 ? (
                   <div className="text-center py-8">
                     <div className="text-4xl mb-3">⚽</div>
@@ -1509,15 +1794,15 @@ function CollapsibleTeamCard({
                         key={match.id}
                         className="bg-white rounded-lg border shadow-sm"
                       >
-                        {/* Compact Mobile Card */}
+                        {/* Ultra Compact Mobile Card */}
                         <div 
-                          className={`p-3 ${hasExtra ? 'cursor-pointer' : ''}`}
+                          className={`p-2 ${hasExtra ? 'cursor-pointer' : ''}`}
                           onClick={() => hasExtra && toggleMatchExpand(match.id)}
                         >
                           <div className="flex items-center justify-between">
                             {/* Teams & Date */}
-                            <div className="flex-1">
-                              <div className="text-sm font-bold text-gray-900 mb-1">
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-bold text-gray-900 truncate">
                                 {team.name} vs {match.opponent}
                               </div>
                               <div className="text-xs text-gray-600">
@@ -1526,16 +1811,16 @@ function CollapsibleTeamCard({
                             </div>
                             
                             {/* Score */}
-                            <div className="text-right">
-                              <div className="text-xl font-black text-gray-900">
+                            <div className="text-right ml-2">
+                              <div className="text-lg font-black text-gray-900">
                                 {result.teamScore} - {result.opponentScore}
                               </div>
-                              <div className={`text-xs font-bold px-2 py-1 rounded ${
+                              <div className={`text-xs font-bold px-1 py-0.5 rounded ${
                                 result.result === 'W' ? 'bg-green-100 text-green-700' :
                                 result.result === 'L' ? 'bg-red-100 text-red-700' :
                                 'bg-yellow-100 text-yellow-700'
                               }`}>
-                                {result.result === 'W' ? 'WIN' : result.result === 'L' ? 'LOSS' : 'DRAW'}
+                                {result.result === 'W' ? 'W' : result.result === 'L' ? 'L' : 'D'}
                               </div>
                             </div>
                           </div>
@@ -1773,7 +2058,7 @@ function CollapsibleTeamCard({
                       <span className="text-lg">📅</span>
                       <span className="hidden sm:inline">Schedule</span>
                     </a>
-                    {/* Logout handled by main header */}
+                    <LoginButton />
                   </div>
                 </div>
               </div>

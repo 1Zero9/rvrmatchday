@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import StandardLayout from '../components/StandardLayout';
 import { supabase } from '../lib/supabase';
+import CaptchaProtection, { useCaptcha } from '../components/CaptchaProtection';
 
 interface AccountRequest {
   email: string;
@@ -23,6 +24,7 @@ export default function AccountRequest() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const { captchaToken, isVerified: isCaptchaVerified, handleVerify: handleCaptchaVerify } = useCaptcha();
   const [formData, setFormData] = useState<AccountRequest>({
     email: '',
     firstName: '',
@@ -61,6 +63,12 @@ export default function AccountRequest() {
     // Validate mandatory fields
     if (!formData.email || !formData.firstName || !formData.lastName || !formData.phone || !formData.role || formData.teamInterest.length === 0) {
       alert('Please fill in all mandatory fields (highlighted in blue)');
+      return;
+    }
+
+    // Validate CAPTCHA
+    if (!isCaptchaVerified || !captchaToken) {
+      alert('Please complete the security verification before submitting.');
       return;
     }
 
@@ -173,7 +181,7 @@ export default function AccountRequest() {
   }
 
   // Check if all mandatory fields are filled
-  const mandatoryFieldsFilled = formData.email && formData.firstName && formData.lastName && formData.phone && formData.role && formData.teamInterest.length > 0;
+  const mandatoryFieldsFilled = formData.email && formData.firstName && formData.lastName && formData.phone && formData.role && formData.teamInterest.length > 0 && isCaptchaVerified;
 
   return (
     <StandardLayout>
@@ -353,6 +361,14 @@ export default function AccountRequest() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Security Verification */}
+              <div className="pt-6 border-t border-gray-200">
+                <CaptchaProtection
+                  onVerify={handleCaptchaVerify}
+                  theme="light"
+                />
               </div>
 
               {/* Submit Button */}

@@ -6,6 +6,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Match, Team } from "../types/match-tracker";
+import CardManager from "./CardManager";
 
 interface MatchDetails {
   venue: string;
@@ -34,6 +35,7 @@ interface MatchDetailsFormProps {
   quickResult: QuickResult;
   editingMatch: Match | null;
   teams: Team[];
+  players: any[]; // Add players prop for card management
   onBack: () => void;
   onSave: () => Promise<void>;
   isFutureMatch: () => boolean;
@@ -53,6 +55,7 @@ export default function MatchDetailsForm({
   quickResult,
   editingMatch,
   teams,
+  players,
   onBack,
   onSave,
   isFutureMatch,
@@ -184,33 +187,50 @@ export default function MatchDetailsForm({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Referee Present</label>
+            {/* Debug Info */}
+            <div className="text-xs text-gray-500 mb-1">
+              Current value: {String(details.referee)} (type: {typeof details.referee})
+            </div>
             <div className="flex gap-4 mt-2">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name={`referee-${renderKey}`}
-                  checked={details.referee === true}
-                  onChange={() => {
-                    console.log('👨‍⚖️ Referee set to: true');
-                    setDetails(prev => ({ ...prev, referee: true }));
-                  }}
-                  className="mr-2"
-                />
-                Yes
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name={`referee-${renderKey}`}
-                  checked={details.referee === false}
-                  onChange={() => {
-                    console.log('👨‍⚖️ Referee set to: false');
-                    setDetails(prev => ({ ...prev, referee: false }));
-                  }}
-                  className="mr-2"
-                />
-                No
-              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  console.log('👨‍⚖️ Referee button clicked: YES');
+                  setDetails(prev => ({ ...prev, referee: true }));
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                  details.referee === true 
+                    ? 'border-green-500 bg-green-50 text-green-700' 
+                    : 'border-gray-300 bg-white text-gray-700 hover:border-green-300'
+                }`}
+              >
+                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                  details.referee === true ? 'border-green-500 bg-green-500' : 'border-gray-400'
+                }`}>
+                  {details.referee === true && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                </div>
+                <span className="font-medium">Yes</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  console.log('👨‍⚖️ Referee button clicked: NO');
+                  setDetails(prev => ({ ...prev, referee: false }));
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                  details.referee === false 
+                    ? 'border-red-500 bg-red-50 text-red-700' 
+                    : 'border-gray-300 bg-white text-gray-700 hover:border-red-300'
+                }`}
+              >
+                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                  details.referee === false ? 'border-red-500 bg-red-500' : 'border-gray-400'
+                }`}>
+                  {details.referee === false && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                </div>
+                <span className="font-medium">No</span>
+              </button>
             </div>
           </div>
         </div>
@@ -267,6 +287,23 @@ export default function MatchDetailsForm({
             placeholder="Key moments, player performances, etc."
           />
         </div>
+
+        {/* Card Management */}
+        {editingMatch?.id && !isFutureMatch() && (
+          <div>
+            <CardManager
+              matchId={editingMatch.id}
+              players={players}
+              opponentName={quickResult.awayTeamCustom || teams.find(t => t.id === quickResult.awayTeam)?.name || 'Unknown Opponent'}
+              onCardAdded={(card) => {
+                console.log('Card added:', card);
+              }}
+              onCardRemoved={(cardId) => {
+                console.log('Card removed:', cardId);
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Actions */}
@@ -293,10 +330,13 @@ export default function MatchDetailsForm({
 function WeatherSelector({ value, onChange, renderKey }: { value: string; onChange: (value: string) => void; renderKey: number }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">Weather Conditions</label>
+      <label className="block text-sm font-medium text-gray-700 mb-1">Weather Conditions</label>
       <select
         value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          console.log('🌤️ Weather selector changed from:', value, 'to:', e.target.value);
+          onChange(e.target.value);
+        }}
         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="">Select...</option>

@@ -447,15 +447,29 @@ export function SecureLogin() {
         </div>
         
         <div>
-          <p className="text-sm text-white/70 mb-3">
-            Don't have an account?
-          </p>
+          <div className="text-center mb-4">
+            <p className="text-sm text-white/80 font-medium mb-2">
+              Need access to Match Central?
+            </p>
+            <p className="text-xs text-white/60 leading-relaxed mb-3">
+              Create an account to access coaching tools, match management, and club administration features.
+            </p>
+            <div className="text-xs text-emerald-200/80 mb-4 space-y-1">
+              <div>🏃‍♂️ <span className="font-medium">Players & Parents:</span> Access MatchDay features</div>
+              <div>⚽ <span className="font-medium">Coaches & Managers:</span> Record matches & manage teams</div>
+              <div>🛠️ <span className="font-medium">Club Admin:</span> Full system access</div>
+            </div>
+          </div>
           <a
             href="/register"
-            className="inline-flex items-center gap-2 bg-blue-600/20 backdrop-blur-sm border border-blue-400/30 hover:bg-blue-600/30 text-blue-200 hover:text-blue-100 font-bold px-5 py-2.5 rounded-lg transition-all duration-300 shadow-lg hover:scale-105"
+            className="inline-flex items-center gap-3 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 text-white font-black px-6 py-3.5 rounded-xl transition-all duration-300 shadow-2xl hover:shadow-emerald-500/50 hover:scale-105 transform border-2 border-emerald-400/50 hover:border-emerald-300"
+            style={{
+              boxShadow: '0 0 30px rgba(16, 185, 129, 0.6), 0 8px 25px rgba(0, 0, 0, 0.3)',
+              textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
+            }}
           >
-            <span>👥</span>
-            <span>Register for Account</span>
+            <span className="text-xl">👤</span>
+            <span className="text-base uppercase tracking-wide">Create an Account</span>
           </a>
         </div>
         

@@ -17,7 +17,7 @@ import Footer from "./Footer";
 import Header from "./Header";
 import MobileLayout from "./MobileLayout";
 import RoleIndicator from "./RoleIndicator";
-import LoginButton from "./LoginButton";
+import HeaderLoginButton from "./HeaderLoginButton";
 
 interface StandardLayoutProps {
   children: ReactNode;
@@ -230,7 +230,7 @@ export default function StandardLayout({ children, title, currentPage }: Standar
             {/* Right side actions */}
             <div className="flex items-center space-x-3 ml-auto flex-shrink-0">
               {/* Smart Login/Admin Button */}
-              <LoginButton />
+              <HeaderLoginButton />
               
               {/* Mobile Menu Button - For tablet size only */}
               <button 

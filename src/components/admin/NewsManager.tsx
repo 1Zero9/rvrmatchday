@@ -289,12 +289,36 @@ export default function NewsManager() {
   };
 
   const handleDelete = async (articleId: string) => {
-    const deleteAction = async () => {
+    // Find the article to get its details for undo
+    const articleToDelete = articles.find(a => a.id === articleId);
+    if (!articleToDelete) {
+      setError('Article not found');
+      return;
+    }
+
+    // Use standardized admin actions if available
+    const adminActions = (window as any).adminActions;
+    
+    if (adminActions && adminActions.addUndoableNotification) {
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete "${articleToDelete.title}"?\n\n` +
+        `This will:\n• Remove the article permanently\n• Can be undone within 10 seconds\n\n` +
+        `Click OK to confirm deletion.`
+      );
+
+      if (!confirmDelete) return;
+
       try {
-      // Check if it's a demo article
-      if (articleId.startsWith('demo-')) {
+        // Check if it's a demo article
+        if (articleId.startsWith('demo-')) {
           // Remove from local demo articles
           setArticles(prevArticles => prevArticles.filter(article => article.id !== articleId));
+          
+          // Show success notification (demo articles can't really be restored)
+          adminActions.addNotification({
+            type: 'success',
+            message: `📰 Demo article "${articleToDelete.title}" removed`
+          });
           return;
         }
 
@@ -302,21 +326,68 @@ export default function NewsManager() {
           .from('news_articles')
           .delete()
           .eq('id', articleId);
-
+          
         if (error) throw error;
         
         await fetchArticles();
+        
+        // Show undoable notification
+        const undoAction = {
+          type: 'delete_article' as const,
+          data: articleToDelete,
+          table: 'news_articles',
+          description: `Restored article "${articleToDelete.title}"`
+        };
+        
+        adminActions.addUndoableNotification(
+          `🗑️ Article "${articleToDelete.title}" has been deleted`,
+          undoAction,
+          10000 // 10 seconds to undo
+        );
+        
       } catch (err) {
         console.error('Error deleting article:', err);
-        setError('Failed to delete article');
+        const message = `Failed to delete article: ${(err as Error).message}`;
+        if (adminActions.addNotification) {
+          adminActions.addNotification({
+            type: 'error',
+            message
+          });
+        } else {
+          setError(message);
+        }
       }
-    };
+    } else {
+      // Fallback to original confirmation system
+      const deleteAction = async () => {
+        try {
+        // Check if it's a demo article
+        if (articleId.startsWith('demo-')) {
+            // Remove from local demo articles
+            setArticles(prevArticles => prevArticles.filter(article => article.id !== articleId));
+            return;
+          }
 
-    showConfirmDialog(
-      '🗑️ Delete Article',
-      'Are you sure you want to delete this article? This action cannot be undone.',
-      deleteAction
-    );
+          const { error } = await supabase
+            .from('news_articles')
+            .delete()
+            .eq('id', articleId);
+
+          if (error) throw error;
+          
+          await fetchArticles();
+        } catch (err) {
+          console.error('Error deleting article:', err);
+          setError('Failed to delete article');
+        }
+      };
+
+      showConfirmDialog(
+        '🗑️ Delete Article',
+        'Are you sure you want to delete this article? This action cannot be undone.',
+        deleteAction
+      );
+    }
   };
 
   const toggleStatus = async (article: NewsArticle, newStatus: string) => {

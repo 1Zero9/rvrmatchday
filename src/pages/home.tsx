@@ -11,8 +11,20 @@ import { useAuth } from "../components/SecureAuth";
 import { useHomepageData, formatMatchDate, formatMatchTime } from "../hooks/useHomepageData";
 import { useStatsData, formatStatNumber } from "../hooks/useStatsData";
 import { useTeamsShowcaseData } from "../hooks/useTeamsShowcaseData";
-export default function StandardHomepage() {
-  const { isAdmin, user } = useAuth();
+import MaintenanceWrapper from "../components/MaintenanceWrapper";
+
+function StandardHomepage() {
+  // Auth context - safely handle if not available
+  let isAdmin = false;
+  let user = null;
+  
+  try {
+    const authContext = useAuth();
+    isAdmin = authContext.isAdmin;
+    user = authContext.user;
+  } catch (error) {
+    // AuthProvider not available, continue with fallback values
+  }
   const [showVideo, setShowVideo] = useState(true);
   const [videoEnded, setVideoEnded] = useState(false);
   const [showFloatingScroll, setShowFloatingScroll] = useState(false);
@@ -95,32 +107,55 @@ export default function StandardHomepage() {
         {/* Hero Section - Authentic Community Feel */}
         <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
           
-          {/* Top Left Admin Area - Only for Logged-in Admins */}
-          {isAdmin && user && (
+          {/* Top Left Quick Access Area - For Authenticated Users */}
+          {user && (
             <div className="fixed top-6 left-6 z-50 flex flex-col space-y-4">
-              {/* Bright Tools CTA */}
+              {/* Match Central CTA */}
               <motion.div
                 initial={{ opacity: 0, x: -100, y: -50 }}
                 animate={{ opacity: 1, x: 0, y: 0 }}
-                transition={{ duration: 1, delay: 0.5 }}
+                transition={{ duration: 1, delay: 0.3 }}
               >
                 <Link 
-                  href="/admin" 
-                  className="text-black hover:text-gray-800 text-sm flex items-center space-x-2 bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 hover:from-yellow-400 hover:via-yellow-500 hover:to-yellow-600 px-5 py-3 rounded-full shadow-2xl border-2 border-yellow-600 hover:border-yellow-700 hover:shadow-2xl transition-all animate-pulse font-bold"
-                  title="Admin Tools & Diagnostics"
+                  href="/match-central-secure" 
+                  className="text-white hover:text-gray-200 text-sm flex items-center space-x-2 bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:via-green-700 hover:to-emerald-700 px-5 py-3 rounded-full shadow-2xl border-2 border-green-700 hover:border-green-800 hover:shadow-2xl transition-all font-bold"
+                  title="Match Central - Fixtures, Results & Management"
                   style={{
-                    boxShadow: '0 0 25px rgba(255, 235, 59, 0.8), 0 6px 20px rgba(0, 0, 0, 0.4)'
+                    boxShadow: '0 0 25px rgba(34, 197, 94, 0.8), 0 6px 20px rgba(0, 0, 0, 0.4)'
                   }}
                 >
-                  <span className="animate-bounce text-xl">🛠️</span>
-                  <span className="font-black uppercase tracking-wide text-base">ADMIN TOOLS</span>
+                  <span className="text-xl">⚽</span>
+                  <span className="font-black uppercase tracking-wide text-base">MATCH CENTRAL</span>
                 </Link>
               </motion.div>
 
+              {/* Admin Tools - Only for Admins */}
+              {isAdmin && (
+                <motion.div
+                  initial={{ opacity: 0, x: -100, y: -50 }}
+                  animate={{ opacity: 1, x: 0, y: 0 }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                >
+                  <Link 
+                    href="/admin" 
+                    className="text-black hover:text-gray-800 text-sm flex items-center space-x-2 bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 hover:from-yellow-400 hover:via-yellow-500 hover:to-yellow-600 px-5 py-3 rounded-full shadow-2xl border-2 border-yellow-600 hover:border-yellow-700 hover:shadow-2xl transition-all animate-pulse font-bold"
+                    title="Admin Tools & Diagnostics"
+                    style={{
+                      boxShadow: '0 0 25px rgba(255, 235, 59, 0.8), 0 6px 20px rgba(0, 0, 0, 0.4)'
+                    }}
+                  >
+                    <span className="animate-bounce text-xl">🛠️</span>
+                    <span className="font-black uppercase tracking-wide text-base">ADMIN TOOLS</span>
+                  </Link>
+                </motion.div>
+              )}
+
               {/* Admin Notification Popup - Repositioned */}
-              <div className="relative">
-                <AdminNotificationPopup />
-              </div>
+              {isAdmin && (
+                <div className="relative">
+                  <AdminNotificationPopup />
+                </div>
+              )}
             </div>
           )}
 
@@ -144,7 +179,7 @@ export default function StandardHomepage() {
                   transform: 'translateZ(0)'
                 }}
               >
-                <source src="/images/hero/rvr-drone-4b.mp4" type="video/mp4" />
+                <source src="/images/hero/rvr-drone-6.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </motion.video>
             )}
@@ -1126,5 +1161,14 @@ export default function StandardHomepage() {
       )}
 
     </>
+  );
+}
+
+// Export with maintenance wrapper
+export default function HomePage() {
+  return (
+    <MaintenanceWrapper pagePath="/home" fallbackTitle="Home Page">
+      <StandardHomepage />
+    </MaintenanceWrapper>
   );
 }

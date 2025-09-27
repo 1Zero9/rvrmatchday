@@ -16,8 +16,9 @@ import { GlassCard, GlassActionCard } from '../components/Glass';
 import MobileLayout from '../components/MobileLayout';
 import MobileAboutPro from '../components/mobile/MobileAboutPro';
 import InlineEditor from '../components/InlineEditor';
+import MaintenanceWrapper from '../components/MaintenanceWrapper';
 
-export default function About() {
+function About() {
   const quickActions = [
     {
       icon: "🏛️",
@@ -176,5 +177,14 @@ Be part of Dublin's most welcoming football community. All ages and abilities we
         </GlassPageTemplate>
       </div>
     </div>
+  );
+}
+
+// Export with maintenance wrapper
+export default function AboutPage() {
+  return (
+    <MaintenanceWrapper pagePath="/about" fallbackTitle="About Us">
+      <About />
+    </MaintenanceWrapper>
   );
 }

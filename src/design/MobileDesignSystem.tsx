@@ -8,6 +8,7 @@
 
 import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import HeaderLoginButton from '../components/HeaderLoginButton';
 
 // ==========================================
 // 🎯 DESIGN TOKENS
@@ -281,11 +282,15 @@ export function MobileHeader({ logo, clubName, onMenuToggle, isMenuOpen }: Mobil
           </div>
         </a>
         
-        <button
-          onClick={onMenuToggle}
-          className="p-2 rounded-lg hover:bg-white/10 transition-all duration-200 backdrop-blur-sm"
-          aria-label="Toggle menu"
-        >
+        <div className="flex items-center space-x-2">
+          <div className="scale-75">
+            <HeaderLoginButton />
+          </div>
+          <button
+            onClick={onMenuToggle}
+            className="p-2 rounded-lg hover:bg-white/10 transition-all duration-200 backdrop-blur-sm"
+            aria-label="Toggle menu"
+          >
           <div className="w-5 h-5 flex flex-col justify-center items-center">
             <motion.span
               animate={isMenuOpen ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }}
@@ -301,6 +306,7 @@ export function MobileHeader({ logo, clubName, onMenuToggle, isMenuOpen }: Mobil
             />
           </div>
         </button>
+        </div>
       </div>
     </header>
   );

@@ -29,7 +29,7 @@ interface UserAccount {
   email: string;
   full_name: string;
   username: string;
-  role: 'admin' | 'editor' | 'coach' | 'parent';
+  role: 'admin' | 'parent';
   teams: string[];
   permissions: string[];
   is_active: boolean;
@@ -80,7 +80,7 @@ export default function UnifiedAccountManagement() {
     email: '',
     full_name: '',
     username: '',
-    role: 'parent' as 'admin' | 'editor' | 'coach' | 'parent',
+    role: 'parent' as 'admin' | 'parent',
     is_active: true
   });
   const { user: currentUser } = useAuth();
@@ -311,38 +311,108 @@ export default function UnifiedAccountManagement() {
   const handleDeleteUser = async (userId: string, userName: string) => {
     if (!currentUser) return;
 
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete user "${userName}"?\n\nThis will:\n- Deactivate their account\n- Remove their access\n- Log the deletion for audit purposes\n\nThis action cannot be undone.`
-    );
+    // First, get the user data for undo functionality
+    const userToDelete = users.find(u => u.id === userId);
+    if (!userToDelete) {
+      alert('User not found');
+      return;
+    }
 
-    if (!confirmDelete) return;
+    // Use the standardized admin deletion confirmation from MasterAdminLayout
+    const adminActions = (window as any).adminActions;
+    
+    if (adminActions && adminActions.addUndoableNotification) {
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete user "${userName}"?\n\n` +
+        `This will:\n• Remove the user account\n• Log the deletion for audit purposes\n• Can be undone within 10 seconds\n\n` +
+        `Click OK to confirm deletion.`
+      );
 
-    setProcessing(true);
-    try {
-      const response = await fetch('/api/admin/delete-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          adminUserId: currentUser.id,
-          reason: 'Admin initiated deletion'
-        })
-      });
+      if (!confirmDelete) return;
 
-      const result = await response.json();
+      setProcessing(true);
+      try {
+        const response = await fetch('/api/admin/delete-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            adminUserId: currentUser.id,
+            reason: 'Admin initiated deletion'
+          })
+        });
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to delete user');
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to delete user');
+        }
+
+        await loadData();
+        setSelectedUser(null);
+        
+        // Show undoable notification
+        const undoAction = {
+          type: 'delete_user' as const,
+          data: userToDelete, // Store the complete user object for restoration
+          table: 'tracker_users',
+          description: `Restored user "${userName}"`
+        };
+        
+        adminActions.addUndoableNotification(
+          `🗑️ User "${userName}" has been deleted`,
+          undoAction,
+          10000 // 10 seconds to undo
+        );
+        
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        if (adminActions.addNotification) {
+          adminActions.addNotification({
+            type: 'error',
+            message: `Failed to delete user: ${(error as Error).message}`
+          });
+        } else {
+          alert('Error: ' + (error as Error).message);
+        }
+      } finally {
+        setProcessing(false);
       }
+    } else {
+      // Fallback to original confirmation if MasterAdminLayout functions not available
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete user "${userName}"?\n\nThis will:\n- Deactivate their account\n- Remove their access\n- Log the deletion for audit purposes\n\nThis action cannot be undone.`
+      );
 
-      await loadData();
-      setSelectedUser(null);
-      alert('User deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      alert('Error: ' + (error as Error).message);
-    } finally {
-      setProcessing(false);
+      if (!confirmDelete) return;
+
+      setProcessing(true);
+      try {
+        const response = await fetch('/api/admin/delete-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            adminUserId: currentUser.id,
+            reason: 'Admin initiated deletion'
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to delete user');
+        }
+
+        await loadData();
+        setSelectedUser(null);
+        alert('User deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Error: ' + (error as Error).message);
+      } finally {
+        setProcessing(false);
+      }
     }
   };
 
@@ -703,8 +773,6 @@ export default function UnifiedAccountManagement() {
             >
               <option value="all">All Roles</option>
               <option value="admin">Administrators</option>
-              <option value="editor">Editors</option>
-              <option value="coach">Coaches</option>
               <option value="parent">Parents</option>
             </select>
 
@@ -983,8 +1051,6 @@ export default function UnifiedAccountManagement() {
                         onChange={(e) => setSelectedUser({...selectedUser, role: e.target.value as any})}
                       >
                         <option value="admin">Admin</option>
-                        <option value="editor">Editor</option>
-                        <option value="coach">Coach</option>
                         <option value="parent">Parent</option>
                       </select>
                     </div>
@@ -1169,10 +1235,11 @@ export default function UnifiedAccountManagement() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   >
                     <option value="parent">Parent</option>
-                    <option value="coach">Coach</option>
-                    <option value="editor">Editor</option>
                     <option value="admin">Administrator</option>
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Only showing verified working roles. More roles can be added after constraint testing.
+                  </p>
                 </div>
 
                 <div className="md:col-span-2">

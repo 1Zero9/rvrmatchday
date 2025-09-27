@@ -137,54 +137,6 @@ function WelcomeContent() {
       color: 'from-blue-500 to-indigo-600',
       href: '/admin',
       roles: ['admin']
-    },
-    {
-      title: 'Match Recorder',
-      description: 'Record live match events',
-      icon: '📝',
-      color: 'from-orange-500 to-red-600',
-      href: '/match-recorder',
-      roles: ['admin', 'coach', 'manager']
-    },
-    {
-      title: 'Team Management',
-      description: 'Manage your team roster',
-      icon: '👥',
-      color: 'from-teal-500 to-cyan-600',
-      href: '/match-admin',
-      roles: ['coach', 'manager']
-    },
-    {
-      title: 'Reports & Stats',
-      description: 'View team performance',
-      icon: '📊',
-      color: 'from-indigo-500 to-purple-600',
-      href: '/tracker',
-      roles: ['admin', 'coach', 'manager']
-    },
-    {
-      title: 'User Management',
-      description: 'Enterprise user administration dashboard',
-      icon: '👥',
-      color: 'from-purple-500 to-pink-600',
-      href: '/user-management',
-      roles: ['admin']
-    },
-    {
-      title: 'Site Tools',
-      description: 'Database, backups & system tools',
-      icon: '🔧',
-      color: 'from-gray-500 to-slate-600',
-      href: '/admin#site-tools',
-      roles: ['admin']
-    },
-    {
-      title: 'Content Editor',
-      description: 'Edit website content & news',
-      icon: '✏️',
-      color: 'from-yellow-500 to-amber-600',
-      href: '/admin#content-editor',
-      roles: ['admin', 'editor']
     }
   ];
 

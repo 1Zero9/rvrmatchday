@@ -234,20 +234,68 @@ export default function SpecialEventsManager() {
   };
 
   const handleDelete = async (eventId: string) => {
-    if (!confirm('Are you sure you want to delete this event?')) return;
+    const eventToDelete = events.find(e => e.id === eventId);
+    if (!eventToDelete) return;
     
-    try {
-      const { error } = await supabase
-        .from('special_events')
-        .delete()
-        .eq('id', eventId);
-
-      if (error) throw error;
+    const adminActions = (window as any).adminActions;
+    
+    if (adminActions && adminActions.addUndoableNotification) {
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete "${eventToDelete.title}"?\n\n` +
+        `This will:\n• Remove the event permanently\n• Can be undone within 10 seconds\n\n` +
+        `Event Type: ${eventToDelete.event_type}\n` +
+        `Date: ${new Date(eventToDelete.date).toLocaleDateString()}`
+      );
       
-      await fetchEvents();
-    } catch (err) {
-      console.error('Error deleting event:', err);
-      setError('Failed to delete event');
+      if (!confirmDelete) return;
+      
+      try {
+        const { error } = await supabase
+          .from('special_events')
+          .delete()
+          .eq('id', eventId);
+
+        if (error) throw error;
+        
+        // Remove from local state immediately for responsive UI
+        setEvents(prev => prev.filter(e => e.id !== eventId));
+        
+        // Create undo action
+        const undoAction = {
+          type: 'delete_event' as const,
+          data: eventToDelete,
+          table: 'special_events',
+          description: `Restored event "${eventToDelete.title}"`
+        };
+        
+        // Add to unified undo system
+        adminActions.addUndoableNotification(
+          `🗑️ Event "${eventToDelete.title}" has been deleted`,
+          undoAction,
+          10000
+        );
+        
+      } catch (err) {
+        console.error('Error deleting event:', err);
+        setError('Failed to delete event');
+      }
+    } else {
+      // Fallback to simple confirmation if admin actions not available
+      if (!confirm('Are you sure you want to delete this event?')) return;
+      
+      try {
+        const { error } = await supabase
+          .from('special_events')
+          .delete()
+          .eq('id', eventId);
+
+        if (error) throw error;
+        
+        await fetchEvents();
+      } catch (err) {
+        console.error('Error deleting event:', err);
+        setError('Failed to delete event');
+      }
     }
   };
 

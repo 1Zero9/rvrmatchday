@@ -35,21 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const existingRoles = [...new Set(users?.map(u => u.role) || [])];
 
-    // Try to get the check constraint definition
-    const { data: constraints, error: constraintError } = await supabaseAdmin
-      .rpc('sql', {
-        query: `
-          SELECT 
-            conname as constraint_name,
-            pg_get_constraintdef(c.oid) as definition
-          FROM pg_constraint c
-          JOIN pg_class t ON c.conrelid = t.oid
-          JOIN pg_namespace n ON t.relnamespace = n.oid
-          WHERE t.relname = 'tracker_users' 
-          AND contype = 'c'
-          AND conname LIKE '%role%';
-        `
-      });
+    // Skip constraint definition query for now - focus on role testing
 
     // Test each role by trying to create a test record (will rollback)
     const testRoles = ['admin', 'editor', 'coach', 'parent', 'manager', 'volunteer', 'user', 'member'];
@@ -91,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       success: true,
       existingRoles: existingRoles,
       roleTestResults: roleTestResults,
-      constraintInfo: constraints || 'Could not retrieve constraint info',
+      constraintInfo: 'Role validation through direct testing',
       recommendation: 'Use roles that show ACCEPTED in the test results'
     });
 
