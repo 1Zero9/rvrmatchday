@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../SecureAuth';
+import { AdminEventLogger, ACTIONS, EVENT_TYPES } from '../../lib/adminEventLoggerClient';
 
 interface PageStatus {
   id: string;
@@ -209,6 +210,30 @@ export default function PageMaintenanceManager() {
         await fetchPageStatuses();
       }
 
+      // Log the page maintenance operation
+      if (user?.id) {
+        await AdminEventLogger.logEvent({
+          adminUserId: user.id,
+          eventType: EVENT_TYPES.MAINTENANCE,
+          action: isEnabled ? 'enable_page' : 'disable_page',
+          targetType: 'page',
+          targetId: page.id,
+          targetIdentifier: page.title,
+          description: `${isEnabled ? 'Enabled' : 'Disabled'} page "${page.title}" for maintenance`,
+          details: {
+            page_path: page.path,
+            page_section: page.section,
+            page_priority: page.priority,
+            maintenance_reason: reason || null,
+            previous_status: page.is_enabled,
+            new_status: isEnabled,
+            action_type: isEnabled ? 'page_enabled' : 'page_disabled',
+            undo_available: true
+          },
+          status: 'success'
+        });
+      }
+
       // Add to unified undo system if available
       const adminActions = (window as any).adminActions;
       if (adminActions && adminActions.addUndoableNotification) {
@@ -229,6 +254,27 @@ export default function PageMaintenanceManager() {
     } catch (err) {
       console.error('Error updating page status:', err);
       setError('Failed to update page status');
+      
+      // Log the error
+      if (user?.id) {
+        await AdminEventLogger.logEvent({
+          adminUserId: user.id,
+          eventType: EVENT_TYPES.MAINTENANCE,
+          action: isEnabled ? 'enable_page' : 'disable_page',
+          targetType: 'page',
+          targetId: page.id,
+          targetIdentifier: page.title,
+          description: `Failed to ${isEnabled ? 'enable' : 'disable'} page "${page.title}"`,
+          details: {
+            page_path: page.path,
+            attempted_status: isEnabled,
+            maintenance_reason: reason || null,
+            error: (err as Error).message
+          },
+          status: 'failed',
+          errorMessage: (err as Error).message
+        });
+      }
     }
   };
 
@@ -287,6 +333,31 @@ export default function PageMaintenanceManager() {
       
       await Promise.all(promises);
       
+      // Log the bulk operation
+      if (user?.id) {
+        await AdminEventLogger.logEvent({
+          adminUserId: user.id,
+          eventType: EVENT_TYPES.MAINTENANCE,
+          action: bulkAction === 'enable' ? 'bulk_enable_pages' : 'bulk_disable_pages',
+          targetType: 'page',
+          targetIdentifier: `${selectedPagesList.length} pages`,
+          description: `Bulk ${bulkAction === 'enable' ? 'enabled' : 'disabled'} ${selectedPagesList.length} pages`,
+          details: {
+            bulk_action: bulkAction,
+            pages_affected: selectedPagesList.map(page => ({
+              id: page.id,
+              title: page.title,
+              path: page.path,
+              section: page.section
+            })),
+            total_pages: selectedPagesList.length,
+            bulk_reason: bulkAction === 'disable' ? bulkReason : null,
+            operation_type: 'bulk_maintenance_operation'
+          },
+          status: 'success'
+        });
+      }
+      
       // Clear selection and close modal
       setSelectedPages(new Set());
       setShowBulkModal(false);
@@ -298,6 +369,30 @@ export default function PageMaintenanceManager() {
     } catch (error) {
       console.error('Error executing bulk action:', error);
       setError('Failed to execute bulk operation');
+      
+      // Log the bulk operation error
+      if (user?.id) {
+        await AdminEventLogger.logEvent({
+          adminUserId: user.id,
+          eventType: EVENT_TYPES.MAINTENANCE,
+          action: bulkAction === 'enable' ? 'bulk_enable_pages' : 'bulk_disable_pages',
+          targetType: 'page',
+          targetIdentifier: `${selectedPagesList.length} pages`,
+          description: `Failed to bulk ${bulkAction} ${selectedPagesList.length} pages`,
+          details: {
+            bulk_action: bulkAction,
+            attempted_pages: selectedPagesList.map(page => ({
+              id: page.id,
+              title: page.title,
+              path: page.path
+            })),
+            total_pages: selectedPagesList.length,
+            error: (error as Error).message
+          },
+          status: 'failed',
+          errorMessage: (error as Error).message
+        });
+      }
     }
   };
 

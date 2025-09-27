@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../SecureAuth';
+import { AdminEventLogger, ACTIONS, EVENT_TYPES } from '../../lib/adminEventLoggerClient';
 
 interface SpecialEvent {
   id: string;
@@ -202,6 +203,63 @@ export default function SpecialEventsManager() {
         throw result.error;
       }
 
+      // Log the event operation
+      if (user?.id) {
+        if (editingEvent) {
+          // Log update operation
+          await AdminEventLogger.logContentEvent(
+            user.id,
+            ACTIONS.UPDATE_CONTENT,
+            editingEvent.id,
+            formData.title || 'Untitled Event',
+            {
+              event_type: formData.event_type,
+              action_performed: 'update_special_event',
+              previous_data: {
+                title: editingEvent.title,
+                event_type: editingEvent.event_type,
+                priority: editingEvent.priority,
+                is_active: editingEvent.is_active,
+                featured: editingEvent.featured
+              },
+              updated_data: {
+                title: formData.title,
+                event_type: formData.event_type,
+                priority: formData.priority,
+                is_active: formData.is_active,
+                featured: formData.featured
+              },
+              changed_fields: Object.keys(formData).filter(
+                key => editingEvent[key as keyof SpecialEvent] !== formData[key as keyof SpecialEvent]
+              )
+            },
+            'success'
+          );
+        } else {
+          // Log create operation
+          await AdminEventLogger.logContentEvent(
+            user.id,
+            ACTIONS.CREATE_CONTENT,
+            result.data?.[0]?.id,
+            formData.title || 'Untitled Event',
+            {
+              event_type: formData.event_type,
+              action_performed: 'create_special_event',
+              event_data: {
+                title: formData.title,
+                event_type: formData.event_type,
+                priority: formData.priority,
+                is_active: formData.is_active,
+                featured: formData.featured,
+                date: formData.date,
+                venue: formData.venue
+              }
+            },
+            'success'
+          );
+        }
+      }
+
       // Reset form and refresh events
       setFormData({
         title: '',
@@ -222,6 +280,23 @@ export default function SpecialEventsManager() {
     } catch (err) {
       console.error('Error saving event:', err);
       setError('Failed to save event. Check if the special_events table exists.');
+      
+      // Log the error
+      if (user?.id) {
+        await AdminEventLogger.logContentEvent(
+          user.id,
+          editingEvent ? ACTIONS.UPDATE_CONTENT : ACTIONS.CREATE_CONTENT,
+          editingEvent?.id,
+          formData.title || 'Untitled Event',
+          {
+            action_performed: editingEvent ? 'update_special_event' : 'create_special_event',
+            error: (err as Error).message,
+            form_data: formData
+          },
+          'failed',
+          (err as Error).message
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -257,6 +332,31 @@ export default function SpecialEventsManager() {
 
         if (error) throw error;
         
+        // Log the delete operation
+        if (user?.id) {
+          await AdminEventLogger.logContentEvent(
+            user.id,
+            ACTIONS.DELETE_CONTENT,
+            eventId,
+            eventToDelete.title,
+            {
+              action_performed: 'delete_special_event',
+              deleted_event: {
+                title: eventToDelete.title,
+                event_type: eventToDelete.event_type,
+                priority: eventToDelete.priority,
+                date: eventToDelete.date,
+                venue: eventToDelete.venue,
+                is_active: eventToDelete.is_active,
+                featured: eventToDelete.featured
+              },
+              deletion_type: 'soft_delete_with_undo',
+              undo_available: true
+            },
+            'success'
+          );
+        }
+        
         // Remove from local state immediately for responsive UI
         setEvents(prev => prev.filter(e => e.id !== eventId));
         
@@ -278,6 +378,27 @@ export default function SpecialEventsManager() {
       } catch (err) {
         console.error('Error deleting event:', err);
         setError('Failed to delete event');
+        
+        // Log the delete error
+        if (user?.id) {
+          await AdminEventLogger.logContentEvent(
+            user.id,
+            ACTIONS.DELETE_CONTENT,
+            eventId,
+            eventToDelete.title,
+            {
+              action_performed: 'delete_special_event',
+              error: (err as Error).message,
+              attempted_deletion: {
+                event_id: eventId,
+                event_title: eventToDelete.title,
+                event_type: eventToDelete.event_type
+              }
+            },
+            'failed',
+            (err as Error).message
+          );
+        }
       }
     } else {
       // Fallback to simple confirmation if admin actions not available
@@ -291,27 +412,113 @@ export default function SpecialEventsManager() {
 
         if (error) throw error;
         
+        // Log the fallback delete operation
+        if (user?.id) {
+          await AdminEventLogger.logContentEvent(
+            user.id,
+            ACTIONS.DELETE_CONTENT,
+            eventId,
+            eventToDelete.title,
+            {
+              action_performed: 'delete_special_event_fallback',
+              deleted_event: {
+                title: eventToDelete.title,
+                event_type: eventToDelete.event_type,
+                priority: eventToDelete.priority
+              },
+              deletion_type: 'permanent_delete',
+              undo_available: false
+            },
+            'success'
+          );
+        }
+        
         await fetchEvents();
       } catch (err) {
         console.error('Error deleting event:', err);
         setError('Failed to delete event');
+        
+        // Log the fallback delete error
+        if (user?.id) {
+          await AdminEventLogger.logContentEvent(
+            user.id,
+            ACTIONS.DELETE_CONTENT,
+            eventId,
+            eventToDelete.title,
+            {
+              action_performed: 'delete_special_event_fallback',
+              error: (err as Error).message,
+              attempted_deletion: {
+                event_id: eventId,
+                event_title: eventToDelete.title
+              }
+            },
+            'failed',
+            (err as Error).message
+          );
+        }
       }
     }
   };
 
   const toggleActive = async (event: SpecialEvent) => {
     try {
+      const newActiveStatus = !event.is_active;
       const { error } = await supabase
         .from('special_events')
-        .update({ is_active: !event.is_active })
+        .update({ is_active: newActiveStatus })
         .eq('id', event.id);
 
       if (error) throw error;
+      
+      // Log the toggle operation
+      if (user?.id) {
+        await AdminEventLogger.logContentEvent(
+          user.id,
+          ACTIONS.UPDATE_CONTENT,
+          event.id,
+          event.title,
+          {
+            action_performed: 'toggle_special_event_status',
+            previous_status: event.is_active,
+            new_status: newActiveStatus,
+            action_type: newActiveStatus ? 'activate_event' : 'deactivate_event',
+            event_details: {
+              title: event.title,
+              event_type: event.event_type,
+              date: event.date
+            }
+          },
+          'success'
+        );
+      }
       
       await fetchEvents();
     } catch (err) {
       console.error('Error updating event:', err);
       setError('Failed to update event');
+      
+      // Log the toggle error
+      if (user?.id) {
+        await AdminEventLogger.logContentEvent(
+          user.id,
+          ACTIONS.UPDATE_CONTENT,
+          event.id,
+          event.title,
+          {
+            action_performed: 'toggle_special_event_status',
+            attempted_status: !event.is_active,
+            error: (err as Error).message,
+            event_details: {
+              title: event.title,
+              event_type: event.event_type,
+              current_status: event.is_active
+            }
+          },
+          'failed',
+          (err as Error).message
+        );
+      }
     }
   };
 

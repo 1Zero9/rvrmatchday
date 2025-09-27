@@ -2007,16 +2007,16 @@ function CollapsibleTeamCard({
                       const colors: any = {
                         green: isActive 
                           ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-xl border-green-500 transform scale-105 ring-4 ring-green-200 font-bold' 
-                          : 'bg-gray-50 hover:bg-gray-100 text-gray-400 border border-gray-200 shadow-none hover:text-gray-600 hover:shadow-sm',
+                          : 'bg-white hover:bg-green-50 text-gray-700 border border-gray-300 shadow-lg hover:text-green-600 hover:shadow-xl hover:border-green-300',
                         blue: isActive 
                           ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl border-blue-500 transform scale-105 ring-4 ring-blue-200 font-bold' 
-                          : 'bg-gray-50 hover:bg-gray-100 text-gray-400 border border-gray-200 shadow-none hover:text-gray-600 hover:shadow-sm',
+                          : 'bg-white hover:bg-blue-50 text-gray-700 border border-gray-300 shadow-lg hover:text-blue-600 hover:shadow-xl hover:border-blue-300',
                         orange: isActive 
                           ? 'bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-xl border-orange-500 transform scale-105 ring-4 ring-orange-200 font-bold' 
-                          : 'bg-gray-50 hover:bg-gray-100 text-gray-400 border border-gray-200 shadow-none hover:text-gray-600 hover:shadow-sm',
+                          : 'bg-white hover:bg-orange-50 text-gray-700 border border-gray-300 shadow-lg hover:text-orange-600 hover:shadow-xl hover:border-orange-300',
                         purple: isActive 
                           ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-xl border-purple-500 transform scale-105 ring-4 ring-purple-200 font-bold' 
-                          : 'bg-gray-50 hover:bg-gray-100 text-gray-400 border border-gray-200 shadow-none hover:text-gray-600 hover:shadow-sm'
+                          : 'bg-white hover:bg-purple-50 text-gray-700 border border-gray-300 shadow-lg hover:text-purple-600 hover:shadow-xl hover:border-purple-300'
                       };
                       return colors[color] || colors.green;
                     };

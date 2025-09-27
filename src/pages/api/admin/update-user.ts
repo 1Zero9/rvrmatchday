@@ -6,6 +6,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
+import { AdminEventLogger, ACTIONS } from '../../../lib/adminEventLogger';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -90,33 +91,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Failed to update user: ' + updateError.message });
     }
 
-    // Log the update event (optional - may not have audit table yet)
+    // Log the update event using comprehensive logging system
     const changedFields = Object.keys(updates).filter(key => 
       updates[key as keyof typeof updates] !== existingUser[key]
     );
 
     if (changedFields.length > 0) {
-      try {
-        await supabaseAdmin
-          .from('admin_audit_log')
-          .insert([{
-            admin_user_id: adminUserId,
-            action: 'update_user',
-            target_user_id: userId,
-            details: {
-              changed_fields: changedFields,
-              old_values: Object.fromEntries(
-                changedFields.map(field => [field, existingUser[field]])
-              ),
-              new_values: Object.fromEntries(
-                changedFields.map(field => [field, updates[field as keyof typeof updates]])
-              )
-            },
-            timestamp: new Date().toISOString()
-          }]);
-      } catch (auditError) {
-        console.log('Audit logging failed (table may not exist):', auditError);
-      }
+      await AdminEventLogger.logUserEvent(
+        adminUserId,
+        ACTIONS.UPDATE_USER,
+        userId,
+        updatedUser.full_name || updatedUser.username,
+        {
+          changed_fields: changedFields,
+          old_values: Object.fromEntries(
+            changedFields.map(field => [field, existingUser[field]])
+          ),
+          new_values: Object.fromEntries(
+            changedFields.map(field => [field, updates[field as keyof typeof updates]])
+          ),
+          total_changes: changedFields.length
+        },
+        'success'
+      );
     }
 
     res.status(200).json({

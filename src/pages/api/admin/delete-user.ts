@@ -6,6 +6,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
+import { AdminEventLogger, ACTIONS } from '../../../lib/adminEventLogger';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -80,29 +81,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Continue anyway - the profile is deactivated
     }
 
-    // Log the deletion event
-    try {
-      await supabaseAdmin
-        .from('user_management_log')
-        .insert([{
-          admin_user_id: adminUserId,
-          target_user_id: userId,
-          action: 'delete_user',
-          details: {
-            deleted_user: {
-              email: existingUser.email,
-              full_name: existingUser.full_name,
-              username: existingUser.username,
-              role: existingUser.role
-            },
-            reason: reason || 'No reason provided',
-            timestamp: deleteTimestamp
-          },
-          created_at: deleteTimestamp
-        }]);
-    } catch (logError) {
-      console.log('Event logging failed (table may not exist):', logError);
-    }
+    // Log the deletion event using comprehensive logging system
+    await AdminEventLogger.logUserEvent(
+      adminUserId,
+      ACTIONS.DELETE_USER,
+      userId,
+      existingUser.full_name || existingUser.username,
+      {
+        deleted_user: {
+          email: existingUser.email,
+          full_name: existingUser.full_name,
+          username: existingUser.username,
+          role: existingUser.role
+        },
+        reason: reason || 'No reason provided',
+        deletion_type: 'soft_delete',
+        auth_account_disabled: true
+      },
+      'success'
+    );
 
     res.status(200).json({
       message: 'User deleted successfully',

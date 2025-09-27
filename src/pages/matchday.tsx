@@ -558,16 +558,20 @@ export default function MatchDay() {
                 </button>
               </nav>
 
-              {/* Right side - Filters */}
-              <div className="flex items-center space-x-3">
-                <label className="text-sm font-medium text-gray-700 hidden sm:block">Filter:</label>
+              {/* Right side - Filters (Optimized single row layout) */}
+              <div className="flex items-center space-x-4">
+                <label className="text-sm font-medium text-gray-700 hidden lg:block">Filters:</label>
+                
+                {/* Team Filter */}
                 <AdvancedTeamFilter
                   teams={teams}
                   selectedTeamId={selectedTeamId}
                   onSelectionChange={setSelectedTeamId}
-                  className="w-64"
+                  className="w-48"
                 />
-                <div className="flex flex-wrap gap-2">
+                
+                {/* Match Type Filters - Horizontal Layout */}
+                <div className="flex items-center space-x-1">
                   {[
                     { type: 'League', colors: 'from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700', bgInactive: 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100', icon: '🏆' },
                     { type: 'Cup', colors: 'from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700', bgInactive: 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100', icon: '🏅' },
@@ -585,15 +589,16 @@ export default function MatchDay() {
                         }
                         setSelectedMatchTypes(newTypes);
                       }}
-                      className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-lg ${
+                      className={`w-20 px-3 py-2 text-xs font-bold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-lg ${
                         selectedMatchTypes.has(type)
                           ? `bg-gradient-to-r ${colors} text-white shadow-lg`
                           : `${bgInactive} border`
                       }`}
+                      title={type}
                     >
-                      <div className="flex items-center space-x-2">
-                        <span className="text-base">{icon}</span>
-                        <span>{type}</span>
+                      <div className="flex items-center justify-center space-x-1">
+                        <span className="text-sm">{icon}</span>
+                        <span className="hidden xl:inline">{type}</span>
                       </div>
                     </button>
                   ))}

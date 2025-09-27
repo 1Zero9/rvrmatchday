@@ -25,6 +25,7 @@ import AdminSiteMap from '../../components/AdminSiteMap';
 import AdminChangelog from '../../components/AdminChangelog';
 import SessionRecording from '../../components/SessionRecording';
 import CardAuthorityManager from '../../components/CardAuthorityManager';
+import AdminEventLogDashboard from '../../components/AdminEventLogDashboard';
 import { supabase } from '../../lib/supabase';
 
 interface AdminSection {
@@ -246,6 +247,10 @@ function WrappedAdminChangelog() {
 
 function WrappedSessionRecording() {
   return <SessionRecording />;
+}
+
+function WrappedAdminEventLogDashboard() {
+  return <AdminEventLogDashboard />;
 }
 
 // Dashboard Overview Component
@@ -585,6 +590,15 @@ function UnifiedAdminDashboard() {
       requiredRoles: ['admin'],
       color: 'bg-gradient-to-r from-emerald-600 to-teal-700',
       component: WrappedUnifiedAccountManagement
+    },
+    {
+      id: 'event-logs',
+      title: 'Event Logs',
+      icon: '📜',
+      description: 'Comprehensive audit trail of all admin operations',
+      requiredRoles: ['admin'],
+      color: 'bg-gradient-to-r from-slate-600 to-zinc-700',
+      component: WrappedAdminEventLogDashboard
     },
     {
       id: 'events',
