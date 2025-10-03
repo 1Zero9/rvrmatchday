@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let subscription: any;
     try {
       const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log('Auth state change:', { event, userId: session?.user?.id, mounted });
+        // Auth state changed (removed user ID logging for security)
         if (!mounted) return;
         
         // Prevent redundant updates if already initialized
@@ -146,15 +146,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []); // Only run once on mount
 
-  // Debug effect to track profile changes
+  // Track profile changes (removed console.log for security)
   useEffect(() => {
     if (profile) {
-      console.log('Profile updated:', { role: profile.role, email: profile.email, id: profile.id });
+      // Profile loaded successfully - removed debug logging for security
     }
   }, [profile]);
 
   const loadUserProfile = async (userId: string, currentUser?: User) => {
-    console.log('Loading user profile for:', userId);
+    // Loading user profile (removed user ID logging for security)
     try {
       // Set a shorter timeout for the database query
       const timeoutPromise = new Promise((_, reject) => 
@@ -535,7 +535,7 @@ export function RequireAuth({
   React.useEffect(() => {
     // Always run the effect, but only redirect when conditions are met
     if (!user || !profile) {
-      console.log('RequireAuth redirecting to login:', { user: !!user, profile: !!profile, loading });
+      // Redirecting to login (removed user data logging for security)
       const currentPath = router.asPath;
       
       // Don't redirect if already on login page, if loading, or if user/profile are changing

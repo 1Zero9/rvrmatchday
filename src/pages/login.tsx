@@ -20,11 +20,11 @@ function LoginPageContent() {
   const [redirecting, setRedirecting] = React.useState(false);
 
   useEffect(() => {
-    console.log('Login page state:', { user: !!user, profile: !!profile, loading, redirecting });
+    // Login page state check (removed user data logging for security)
     
     // Prevent redirect loop - only redirect if we have stable auth state
     if (user && profile && !loading && !redirecting) {
-      console.log('User is authenticated, redirecting...');
+      // User is authenticated, redirecting (removed logging for security)
       setRedirecting(true);
       
       const returnTo = router.query.returnTo as string || '/welcome';

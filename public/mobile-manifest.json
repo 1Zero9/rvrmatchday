@@ -1,0 +1,42 @@
+{
+  "name": "RVR AFC Mobile App",
+  "short_name": "RVR AFC",
+  "description": "Rivervalley Rangers AFC Mobile Application",
+  "start_url": "/mobile-app",
+  "display": "standalone",
+  "background_color": "#972A4C",
+  "theme_color": "#972A4C",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["sports", "lifestyle"],
+  "lang": "en",
+  "scope": "/mobile-app",
+  "shortcuts": [
+    {
+      "name": "Record Match",
+      "short_name": "Record",
+      "description": "Quick match recording",
+      "url": "/mobile-app?screen=match-record",
+      "icons": [{"src": "/images/logo.png", "sizes": "96x96"}]
+    },
+    {
+      "name": "Fixtures",
+      "short_name": "Fixtures",
+      "description": "View fixtures and results",
+      "url": "/mobile-app?screen=fixtures",
+      "icons": [{"src": "/images/logo.png", "sizes": "96x96"}]
+    }
+  ]
+}

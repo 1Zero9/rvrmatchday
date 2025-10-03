@@ -269,7 +269,7 @@ export class TodoSyncService {
     }
 
     prompt += '💡 **Ready to work on any of these tasks or add new ones?**\n';
-    prompt += 'Access the full todo list at: http://localhost:3000/admin (admin/rvrfc2025)';
+    prompt += 'Access the full todo list at: http://localhost:3000/admin';
     
     return prompt;
   }

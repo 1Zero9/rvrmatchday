@@ -132,7 +132,7 @@ export default function AccountAdmin() {
           console.warn('Failed to send approval email:', emailError);
         }
         
-        console.log(`User approved - temp password: ${tempPassword}`);
+        // User approved - password set (removed password logging for security)
       } else if (decision === 'denied') {
         // Send rejection email
         try {

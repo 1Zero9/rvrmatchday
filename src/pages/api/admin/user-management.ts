@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
+import { authenticateAdmin, checkRateLimit } from '../../../lib/adminAuth';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -57,6 +58,20 @@ function getClientIP(req: NextApiRequest): string {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
+
+  // SECURITY: Rate limiting
+  if (!checkRateLimit(req, 50, 15 * 60 * 1000)) {
+    return res.status(429).json({ error: 'Too many requests' });
+  }
+
+  // SECURITY: Authenticate all admin endpoints
+  const authResult = await authenticateAdmin(req);
+  if (!authResult.isValid) {
+    return res.status(401).json({ 
+      error: 'Unauthorized', 
+      message: authResult.error 
+    });
+  }
 
   try {
     switch (method) {

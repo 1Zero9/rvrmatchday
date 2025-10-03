@@ -25,9 +25,54 @@ interface DeleteUserRequest {
   reason?: string;
 }
 
+// Authentication middleware
+async function authenticateAdmin(req: NextApiRequest): Promise<{ isValid: boolean; userId?: string; error?: string }> {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return { isValid: false, error: 'Missing or invalid authorization header' };
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return { isValid: false, error: 'Missing access token' };
+    }
+
+    // Verify token with Supabase
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) {
+      return { isValid: false, error: 'Invalid access token' };
+    }
+
+    // Check if user has admin role
+    const { data: profile, error: profileError } = await supabase
+      .from('tracker_users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile || profile.role !== 'admin') {
+      return { isValid: false, error: 'Insufficient permissions - admin role required' };
+    }
+
+    return { isValid: true, userId: user.id };
+  } catch (error) {
+    return { isValid: false, error: 'Authentication failed' };
+  }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // SECURITY: Authenticate admin
+  const authResult = await authenticateAdmin(req);
+  if (!authResult.isValid) {
+    return res.status(401).json({ 
+      error: 'Unauthorized', 
+      message: authResult.error 
+    });
   }
 
   try {
