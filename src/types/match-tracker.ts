@@ -99,6 +99,10 @@ export interface Match {
   actualKickOff?: Date;
   status: MatchStatus;
   
+  // Cancellation/Postponement Details
+  cancellationReason?: string; // Required when status is 'Cancelled' or 'Postponed'
+  postponedToDate?: Date; // New date when status is 'Postponed'
+  
   // Match Officials
   referee?: string;
   assistantReferees?: string[];

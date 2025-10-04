@@ -8,25 +8,31 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Home, Calendar, Users, Trophy, Settings, Phone, Edit3, Shield, Plus, Eye } from 'lucide-react';
+import { Home, Calendar, Users, Trophy, Settings, Phone, Edit3, Shield, Plus, Eye, LogIn, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { AuthProvider, useAuth } from '../components/SecureAuth';
 
 type Screen = 'home' | 'fixtures' | 'teams' | 'results' | 'settings' | 'match-recorder' | 'match-central';
 
-export default function MobileApp() {
+function MobileAppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const [showMenu, setShowMenu] = useState(false);
+  const { user, profile, loading, signOut } = useAuth();
+
   // Simple navigation handler
   const handleScreenChange = (screen: Screen) => {
     setCurrentScreen(screen);
     setShowMenu(false);
   };
 
+  // Check if user has coach/admin access
+  const hasCoachAccess = profile && (profile.role === 'coach' || profile.role === 'admin');
+
   // Simple screen content (no complex components)
   const getScreenContent = () => {
     switch (currentScreen) {
       case 'home':
-        return <HomeScreen onNavigate={handleScreenChange} />;
+        return <HomeScreen onNavigate={handleScreenChange} user={user} profile={profile} hasCoachAccess={hasCoachAccess} />;
       case 'fixtures':
         return <FixturesScreen onBack={() => setCurrentScreen('home')} />;
       case 'teams':
@@ -34,13 +40,13 @@ export default function MobileApp() {
       case 'results':
         return <ResultsScreen onBack={() => setCurrentScreen('home')} />;
       case 'settings':
-        return <SettingsScreen onBack={() => setCurrentScreen('home')} />;
+        return <SettingsScreen onBack={() => setCurrentScreen('home')} user={user} profile={profile} onSignOut={signOut} />;
       case 'match-recorder':
-        return <MatchRecorderScreen onBack={() => setCurrentScreen('home')} />;
+        return hasCoachAccess ? <MatchRecorderScreen onBack={() => setCurrentScreen('home')} /> : <AuthRequiredScreen onBack={() => setCurrentScreen('home')} />;
       case 'match-central':
-        return <MatchCentralScreen onBack={() => setCurrentScreen('home')} />;
+        return hasCoachAccess ? <MatchCentralScreen onBack={() => setCurrentScreen('home')} /> : <AuthRequiredScreen onBack={() => setCurrentScreen('home')} />;
       default:
-        return <HomeScreen onNavigate={handleScreenChange} />;
+        return <HomeScreen onNavigate={handleScreenChange} user={user} profile={profile} hasCoachAccess={hasCoachAccess} />;
     }
   };
 
@@ -129,14 +135,28 @@ export default function MobileApp() {
 }
 
 // Simple Screen Components
-function HomeScreen({ onNavigate }: { 
+function HomeScreen({ onNavigate, user, profile, hasCoachAccess }: { 
   onNavigate: (screen: Screen) => void;
+  user: any;
+  profile: any;
+  hasCoachAccess: boolean;
 }) {
   return (
     <div className="p-4">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to RVR AFC</h2>
-        <p className="text-gray-600">Your club at your fingertips</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          {user ? `Welcome back, ${profile?.full_name || 'Coach'}!` : 'Welcome to RVR AFC'}
+        </h2>
+        <p className="text-gray-600">
+          {user ? 'Your club dashboard' : 'Your club at your fingertips'}
+        </p>
+        {profile?.role && (
+          <div className="mt-2">
+            <span className="inline-block bg-[#972A4C] text-white text-xs px-2 py-1 rounded-full">
+              {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -166,26 +186,49 @@ function HomeScreen({ onNavigate }: {
         />
       </div>
 
-      {/* Coach Tools */}
-      <div className="mt-8">
-        <h3 className="font-bold text-lg mb-4 text-[#972A4C]">
-          ⚽ Coach Tools
-        </h3>
-        <div className="grid grid-cols-2 gap-4">
-          <ActionCard
-            title="Record Match"
-            description="Log match results"
-            icon={<Edit3 className="text-[#972A4C]" size={24} />}
-            onClick={() => onNavigate('match-recorder')}
-          />
-          <ActionCard
-            title="Match Central"
-            description="Manage matches"
-            icon={<Shield className="text-[#972A4C]" size={24} />}
-            onClick={() => onNavigate('match-central')}
-          />
+      {/* Coach Tools - Only show if user has coach access */}
+      {hasCoachAccess && (
+        <div className="mt-8">
+          <h3 className="font-bold text-lg mb-4 text-[#972A4C]">
+            ⚽ Coach Tools
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <ActionCard
+              title="Record Match"
+              description="Log match results"
+              icon={<Edit3 className="text-[#972A4C]" size={24} />}
+              onClick={() => onNavigate('match-recorder')}
+            />
+            <ActionCard
+              title="Match Central"
+              description="Manage matches"
+              icon={<Shield className="text-[#972A4C]" size={24} />}
+              onClick={() => onNavigate('match-central')}
+            />
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Login Prompt for Non-authenticated Users */}
+      {!user && (
+        <div className="mt-8">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="font-semibold text-blue-900 mb-2">
+              🔐 Coach & Admin Access
+            </h3>
+            <p className="text-blue-700 text-sm mb-3">
+              Login to access match recording, team management, and other club tools.
+            </p>
+            <button
+              onClick={() => window.open('/login?returnTo=/mobile-app', '_blank')}
+              className="bg-[#972A4C] text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2"
+            >
+              <LogIn size={16} />
+              <span>Login</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Recent News */}
       <div className="mt-8">
@@ -275,8 +318,11 @@ function ResultsScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function SettingsScreen({ onBack }: { 
+function SettingsScreen({ onBack, user, profile, onSignOut }: { 
   onBack: () => void;
+  user: any;
+  profile: any;
+  onSignOut: () => Promise<void>;
 }) {
   return (
     <div className="p-4">
@@ -285,6 +331,59 @@ function SettingsScreen({ onBack }: {
         <h2 className="text-xl font-bold">Settings</h2>
       </div>
       
+      {/* User Account Info */}
+      {user && profile && (
+        <div className="mb-6">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+            <h3 className="font-semibold text-green-900 mb-1">
+              ✅ {profile.full_name}
+            </h3>
+            <p className="text-green-700 text-sm mb-1">{profile.email}</p>
+            <div className="flex items-center space-x-2">
+              <span className="inline-block bg-green-600 text-white text-xs px-2 py-1 rounded-full">
+                {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
+              </span>
+              {profile.teams && profile.teams.length > 0 && (
+                <span className="text-xs text-green-600">
+                  {profile.teams.length} team{profile.teams.length > 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={async () => {
+              await onSignOut();
+              window.location.reload(); // Simple refresh to reset state
+            }}
+            className="w-full bg-red-500 text-white p-3 rounded-lg font-medium flex items-center justify-center space-x-2"
+          >
+            <LogOut size={16} />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      )}
+
+      {/* Login Prompt for Non-authenticated Users */}
+      {!user && (
+        <div className="mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <h3 className="font-semibold text-blue-900 mb-2">
+              🔐 Not Signed In
+            </h3>
+            <p className="text-blue-700 text-sm mb-3">
+              Sign in to access coach tools and personalized features.
+            </p>
+          </div>
+          <button
+            onClick={() => window.open('/login?returnTo=/mobile-app', '_blank')}
+            className="w-full bg-[#972A4C] text-white p-3 rounded-lg font-medium flex items-center justify-center space-x-2"
+          >
+            <LogIn size={16} />
+            <span>Sign In</span>
+          </button>
+        </div>
+      )}
+
       <div className="space-y-4">
         <button
           onClick={() => window.open('/home', '_blank')}
@@ -300,12 +399,14 @@ function SettingsScreen({ onBack }: {
           📞 Contact Club
         </button>
 
-        <button
-          onClick={() => window.open('/admin', '_blank')}
-          className="w-full text-left p-3 bg-white rounded-lg border hover:bg-gray-50"
-        >
-          ⚙️ Admin Dashboard
-        </button>
+        {profile?.role === 'admin' && (
+          <button
+            onClick={() => window.open('/admin', '_blank')}
+            className="w-full text-left p-3 bg-white rounded-lg border hover:bg-gray-50"
+          >
+            ⚙️ Admin Dashboard
+          </button>
+        )}
       </div>
     </div>
   );
@@ -386,6 +487,52 @@ function ResultCard({ homeTeam, awayTeam, homeScore, awayScore, date }: {
         <span className="font-semibold">{awayTeam}</span>
       </div>
     </div>
+  );
+}
+
+// Auth Required Screen (Simple ClubZap-style)
+function AuthRequiredScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="p-4">
+      <div className="flex items-center mb-6">
+        <button onClick={onBack} className="mr-4 text-[#972A4C]">← Back</button>
+        <h2 className="text-xl font-bold">Access Required</h2>
+      </div>
+      
+      <div className="text-center py-8">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Shield className="text-gray-400" size={32} />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Coach Access Required</h3>
+        <p className="text-gray-600 mb-6">
+          You need coach or admin permissions to access this feature.
+        </p>
+        <div className="space-y-3">
+          <button
+            onClick={() => window.open('/login?returnTo=/mobile-app', '_blank')}
+            className="w-full bg-[#972A4C] text-white p-3 rounded-lg font-medium flex items-center justify-center space-x-2"
+          >
+            <LogIn size={16} />
+            <span>Sign In</span>
+          </button>
+          <button
+            onClick={() => window.open('/contact', '_blank')}
+            className="w-full bg-gray-100 text-gray-700 p-3 rounded-lg font-medium"
+          >
+            Request Access
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main export with AuthProvider wrapper
+export default function MobileApp() {
+  return (
+    <AuthProvider>
+      <MobileAppContent />
+    </AuthProvider>
   );
 }
 

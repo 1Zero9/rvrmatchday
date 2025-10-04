@@ -23,6 +23,7 @@ import { Team, TeamSummary, Match } from "../types/match-tracker";
 import { VERSION_CONFIG } from "../config/version";
 import { MatchTypeBadge } from "./MatchTypeBadge";
 import { getMatchTypeCardColors } from "../lib/match-type-colors";
+import MatchStatusManager from "./MatchStatusManager";
 
 // Chart.js imports and setup
 import {
@@ -707,7 +708,8 @@ function CollapsibleTeamCard({
   const [overviewFilter, setOverviewFilter] = useState<string>('all');
   const [advancedTeamFilter, setAdvancedTeamFilter] = useState<string>('all');
   const [matchTypeFilter, setMatchTypeFilter] = useState<Set<string>>(new Set(['League']));
-  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
+  // Removed cards view option - only list view now
+  // const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
   const [loading, setLoading] = useState(true);
   const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
   const [allMatches, setAllMatches] = useState<Match[]>([]);
@@ -721,6 +723,7 @@ function CollapsibleTeamCard({
   // Authentication handled by RequireAuth wrapper - no secondary auth needed
   const [selectedStatsTeam, setSelectedStatsTeam] = useState<string>('all');
   const [selectedMatchTypes, setSelectedMatchTypes] = useState<Set<string>>(new Set(['League']));
+  const [showCancelledPostponed, setShowCancelledPostponed] = useState<boolean>(true);
   const [playerStats, setPlayerStats] = useState<{ topScorers: any[]; topAssists: any[]; mostMatches: any[]; }>({ topScorers: [], topAssists: [], mostMatches: [] });
   const [matchesWithExtra, setMatchesWithExtra] = useState<{[key: string]: boolean}>({});
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
@@ -812,6 +815,12 @@ function CollapsibleTeamCard({
     
     const matchDate = new Date(match.scheduledDate);
     const isPastMatch = matchDate < today;
+    
+    // Don't flag cancelled or postponed matches as needing recording
+    if (match.status === 'Cancelled' || match.status === 'Postponed') {
+      return false;
+    }
+    
     const isScheduled = match.status === 'Scheduled';
     const noScore = (match.homeScore === 0 || match.homeScore === null) && 
                    (match.awayScore === 0 || match.awayScore === null);
@@ -1007,6 +1016,12 @@ function CollapsibleTeamCard({
         const unrecordedPastMatches = transformedMatches.filter(match => {
           const matchDate = new Date(match.scheduledDate);
           const isPastMatch = matchDate < today;
+          
+          // Don't include cancelled or postponed matches in unrecorded list
+          if (match.status === 'Cancelled' || match.status === 'Postponed') {
+            return false;
+          }
+          
           const isScheduled = match.status === 'Scheduled';
           const noScore = (match.homeScore === 0 || match.homeScore === null) && 
                          (match.awayScore === 0 || match.awayScore === null);
@@ -1041,6 +1056,23 @@ function CollapsibleTeamCard({
     }
   };
 
+  // Handle match status updates (for cancellation/postponement)
+  const handleMatchStatusUpdate = async (updatedMatch: Match) => {
+    try {
+      // Update local state immediately for better UX
+      setAllMatches(prevMatches => 
+        prevMatches.map(match => 
+          match.id === updatedMatch.id ? updatedMatch : match
+        )
+      );
+
+      console.log('✅ Match status updated successfully:', updatedMatch.id, updatedMatch.status);
+    } catch (error) {
+      console.error('Failed to update match status:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     // Authentication handled by RequireAuth wrapper - just load data
     loadData();
@@ -1057,12 +1089,28 @@ function CollapsibleTeamCard({
   // Get actual match data for fixtures and results - Fixed to match Matchday logic
   const getUpcomingMatches = () => {
     return allMatches
-      .filter(match => 
-        match.status === 'Scheduled' &&
-        (selectedTeam === 'all' || match.teamId === selectedTeam)
-      )
+      .filter(match => {
+        // Always include scheduled matches
+        if (match.status === 'Scheduled') {
+          return selectedTeam === 'all' || match.teamId === selectedTeam;
+        }
+        // Include cancelled/postponed matches only if filter is enabled
+        if ((match.status === 'Cancelled' || match.status === 'Postponed') && showCancelledPostponed) {
+          return selectedTeam === 'all' || match.teamId === selectedTeam;
+        }
+        return false;
+      })
       .sort((a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime())
       .slice(0, 10);
+  };
+
+  const getCancelledPostponedMatches = () => {
+    return allMatches
+      .filter(match => 
+        (match.status === 'Cancelled' || match.status === 'Postponed') &&
+        (selectedTeam === 'all' || match.teamId === selectedTeam)
+      )
+      .sort((a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime());
   };
 
   const getRecentResults = () => {
@@ -1078,7 +1126,7 @@ function CollapsibleTeamCard({
   };
 
   // Recalculate data when selectedTeam changes
-  const upcomingMatches = React.useMemo(() => getUpcomingMatches(), [selectedTeam, allMatches]);
+  const upcomingMatches = React.useMemo(() => getUpcomingMatches(), [selectedTeam, allMatches, showCancelledPostponed]);
   const recentResults = React.useMemo(() => getRecentResults(), [selectedTeam, allMatches]);
 
   // Get filtered results for overview (updated to use advanced filters)
@@ -1865,6 +1913,13 @@ function CollapsibleTeamCard({
                         <div className={`text-xs ${needsRecording ? 'text-amber-700' : 'text-gray-600'}`}>
                           {match.scheduledDate.toLocaleDateString()} • {match.scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
+                        <div className="mt-2">
+                          <MatchStatusManager
+                            match={match}
+                            onStatusUpdate={handleMatchStatusUpdate}
+                            teamName={team?.name}
+                          />
+                        </div>
                       </div>
                       <a
                         href={`/matches/${match.id}/record`}
@@ -2299,44 +2354,13 @@ function CollapsibleTeamCard({
                       ))}
                     </div>
                     
-                    {/* View Mode Switcher */}
-                    <div className="flex items-center gap-2 ml-4 border-l pl-4">
-                      <label className="text-sm font-medium text-gray-700">View:</label>
-                      <div className="flex bg-gray-100 rounded-lg p-1">
-                        <button
-                          onClick={() => setViewMode('list')}
-                          className={`px-3 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${
-                            viewMode === 'list'
-                              ? 'bg-white text-blue-600 shadow-sm'
-                              : 'text-gray-600 hover:text-gray-900'
-                          }`}
-                        >
-                          <span>📋</span>
-                          <span>List</span>
-                        </button>
-                        <button
-                          onClick={() => setViewMode('cards')}
-                          className={`px-3 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${
-                            viewMode === 'cards'
-                              ? 'bg-white text-blue-600 shadow-sm'
-                              : 'text-gray-600 hover:text-gray-900'
-                          }`}
-                        >
-                          <span>🎴</span>
-                          <span>Cards</span>
-                        </button>
-                      </div>
-                    </div>
+                    {/* View Mode Switcher removed - only list view available */}
                   </div>
                 </div>
               </div>
 
-              {/* Results - Dynamic Layout Based on View Mode */}
-              <div className={
-                viewMode === 'list' 
-                  ? "space-y-4" 
-                  : "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"
-              }>
+              {/* Results - List View Only */}
+              <div className="space-y-4">
                 {filteredOverviewResults.length === 0 ? (
                   <div className="col-span-full bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-xl shadow-lg border border-gray-100 p-8 text-center">
                     <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -2377,16 +2401,15 @@ function CollapsibleTeamCard({
                     
                     if (!team) return null;
 
-
-                    // LIST VIEW - MatchDay Style with Player Details
-                    if (viewMode === 'list') {
-                      return (
+                    // LIST VIEW - MatchDay Style with Player Details (only view available)
+                    // Removed cards view - always use list view
+                    return (
                         <motion.div
                           key={match.id}
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.2, delay: index * 0.03 }}
-                          className={`rounded-lg shadow-sm border hover:shadow-md transition-shadow overflow-hidden cursor-pointer ${
+                          className={`rounded-lg shadow-md border-2 hover:shadow-lg transition-all duration-200 hover:scale-[1.01] overflow-hidden cursor-pointer ${
                             (() => {
                               const matchTypeColors = getMatchTypeCardColors(match.matchType);
                               return `${matchTypeColors.background} ${matchTypeColors.border}`;
@@ -2394,9 +2417,9 @@ function CollapsibleTeamCard({
                           }`}
                           onClick={() => toggleMatchExpand(match.id)}
                         >
-                          <div className={`h-1 ${
-                            result.result === 'W' ? 'bg-green-500' : 
-                            result.result === 'L' ? 'bg-red-500' : 'bg-yellow-500'
+                          <div className={`h-2 shadow-sm ${
+                            result.result === 'W' ? 'bg-gradient-to-r from-green-500 to-green-600' : 
+                            result.result === 'L' ? 'bg-gradient-to-r from-red-500 to-red-600' : 'bg-gradient-to-r from-yellow-500 to-yellow-600'
                           }`}></div>
                           
                           <div className="p-4">
@@ -2503,82 +2526,6 @@ function CollapsibleTeamCard({
                           </div>
                         </motion.div>
                       );
-                    }
-
-                    // CARD VIEW - Compact Performance Cards
-                    return (
-                      <motion.div
-                        key={match.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.2, delay: index * 0.03 }}
-                        className={`relative rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer ${
-                          result.result === 'W' ? 'bg-gradient-to-r from-green-50 to-white border-l-4 border-l-green-500 border border-green-200' : 
-                          result.result === 'L' ? 'bg-gradient-to-r from-red-50 to-white border-l-4 border-l-red-500 border border-red-200' : 
-                          result.result === 'D' ? 'bg-gradient-to-r from-yellow-50 to-white border-l-4 border-l-yellow-500 border border-yellow-200' : 'bg-white border border-gray-200 border-l-4 border-l-gray-300'
-                        }`}
-                        onClick={() => setOverlayMatch(match)}
-                      >
-                        {/* Compact Card Content */}
-                        <div className="p-3">
-                          {/* Result & Teams Row */}
-                          <div className="flex items-center justify-between mb-2">
-                            <div className={`text-xs font-semibold px-2 py-1 rounded ${
-                              result.result === 'W' ? 'bg-green-100 text-green-800' : 
-                              result.result === 'L' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {result.result === 'W' ? 'W' : result.result === 'L' ? 'L' : 'D'}
-                            </div>
-                            <div className="text-xs text-gray-500 text-right">
-                              <MatchTypeBadge matchType={match.matchType} />
-                              <div className={`text-xs ${match.isHomeMatch ? 'text-green-600' : 'text-blue-600'}`}>
-                                {match.isHomeMatch ? 'HOME' : 'AWAY'}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Teams and Score */}
-                          <div className="text-center mb-3">
-                            <div className="text-sm font-semibold text-gray-900 mb-1">
-                              {team.name} vs {match.opponent}
-                            </div>
-                            <div className={`text-xl font-bold ${
-                              result.result === 'W' ? 'text-green-600' : 
-                              result.result === 'L' ? 'text-red-600' : 'text-yellow-600'
-                            }`}>
-                              {result.teamScore} - {result.opponentScore}
-                            </div>
-                          </div>
-
-                          {/* Quick Stats */}
-                          <MatchQuickStats match={match} />
-
-                          {/* Action Buttons */}
-                          <div className="flex space-x-1 mt-3">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOverlayMatch(match);
-                              }}
-                              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 rounded text-xs font-medium transition-colors"
-                              title="View Details"
-                            >
-                              View
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(`/match-recorder?edit=${match.id}`);
-                              }}
-                              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-1 rounded text-xs font-medium transition-colors"
-                              title="Edit"
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
                   })
                 )}
               </div>
@@ -2930,15 +2877,30 @@ function CollapsibleTeamCard({
               transition={{ duration: 0.5 }}
             >
               <div className="bg-gradient-to-r from-white to-blue-50 rounded-xl shadow-lg border border-blue-100 p-6 mb-8">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <span className="text-white text-2xl">📅</span>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                      <span className="text-white text-2xl">📅</span>
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Upcoming Fixtures</h2>
+                      <p className="text-sm text-gray-600">
+                        {upcomingMatches.length} match{upcomingMatches.length !== 1 ? 'es' : ''} scheduled
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Upcoming Fixtures</h2>
-                    <p className="text-sm text-gray-600">
-                      {upcomingMatches.length} match{upcomingMatches.length !== 1 ? 'es' : ''} scheduled
-                    </p>
+                  
+                  {/* Filter Toggle */}
+                  <div className="flex items-center space-x-3">
+                    <label className="flex items-center space-x-2 text-sm text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={showCancelledPostponed}
+                        onChange={(e) => setShowCancelledPostponed(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <span>Show cancelled/postponed</span>
+                    </label>
                   </div>
                 </div>
                   
@@ -3065,10 +3027,12 @@ function CollapsibleTeamCard({
                                     📝 Record
                                   </a>
                                   
-                                  {/* Fixture Badge */}
-                                  <div className="px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-200 text-blue-700 rounded-xl text-sm font-bold shadow-sm">
-                                    📅 FIXTURE
-                                  </div>
+                                  {/* Match Status Manager */}
+                                  <MatchStatusManager
+                                    match={match}
+                                    onStatusUpdate={handleMatchStatusUpdate}
+                                    teamName={team?.name}
+                                  />
                                 </div>
                               </div>
                             </div>

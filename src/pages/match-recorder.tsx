@@ -25,6 +25,7 @@ interface QuickResult {
   matchDate: string;
   isHomeMatch: boolean;
   matchType: string;
+  matchStatus: string;
 }
 
 interface MatchDetails {
@@ -55,7 +56,8 @@ export default function MatchRecorderSimple() {
     awayScore: 0,
     matchDate: new Date().toISOString().split('T')[0],
     isHomeMatch: true,
-    matchType: 'League'
+    matchType: 'League',
+    matchStatus: 'Finished'
   });
 
   const [details, setDetails] = useState<MatchDetails>({
@@ -362,7 +364,8 @@ export default function MatchRecorderSimple() {
           awayScore: opponentScore || 0, // Opponent's score (always second score)
           matchDate: matchToEdit.scheduledDate.toISOString().split('T')[0],
           isHomeMatch: matchToEdit.isHomeMatch,
-          matchType: matchToEdit.matchType || 'League'
+          matchType: matchToEdit.matchType || 'League',
+          matchStatus: matchToEdit.status || 'Finished'
         };
         
         console.log('Setting quickResult to:', quickResultData);
@@ -484,7 +487,7 @@ export default function MatchRecorderSimple() {
         isHomeMatch: quickResult.isHomeMatch,
         venue: details.venue,
         scheduledDate: new Date(quickResult.matchDate),
-        status: isFutureMatch() ? 'Scheduled' : 'Finished',
+        status: quickResult.matchStatus as any,
         homeScore: dbHomeScore,
         awayScore: dbAwayScore,
         referee: details.referee ? 'Yes' : 'No',
@@ -1125,6 +1128,31 @@ export default function MatchRecorderSimple() {
                     <option value="Tournament">🎯 Tournament</option>
                     <option value="Training">⚽ Training Match</option>
                   </select>
+                </div>
+
+                {/* Match Status */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Match Status</label>
+                  <select
+                    value={quickResult.matchStatus}
+                    onChange={(e) => setQuickResult(prev => ({ ...prev, matchStatus: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    key={`matchstatus-${editingMatch?.id || 'new'}-${quickResult.matchStatus}`}
+                  >
+                    <option value="Finished">✅ Finished</option>
+                    <option value="Scheduled">📅 Scheduled</option>
+                    <option value="Live">🔴 Live</option>
+                    <option value="Cancelled">❌ Cancelled</option>
+                    <option value="Postponed">⏰ Postponed</option>
+                  </select>
+                  {(quickResult.matchStatus === 'Cancelled' || quickResult.matchStatus === 'Postponed') && (
+                    <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-800">
+                        ℹ️ <strong>Note:</strong> {quickResult.matchStatus} matches will not trigger recording notifications.
+                        {quickResult.matchStatus === 'Postponed' && ' You can reschedule by editing the match date.'}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Teams */}

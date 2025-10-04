@@ -67,38 +67,38 @@ export const getMatchTypeCardColors = (matchType: string): MatchTypeCardColors =
   switch (matchType.toLowerCase()) {
     case 'league':
       return {
-        background: 'bg-gradient-to-br from-white via-blue-50/30 to-blue-50/20',
-        border: 'border-blue-100/50 hover:border-blue-200/60',
+        background: 'bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50',
+        border: 'border-blue-200 hover:border-blue-300',
         accent: 'bg-gradient-to-b from-blue-400 to-blue-500'
       };
     case 'cup':
       return {
-        background: 'bg-gradient-to-br from-white via-yellow-50/30 to-yellow-50/20',
-        border: 'border-yellow-100/50 hover:border-yellow-200/60',
+        background: 'bg-gradient-to-br from-yellow-50 via-yellow-100 to-amber-50',
+        border: 'border-yellow-200 hover:border-yellow-300',
         accent: 'bg-gradient-to-b from-yellow-400 to-yellow-500'
       };
     case 'friendly':
       return {
-        background: 'bg-gradient-to-br from-white via-green-50/30 to-green-50/20',
-        border: 'border-green-100/50 hover:border-green-200/60',
+        background: 'bg-gradient-to-br from-green-50 via-green-100 to-emerald-50',
+        border: 'border-green-200 hover:border-green-300',
         accent: 'bg-gradient-to-b from-green-400 to-green-500'
       };
     case 'tournament':
       return {
-        background: 'bg-gradient-to-br from-white via-purple-50/30 to-purple-50/20',
-        border: 'border-purple-100/50 hover:border-purple-200/60',
+        background: 'bg-gradient-to-br from-purple-50 via-purple-100 to-violet-50',
+        border: 'border-purple-200 hover:border-purple-300',
         accent: 'bg-gradient-to-b from-purple-400 to-purple-500'
       };
     case 'training':
       return {
-        background: 'bg-gradient-to-br from-white via-orange-50/30 to-orange-50/20',
-        border: 'border-orange-100/50 hover:border-orange-200/60',
+        background: 'bg-gradient-to-br from-orange-50 via-orange-100 to-red-50',
+        border: 'border-orange-200 hover:border-orange-300',
         accent: 'bg-gradient-to-b from-orange-400 to-orange-500'
       };
     default:
       return {
-        background: 'bg-gradient-to-br from-white via-gray-50/30 to-gray-50/20',
-        border: 'border-gray-100/50 hover:border-gray-200/60',
+        background: 'bg-gradient-to-br from-gray-50 via-gray-100 to-slate-50',
+        border: 'border-gray-200 hover:border-gray-300',
         accent: 'bg-gradient-to-b from-gray-400 to-gray-500'
       };
   }
