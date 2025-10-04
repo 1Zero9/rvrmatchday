@@ -117,7 +117,7 @@ function StandardHomepage() {
                 transition={{ duration: 1, delay: 0.3 }}
               >
                 <Link 
-                  href="/match-central-secure" 
+                  href="/match-central" 
                   className="text-white hover:text-gray-200 text-sm flex items-center space-x-2 bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:via-green-700 hover:to-emerald-700 px-5 py-3 rounded-full shadow-2xl border-2 border-green-700 hover:border-green-800 hover:shadow-2xl transition-all font-bold"
                   title="Match Central - Fixtures, Results & Management"
                   style={{
@@ -179,7 +179,7 @@ function StandardHomepage() {
                   transform: 'translateZ(0)'
                 }}
               >
-                <source src="/images/hero/rvr-drone-6.mp4" type="video/mp4" />
+                <source src="/images/hero/rvr-drone-7.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </motion.video>
             )}
@@ -455,11 +455,11 @@ function StandardHomepage() {
                       <div className="text-xs text-gray-500 mb-2">
                         {latestResult.matchType} • {formatMatchDate(latestResult.matchDate)}
                       </div>
-                      <div className="flex items-center justify-between text-lg font-bold mb-2">
-                        <span className={latestResult.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}>
+                      <div className="flex items-center justify-between text-lg font-bold mb-2 gap-2">
+                        <span className={`flex-1 text-center ${latestResult.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}`}>
                           {latestResult.homeTeam}
                         </span>
-                        <div className={`text-white px-3 py-1 rounded-lg text-sm ${
+                        <div className={`text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${
                           latestResult.result === 'win' 
                             ? 'bg-green-600' 
                             : latestResult.result === 'loss'
@@ -468,7 +468,7 @@ function StandardHomepage() {
                         }`}>
                           {latestResult.homeScore} - {latestResult.awayScore}
                         </div>
-                        <span className={!latestResult.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}>
+                        <span className={`flex-1 text-center ${!latestResult.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}`}>
                           {latestResult.awayTeam}
                         </span>
                       </div>
@@ -521,14 +521,14 @@ function StandardHomepage() {
                       <div className="text-xs text-gray-500 mb-2">
                         {formatMatchDate(nextFixture.matchDate)} {formatMatchTime(nextFixture.matchTime)} • {nextFixture.isHomeMatch ? 'Home' : 'Away'}
                       </div>
-                      <div className="flex items-center justify-between text-lg font-bold mb-2">
-                        <span className={nextFixture.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}>
+                      <div className="flex items-center justify-between text-lg font-bold mb-2 gap-2">
+                        <span className={`flex-1 text-center ${nextFixture.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}`}>
                           {nextFixture.homeTeam}
                         </span>
-                        <div className="bg-orange-600 text-white px-3 py-1 rounded-lg text-sm">
+                        <div className="bg-orange-600 text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0">
                           VS
                         </div>
-                        <span className={!nextFixture.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}>
+                        <span className={`flex-1 text-center ${!nextFixture.isHomeMatch ? 'text-club-primary' : 'text-gray-700'}`}>
                           {nextFixture.awayTeam}
                         </span>
                       </div>
