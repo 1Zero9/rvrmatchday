@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.1.1] - 2025-10-04
+
+### Fixed
+- **Home Page Layout**: Fixed match score layout to prevent wrapping with long team names
+  - Score badges now stay on same line using `flex-shrink-0` and `whitespace-nowrap`
+  - Team names can wrap naturally while keeping score inline
+  - Improved responsive layout with consistent gap spacing
+  - Applied to both "Latest Result" and "Next Match" boxes
+
+### Technical Improvements
+- **CSS Layout**: Enhanced flexbox layout for better responsive behavior
+- **User Experience**: Cleaner visual presentation of match information
+
+---
+
 ## [6.0.17] - 2025-09-21
 
 ### Fixed
