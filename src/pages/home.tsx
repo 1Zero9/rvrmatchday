@@ -3,7 +3,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import StandardLayout from "../components/StandardLayout";
-import MobileApp from "./mobile-app";
+import MobileApp from "./mobile-wow";
 import AdminNotificationPopup from "../components/AdminNotificationPopup";
 import SpecialEventsPopup from "../components/SpecialEventsPopup";
 import { useAuth } from "../components/SecureAuth";

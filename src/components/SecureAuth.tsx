@@ -56,25 +56,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initAuth = async () => {
       try {
-        // Check for demo session first
-        if (typeof window !== 'undefined') {
-          const demoSession = localStorage.getItem('demo_session');
-          if (demoSession) {
-            try {
-              const { user: demoUser, profile: demoProfile } = JSON.parse(demoSession);
-              if (mounted) {
-                setUser(demoUser);
-                setProfile(demoProfile);
-                setLoading(false);
-                setInitialized(true);
-                clearTimeout(globalTimeout);
-              }
-              return;
-            } catch (error) {
-              localStorage.removeItem('demo_session');
-            }
-          }
-        }
 
         // Try Supabase auth with timeout
         const sessionPromise = supabase.auth.getSession();
@@ -222,40 +203,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        // If normal auth fails, check for demo accounts as fallback
-        if (email === 'demo@rvrfc.com' && password === 'demo123') {
-          console.log('Using demo account fallback');
-          
-          // Create a fake user and session for demo purposes
-          const demoUser = {
-            id: 'demo-user',
-            email: 'demo@rvrfc.com',
-            user_metadata: { full_name: 'Demo User' }
-          } as User;
-          
-          const demoProfile: UserProfile = {
-            id: 'demo-user',
-            email: 'demo@rvrfc.com',
-            username: 'demo',
-            full_name: 'Demo User',
-            role: 'coach',
-            teams: ['First Team', 'Reserves'],
-            permissions: ['match:view', 'match:record', 'match:edit'],
-            is_active: true
-          };
-          
-          setUser(demoUser);
-          setProfile(demoProfile);
-          setLoading(false);
-          
-          // Store demo session in localStorage for persistence
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('demo_session', JSON.stringify({ user: demoUser, profile: demoProfile }));
-          }
-          
-          return { success: true };
-        }
-        
         return { success: false, error: error.message };
       }
 
@@ -268,10 +215,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    // Clear any legacy auth data and demo sessions
+    // Clear any legacy auth data
     if (typeof window !== 'undefined') {
       localStorage.removeItem('rvr_demo_auth');
-      localStorage.removeItem('demo_session');
       sessionStorage.removeItem('match-central-auth');
       sessionStorage.removeItem('match-central-user');
     }
@@ -396,7 +342,7 @@ export function SecureLogin() {
                     <p>• You need an approved account to access Match Central</p>
                     <p>• Register using the link below, then await approval</p>
                     <p>• Contact club admin if you believe you should have access</p>
-                    <p>• Demo accounts are for authorized personnel only</p>
+                    <p>• Authorized personnel accounts only</p>
                   </div>
                 </div>
               )}

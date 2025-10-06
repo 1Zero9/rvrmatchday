@@ -6,7 +6,7 @@
 
 1. **Review Todo List**: Ask Claude to check current todos
 2. **Use This Phrase**: *"Review the todo list"*
-3. **Admin Access**: http://localhost:3000/admin (admin/rvrfc2025)
+3. **Admin Access**: http://localhost:3000/admin
 
 This ensures continuity and efficient task management across sessions.
 
@@ -96,7 +96,6 @@ Contact dropdown includes: Contact Us, Join Club, Trials, Become Coach
 
 ### Access:
 - **URL**: http://localhost:3000/admin
-- **Credentials**: admin / rvrfc2025 (demo - replace in production)
 
 ### Features:
 - **Dashboard**: Site overview, recent changes, system status

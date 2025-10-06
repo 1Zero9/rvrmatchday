@@ -43,6 +43,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [8.2.1] - 2025-10-06
+
+### 🏆 Complete Mobile Match Tracker Enhancement v2.0
+**Major Update**: Revolutionary sideline match tracking experience with mobile-first optimizations
+
+#### **⚽ Core Features Enhanced**
+- ✅ **Automatic Timer System**: Real-time match clock with play/pause controls and Wake Lock API
+- ✅ **Team Setup Wizard**: Smart RVR team selection with team types (Boys, Girls, Ladies, Men, Seniors, Over 35s, Veterans) and age groups
+- ✅ **Mobile-Optimized UI**: Grass background with mobile-specific rendering optimizations
+- ✅ **Intuitive Scoreboard**: Single-interface goal tracking with +/- controls and recent events display
+- ✅ **Share Functionality**: Native Web Share API with clipboard fallback for match results
+
+#### **🎨 Visual & UX Improvements**
+- ✅ **Glass Morphism Effects**: Enhanced CTAs throughout mobile app with backdrop blur
+- ✅ **Prominent Placement**: Football icons with pulse animation and rotation effects on home page
+- ✅ **Background Optimization**: Fixed mobile background display issues using separate div layers
+- ✅ **Fullscreen Experience**: Removed header interference in match tracker for immersive experience
+- ✅ **Responsive Design**: Dynamic viewport height (100dvh) for mobile browsers
+
+#### **🔧 Technical Enhancements**
+- ✅ **Admin Controls**: Toggle system for mobile features via admin portal with Supabase integration
+- ✅ **Team Color System**: Smart colorization for RVR vs opponent teams with brand colors
+- ✅ **Navigation Integration**: Seamless flow between mobile app screens with fixed navigation errors
+- ✅ **Error Handling**: Fixed ReferenceError issues and improved component stability
+- ✅ **Performance**: Optimized timer with proper cleanup and memory management
+
+#### **📱 Mobile-First Optimizations**
+- ✅ **Background Rendering**: Separate div layer with `backgroundAttachment: 'local'` for mobile compatibility
+- ✅ **Touch-Friendly Controls**: Large buttons (48px+) optimized for sideline use with accessibility
+- ✅ **Screen Management**: Automatic wake lock during active matches to prevent screen sleep
+- ✅ **Cross-Device Testing**: Verified functionality across iOS/Android browsers
+
+#### **🏗️ Files Modified**
+- `src/components/mobile-app/MobileMatchRecord.tsx` - Complete redesign (625 lines)
+- `src/pages/mobile-wow.tsx` - Glass effects, navigation, and icon enhancements
+- `src/components/admin/MobileSettings.tsx` - Admin controls for mobile features
+- `src/pages/home.tsx` - Added prominent match tracker CTAs
+
+#### **🐛 Bug Fixes**
+- Fixed `ReferenceError: handleScreenChange is not defined` in mobile navigation
+- Resolved mobile background image display issues on iOS/Android
+- Fixed RVR header appearing incorrectly in fullscreen match tracker
+- Corrected timer functionality and automatic match duration handling
+
+---
+
 ## [8.2.0] - 2025-10-04
 
 ### 📱 Mobile Enhancement Project Launch

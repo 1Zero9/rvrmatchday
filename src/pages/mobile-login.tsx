@@ -8,9 +8,130 @@ import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Head from 'next/head';
-import { SecureLogin, useAuth, AuthProvider } from '../components/SecureAuth';
+import { useAuth, AuthProvider } from '../components/SecureAuth';
 import { ThemeProvider, useRVRTheme } from '../utils/rvr-themes';
-import { ArrowLeft, Shield, Users, Trophy } from 'lucide-react';
+import { ArrowLeft, Shield, Users, Trophy, Eye, EyeOff } from 'lucide-react';
+
+function MobileLoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { currentTheme } = useRVRTheme();
+  const { signIn } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    
+    const result = await signIn(email, password);
+    
+    if (!result.success) {
+      setError(result.error || 'Login failed');
+    }
+    
+    setLoading(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Email Address
+          </label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent text-gray-900 placeholder-gray-500 ${
+              error ? 'border-red-400 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-200'
+            }`}
+            placeholder="Enter your email"
+            autoComplete="email"
+            disabled={loading}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Password
+          </label>
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:border-transparent text-gray-900 placeholder-gray-500 ${
+                error ? 'border-red-400 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-200'
+              }`}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              disabled={loading}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              disabled={loading}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+        </div>
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border border-red-200 rounded-lg p-4"
+          >
+            <div className="flex items-center space-x-2 mb-2">
+              <span className="text-red-500">⚠️</span>
+              <span className="font-medium text-red-800">Login Failed</span>
+            </div>
+            <p className="text-red-700 text-sm">{error}</p>
+            
+            {error.toLowerCase().includes('invalid') && (
+              <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <div className="text-xs text-orange-800 space-y-1">
+                  <p>• You need an approved account to access the mobile app</p>
+                  <p>• Register using the "Join RVR AFC" button below</p>
+                  <p>• Contact club admin if you should have access</p>
+                  <p>• Production system - authorized access only</p>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ 
+            backgroundColor: currentTheme.colors.primary,
+            boxShadow: loading ? 'none' : `0 4px 12px ${currentTheme.colors.primary}30`
+          }}
+        >
+          {loading ? (
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <span>Signing in...</span>
+            </div>
+          ) : (
+            'Sign In'
+          )}
+        </button>
+      </form>
+
+    </div>
+  );
+}
 
 function MobileLoginContent() {
   const router = useRouter();
@@ -147,8 +268,8 @@ function MobileLoginContent() {
               </div>
             </div>
 
-            {/* Login Component */}
-            <SecureLogin />
+            {/* Login Component - Mobile Optimized */}
+            <MobileLoginForm />
 
             {/* Footer Links */}
             <div className="mt-8 pt-6 border-t border-gray-200 text-center">
