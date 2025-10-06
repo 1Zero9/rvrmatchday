@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Home, Calendar, Users, Trophy, ArrowRight, Clock, MapPin, User, Palette, Target } from 'lucide-react';
+import { Home, Calendar, Users, Trophy, ArrowRight, Clock, MapPin, User, Palette, Target, FileText, Camera, MessageSquare, ChevronRight, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { AuthProvider, useAuth } from '../components/SecureAuth';
 import { useHomepageData, formatMatchDate, formatMatchTime } from '../hooks/useHomepageData';
@@ -17,7 +17,7 @@ import { ThemeProvider, useRVRTheme } from '../utils/rvr-themes';
 import ThemeSelector from '../components/mobile/ThemeSelector';
 import MobileMatchRecord from '../components/mobile-app/MobileMatchRecord';
 
-type Screen = 'home' | 'fixtures' | 'teams' | 'results' | 'match-record';
+type Screen = 'home' | 'fixtures' | 'teams' | 'results' | 'match-record' | 'news' | 'gallery';
 
 function WowMobileAppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
@@ -40,6 +40,10 @@ function WowMobileAppContent() {
         return <TeamsScreen onBack={() => setCurrentScreen('home')} />;
       case 'results':
         return <ResultsScreen onBack={() => setCurrentScreen('home')} />;
+      case 'news':
+        return <NewsScreen onBack={() => setCurrentScreen('home')} />;
+      case 'gallery':
+        return <GalleryScreen onBack={() => setCurrentScreen('home')} />;
       default:
         return <HomeScreen user={user} profile={profile} onNavigate={handleScreenChange} currentTheme={currentTheme} setShowThemeSelector={setShowThemeSelector} />;
     }
@@ -204,14 +208,15 @@ function WowMobileAppContent() {
           </motion.div>
         </div>
 
-        {/* Bottom Navigation */}
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 safe-area-pb">
+        {/* Enhanced Bottom Navigation with More Tabs */}
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 safe-area-pb">
           <div className="flex items-center justify-around">
             {[
               { id: 'home', icon: Home, label: 'Home' },
               { id: 'fixtures', icon: Calendar, label: 'Fixtures' },
               { id: 'teams', icon: Users, label: 'Teams' },
               { id: 'results', icon: Trophy, label: 'Results' },
+              { id: 'news', icon: FileText, label: 'News' },
               { id: 'match-record', icon: Target, label: 'Tracker', isFootball: true },
             ].map((item) => (
               <button
@@ -866,6 +871,221 @@ function ResultsScreen({ onBack }: { onBack: () => void }) {
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// News Screen with Categories
+function NewsScreen({ onBack }: { onBack: () => void }) {
+  const [activeTab, setActiveTab] = useState<'latest' | 'match-reports' | 'club-news'>('latest');
+  const [news, setNews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchNews();
+  }, [activeTab]);
+
+  const fetchNews = async () => {
+    setLoading(true);
+    try {
+      let query = supabase.from('news').select('*');
+      
+      if (activeTab === 'match-reports') {
+        query = query.ilike('category', '%match%');
+      } else if (activeTab === 'club-news') {
+        query = query.not('category', 'ilike', '%match%');
+      }
+      
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!error && data) {
+        setNews(data);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div 
+      className="rounded-t-3xl flex-1 pb-20 bg-cover bg-center bg-no-repeat relative"
+      style={{ backgroundImage: 'url(/images/hero/ariel-pitch.jpg)' }}
+    >
+      <div className="absolute inset-0 bg-black/20 rounded-t-3xl"></div>
+      <div className="relative z-10 bg-white/90 backdrop-blur-sm rounded-t-3xl pb-20">
+        <div className="px-6 pt-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">Club News</h2>
+            <button onClick={onBack} className="text-blue-600 font-medium">Done</button>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setActiveTab('latest')}
+              className={`flex-1 py-2 px-3 rounded-md text-xs font-medium transition-colors ${
+                activeTab === 'latest'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600'
+              }`}
+            >
+              Latest
+            </button>
+            <button
+              onClick={() => setActiveTab('match-reports')}
+              className={`flex-1 py-2 px-3 rounded-md text-xs font-medium transition-colors ${
+                activeTab === 'match-reports'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600'
+              }`}
+            >
+              Match Reports
+            </button>
+            <button
+              onClick={() => setActiveTab('club-news')}
+              className={`flex-1 py-2 px-3 rounded-md text-xs font-medium transition-colors ${
+                activeTab === 'club-news'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600'
+              }`}
+            >
+              Club News
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : news.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <div className="text-gray-500 mb-2">No news articles</div>
+              <div className="text-sm text-gray-400">Check back soon for updates</div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {news.map((article) => (
+                <div key={article.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="text-xs text-blue-600 font-medium uppercase tracking-wide">
+                      {article.category || 'News'}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(article.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2 leading-tight">
+                    {article.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {article.excerpt || article.content?.substring(0, 120) + '...'}
+                  </p>
+                  <button className="mt-3 text-blue-600 text-sm font-medium flex items-center">
+                    Read more <ChevronRight size={14} className="ml-1" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Gallery Screen with Categories
+function GalleryScreen({ onBack }: { onBack: () => void }) {
+  const [activeTab, setActiveTab] = useState<'recent' | 'matches' | 'training'>('recent');
+
+  const galleryItems = [
+    { id: 1, type: 'match', title: 'vs City United', image: '/images/hero/boots.jpg', date: '2025-10-01' },
+    { id: 2, type: 'training', title: 'Training Session', image: '/images/hero/ariel-pitch.jpg', date: '2025-09-28' },
+    { id: 3, type: 'match', title: 'vs Rangers FC', image: '/images/hero/boots.jpg', date: '2025-09-25' },
+    { id: 4, type: 'training', title: 'Youth Training', image: '/images/hero/ariel-pitch.jpg', date: '2025-09-20' },
+  ];
+
+  const filteredItems = galleryItems.filter(item => 
+    activeTab === 'recent' || item.type === (activeTab === 'matches' ? 'match' : 'training')
+  );
+
+  return (
+    <div 
+      className="rounded-t-3xl flex-1 pb-20 bg-cover bg-center bg-no-repeat relative"
+      style={{ backgroundImage: 'url(/images/hero/astro-ward.png)' }}
+    >
+      <div className="absolute inset-0 bg-black/20 rounded-t-3xl"></div>
+      <div className="relative z-10 bg-white/90 backdrop-blur-sm rounded-t-3xl pb-20">
+        <div className="px-6 pt-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">Photo Gallery</h2>
+            <button onClick={onBack} className="text-blue-600 font-medium">Done</button>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setActiveTab('recent')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'recent'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600'
+              }`}
+            >
+              Recent
+            </button>
+            <button
+              onClick={() => setActiveTab('matches')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'matches'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600'
+              }`}
+            >
+              Matches
+            </button>
+            <button
+              onClick={() => setActiveTab('training')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'training'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600'
+              }`}
+            >
+              Training
+            </button>
+          </div>
+
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-12">
+              <Camera className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <div className="text-gray-500 mb-2">No photos yet</div>
+              <div className="text-sm text-gray-400">Check back soon for new photos</div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {filteredItems.map((item) => (
+                <div key={item.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                  <div 
+                    className="aspect-square bg-cover bg-center"
+                    style={{ backgroundImage: `url(${item.image})` }}
+                  />
+                  <div className="p-3">
+                    <h3 className="font-medium text-gray-900 text-sm mb-1">{item.title}</h3>
+                    <div className="text-xs text-gray-500">
+                      {new Date(item.date).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

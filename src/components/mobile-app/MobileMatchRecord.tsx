@@ -8,13 +8,75 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Share, RotateCcw, Play, Pause, SquareStop } from 'lucide-react';
 
-// Mobile-optimized background styles
+// Add grass animation styles
+const grassAnimationCSS = `
+  @keyframes grassSway {
+    0%, 100% { 
+      background-position: 0 0, 100px 100px, 200px 50px, 0 0, 0 0, 0 0, 0 0;
+    }
+    25% { 
+      background-position: 20px 10px, 120px 110px, 220px 60px, 0 0, 0 0, 0 0, 0 0;
+    }
+    50% { 
+      background-position: 10px 20px, 110px 120px, 210px 70px, 0 0, 0 0, 0 0, 0 0;
+    }
+    75% { 
+      background-position: -10px 10px, 90px 110px, 180px 60px, 0 0, 0 0, 0 0, 0 0;
+    }
+  }
+`;
+
+// Inject the CSS animation
+if (typeof document !== 'undefined') {
+  const styleElement = document.getElementById('grass-animation-styles');
+  if (!styleElement) {
+    const style = document.createElement('style');
+    style.id = 'grass-animation-styles';
+    style.textContent = grassAnimationCSS;
+    document.head.appendChild(style);
+  }
+}
+
+// Mobile-optimized grass effect background styles
 const mobileBackgroundStyle = {
-  backgroundImage: 'url(/images/hero/ariel-pitch.jpg)',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center center',
-  backgroundRepeat: 'no-repeat',
-  backgroundAttachment: 'local', // Better mobile support
+  background: `
+    radial-gradient(circle at 20% 80%, rgba(40, 167, 69, 0.8) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(33, 136, 56, 0.6) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(30, 126, 52, 0.7) 0%, transparent 50%),
+    linear-gradient(135deg, 
+      #1e7e34 0%, 
+      #28a745 25%, 
+      #218838 50%, 
+      #1e7e34 75%,
+      #28a745 100%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.1) 3px,
+      rgba(0, 0, 0, 0.1) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 25px,
+      rgba(255, 255, 255, 0.03) 25px,
+      rgba(255, 255, 255, 0.03) 27px
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 30%,
+      transparent 70%,
+      rgba(0, 0, 0, 0.1) 100%
+    )
+  `,
+  backgroundSize: 
+    '800px 800px, 600px 600px, 400px 400px, 100% 100%, 100% 100%, 100% 100%, 100% 100%',
+  backgroundPosition: 
+    '0 0, 100px 100px, 200px 50px, 0 0, 0 0, 0 0, 0 0',
+  animation: 'grassSway 8s ease-in-out infinite',
   minHeight: '100vh',
   // iOS Safari viewport height fix
   minHeight: '100dvh'
