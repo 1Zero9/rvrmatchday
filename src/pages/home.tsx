@@ -3,8 +3,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import StandardLayout from "../components/StandardLayout";
-import MobileLayout from "../components/MobileLayout";
-import MobileHomePro from "../components/mobile/MobileHomePro";
+import MobileApp from "./mobile-app";
 import AdminNotificationPopup from "../components/AdminNotificationPopup";
 import SpecialEventsPopup from "../components/SpecialEventsPopup";
 import { useAuth } from "../components/SecureAuth";
@@ -78,25 +77,9 @@ function StandardHomepage() {
 
   return (
     <>
-      {/* Mobile Version - Professional */}
+      {/* Mobile Version - Enhanced App Experience */}
       <div className="block md:hidden">
-        <MobileLayout 
-          currentPage="/home"
-          showNavigation={false}
-          clubData={{
-            name: "RVR AFC", 
-            logo: "/images/logo.png",
-            established: "1981",
-            colors: {
-              primary: "#972A4C",
-              secondary: "#5E7794",
-              accent: "#98C0F0",
-              neutral: "#B6B7B6"
-            }
-          }}
-        >
-          <MobileHomePro />
-        </MobileLayout>
+        <MobileApp />
       </div>
 
       {/* Desktop Version - Existing */}
@@ -402,19 +385,20 @@ function StandardHomepage() {
             <div className="grid lg:grid-cols-3 gap-4">
               
               {/* Latest Result - Dynamic */}
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4 }}
-                className={`rounded-xl shadow-lg overflow-hidden border ${
-                  loading 
-                    ? 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
-                    : latestResult?.result === 'win' 
-                      ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
-                      : latestResult?.result === 'loss'
-                        ? 'bg-gradient-to-br from-red-50 to-red-100 border-red-200'
-                        : 'bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200'
-                }`}
+              <Link href="/matchday" className="block group">
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className={`rounded-xl shadow-lg overflow-hidden border backdrop-blur-md bg-white/20 border-white/30 group-hover:bg-white/30 group-hover:scale-105 transition-all duration-300 cursor-pointer ${
+                    loading 
+                      ? 'hover:shadow-xl'
+                      : latestResult?.result === 'win' 
+                        ? 'hover:shadow-green-200 hover:shadow-xl'
+                        : latestResult?.result === 'loss'
+                          ? 'hover:shadow-red-200 hover:shadow-xl'
+                          : 'hover:shadow-yellow-200 hover:shadow-xl'
+                  }`}
               >
                 <div className={`px-4 py-2 ${
                   loading 
@@ -472,18 +456,17 @@ function StandardHomepage() {
                           {latestResult.awayTeam}
                         </span>
                       </div>
-                      <Link 
-                        href={`/matchday`} 
+                      <span 
                         className={`inline-block text-white px-4 py-1 rounded-lg font-semibold transition-colors text-sm ${
                           latestResult.result === 'win' 
-                            ? 'bg-green-600 hover:bg-green-700' 
+                            ? 'bg-green-600 group-hover:bg-green-700' 
                             : latestResult.result === 'loss'
-                              ? 'bg-red-600 hover:bg-red-700'
-                              : 'bg-yellow-600 hover:bg-yellow-700'
+                              ? 'bg-red-600 group-hover:bg-red-700'
+                              : 'bg-yellow-600 group-hover:bg-yellow-700'
                         }`}
                       >
                         Match Report
-                      </Link>
+                      </span>
                     </div>
                   ) : (
                     <div className="text-center text-gray-500">
@@ -492,14 +475,16 @@ function StandardHomepage() {
                     </div>
                   )}
                 </div>
-              </motion.div>
+                </motion.div>
+              </Link>
 
               {/* Next Fixture - Dynamic */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
-                className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl shadow-lg overflow-hidden border border-orange-200"
+              <Link href="/fixtures" className="block group">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.1 }}
+                  className="backdrop-blur-md bg-white/20 border-white/30 rounded-xl shadow-lg overflow-hidden border group-hover:bg-white/30 group-hover:scale-105 hover:shadow-orange-200 hover:shadow-xl transition-all duration-300 cursor-pointer"
               >
                 <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-4 py-2">
                   <div className="flex items-center justify-between text-white">
@@ -546,23 +531,24 @@ function StandardHomepage() {
                     <div className="text-center text-gray-500">
                       <div className="text-2xl mb-2">📅</div>
                       <div className="text-sm">No upcoming fixtures</div>
-                      <Link 
-                        href="/match-central" 
-                        className="inline-block bg-orange-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-orange-700 transition-colors text-sm mt-2"
+                      <span 
+                        className="inline-block bg-orange-600 text-white px-4 py-1 rounded-lg font-semibold group-hover:bg-orange-700 transition-colors text-sm mt-2"
                       >
                         View Fixtures
-                      </Link>
+                      </span>
                     </div>
                   )}
                 </div>
-              </motion.div>
+                </motion.div>
+              </Link>
 
               {/* News Highlight - Dynamic */}
-              <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-                className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden border border-blue-200"
+              <Link href="/news" className="block group">
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                  className="backdrop-blur-md bg-white/20 border-white/30 rounded-xl shadow-lg overflow-hidden border group-hover:bg-white/30 group-hover:scale-105 hover:shadow-blue-200 hover:shadow-xl transition-all duration-300 cursor-pointer"
               >
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2">
                   <div className="flex items-center justify-between text-white">
@@ -601,16 +587,16 @@ function StandardHomepage() {
                     <div className="text-center text-gray-500">
                       <div className="text-2xl mb-2">📰</div>
                       <div className="text-sm">No recent news</div>
-                      <Link 
-                        href="/news" 
-                        className="inline-block bg-blue-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm mt-2"
+                      <span 
+                        className="inline-block bg-blue-600 text-white px-4 py-1 rounded-lg font-semibold group-hover:bg-blue-700 transition-colors text-sm mt-2"
                       >
                         View News
-                      </Link>
+                      </span>
                     </div>
                   )}
                 </div>
-              </motion.div>
+                </motion.div>
+              </Link>
             </div>
           </div>
         </section>

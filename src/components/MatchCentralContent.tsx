@@ -696,6 +696,8 @@ function CollapsibleTeamCard({
       </AnimatePresence>
     </div>
   );
+}
+
 }export default function MatchCentralContent() {
   const router = useRouter();
   const { user, profile, signOut } = useAuth();

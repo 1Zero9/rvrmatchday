@@ -3,15 +3,23 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'rvr-mobile-v1.0.0';
-const STATIC_CACHE_NAME = 'rvr-static-v1.0.0';
+const CACHE_NAME = 'rvr-mobile-v2.0.0';
+const STATIC_CACHE_NAME = 'rvr-static-v2.0.0';
+const IMAGE_CACHE_NAME = 'rvr-images-v2.0.0';
 
-// Assets to cache for offline use
-const STATIC_ASSETS = [
+// Critical assets for LCP optimization
+const CRITICAL_ASSETS = [
   '/mobile-app',
   '/images/logo.png',
+  '/images/hero/astro-ward.png',
+  '/mobile-manifest.json'
+];
+
+// Additional static assets
+const STATIC_ASSETS = [
+  ...CRITICAL_ASSETS,
   '/images/hero/halftime2.jpg',
-  // Add other critical assets
+  // Fonts and other resources
 ];
 
 // API endpoints to cache

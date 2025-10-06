@@ -1,349 +1,625 @@
 /**
- * 📱 MOBILE MATCH RECORDER
- * Simple, fast match recording for coaches on the sideline
- * Optimized for touch interaction and speed
+ * ⚽ SIDELINE MATCH TRACKER
+ * Standalone mobile app for parents/coaches at the sideline
+ * No data saved - purely for live tracking and sharing
+ * Mobile-first with big buttons for easy use
  */
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MobileLoading, MobileError } from './MobileAppCore';
+import React, { useState, useEffect, useRef } from 'react';
+import { Share, RotateCcw, Play, Pause, SquareStop } from 'lucide-react';
 
-interface Player {
-  id: string;
-  name: string;
-  position: string;
-  number?: number;
-}
+// Mobile-optimized background styles
+const mobileBackgroundStyle = {
+  backgroundImage: 'url(/images/hero/ariel-pitch.jpg)',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center center',
+  backgroundRepeat: 'no-repeat',
+  backgroundAttachment: 'local', // Better mobile support
+  minHeight: '100vh',
+  // iOS Safari viewport height fix
+  minHeight: '100dvh'
+};
 
 interface MatchEvent {
   id: string;
-  type: 'goal' | 'assist' | 'yellow' | 'red' | 'sub';
-  playerId: string;
-  playerName: string;
+  type: 'goal' | 'event';
+  team: 'home' | 'away';
   minute: number;
   timestamp: Date;
+  note?: string;
 }
 
 interface MobileMatchRecordProps {
   onBack: () => void;
 }
 
+type AppScreen = 'disclaimer' | 'setup' | 'match' | 'complete';
+
 export default function MobileMatchRecord({ onBack }: MobileMatchRecordProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>('setup');
+  const [agreedToDisclaimer, setAgreedToDisclaimer] = useState(false);
+  const [homeTeam, setHomeTeam] = useState('');
+  const [awayTeam, setAwayTeam] = useState('');
+  const [selectedRVRTeam, setSelectedRVRTeam] = useState('');
+  const [teamType, setTeamType] = useState('');
   const [events, setEvents] = useState<MatchEvent[]>([]);
   const [currentMinute, setCurrentMinute] = useState(0);
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
-  const [showEventOptions, setShowEventOptions] = useState(false);
+  const [currentSecond, setCurrentSecond] = useState(0);
   const [homeScore, setHomeScore] = useState(0);
   const [awayScore, setAwayScore] = useState(0);
+  const [matchStarted, setMatchStarted] = useState(false);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [matchDuration, setMatchDuration] = useState(90); // Default 90 minutes
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const wakeLockRef = useRef<any>(null);
 
-  // Load team players
+  // Team types and age groups
+  const teamTypes = [
+    { value: 'boys', label: 'Boys' },
+    { value: 'girls', label: 'Girls' },
+    { value: 'ladies', label: 'Ladies' },
+    { value: 'men', label: 'Men' },
+    { value: 'seniors', label: 'Seniors' },
+    { value: 'overs', label: 'Over 35s' },
+    { value: 'vets', label: 'Veterans' }
+  ];
+
+  const ageGroups = [
+    'U9', 'U10', 'U11', 'U12', 'U13', 'U14', 'U15', 'U16', 'U17', 'U18', 'Adult', 'Academy'
+  ];
+
+  // Generate team name from selections
+  const generateTeamName = () => {
+    if (!teamType || !selectedRVRTeam) return '';
+    
+    const typeLabel = teamTypes.find(t => t.value === teamType)?.label || '';
+    if (selectedRVRTeam === 'Adult') {
+      return `RVR ${typeLabel}`;
+    }
+    return `RVR ${typeLabel} ${selectedRVRTeam}`;
+  };
+
+  // Keep screen awake during match
   useEffect(() => {
-    const loadPlayers = async () => {
+    const requestWakeLock = async () => {
       try {
-        setIsLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock player data
-        setPlayers([
-          { id: '1', name: 'John Murphy', position: 'GK', number: 1 },
-          { id: '2', name: 'Sean Kelly', position: 'DF', number: 2 },
-          { id: '3', name: 'Michael O\'Brien', position: 'DF', number: 3 },
-          { id: '4', name: 'David Walsh', position: 'MF', number: 4 },
-          { id: '5', name: 'James Ryan', position: 'MF', number: 5 },
-          { id: '6', name: 'Patrick Byrne', position: 'FW', number: 6 },
-          { id: '7', name: 'Thomas McCarthy', position: 'FW', number: 7 },
-          { id: '8', name: 'Christopher Doyle', position: 'MF', number: 8 },
-          { id: '9', name: 'Kevin Sullivan', position: 'FW', number: 9 },
-          { id: '10', name: 'Andrew Quinn', position: 'MF', number: 10 },
-          { id: '11', name: 'Robert Connor', position: 'FW', number: 11 }
-        ]);
-        
-        setIsLoading(false);
+        if ('wakeLock' in navigator && isTimerRunning) {
+          wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+          console.log('Screen wake lock activated');
+        }
       } catch (err) {
-        setError('Failed to load team data');
-        setIsLoading(false);
+        console.log('Wake lock not supported:', err);
       }
     };
 
-    loadPlayers();
-  }, []);
+    const releaseWakeLock = () => {
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release();
+        wakeLockRef.current = null;
+        console.log('Screen wake lock released');
+      }
+    };
 
-  // Add event
-  const addEvent = (type: MatchEvent['type']) => {
-    if (!selectedPlayer) return;
+    if (isTimerRunning) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
 
+    return () => {
+      releaseWakeLock();
+    };
+  }, [isTimerRunning]);
+
+  // Timer functionality
+  useEffect(() => {
+    if (isTimerRunning) {
+      timerRef.current = setInterval(() => {
+        setCurrentSecond(prev => {
+          if (prev >= 59) {
+            setCurrentMinute(prevMin => {
+              const newMinute = prevMin + 1;
+              // Auto-end match if duration is reached
+              if (newMinute >= matchDuration) {
+                setIsTimerRunning(false);
+                // Could auto-trigger match end here
+              }
+              return newMinute;
+            });
+            return 0;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isTimerRunning, matchDuration]);
+
+  // Start/Stop timer
+  const toggleTimer = () => {
+    setIsTimerRunning(prev => !prev);
+    if (!matchStarted) {
+      setMatchStarted(true);
+    }
+  };
+
+  // Reset timer
+  const resetTimer = () => {
+    setIsTimerRunning(false);
+    setCurrentMinute(0);
+    setCurrentSecond(0);
+    setMatchStarted(false);
+  };
+
+  // Format time display
+  const formatTime = () => {
+    const displayMinute = String(currentMinute).padStart(2, '0');
+    const displaySecond = String(currentSecond).padStart(2, '0');
+    return `${displayMinute}:${displaySecond}`;
+  };
+
+  // Add goal with team tracking
+  const addGoal = (team: 'home' | 'away') => {
     const newEvent: MatchEvent = {
       id: `${Date.now()}-${Math.random()}`,
-      type,
-      playerId: selectedPlayer.id,
-      playerName: selectedPlayer.name,
+      type: 'goal',
+      team,
       minute: currentMinute,
       timestamp: new Date()
     };
 
     setEvents(prev => [...prev, newEvent]);
-
-    // Update score for goals
-    if (type === 'goal') {
+    
+    if (team === 'home') {
       setHomeScore(prev => prev + 1);
-    }
-
-    // Close modals
-    setSelectedPlayer(null);
-    setShowEventOptions(false);
-  };
-
-  // Remove event
-  const removeEvent = (eventId: string) => {
-    const event = events.find(e => e.id === eventId);
-    if (event?.type === 'goal') {
-      setHomeScore(prev => Math.max(0, prev - 1));
-    }
-    setEvents(prev => prev.filter(e => e.id !== eventId));
-  };
-
-  // Get event icon and color
-  const getEventDisplay = (type: MatchEvent['type']) => {
-    switch (type) {
-      case 'goal': return { icon: '⚽', color: 'text-green-600', bg: 'bg-green-100' };
-      case 'assist': return { icon: '👟', color: 'text-blue-600', bg: 'bg-blue-100' };
-      case 'yellow': return { icon: '🟨', color: 'text-yellow-600', bg: 'bg-yellow-100' };
-      case 'red': return { icon: '🟥', color: 'text-red-600', bg: 'bg-red-100' };
-      case 'sub': return { icon: '🔄', color: 'text-purple-600', bg: 'bg-purple-100' };
-      default: return { icon: '📝', color: 'text-gray-600', bg: 'bg-gray-100' };
+    } else {
+      setAwayScore(prev => prev + 1);
     }
   };
 
-  if (isLoading) {
+  // Remove goal
+  const removeGoal = (team: 'home' | 'away') => {
+    if (team === 'home' && homeScore > 0) {
+      setHomeScore(prev => prev - 1);
+      // Remove last home goal from events
+      const lastHomeGoalIndex = events.map((e, i) => ({ ...e, index: i })).reverse().find(e => e.type === 'goal' && e.team === 'home')?.index;
+      if (lastHomeGoalIndex !== undefined) {
+        setEvents(prev => prev.filter((_, i) => i !== lastHomeGoalIndex));
+      }
+    } else if (team === 'away' && awayScore > 0) {
+      setAwayScore(prev => prev - 1);
+      // Remove last away goal from events
+      const lastAwayGoalIndex = events.map((e, i) => ({ ...e, index: i })).reverse().find(e => e.type === 'goal' && e.team === 'away')?.index;
+      if (lastAwayGoalIndex !== undefined) {
+        setEvents(prev => prev.filter((_, i) => i !== lastAwayGoalIndex));
+      }
+    }
+  };
+
+  // Generate match summary for sharing
+  const generateMatchSummary = () => {
+    const duration = currentMinute;
+    const date = new Date().toLocaleDateString();
+    const time = new Date().toLocaleTimeString();
+    
+    return `⚽ Match Result ⚽
+${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}
+Date: ${date}
+Duration: ${duration} minutes
+Total Events: ${events.length}
+
+📱 Tracked with RVR Sideline Tracker`;
+  };
+
+  // Share match results
+  const shareMatch = () => {
+    const summary = generateMatchSummary();
+    if (navigator.share) {
+      navigator.share({
+        title: 'Match Result',
+        text: summary
+      });
+    } else {
+      // Fallback for browsers without Web Share API
+      navigator.clipboard.writeText(summary);
+      alert('Match summary copied to clipboard!');
+    }
+  };
+
+  // Reset match
+  const resetMatch = () => {
+    if (confirm('Are you sure you want to reset the match? All data will be lost.')) {
+      setHomeScore(0);
+      setAwayScore(0);
+      setCurrentMinute(0);
+      setEvents([]);
+      setMatchStarted(false);
+      setCurrentScreen('setup');
+    }
+  };
+
+
+  // Setup Screen with RVR Team Wizard
+  if (currentScreen === 'setup') {
     return (
-      <div className="p-6">
-        <MobileLoading />
-        <p className="text-center text-gray-600 mt-4">Loading team data...</p>
-      </div>
-    );
-  }
+      <div 
+        className="relative flex items-center justify-center p-4"
+        style={{
+          minHeight: '100vh',
+          minHeight: '100dvh' // Dynamic viewport height for mobile
+        }}
+      >
+        {/* Background image as a separate layer for better mobile support */}
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={mobileBackgroundStyle}
+        ></div>
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="relative z-10 bg-white/95 backdrop-blur-sm rounded-3xl p-8 max-w-md w-full shadow-2xl">
+          <div className="text-center mb-6">
+            <div className="text-5xl mb-4">⚽</div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Match Setup</h1>
+            <p className="text-gray-600">Set up your match tracking</p>
+          </div>
+          
+          <div className="space-y-6 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Team Type</label>
+              <select
+                value={teamType}
+                onChange={(e) => {
+                  setTeamType(e.target.value);
+                  // Auto-update home team when selections change
+                  if (e.target.value && selectedRVRTeam) {
+                    const typeLabel = teamTypes.find(t => t.value === e.target.value)?.label || '';
+                    const teamName = selectedRVRTeam === 'Adult' ? `RVR ${typeLabel}` : `RVR ${typeLabel} ${selectedRVRTeam}`;
+                    setHomeTeam(teamName);
+                  }
+                }}
+                className="w-full px-4 py-4 border border-gray-300 rounded-xl text-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">Select Team Type</option>
+                {teamTypes.map(type => (
+                  <option key={type.value} value={type.value}>{type.label}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Age Group</label>
+              <select
+                value={selectedRVRTeam}
+                onChange={(e) => {
+                  setSelectedRVRTeam(e.target.value);
+                  // Auto-update home team when selections change
+                  if (teamType && e.target.value) {
+                    const typeLabel = teamTypes.find(t => t.value === teamType)?.label || '';
+                    const teamName = e.target.value === 'Adult' ? `RVR ${typeLabel}` : `RVR ${typeLabel} ${e.target.value}`;
+                    setHomeTeam(teamName);
+                  }
+                }}
+                className="w-full px-4 py-4 border border-gray-300 rounded-xl text-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">Select Age Group</option>
+                {ageGroups.map(age => (
+                  <option key={age} value={age}>{age}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Opposition Team</label>
+              <input
+                type="text"
+                value={awayTeam}
+                onChange={(e) => setAwayTeam(e.target.value)}
+                placeholder="e.g. City United FC"
+                className="w-full px-4 py-4 border border-gray-300 rounded-xl text-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
 
-  if (error) {
-    return (
-      <div className="p-6">
-        <MobileError message={error} onRetry={() => window.location.reload()} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="pb-24 min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setCurrentScreen('match')}
+            disabled={!teamType || !selectedRVRTeam || !awayTeam.trim()}
+            className="w-full py-4 px-6 bg-green-600 text-white rounded-xl font-bold text-lg disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg hover:bg-green-700 transition-colors mb-3"
+          >
+            Start Match Tracking
+          </button>
+          
           <button
             onClick={onBack}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+            className="w-full py-3 px-6 text-gray-600 font-medium hover:text-gray-800 transition-colors"
           >
-            <span className="text-xl">←</span>
-            <span>Back</span>
+            Cancel
           </button>
-          <h1 className="font-bold text-lg">Match Recorder</h1>
-          <div className="w-16"></div> {/* Spacer */}
+        </div>
+      </div>
+    );
+  }
+
+  // Match Complete Screen with sharing
+  if (currentScreen === 'complete') {
+    return (
+      <div 
+        className="relative flex items-center justify-center p-4"
+        style={{
+          minHeight: '100vh',
+          minHeight: '100dvh'
+        }}
+      >
+        {/* Background image as a separate layer for better mobile support */}
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={mobileBackgroundStyle}
+        ></div>
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="relative z-10 bg-white/95 backdrop-blur-sm rounded-3xl p-8 max-w-md w-full shadow-2xl">
+          <div className="text-center mb-6">
+            <div className="text-6xl mb-4">🏆</div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Match Complete!</h1>
+          </div>
+          
+          <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl p-6 mb-6 border">
+            <div className="text-center">
+              <h2 className="font-bold text-xl mb-3">{homeTeam} vs {awayTeam}</h2>
+              <div className="text-5xl font-bold text-blue-600 mb-3">
+                {homeScore} - {awayScore}
+              </div>
+              <p className="text-gray-600">
+                Duration: {formatTime()} • {events.length} goals
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3 mb-6">
+            <button
+              onClick={shareMatch}
+              className="w-full py-4 px-6 bg-blue-600 text-white rounded-xl font-bold text-lg flex items-center justify-center space-x-2 shadow-lg hover:bg-blue-700 transition-colors"
+            >
+              <Share size={20} />
+              <span>Share Result</span>
+            </button>
+            
+            <button
+              onClick={() => {
+                setHomeScore(0);
+                setAwayScore(0);
+                setCurrentMinute(0);
+                setCurrentSecond(0);
+                setEvents([]);
+                setMatchStarted(false);
+                setIsTimerRunning(false);
+                setSelectedRVRTeam('');
+                setTeamType('');
+                setHomeTeam('');
+                setAwayTeam('');
+                setCurrentScreen('setup');
+              }}
+              className="w-full py-4 px-6 bg-green-600 text-white rounded-xl font-bold text-lg flex items-center justify-center space-x-2 shadow-lg hover:bg-green-700 transition-colors"
+            >
+              <RotateCcw size={20} />
+              <span>New Match</span>
+            </button>
+          </div>
+          
+          <button
+            onClick={onBack}
+            className="w-full py-3 px-6 text-gray-600 font-medium hover:text-gray-800 transition-colors"
+          >
+            Exit Tracker
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Main Match Tracking Screen  
+  return (
+    <div 
+      className="relative"
+      style={{
+        minHeight: '100vh',
+        minHeight: '100dvh'
+      }}
+    >
+      {/* Background image as a separate layer for better mobile support */}
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={mobileBackgroundStyle}
+      ></div>
+      {/* Background overlay for readability */}
+      <div className="absolute inset-0 bg-black/30"></div>
+      <div className="relative z-10">
+      {/* Header with teams and back button */}
+      <div className="bg-white border-b border-gray-200 p-4">
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={onBack}
+            className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+          >
+            ← Exit
+          </button>
+          <button
+            onClick={resetMatch}
+            className="text-red-600 hover:text-red-800 text-sm font-medium"
+          >
+            Reset
+          </button>
+        </div>
+        <div className="text-center">
+          <h1 className="font-bold text-lg text-gray-900">{homeTeam} vs {awayTeam}</h1>
         </div>
       </div>
 
-      {/* Score Display */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-[#972A4C] to-[#5E7794] text-white p-6"
-      >
-        <div className="text-center">
-          <h2 className="text-lg font-bold mb-4">RVR Rangers U12</h2>
-          <div className="flex items-center justify-center space-x-8">
-            <div className="text-center">
-              <div className="text-4xl font-bold">{homeScore}</div>
-              <div className="text-sm opacity-80">Home</div>
-            </div>
-            <div className="text-2xl opacity-60">-</div>
-            <div className="text-center">
-              <div className="text-4xl font-bold">{awayScore}</div>
-              <div className="text-sm opacity-80">Away</div>
+      {/* Main Scoreboard */}
+      <div className="bg-blue-600 text-white p-8">
+        <div className="text-center mb-8">
+          <div className="text-lg font-medium mb-2">Match Time</div>
+          
+          {/* Timer Display */}
+          <div className="mb-4">
+            <div className="bg-white/20 rounded-2xl px-8 py-4 backdrop-blur-sm">
+              <span className="text-4xl font-bold font-mono">{formatTime()}</span>
             </div>
           </div>
-          
-          {/* Match Time */}
-          <div className="mt-4 flex items-center justify-center space-x-4">
+
+          {/* Timer Controls */}
+          <div className="flex items-center justify-center space-x-4 mb-4">
             <button
-              onClick={() => setCurrentMinute(Math.max(0, currentMinute - 1))}
-              className="bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-xl"
+              onClick={toggleTimer}
+              className="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold hover:bg-white/30 transition-colors"
+              title={isTimerRunning ? 'Pause Timer' : 'Start Timer'}
+            >
+              {isTimerRunning ? <Pause size={24} /> : <Play size={24} />}
+            </button>
+            <button
+              onClick={resetTimer}
+              className="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center text-xl font-bold hover:bg-white/30 transition-colors"
+              title="Reset Timer"
+            >
+              <SquareStop size={20} />
+            </button>
+          </div>
+
+          {/* Manual Time Adjust (for added time, corrections) */}
+          <div className="flex items-center justify-center space-x-3">
+            <span className="text-sm opacity-80">Manual adjust:</span>
+            <button
+              onClick={() => {
+                if (currentSecond > 0) {
+                  setCurrentSecond(prev => prev - 1);
+                } else if (currentMinute > 0) {
+                  setCurrentMinute(prev => prev - 1);
+                  setCurrentSecond(59);
+                }
+              }}
+              className="bg-white/20 rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold hover:bg-white/30 transition-colors"
             >
               -
             </button>
-            <div className="bg-white/20 rounded-xl px-4 py-2">
-              <span className="text-xl font-bold">{currentMinute}'</span>
-            </div>
             <button
-              onClick={() => setCurrentMinute(currentMinute + 1)}
-              className="bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-xl"
+              onClick={() => {
+                if (currentSecond >= 59) {
+                  setCurrentMinute(prev => prev + 1);
+                  setCurrentSecond(0);
+                } else {
+                  setCurrentSecond(prev => prev + 1);
+                }
+              }}
+              className="bg-white/20 rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold hover:bg-white/30 transition-colors"
             >
               +
             </button>
           </div>
         </div>
-      </motion.div>
 
-      {/* Quick Action Buttons */}
-      <div className="p-4 bg-white border-b border-gray-200">
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => addEvent('goal')}
-            className="bg-green-500 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center space-x-2 hover:bg-green-600 transition-colors"
-          >
-            <span>⚽</span>
-            <span>Quick Goal</span>
-          </button>
-          <button
-            onClick={() => setShowEventOptions(true)}
-            className="bg-blue-500 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center space-x-2 hover:bg-blue-600 transition-colors"
-          >
-            <span>📝</span>
-            <span>Add Event</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Player Selection Grid */}
-      <div className="p-4">
-        <h3 className="font-bold text-gray-800 mb-4">Select Player</h3>
-        <div className="grid grid-cols-3 gap-3">
-          {players.map((player) => (
-            <motion.button
-              key={player.id}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedPlayer(player)}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                selectedPlayer?.id === player.id
-                  ? 'border-[#972A4C] bg-[#972A4C]/10'
-                  : 'border-gray-200 bg-white hover:border-gray-300'
-              }`}
-            >
-              <div className="text-center">
-                <div className="font-bold text-lg">{player.number}</div>
-                <div className="text-xs text-gray-600 mt-1 truncate">{player.name}</div>
-                <div className="text-xs text-gray-500">{player.position}</div>
-              </div>
-            </motion.button>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Events */}
-      {events.length > 0 && (
-        <div className="p-4">
-          <h3 className="font-bold text-gray-800 mb-4">Recent Events</h3>
-          <div className="space-y-2">
-            {events.slice(-5).reverse().map((event) => {
-              const display = getEventDisplay(event.type);
-              return (
-                <motion.div
-                  key={event.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className={`flex items-center justify-between p-3 rounded-lg ${display.bg}`}
+        {/* Score Display with Integrated Controls */}
+        <div className="bg-white/10 rounded-3xl p-6 backdrop-blur-sm">
+          <div className="grid grid-cols-3 gap-4 items-center">
+            
+            {/* Home Team */}
+            <div className="text-center">
+              <div className="text-sm opacity-80 mb-2 truncate">{homeTeam}</div>
+              <div className="flex flex-col items-center space-y-3">
+                <button
+                  onClick={() => addGoal('home')}
+                  className="w-12 h-12 bg-green-500 text-white rounded-full text-2xl font-bold shadow-lg hover:bg-green-600 transition-colors"
                 >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-xl">{display.icon}</span>
-                    <div>
-                      <div className="font-medium text-gray-900">{event.playerName}</div>
-                      <div className="text-sm text-gray-600">{event.minute}' - {event.type}</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => removeEvent(event.id)}
-                    className="text-red-600 hover:text-red-800 p-2"
-                  >
-                    ×
-                  </button>
-                </motion.div>
-              );
-            })}
+                  +
+                </button>
+                <div className="text-5xl font-bold">{homeScore}</div>
+                <button
+                  onClick={() => removeGoal('home')}
+                  disabled={homeScore === 0}
+                  className="w-12 h-12 bg-red-500 text-white rounded-full text-2xl font-bold shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-red-600 transition-colors"
+                >
+                  -
+                </button>
+              </div>
+            </div>
+
+            {/* VS Separator */}
+            <div className="text-center">
+              <div className="text-2xl opacity-60 font-bold">VS</div>
+            </div>
+
+            {/* Away Team */}
+            <div className="text-center">
+              <div className="text-sm opacity-80 mb-2 truncate">{awayTeam}</div>
+              <div className="flex flex-col items-center space-y-3">
+                <button
+                  onClick={() => addGoal('away')}
+                  className="w-12 h-12 bg-green-500 text-white rounded-full text-2xl font-bold shadow-lg hover:bg-green-600 transition-colors"
+                >
+                  +
+                </button>
+                <div className="text-5xl font-bold">{awayScore}</div>
+                <button
+                  onClick={() => removeGoal('away')}
+                  disabled={awayScore === 0}
+                  className="w-12 h-12 bg-red-500 text-white rounded-full text-2xl font-bold shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-red-600 transition-colors"
+                >
+                  -
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Event Options Modal */}
-      <AnimatePresence>
-        {showEventOptions && selectedPlayer && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-end z-50"
-            onClick={() => setShowEventOptions(false)}
+      {/* Quick Actions */}
+      <div className="p-6">
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <button
+            onClick={() => {
+              setHomeScore(0);
+              setAwayScore(0);
+              setEvents([]);
+              resetTimer();
+            }}
+            className="py-4 px-6 bg-gray-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-gray-700 transition-colors"
           >
-            <motion.div
-              initial={{ y: 300 }}
-              animate={{ y: 0 }}
-              exit={{ y: 300 }}
-              className="bg-white rounded-t-2xl p-6 w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="text-center mb-6">
-                <h3 className="font-bold text-lg">Add Event</h3>
-                <p className="text-gray-600">For {selectedPlayer.name}</p>
-              </div>
+            Reset All
+          </button>
+          <button
+            onClick={() => setCurrentScreen('complete')}
+            className="py-4 px-6 bg-green-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-green-700 transition-colors"
+          >
+            End Match
+          </button>
+        </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => addEvent('goal')}
-                  className="bg-green-500 text-white py-4 rounded-xl font-bold flex items-center justify-center space-x-2"
-                >
-                  <span>⚽</span>
-                  <span>Goal</span>
-                </button>
-                <button
-                  onClick={() => addEvent('assist')}
-                  className="bg-blue-500 text-white py-4 rounded-xl font-bold flex items-center justify-center space-x-2"
-                >
-                  <span>👟</span>
-                  <span>Assist</span>
-                </button>
-                <button
-                  onClick={() => addEvent('yellow')}
-                  className="bg-yellow-500 text-white py-4 rounded-xl font-bold flex items-center justify-center space-x-2"
-                >
-                  <span>🟨</span>
-                  <span>Yellow</span>
-                </button>
-                <button
-                  onClick={() => addEvent('red')}
-                  className="bg-red-500 text-white py-4 rounded-xl font-bold flex items-center justify-center space-x-2"
-                >
-                  <span>🟥</span>
-                  <span>Red Card</span>
-                </button>
-              </div>
-
-              <button
-                onClick={() => setShowEventOptions(false)}
-                className="w-full mt-4 py-3 text-gray-600 hover:text-gray-900"
-              >
-                Cancel
-              </button>
-            </motion.div>
-          </motion.div>
+        {/* Recent Events - Simplified */}
+        {events.length > 0 && (
+          <div className="bg-white rounded-2xl p-4 shadow-lg">
+            <h3 className="font-bold text-gray-900 mb-3">Goals</h3>
+            <div className="space-y-2">
+              {events.slice(-3).reverse().map((event) => (
+                <div key={event.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl">⚽</span>
+                    <span className="font-medium text-gray-900">
+                      {event.team === 'home' ? homeTeam : awayTeam}
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-600">{event.minute}'</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
-      </AnimatePresence>
-
-      {/* Save Match Button */}
-      <div className="fixed bottom-20 left-4 right-4">
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          className="w-full bg-[#972A4C] text-white py-4 rounded-xl font-bold text-lg shadow-lg"
-        >
-          Save Match
-        </motion.button>
+      </div>
       </div>
     </div>
   );

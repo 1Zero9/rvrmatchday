@@ -1,12 +1,16 @@
 {
-  "name": "RVR AFC Mobile App",
+  "name": "RVR AFC - Matchday Madness",
   "short_name": "RVR AFC",
-  "description": "Rivervalley Rangers AFC Mobile Application",
+  "description": "🔥 Where champions are made since 1981! Your matchday command center ⚡",
   "start_url": "/mobile-app",
   "display": "standalone",
   "background_color": "#972A4C",
   "theme_color": "#972A4C",
   "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-GB",
+  "dir": "ltr",
+  "categories": ["sports", "lifestyle", "entertainment"],
   "icons": [
     {
       "src": "/images/logo.png",
@@ -17,26 +21,73 @@
     {
       "src": "/images/logo.png",
       "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "categories": ["sports", "lifestyle"],
-  "lang": "en",
-  "scope": "/mobile-app",
-  "shortcuts": [
-    {
-      "name": "Record Match",
-      "short_name": "Record",
-      "description": "Quick match recording",
-      "url": "/mobile-app?screen=match-record",
-      "icons": [{"src": "/images/logo.png", "sizes": "96x96"}]
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "name": "Fixtures",
+      "src": "/images/logo.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/hero/astro-ward.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "RVR AFC Mobile - Matchday Experience"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "🔥 Next Battles",
       "short_name": "Fixtures",
-      "description": "View fixtures and results",
+      "description": "See what battles await!",
       "url": "/mobile-app?screen=fixtures",
-      "icons": [{"src": "/images/logo.png", "sizes": "96x96"}]
+      "icons": [{"src": "/images/logo.png", "sizes": "96x96", "type": "image/png"}]
+    },
+    {
+      "name": "🏆 Victory Stories",
+      "short_name": "Results",
+      "description": "Relive the glory moments",
+      "url": "/mobile-app?screen=results",
+      "icons": [{"src": "/images/logo.png", "sizes": "96x96", "type": "image/png"}]
+    },
+    {
+      "name": "💪 Our Warriors",
+      "short_name": "Teams",
+      "description": "Meet the squad",
+      "url": "/mobile-app?screen=teams",
+      "icons": [{"src": "/images/logo.png", "sizes": "96x96", "type": "image/png"}]
+    },
+    {
+      "name": "⚡ Power Up (Login)",
+      "short_name": "Login",
+      "description": "Unlock coach superpowers",
+      "url": "/login?returnTo=/mobile-app",
+      "icons": [{"src": "/images/logo.png", "sizes": "96x96", "type": "image/png"}]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+rvrafc",
+      "url": "/mobile-app?action=%s"
     }
   ]
 }

@@ -264,13 +264,20 @@ export default function MatchDay() {
   return (
     <StandardLayout>
       <div className="min-h-screen">
-        {/* Mobile Version - Direct branded container */}
-        <div className="block md:hidden min-h-screen bg-gradient-to-br from-[var(--club-primary)] via-[var(--club-primary)] to-[var(--club-primary)]/95 relative">
+        {/* Mobile Version - Enhanced with glass morphism */}
+        <div className="block md:hidden min-h-screen bg-gradient-to-br from-gray-100 via-green-50 to-gray-100 relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-30">
+            <div className="w-full h-full" style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%2322c55e' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'repeat'
+            }}></div>
+          </div>
           {/* Mobile Navigation */}
           <MobileNavigationPro currentPage="/matchday" />
           
           {/* Mobile Content */}
-          <div className="px-4 py-6 pt-20"> {/* pt-20 to account for fixed nav */}
+          <div className="px-4 py-6 pt-20 relative z-10"> {/* pt-20 to account for fixed nav */}
 
             {/* Mobile Tab Navigation */}
             <div className="mb-6">
@@ -286,7 +293,7 @@ export default function MatchDay() {
                     className={`flex-1 py-4 px-4 text-sm font-bold rounded-2xl transition-all duration-300 backdrop-blur-xl border-2 transform hover:scale-105 shadow-lg ${
                       activeTab === tab.key
                         ? `bg-gradient-to-br ${tab.colors} text-white shadow-xl scale-105`
-                        : 'bg-white/10 text-white/80 hover:bg-white/20 border-white/20 hover:text-white'
+                        : 'bg-white/70 text-gray-700 hover:bg-white/90 border-white/50 hover:text-gray-900'
                     }`}
                   >
                     <div className="flex items-center justify-center space-x-2">
@@ -301,10 +308,10 @@ export default function MatchDay() {
             {/* Mobile Content */}
             {activeTab === 'results' && (
               <div className="space-y-3">
-                <h2 className="font-bold text-sm text-white mb-4">Recent Results</h2>
+                <h2 className="font-bold text-lg text-gray-900 mb-4">Recent Results</h2>
                 {recentResults.length === 0 ? (
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 text-center">
-                    <p className="text-white/70">No recent results</p>
+                  <div className="bg-white/90 backdrop-blur-sm rounded-xl border border-white/50 p-6 text-center shadow-md">
+                    <p className="text-gray-600">No recent results</p>
                   </div>
                 ) : (
                   recentResults.slice(0, 5).map((match, index) => {
@@ -313,33 +320,42 @@ export default function MatchDay() {
                     if (!team) return null;
                     
                     return (
-                      <div key={match.id} className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl">
+                      <motion.div 
+                        key={match.id} 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-white/90 backdrop-blur-xl rounded-2xl border border-white/50 p-4 shadow-md"
+                      >
                         <div className="flex items-center justify-between mb-2">
-                          <div className="text-sm text-white/90 font-medium">
+                          <div className="text-sm text-gray-600 font-medium">
                             {new Date(match.scheduledDate).toLocaleDateString('en-GB', {
                               day: 'numeric',
                               month: 'short'
                             })}
                           </div>
                           <div className={`px-2 py-1 rounded text-xs font-bold ${
-                            result.result === 'W' ? 'bg-green-500/20 text-green-200' : 
-                            result.result === 'L' ? 'bg-red-500/20 text-red-200' : 'bg-yellow-500/20 text-yellow-200'
+                            result.result === 'W' ? 'bg-green-100 text-green-800' : 
+                            result.result === 'L' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
                           }`}>
                             {result.result}
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-semibold text-white">{team.name}</div>
-                            <div className="text-sm text-white/80">vs {match.opponent}</div>
+                            <div className="font-semibold text-gray-900">{team.name}</div>
+                            <div className="text-sm text-gray-600">vs {match.opponent}</div>
                           </div>
                           <div className="text-right">
-                            <div className="text-2xl font-bold text-white">
+                            <div className={`text-2xl font-bold ${
+                              result.result === 'W' ? 'text-green-600' : 
+                              result.result === 'L' ? 'text-red-600' : 'text-yellow-600'
+                            }`}>
                               {result.teamScore} - {result.opponentScore}
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })
                 )}
@@ -348,10 +364,10 @@ export default function MatchDay() {
 
             {activeTab === 'fixtures' && (
               <div className="space-y-3">
-                <h2 className="font-bold text-sm text-white mb-4">Upcoming Fixtures</h2>
+                <h2 className="font-bold text-lg text-gray-900 mb-4">Upcoming Fixtures</h2>
                 {upcomingFixtures.length === 0 ? (
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 text-center">
-                    <p className="text-white/70">No upcoming fixtures</p>
+                  <div className="bg-white/90 backdrop-blur-sm rounded-xl border border-white/50 p-6 text-center shadow-md">
+                    <p className="text-gray-600">No upcoming fixtures</p>
                   </div>
                 ) : (
                   upcomingFixtures.slice(0, 5).map((match, index) => {
@@ -359,29 +375,37 @@ export default function MatchDay() {
                     if (!team) return null;
                     
                     return (
-                      <div key={match.id} className="bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30 p-4 shadow-2xl">
+                      <motion.div 
+                        key={match.id} 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-white/90 backdrop-blur-xl rounded-2xl border border-white/50 p-4 shadow-md"
+                      >
                         <div className="flex items-center justify-between mb-2">
-                          <div className="text-sm font-medium text-white/90">
+                          <div className="text-sm font-medium text-gray-600">
                             {new Date(match.scheduledDate).toLocaleDateString('en-GB', {
                               weekday: 'short',
                               day: 'numeric',
                               month: 'short'
                             })}
                           </div>
-                          <div className="text-sm text-white/80">
+                          <div className={`text-sm px-2 py-1 rounded ${
+                            match.isHomeMatch ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
                             {match.isHomeMatch ? 'Home' : 'Away'}
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-semibold text-white">{team.name}</div>
-                            <div className="text-sm text-white/80">vs {match.opponent}</div>
+                            <div className="font-semibold text-gray-900">{team.name}</div>
+                            <div className="text-sm text-gray-600">vs {match.opponent}</div>
                           </div>
-                          <div className="text-right text-sm text-white/90">
+                          <div className="text-right text-sm text-gray-600">
                             {match.venue}
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })
                 )}

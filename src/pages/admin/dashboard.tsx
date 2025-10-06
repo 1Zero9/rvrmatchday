@@ -26,6 +26,7 @@ import AdminChangelog from '../../components/AdminChangelog';
 import SessionRecording from '../../components/SessionRecording';
 import CardAuthorityManager from '../../components/CardAuthorityManager';
 import AdminEventLogDashboard from '../../components/AdminEventLogDashboard';
+import MobileSettings from '../../components/admin/MobileSettings';
 import { supabase } from '../../lib/supabase';
 
 interface AdminSection {
@@ -247,6 +248,10 @@ function WrappedAdminChangelog() {
 
 function WrappedSessionRecording() {
   return <SessionRecording />;
+}
+
+function WrappedMobileSettings() {
+  return <MobileSettings />;
 }
 
 function WrappedAdminEventLogDashboard() {
@@ -617,6 +622,15 @@ function UnifiedAdminDashboard() {
       requiredRoles: ['admin', 'editor'],
       color: 'bg-gradient-to-r from-green-600 to-emerald-700',
       component: WrappedNewsManager
+    },
+    {
+      id: 'mobile-settings',
+      title: 'Mobile App Settings',
+      icon: '📱',
+      description: 'Configure mobile app features and access controls',
+      requiredRoles: ['admin'],
+      color: 'bg-gradient-to-r from-blue-500 to-cyan-600',
+      component: WrappedMobileSettings
     },
     {
       id: 'volunteers',
