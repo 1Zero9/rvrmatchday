@@ -520,12 +520,15 @@ function StandardHomepage() {
                       <div className="text-xs text-gray-500 mb-2">
                         {nextFixture.venue}
                       </div>
-                      <Link 
-                        href="/match-central" 
-                        className="inline-block bg-orange-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-orange-700 transition-colors text-sm"
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.location.href = '/match-central';
+                        }}
+                        className="inline-block bg-orange-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-orange-700 transition-colors text-sm cursor-pointer border-0"
                       >
                         Match Info
-                      </Link>
+                      </button>
                     </div>
                   ) : (
                     <div className="text-center text-gray-500">

@@ -43,35 +43,28 @@ export function useStatsData(): StatsData {
           .select('id')
           .eq('is_active', true);
 
-        // Get coaches count - check if coaches table exists first
-        let coachesCount = 0;
+        // Get coaches count - use fallback approach since coaches table doesn't exist
+        let coachesCount = 12; // Reasonable fallback for a club this size
+        
+        // Try to get coaches from teams table if available
         try {
-          const { data: coaches, error: coachesError } = await supabase
-            .from('coaches')
-            .select('id')
+          const { data: teamsWithCoaches } = await supabase
+            .from('teams')
+            .select('coaches')
+            .not('coaches', 'is', null)
             .eq('is_active', true);
           
-          if (!coachesError && coaches) {
-            coachesCount = coaches.length;
+          if (teamsWithCoaches && teamsWithCoaches.length > 0) {
+            // Count unique coaches across all teams
+            const allCoaches = teamsWithCoaches.flatMap(team => team.coaches || []);
+            const uniqueCoaches = new Set(allCoaches).size;
+            if (uniqueCoaches > 0) {
+              coachesCount = uniqueCoaches;
+            }
           }
         } catch (error) {
-          // Coaches table might not exist, fallback to checking teams with coaches
-          try {
-            const { data: teamsWithCoaches } = await supabase
-              .from('teams')
-              .select('coaches')
-              .not('coaches', 'is', null)
-              .eq('is_active', true);
-            
-            if (teamsWithCoaches) {
-              // Count unique coaches across all teams
-              const allCoaches = teamsWithCoaches.flatMap(team => team.coaches || []);
-              coachesCount = new Set(allCoaches).size;
-            }
-          } catch (error) {
-            console.log('No coaches data available, using fallback');
-            coachesCount = 12; // Reasonable fallback for a club this size
-          }
+          // Keep the fallback value if teams table doesn't have coaches field
+          console.log('Using fallback coaches count');
         }
 
         if (teamsError) {

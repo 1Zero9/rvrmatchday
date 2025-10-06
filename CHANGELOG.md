@@ -43,6 +43,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [9.0.1] - 2025-10-06
+
+### 🚀 PRODUCTION SECURITY & MOBILE UPGRADE
+**Critical Update**: Security hardening and mobile site restructure for production deployment
+
+#### **🔐 Security Hardening (Production Ready)**
+- ✅ **REMOVED ALL DEMO CREDENTIALS**: Eliminated demo@rvrfc.com/demo123 hardcoded authentication
+- ✅ **Removed demo session handling**: No localStorage demo sessions or bypasses
+- ✅ **Production auth only**: Strict Supabase authentication required for all access
+- ✅ **Cleaned documentation**: Removed admin credentials from CLAUDE.md and system docs
+- ✅ **Updated error messages**: Clear "Production system - authorized access only" messaging
+
+#### **📱 Mobile Site Restructure**
+- ✅ **Mobile-wow is now PRIMARY**: Main mobile experience consolidated at /mobile-wow
+- ✅ **Homepage integration**: Mobile users on /home now get mobile-wow experience seamlessly
+- ✅ **Auto-redirect setup**: /mobile-app → /mobile-wow transparent redirect for compatibility
+- ✅ **Preserved all features**: Match tracker, glass morphism, authentication system fully intact
+
+#### **🎨 Mobile Login Enhancement**
+- ✅ **Fixed color visibility**: Custom mobile login form with proper contrast ratios
+- ✅ **Dark text on white**: Replaced problematic SecureLogin component with mobile-optimized version
+- ✅ **Password toggle**: Eye icon for show/hide password functionality
+- ✅ **Error states**: Clear visual feedback with proper styling and user guidance
+- ✅ **Mobile optimized**: Touch-friendly controls and responsive design throughout
+
+#### **🛡️ Production Security Status**
+- ✅ **No hardcoded credentials** in any component or configuration
+- ✅ **No demo authentication bypasses** - all routes require proper auth
+- ✅ **Proper Supabase auth required** for all authenticated features
+- ✅ **Production-ready security posture** with no development artifacts
+
+#### **📋 Files Modified**
+- `src/components/SecureAuth.tsx` - Removed demo auth fallback and cleaned session handling
+- `src/pages/mobile-login.tsx` - Custom mobile login form with proper color scheme
+- `src/pages/home.tsx` - Updated to use mobile-wow as primary mobile experience
+- `src/pages/mobile-app.tsx` - Now redirects seamlessly to mobile-wow
+- `CLAUDE.md` - Removed demo credentials and hardcoded admin access
+
+#### **🔄 Migration Notes**
+- All existing mobile users automatically redirected to enhanced mobile-wow experience
+- No breaking changes - all URLs continue to work with transparent redirects
+- Enhanced security without impacting legitimate user access
+- Improved mobile UX with better color schemes and touch optimization
+
+---
+
 ## [8.2.1] - 2025-10-06
 
 ### 🏆 Complete Mobile Match Tracker Enhancement v2.0
