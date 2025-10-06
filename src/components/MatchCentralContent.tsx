@@ -698,7 +698,7 @@ function CollapsibleTeamCard({
   );
 }
 
-}export default function MatchCentralContent() {
+export default function MatchCentralContent() {
   const router = useRouter();
   const { user, profile, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
