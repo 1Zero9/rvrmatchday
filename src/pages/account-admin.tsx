@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import StandardLayout from '../components/StandardLayout';
 import { supabase } from '../lib/supabase';
-import { checkAdminAccess } from '../lib/adminAuth';
+import { RequireAuth } from '../components/SecureAuth';
 
 interface AccountRequest {
   id: string;
@@ -24,27 +24,17 @@ interface AccountRequest {
   reviewer_notes?: string;
 }
 
-export default function AccountAdmin() {
+function AccountAdmin() {
   const [requests, setRequests] = useState<AccountRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<AccountRequest | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    checkAuth();
+    // Auth is handled by RequireAuth wrapper, just load data
+    loadRequests();
   }, []);
-
-  const checkAuth = async () => {
-    const adminCheck = await checkAdminAccess();
-    if (adminCheck.isAdmin) {
-      setIsAdmin(true);
-      loadRequests();
-    } else {
-      setLoading(false);
-    }
-  };
 
   const loadRequests = async () => {
     try {
@@ -197,19 +187,6 @@ export default function AccountAdmin() {
     );
   }
 
-  if (!isAdmin) {
-    return (
-      <StandardLayout>
-        <div className="min-h-screen bg-red-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-6xl mb-4">🚫</div>
-            <h1 className="text-2xl font-bold text-red-900 mb-2">Access Denied</h1>
-            <p className="text-red-600">You need administrator privileges to access this page.</p>
-          </div>
-        </div>
-      </StandardLayout>
-    );
-  }
 
   const pendingRequests = requests.filter(r => r.status === 'pending');
   const reviewedRequests = requests.filter(r => r.status !== 'pending');
@@ -446,5 +423,14 @@ export default function AccountAdmin() {
         </div>
       )}
     </StandardLayout>
+  );
+}
+
+// Secure wrapper requiring admin access for account management
+export default function SecureAccountAdmin() {
+  return (
+    <RequireAuth requiredRole="admin">
+      <AccountAdmin />
+    </RequireAuth>
   );
 }

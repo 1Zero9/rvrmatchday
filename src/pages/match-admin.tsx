@@ -12,6 +12,7 @@ import MobileBottomNav from "../components/MobileBottomNav";
 import { supabase } from "../lib/supabase";
 import { Team } from "../types/match-tracker";
 import { getTeamColorClasses } from "../lib/team-colors";
+import { RequireAuth } from "../components/SecureAuth";
 
 type TeamType = 'rvr' | 'opponent';
 type WizardStep = 'type' | 'basic' | 'details' | 'coaches' | 'squad' | 'review' | 'complete';
@@ -49,7 +50,7 @@ interface WizardData {
   }>;
 }
 
-export default function MatchAdminNew() {
+function MatchAdminNew() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<WizardStep>('type');
   const [teams, setTeams] = useState<Team[]>([]);
@@ -2269,5 +2270,14 @@ export default function MatchAdminNew() {
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
     </div>
+  );
+}
+
+// Secure wrapper requiring admin access for team management
+export default function SecureMatchAdmin() {
+  return (
+    <RequireAuth requiredRole="admin">
+      <MatchAdminNew />
+    </RequireAuth>
   );
 }

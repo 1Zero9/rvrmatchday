@@ -12,6 +12,7 @@ import MatchDetailsForm from "../components/MatchDetailsForm";
 import { storageV2 as storage } from "../lib/match-tracker-storage-v2";
 import { supabase } from "../lib/supabase";
 import { Match, Team } from "../types/match-tracker";
+import { RequireAuth } from "../components/SecureAuth";
 
 type Step = 'result' | 'details' | 'done';
 
@@ -37,7 +38,7 @@ interface MatchDetails {
   selectedSquad: string[];
 }
 
-export default function MatchRecorderSimple() {
+function MatchRecorderSimple() {
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1433,5 +1434,14 @@ export default function MatchRecorderSimple() {
         </StandardLayout>
       </div>
     </div>
+  );
+}
+
+// Secure wrapper requiring coach/admin access for match recording
+export default function SecureMatchRecorder() {
+  return (
+    <RequireAuth requiredPermission="match:record">
+      <MatchRecorderSimple />
+    </RequireAuth>
   );
 }
