@@ -258,6 +258,233 @@ function WrappedAdminEventLogDashboard() {
   return <AdminEventLogDashboard />;
 }
 
+// Consolidated Hub Components
+function ContentHubComponent() {
+  const [activeTab, setActiveTab] = useState('news');
+  
+  return (
+    <div className="space-y-6">
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex space-x-4 mb-4">
+          <button
+            onClick={() => setActiveTab('news')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'news' 
+                ? 'bg-green-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            📰 News & Articles
+          </button>
+          <button
+            onClick={() => setActiveTab('events')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'events' 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            🎉 Special Events
+          </button>
+          <button
+            onClick={() => setActiveTab('mobile')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'mobile' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            📱 Mobile Settings
+          </button>
+        </div>
+      </div>
+      
+      {/* Tab Content */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        {activeTab === 'news' && <WrappedNewsManager />}
+        {activeTab === 'events' && <WrappedSpecialEventsManager />}
+        {activeTab === 'mobile' && <WrappedMobileSettings />}
+      </div>
+    </div>
+  );
+}
+
+function PeopleHubComponent() {
+  const [activeTab, setActiveTab] = useState('users');
+  
+  return (
+    <div className="space-y-6">
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex space-x-4 mb-4">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'users' 
+                ? 'bg-emerald-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            👥 User Management
+          </button>
+          <button
+            onClick={() => setActiveTab('volunteers')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'volunteers' 
+                ? 'bg-orange-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            🤝 Volunteers
+          </button>
+          <button
+            onClick={() => setActiveTab('signups')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'signups' 
+                ? 'bg-amber-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            📋 Applications
+          </button>
+        </div>
+      </div>
+      
+      {/* Tab Content */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        {activeTab === 'users' && <WrappedUnifiedAccountManagement />}
+        {activeTab === 'volunteers' && <WrappedVolunteerManager />}
+        {activeTab === 'signups' && <WrappedVolunteerSignupManager />}
+      </div>
+    </div>
+  );
+}
+
+function SystemHubComponent() {
+  const [activeTab, setActiveTab] = useState('status');
+  
+  return (
+    <div className="space-y-6">
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex space-x-4 mb-4">
+          <button
+            onClick={() => setActiveTab('status')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'status' 
+                ? 'bg-teal-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            📊 System Status
+          </button>
+          <button
+            onClick={() => setActiveTab('tools')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'tools' 
+                ? 'bg-gray-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            🛠️ System Tools
+          </button>
+          <button
+            onClick={() => setActiveTab('maintenance')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'maintenance' 
+                ? 'bg-indigo-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            🚧 Maintenance
+          </button>
+          <button
+            onClick={() => setActiveTab('duplicates')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'duplicates' 
+                ? 'bg-red-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            🔍 Duplicates
+          </button>
+        </div>
+      </div>
+      
+      {/* Tab Content */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        {activeTab === 'status' && <WrappedSiteStatusReport />}
+        {activeTab === 'tools' && <SystemToolsComponent />}
+        {activeTab === 'maintenance' && <WrappedPageMaintenanceManager />}
+        {activeTab === 'duplicates' && <DuplicateCleanerComponent />}
+      </div>
+    </div>
+  );
+}
+
+function DevelopmentHubComponent() {
+  const [activeTab, setActiveTab] = useState('tasks');
+  
+  return (
+    <div className="space-y-6">
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex space-x-4 mb-4">
+          <button
+            onClick={() => setActiveTab('tasks')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'tasks' 
+                ? 'bg-cyan-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            ✅ Task Management
+          </button>
+          <button
+            onClick={() => setActiveTab('changelog')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'changelog' 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            📋 Changelog
+          </button>
+          <button
+            onClick={() => setActiveTab('sitemap')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'sitemap' 
+                ? 'bg-slate-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            🗺️ Site Map
+          </button>
+          <button
+            onClick={() => setActiveTab('sessions')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'sessions' 
+                ? 'bg-gray-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            🎥 Sessions
+          </button>
+        </div>
+      </div>
+      
+      {/* Tab Content */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        {activeTab === 'tasks' && <WrappedAdminTodoList />}
+        {activeTab === 'changelog' && <WrappedAdminChangelog />}
+        {activeTab === 'sitemap' && <WrappedAdminSiteMap />}
+        {activeTab === 'sessions' && <WrappedSessionRecording />}
+      </div>
+    </div>
+  );
+}
+
 // Dashboard Overview Component
 function DashboardOverview() {
   const { user } = useAuth();
@@ -576,7 +803,7 @@ function UnifiedAdminDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [undoHistory, setUndoHistory] = useState<UndoAction[]>([]);
 
-  // Define all admin sections with role-based access
+  // Define all admin sections with role-based access - CONSOLIDATED
   const adminSections: AdminSection[] = [
     {
       id: 'dashboard',
@@ -588,62 +815,44 @@ function UnifiedAdminDashboard() {
       component: DashboardOverview
     },
     {
-      id: 'users',
-      title: 'User Management',
-      icon: '👥',
-      description: 'Manage user accounts, roles, and permissions',
-      requiredRoles: ['admin'],
-      color: 'bg-gradient-to-r from-emerald-600 to-teal-700',
-      component: WrappedUnifiedAccountManagement
-    },
-    {
-      id: 'event-logs',
-      title: 'Event Logs',
-      icon: '📜',
-      description: 'Comprehensive audit trail of all admin operations',
-      requiredRoles: ['admin'],
-      color: 'bg-gradient-to-r from-slate-600 to-zinc-700',
-      component: WrappedAdminEventLogDashboard
-    },
-    {
-      id: 'events',
-      title: 'Special Events',
-      icon: '🎉',
-      description: 'Create and manage promotional event cards',
-      requiredRoles: ['admin', 'editor'],
-      color: 'bg-gradient-to-r from-purple-600 to-pink-600',
-      component: WrappedSpecialEventsManager
-    },
-    {
-      id: 'news',
-      title: 'News & Articles',
-      icon: '📰',
-      description: 'Create and manage news content',
+      id: 'content-hub',
+      title: 'Content Hub',
+      icon: '📝',
+      description: 'News, events, and mobile app content management',
       requiredRoles: ['admin', 'editor'],
       color: 'bg-gradient-to-r from-green-600 to-emerald-700',
-      component: WrappedNewsManager
+      component: ContentHubComponent
     },
     {
-      id: 'mobile-settings',
-      title: 'Mobile App Settings',
-      icon: '📱',
-      description: 'Configure mobile app features and access controls',
-      requiredRoles: ['admin'],
-      color: 'bg-gradient-to-r from-blue-500 to-cyan-600',
-      component: WrappedMobileSettings
-    },
-    {
-      id: 'volunteers',
-      title: 'Volunteers',
-      icon: '🤝',
-      description: 'Coordinate volunteer activities',
+      id: 'people-hub',
+      title: 'People Hub',
+      icon: '👥',
+      description: 'Users, volunteers, and applications management',
       requiredRoles: ['admin', 'parent'],
-      color: 'bg-gradient-to-r from-orange-600 to-red-600',
-      component: WrappedVolunteerManager
+      color: 'bg-gradient-to-r from-emerald-600 to-teal-700',
+      component: PeopleHubComponent
+    },
+    {
+      id: 'system-hub',
+      title: 'System Hub',
+      icon: '🛠️',
+      description: 'Tools, status, maintenance, and system utilities',
+      requiredRoles: ['admin'],
+      color: 'bg-gradient-to-r from-gray-600 to-slate-700',
+      component: SystemHubComponent
+    },
+    {
+      id: 'development-hub',
+      title: 'Development Hub',
+      icon: '💻',
+      description: 'Tasks, changelog, site map, and development tools',
+      requiredRoles: ['admin', 'editor'],
+      color: 'bg-gradient-to-r from-cyan-600 to-blue-700',
+      component: DevelopmentHubComponent
     },
     {
       id: 'card-authority',
-      title: 'Card Submissions',
+      title: 'Card Authority',
       icon: '🟥',
       description: 'Manage red card submissions to football authority',
       requiredRoles: ['admin'],
@@ -651,85 +860,13 @@ function UnifiedAdminDashboard() {
       component: CardAuthorityManager
     },
     {
-      id: 'volunteer-signups',
-      title: 'Volunteer Signups',
-      icon: '📋',
-      description: 'Review volunteer applications',
-      requiredRoles: ['admin', 'parent'],
-      color: 'bg-gradient-to-r from-amber-600 to-orange-700',
-      component: WrappedVolunteerSignupManager
-    },
-    {
-      id: 'page-maintenance',
-      title: 'Page Maintenance',
-      icon: '🚧',
-      description: 'Enable/disable individual pages for maintenance',
+      id: 'event-logs',
+      title: 'Audit Logs',
+      icon: '📜',
+      description: 'Comprehensive audit trail and security monitoring',
       requiredRoles: ['admin'],
-      color: 'bg-gradient-to-r from-indigo-600 to-purple-700',
-      component: WrappedPageMaintenanceManager
-    },
-    {
-      id: 'tasks',
-      title: 'Task Management',
-      icon: '✅',
-      description: 'Track development and admin tasks',
-      requiredRoles: ['admin', 'editor'],
-      color: 'bg-gradient-to-r from-cyan-600 to-blue-700',
-      component: WrappedAdminTodoList
-    },
-    {
-      id: 'sitemap',
-      title: 'Site Map',
-      icon: '🗺️',
-      description: 'View and analyze site structure',
-      requiredRoles: ['admin'],
-      color: 'bg-gradient-to-r from-slate-600 to-gray-700',
-      component: WrappedAdminSiteMap
-    },
-    {
-      id: 'system-tools',
-      title: 'System Tools',
-      icon: '🛠️',
-      description: 'Database and system utilities',
-      requiredRoles: ['admin'],
-      color: 'bg-gradient-to-r from-gray-600 to-slate-700',
-      component: SystemToolsComponent
-    },
-    {
-      id: 'status',
-      title: 'System Status',
-      icon: '📊',
-      description: 'Monitor site health and performance',
-      requiredRoles: ['admin'],
-      color: 'bg-teal-500',
-      component: WrappedSiteStatusReport
-    },
-    {
-      id: 'changelog',
-      title: 'Changelog',
-      icon: '📋',
-      description: 'View development history and changes',
-      requiredRoles: ['admin', 'editor'],
-      color: 'bg-purple-500',
-      component: WrappedAdminChangelog
-    },
-    {
-      id: 'duplicate-cleaner',
-      title: 'Duplicate Cleaner',
-      icon: '🔍',
-      description: 'Find and manage duplicate records',
-      requiredRoles: ['admin'],
-      color: 'bg-red-500',
-      component: DuplicateCleanerComponent
-    },
-    {
-      id: 'session-recording',
-      title: 'Session Recording',
-      icon: '🎥',
-      description: 'Monitor user sessions and activity',
-      requiredRoles: ['admin'],
-      color: 'bg-gray-500',
-      component: WrappedSessionRecording
+      color: 'bg-gradient-to-r from-slate-600 to-zinc-700',
+      component: WrappedAdminEventLogDashboard
     }
   ];
 
