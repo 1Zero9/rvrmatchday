@@ -307,7 +307,7 @@ npm run typecheck    # TypeScript validation
 
 ### **Key URLs:**
 - **Development:** `http://localhost:3000`
-- **Admin Panel:** `http://localhost:3000/admin` (admin/rvrfc2025)
+- **Admin Panel:** `http://localhost:3000/admin` ((authenticated access))
 - **Marketing Panel:** `http://localhost:3000/marketing-panel`
 - **Technical Demo:** `http://localhost:3000/modular-demo`
 - **Business Modules:** `http://localhost:3000/modules`

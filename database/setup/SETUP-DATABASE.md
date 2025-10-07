@@ -179,4 +179,4 @@ INSERT INTO tracker_users (
 1. **Submit Request** → Use account-request form
 2. **Admin Review** → Check account-admin for pending requests
 3. **Test Login** → Try auth-login with new credentials
-4. **Fallback** → Use `rvrfc2025` code during transition
+4. **Fallback** → Use `[configured in .env.local]` code during transition

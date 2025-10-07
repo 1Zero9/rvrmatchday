@@ -107,7 +107,7 @@
 
 ### 3. **User Account Creation** (MEDIUM)
 ```bash
-# Current demo account: admin@rvr.ie / rvrfc2025
+# Current demo account: admin@rvr.ie / [configured in .env.local]
 # Create additional accounts for:
 - Coaches (coach@rvr.ie)
 - Managers (manager@rvr.ie) 
@@ -155,7 +155,7 @@ http://localhost:3000/match-central-secure  # Protected content
 http://localhost:3000/admin              # Admin panel (requires auth)
 
 # Test accounts (Supabase Auth)
-admin@rvr.ie / rvrfc2025                 # Admin role
+admin@rvr.ie / [configured in .env.local]                 # Admin role
 test@rvr.ie / password                   # Test account
 ```
 

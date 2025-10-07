@@ -123,7 +123,7 @@ const { data: matchesData } = await supabase
 ### Access Points:
 - **Main Site**: http://localhost:3000
 - **Match Central**: http://localhost:3000/match-central
-- **Admin**: http://localhost:3000/admin (admin/rvrfc2025)
+- **Admin**: http://localhost:3000/admin ((authenticated access))
 - **Tracker**: http://localhost:3000/tracker (requires auth)
 
 ## 📝 Resume Instructions

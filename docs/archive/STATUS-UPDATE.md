@@ -113,7 +113,7 @@ npm run dev
 # Access Points
 http://localhost:3000/match-admin     # Team & squad setup
 http://localhost:3000/match-recorder  # Record matches with players
-http://localhost:3000/match-central   # Statistics dashboard (password: rvrfc2025)
+http://localhost:3000/match-central   # Statistics dashboard (password: [configured in .env.local])
 http://localhost:3000/matchday        # Public scoreboard
 
 # Debug

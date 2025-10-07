@@ -95,8 +95,10 @@ open http://localhost:3000
 
 ### **Admin Access**
 - **URL**: http://localhost:3000/admin
-- **Credentials**: admin / rvrfc2025 (demo)
+- **Authentication**: Configured via environment variables
 - **Features**: Todo management, site overview, system monitoring
+
+> **Note**: Admin credentials are configured in `.env.local`. See `SECURITY.md` for setup instructions.
 
 ## 📊 Production Metrics
 

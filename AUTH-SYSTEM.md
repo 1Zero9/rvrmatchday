@@ -115,7 +115,7 @@ If approved: Auto-creates user account
 ## 🔄 Migration from Current System
 
 ### Current State (Simple Password)
-- Single password: `rvrfc2025`
+- Single password: `[configured in .env.local]`
 - Stored in sessionStorage
 - No user roles or permissions
 
@@ -128,7 +128,7 @@ If approved: Auto-creates user account
 - ✅ Comprehensive audit logging
 
 ### Backwards Compatibility
-- Temporary access code still works (`rvrfc2025`)
+- Temporary access code still works (`[configured in .env.local]`)
 - Existing sessionStorage auth honored
 - Gradual migration path for users
 
@@ -173,10 +173,12 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
 ### 3. Access Points
-- **Admin Dashboard**: http://localhost:3000/admin (admin/rvrfc2025)
+- **Admin Dashboard**: http://localhost:3000/admin (authenticated access)
 - **Account Requests**: http://localhost:3000/account-admin
 - **User Login**: http://localhost:3000/auth-login
 - **Request Form**: http://localhost:3000/account-request
+
+> **Note**: Admin credentials are configured via environment variables in `.env.local`
 
 ## 🎯 Next Steps
 

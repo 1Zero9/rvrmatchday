@@ -73,8 +73,8 @@ SMTP_PASS=your-gmail-app-password
 ```bash
 # Test the connection
 npm run dev
-# Visit http://localhost:3001/login
-# Try logging in with: admin@rvr.ie / rvrfc2025
+# Visit http://localhost:3000/login
+# Use credentials configured in your .env.local file
 ```
 
 ### Create Production User Accounts

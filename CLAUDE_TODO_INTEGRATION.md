@@ -12,7 +12,7 @@ This system ensures that the Claude Code TodoWrite tool automatically syncs with
 
 ### For Users:
 1. **Admin Access**: View all tasks at http://localhost:3000/admin
-2. **Credentials**: admin / rvrfc2025
+2. **Authentication**: Use credentials from `.env.local` configuration
 3. **Todo Tab**: See all Claude and manual tasks in one place
 
 ## 🚀 Session Startup Protocol

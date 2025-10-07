@@ -14,7 +14,7 @@
 ### 🎯 **How to Use:**
 
 1. **Go to Admin Dashboard**: `http://localhost:3000/admin`
-2. **Login**: admin / rvrfc2025 (or your env variables)
+2. **Login**: Use credentials from your `.env.local` configuration
 3. **Click "Sessions" Tab** - New tab now available!
 4. **Click "New Session"** - Record your current work
 5. **Fill in the form**:
