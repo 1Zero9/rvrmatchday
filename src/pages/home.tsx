@@ -85,7 +85,6 @@ function StandardHomepage() {
       {/* Desktop Version - Existing */}
       <div className="hidden md:block">
         <StandardLayout currentPage="/home">
-          <main>
         
         {/* Hero Section - Authentic Community Feel */}
         <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
@@ -1120,8 +1119,6 @@ function StandardHomepage() {
             </div>
           </div>
         </section>
-
-          </main>
         </StandardLayout>
       </div>
 

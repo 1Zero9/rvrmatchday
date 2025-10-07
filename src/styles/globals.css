@@ -9,10 +9,7 @@ body {
   padding: 0;
 }
 
-/* Fix spacing under header */
-main {
-  padding-top: 70px; /* accounts for fixed header */
-}
+/* Header spacing is handled by individual layouts */
 
 /* Footer styles */
 footer {
