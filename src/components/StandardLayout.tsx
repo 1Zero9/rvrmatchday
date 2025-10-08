@@ -18,6 +18,8 @@ import Header from "./Header";
 import MobileLayout from "./MobileLayout";
 import RoleIndicator from "./RoleIndicator";
 import HeaderLoginButton from "./HeaderLoginButton";
+import MaintenanceAwareNavigation from "./MaintenanceAwareNavigation";
+import MaintenanceStatusBar from "./MaintenanceStatusBar";
 
 interface StandardLayoutProps {
   children: ReactNode;
@@ -42,6 +44,9 @@ export default function StandardLayout({ children, title, currentPage }: Standar
         {/* Role Indicator Overlay Banner - Mobile */}
         <RoleIndicator />
         
+        {/* Maintenance Status Bar for Site Admins and Content Editors - Mobile */}
+        <MaintenanceStatusBar />
+        
         <MobileLayout 
           currentPage={currentPage}
           clubData={{
@@ -64,6 +69,9 @@ export default function StandardLayout({ children, title, currentPage }: Standar
       <div className="hidden md:block min-h-screen bg-gray-50">
         {/* Role Indicator Overlay Banner */}
         <RoleIndicator />
+        
+        {/* Maintenance Status Bar for Site Admins and Content Editors */}
+        <MaintenanceStatusBar />
         
         {/* Desktop Header Navigation */}
         <header className="bg-club-primary text-white shadow-lg sticky top-0 z-40 border-b-6 border-club-accent">
@@ -108,11 +116,15 @@ export default function StandardLayout({ children, title, currentPage }: Standar
               </div>
             </div>
 
-            {/* Centered Navigation */}
-            <nav className="hidden lg:flex items-center space-x-1 flex-1 justify-center">
-              <Link href="/home" className="px-4 py-3 text-white hover:bg-club-primary-light rounded-lg transition-all duration-200 font-medium text-base whitespace-nowrap">
-                🏠 Home
-              </Link>
+            {/* Centered Navigation with Maintenance Awareness */}
+            <MaintenanceAwareNavigation>
+              {({ NavItem, isLoading, stats }) => (
+                <nav className="hidden lg:flex items-center space-x-1 flex-1 justify-center">
+              <NavItem 
+                href="/home" 
+                label="🏠 Home"
+                className="px-4 py-3 text-white hover:bg-club-primary-light rounded-lg transition-all duration-200 font-medium text-base whitespace-nowrap"
+              />
               
               <div className="relative group">
                 <button className="px-4 py-3 text-white hover:bg-club-primary-light rounded-lg transition-all duration-200 font-medium flex items-center text-base whitespace-nowrap">
@@ -122,12 +134,16 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                   </svg>
                 </button>
                 <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                  <Link href="/about" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    🏰 Our Story
-                  </Link>
-                  <Link href="/club" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary">
-                    🏛️ Club Info
-                  </Link>
+                  <NavItem 
+                    href="/about" 
+                    label="🏰 Our Story"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/club" 
+                    label="🏛️ Club Info"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-primary"
+                  />
                 </div>
               </div>
 
@@ -139,33 +155,49 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                   </svg>
                 </button>
                 <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                  <Link href="/teams" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium">
-                    👥 All Teams
-                  </Link>
-                  <Link href="/teams/boys" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100">
-                    ⚽ Boys Teams
-                  </Link>
-                  <Link href="/teams/girls" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    🌟 Girls Teams
-                  </Link>
-                  <Link href="/teams/youth" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100">
-                    🧒 Youth Teams
-                  </Link>
-                  <Link href="/teams/senior" className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100">
-                    👨 Senior Teams
-                  </Link>
-                  <Link href="/teams/inclusive" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    🌈 Inclusive Football
-                  </Link>
-                  <Link href="/coach" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-accent">
-                    👨‍🏫 Coaching Staff
-                  </Link>
+                  <NavItem 
+                    href="/teams" 
+                    label="👥 All Teams"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium"
+                  />
+                  <NavItem 
+                    href="/teams/boys" 
+                    label="⚽ Boys Teams"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/teams/girls" 
+                    label="🌟 Girls Teams"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/teams/youth" 
+                    label="🧒 Youth Teams"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/teams/senior" 
+                    label="👨 Senior Teams"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-secondary hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/teams/inclusive" 
+                    label="🌈 Inclusive Football"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/coach" 
+                    label="👨‍🏫 Coaching Staff"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-accent"
+                  />
                 </div>
               </div>
 
-              <Link href="/matchday" className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base whitespace-nowrap">
-                ⚽ MatchDay
-              </Link>
+              <NavItem 
+                href="/matchday" 
+                label="⚽ MatchDay"
+                className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base whitespace-nowrap"
+              />
 
 
               <div className="relative group">
@@ -176,27 +208,41 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                   </svg>
                 </button>
                 <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                  <Link href="/news" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    📰 News
-                  </Link>
-                  <Link href="/gallery" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    📸 Gallery
-                  </Link>
-                  <Link href="/volunteering" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    🤝 Volunteer
-                  </Link>
-                  <Link href="/fundraising" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    💰 Fundraising
-                  </Link>
-                  <Link href="/shop" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    🛒 Club Shop
-                  </Link>
-                  <Link href="/get-involved/events" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    🎉 Events
-                  </Link>
-                  <Link href="/boot-room" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary">
-                    👢 Boot Room
-                  </Link>
+                  <NavItem 
+                    href="/news" 
+                    label="📰 News"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/gallery" 
+                    label="📸 Gallery"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/volunteering" 
+                    label="🤝 Volunteer"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/fundraising" 
+                    label="💰 Fundraising"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/shop" 
+                    label="🛒 Club Shop"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/get-involved/events" 
+                    label="🎉 Events"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/boot-room" 
+                    label="👢 Boot Room"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary"
+                  />
                 </div>
               </div>
 
@@ -208,24 +254,36 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                   </svg>
                 </button>
                 <div className="absolute left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-club-accent opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                  <Link href="/contact" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium">
-                    📞 Contact Us
-                  </Link>
-                  <Link href="/join" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    🎯 Join the Club
-                  </Link>
-                  <Link href="/join/trials" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    ⚽ Trials
-                  </Link>
-                  <Link href="/join/inclusive" className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100">
-                    🌈 Inclusive Football
-                  </Link>
-                  <Link href="/members" className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-accent">
-                    👥 Member Area
-                  </Link>
+                  <NavItem 
+                    href="/contact" 
+                    label="📞 Contact Us"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-secondary border-b border-gray-100 font-medium"
+                  />
+                  <NavItem 
+                    href="/join" 
+                    label="🎯 Join the Club"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/join/trials" 
+                    label="⚽ Trials"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/join/inclusive" 
+                    label="🌈 Inclusive Football"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-primary hover:bg-opacity-20 hover:text-club-primary border-b border-gray-100"
+                  />
+                  <NavItem 
+                    href="/members" 
+                    label="👥 Member Area"
+                    className="block px-4 py-3 text-gray-700 hover:bg-club-accent hover:bg-opacity-20 hover:text-club-accent"
+                  />
                 </div>
               </div>
-            </nav>
+                </nav>
+              )}
+            </MaintenanceAwareNavigation>
 
             {/* Right side actions */}
             <div className="flex items-center space-x-3 ml-auto flex-shrink-0">

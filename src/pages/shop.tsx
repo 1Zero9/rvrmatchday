@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import GlassPageTemplate from '../components/GlassPageTemplate';
 import { GlassCard, GlassActionCard } from '../components/Glass';
+import MaintenanceWrapper from '../components/MaintenanceWrapper';
 
 export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -121,7 +122,8 @@ export default function Shop() {
     : products.filter(product => product.category === selectedCategory);
 
   return (
-    <GlassPageTemplate
+    <MaintenanceWrapper pagePath="/shop" fallbackTitle="Club Shop">
+      <GlassPageTemplate
       heroTitle="Club Shop"
       heroSubtitle="Official Rivervalley Rangers merchandise, kit, and training gear"
       heroIcon="🛒"
@@ -358,5 +360,6 @@ export default function Shop() {
       </motion.div>
 
     </GlassPageTemplate>
+    </MaintenanceWrapper>
   );
 }

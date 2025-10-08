@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import StandardLayout from '../../components/StandardLayout';
+import MaintenanceWrapper from '../../components/MaintenanceWrapper';
 
 export default function Facilities() {
   return (
-    <StandardLayout title="Facilities">
+    <MaintenanceWrapper pagePath="/club/facilities" fallbackTitle="Club Facilities">
+      <StandardLayout title="Facilities">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Breadcrumb Navigation */}
@@ -266,5 +268,6 @@ export default function Facilities() {
 
       </div>
     </StandardLayout>
+    </MaintenanceWrapper>
   );
 }

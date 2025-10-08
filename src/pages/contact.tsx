@@ -15,6 +15,7 @@ import GlassPageTemplate from '../components/GlassPageTemplate';
 import { GlassCard, GlassActionCard } from '../components/Glass';
 import MobileLayout from '../components/MobileLayout';
 import MobileContactPro from '../components/mobile/MobileContactPro';
+import MaintenanceWrapper from '../components/MaintenanceWrapper';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -130,7 +131,8 @@ export default function Contact() {
   ];
 
   return (
-    <div>
+    <MaintenanceWrapper pagePath="/contact" fallbackTitle="Contact Us">
+      <div>
       {/* Mobile Version - Professional */}
       <div className="block md:hidden">
         <MobileLayout 
@@ -537,5 +539,6 @@ export default function Contact() {
     </GlassPageTemplate>
       </div>
     </div>
+    </MaintenanceWrapper>
   );
 }

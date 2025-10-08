@@ -498,8 +498,11 @@ function DashboardOverview() {
     specialEvents: 0,
     volunteerOpportunities: 0,
     pendingVolunteers: 0,
-    systemHealth: '100%'
+    systemHealth: '100%',
+    totalPages: 0,
+    disabledPages: 0
   });
+  const [disabledPagesList, setDisabledPagesList] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -598,6 +601,23 @@ function DashboardOverview() {
         // Volunteer tables might not exist yet
         statsData.volunteerOpportunities = 0;
         statsData.pendingVolunteers = 0;
+      }
+
+      // Fetch maintenance statistics
+      try {
+        const response = await fetch('/api/maintenance/list-all');
+        if (response.ok) {
+          const pages = await response.json();
+          const disabledPages = pages.filter(page => !page.is_enabled);
+          statsData.totalPages = pages.length;
+          statsData.disabledPages = disabledPages.length;
+          setDisabledPagesList(disabledPages);
+        }
+      } catch (e) {
+        // Maintenance table might not exist yet
+        statsData.totalPages = 0;
+        statsData.disabledPages = 0;
+        setDisabledPagesList([]);
       }
 
       setStats(statsData);
@@ -733,6 +753,21 @@ function DashboardOverview() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
+              <p className="text-gray-600 text-sm">Page Maintenance</p>
+              <p className="text-3xl font-bold text-orange-600">
+                {loading ? '...' : stats.disabledPages}
+              </p>
+              <p className="text-xs text-gray-500">
+                {stats.totalPages - stats.disabledPages} of {stats.totalPages} enabled
+              </p>
+            </div>
+            <div className="text-4xl">🚧</div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
               <p className="text-gray-600 text-sm">Database</p>
               <p className="text-3xl font-bold text-teal-600">
                 Online
@@ -775,16 +810,48 @@ function DashboardOverview() {
         </div>
         
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">⚠️ Alerts & Tasks</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">🚧 Disabled Pages</h3>
+            {stats.disabledPages > 0 && (
+              <span className="bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                {stats.disabledPages} disabled
+              </span>
+            )}
+          </div>
           <div className="space-y-3">
-            <div className="p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-              <p className="text-sm font-medium text-yellow-800">Pending volunteer applications</p>
-              <p className="text-sm text-yellow-600">3 applications need review</p>
-            </div>
-            <div className="p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
-              <p className="text-sm font-medium text-blue-800">Scheduled maintenance</p>
-              <p className="text-sm text-blue-600">System backup tonight at 2 AM</p>
-            </div>
+            {loading ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-600 mx-auto"></div>
+                <p className="text-sm text-gray-500 mt-2">Loading...</p>
+              </div>
+            ) : disabledPagesList.length === 0 ? (
+              <div className="text-center py-4">
+                <div className="text-2xl mb-2">✅</div>
+                <p className="text-sm text-gray-500">All pages are enabled</p>
+              </div>
+            ) : (
+              disabledPagesList.slice(0, 5).map((page, index) => (
+                <div key={index} className="p-3 bg-orange-50 border-l-4 border-orange-400 rounded">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-orange-800">{page.title}</p>
+                      <p className="text-sm text-orange-600">{page.path}</p>
+                      {page.maintenance_reason && (
+                        <p className="text-xs text-orange-500 mt-1">{page.maintenance_reason}</p>
+                      )}
+                    </div>
+                    <div className="text-orange-400">🚧</div>
+                  </div>
+                </div>
+              ))
+            )}
+            {disabledPagesList.length > 5 && (
+              <div className="text-center pt-2">
+                <p className="text-xs text-gray-500">
+                  and {disabledPagesList.length - 5} more disabled pages
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

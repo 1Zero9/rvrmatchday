@@ -9,6 +9,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../SecureAuth';
 import { AdminEventLogger, ACTIONS, EVENT_TYPES } from '../../lib/adminEventLoggerClient';
 
+
 interface PageStatus {
   id: string;
   path: string;
@@ -103,6 +104,12 @@ export default function PageMaintenanceManager() {
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [bulkAction, setBulkAction] = useState<'enable' | 'disable'>('disable');
   const [bulkReason, setBulkReason] = useState('');
+  
+  // Section operations state
+  const [showSectionModal, setShowSectionModal] = useState(false);
+  const [sectionAction, setSectionAction] = useState<'enable' | 'disable'>('disable');
+  const [selectedSectionType, setSelectedSectionType] = useState<string>('');
+  const [sectionReason, setSectionReason] = useState('');
 
   useEffect(() => {
     if (isAdmin) {
@@ -185,6 +192,8 @@ export default function PageMaintenanceManager() {
 
   const updatePageStatus = async (page: PageStatus, isEnabled: boolean, reason?: string) => {
     try {
+      console.log('🔧 Attempting to update page:', page.path, 'enabled:', isEnabled, 'user:', user?.email);
+      
       const updateData = {
         is_enabled: isEnabled,
         maintenance_reason: isEnabled ? null : reason,
@@ -201,12 +210,36 @@ export default function PageMaintenanceManager() {
           )
         );
       } else {
-        const { error } = await supabase
-          .from('page_maintenance')
-          .update(updateData)
-          .eq('id', page.id);
+        // Use API endpoint for secure database updates
+        const response = await fetch('/api/maintenance/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pageId: page.id,
+            isEnabled: isEnabled,
+            maintenanceReason: reason,
+            disabledBy: user?.email || 'admin'
+          })
+        });
 
-        if (error) throw error;
+        const result = await response.json();
+        console.log('🔧 API update result:', result);
+        
+        if (!response.ok) {
+          console.error('🚨 API update error:', result);
+          throw new Error(result.error || 'Failed to update page status');
+        }
+        
+        // Update local state immediately for better UX
+        setPages(prevPages =>
+          prevPages.map(p =>
+            p.id === page.id ? { ...p, ...updateData } : p
+          )
+        );
+        
+        // Also refresh from database to ensure consistency
         await fetchPageStatuses();
       }
 
@@ -404,6 +437,68 @@ export default function PageMaintenanceManager() {
     return priorities.find(p => p.value === priority) || priorities[0];
   };
 
+  // Section-level operations
+  const handleSectionAction = (sectionType: string, action: 'enable' | 'disable') => {
+    setSelectedSectionType(sectionType);
+    setSectionAction(action);
+    setSectionReason('');
+    setShowSectionModal(true);
+  };
+
+  const executeSectionAction = async () => {
+    if (!selectedSectionType) return;
+
+    const sectionPages = pages.filter(page => page.section === selectedSectionType);
+    
+    if (sectionPages.length === 0) {
+      alert('No pages found in this section.');
+      return;
+    }
+
+    try {
+      // Process pages in parallel for better performance
+      const promises = sectionPages.map(page => 
+        updatePageStatus(page, sectionAction === 'enable', sectionAction === 'disable' ? sectionReason : undefined)
+      );
+      
+      await Promise.all(promises);
+      
+      // Log the section operation
+      if (user?.id) {
+        await AdminEventLogger.logEvent({
+          adminUserId: user.id,
+          eventType: EVENT_TYPES.MAINTENANCE,
+          action: sectionAction === 'enable' ? 'section_enable_pages' : 'section_disable_pages',
+          targetType: 'section',
+          targetIdentifier: selectedSectionType,
+          description: `Section ${sectionAction === 'enable' ? 'enabled' : 'disabled'}: ${getSectionInfo(selectedSectionType).label}`,
+          details: {
+            section_action: sectionAction,
+            section_type: selectedSectionType,
+            pages_affected: sectionPages.map(page => ({
+              id: page.id,
+              title: page.title,
+              path: page.path
+            })),
+            total_pages: sectionPages.length,
+            section_reason: sectionAction === 'disable' ? sectionReason : null,
+            operation_type: 'section_maintenance_operation'
+          },
+          status: 'success'
+        });
+      }
+      
+      // Close modal and refresh
+      setShowSectionModal(false);
+      setSectionReason('');
+      await fetchPageStatuses();
+      
+    } catch (error) {
+      console.error('Error executing section action:', error);
+      setError('Failed to execute section operation');
+    }
+  };
+
   // Filter pages
   const filteredPages = pages.filter(page => {
     const matchesSection = selectedSection === 'all' || page.section === selectedSection;
@@ -495,7 +590,7 @@ export default function PageMaintenanceManager() {
                 onClick={() => handleBulkAction('disable')}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all"
               >
-                🚧 Disable Selected
+                🚧 Set Maintenance
               </button>
             </div>
           </div>
@@ -598,8 +693,53 @@ export default function PageMaintenanceManager() {
             <p className="text-gray-600">No pages match your search criteria</p>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {filteredPages.map((page) => {
+          <div className="space-y-6">
+            {/* Group pages by section for hierarchical display */}
+            {sections.map(section => {
+              const sectionPages = filteredPages.filter(page => page.section === section.value);
+              if (sectionPages.length === 0) return null;
+              
+              const enabledCount = sectionPages.filter(p => p.is_enabled).length;
+              const disabledCount = sectionPages.length - enabledCount;
+              
+              return (
+                <div key={section.value} className="border border-gray-200 rounded-lg overflow-hidden">
+                  {/* Section Header */}
+                  <div className={`${section.color} px-6 py-4 border-b border-gray-200`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">{section.icon}</span>
+                        <div>
+                          <h3 className="text-lg font-bold">{section.label}</h3>
+                          <p className="text-xs opacity-75">
+                            {sectionPages.length} pages • {enabledCount} enabled • {disabledCount} disabled
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Section Quick Actions */}
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleSectionAction(section.value, 'disable')}
+                          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-all text-sm"
+                          disabled={disabledCount === sectionPages.length}
+                        >
+                          🚧 Disable Section
+                        </button>
+                        <button
+                          onClick={() => handleSectionAction(section.value, 'enable')}
+                          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-all text-sm"
+                          disabled={enabledCount === sectionPages.length}
+                        >
+                          ✅ Enable Section
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Section Pages */}
+                  <div className="p-4 space-y-3">
+                    {sectionPages.map((page) => {
               const sectionInfo = getSectionInfo(page.section);
               const priorityInfo = getPriorityInfo(page.priority);
               
@@ -683,7 +823,7 @@ export default function PageMaintenanceManager() {
                             : 'bg-green-100 hover:bg-green-200 text-green-700'
                         }`}
                       >
-                        {page.is_enabled ? '🚧 Disable' : '✅ Enable'}
+{page.is_enabled ? '🚧 Maintenance' : '✅ Enable'}
                       </button>
                       
                       <a
@@ -697,6 +837,10 @@ export default function PageMaintenanceManager() {
                     </div>
                   </div>
                 </motion.div>
+              );
+                    })}
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -722,7 +866,7 @@ export default function PageMaintenanceManager() {
             >
               {/* Header */}
               <div className="bg-gradient-to-r from-red-500 to-orange-600 text-white p-6">
-                <h3 className="text-xl font-bold">🚧 Put Page Under Maintenance</h3>
+                <h3 className="text-xl font-bold">🚧 Set Page Maintenance</h3>
                 <p className="text-red-100 mt-1">{selectedPage.title}</p>
               </div>
 
@@ -767,7 +911,7 @@ export default function PageMaintenanceManager() {
                     disabled={!maintenanceReason.trim()}
                     className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                   >
-                    Put Under Maintenance
+                    Set Maintenance
                   </button>
                 </div>
               </div>
@@ -853,6 +997,91 @@ export default function PageMaintenanceManager() {
                     }`}
                   >
                     {bulkAction === 'enable' ? 'Enable Pages' : 'Disable Pages'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Section Action Modal */}
+        {showSectionModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowSectionModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className={`${sectionAction === 'enable' ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-orange-600'} text-white p-6`}>
+                <h3 className="text-xl font-bold">
+                  {sectionAction === 'enable' ? '✅ Enable Section' : '🚧 Disable Section'}
+                </h3>
+                <p className="text-white/90 mt-1">
+                  {getSectionInfo(selectedSectionType).icon} {getSectionInfo(selectedSectionType).label}
+                </p>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <div className="mb-4">
+                  <p className="text-gray-700 mb-2">
+                    <strong>Action:</strong> {sectionAction === 'enable' ? 'Enable' : 'Disable'} all pages in this section:
+                  </p>
+                  <div className="max-h-32 overflow-y-auto bg-gray-50 rounded-lg p-3">
+                    {pages.filter(page => page.section === selectedSectionType).map(page => (
+                      <div key={page.id} className="text-sm text-gray-600 mb-1">
+                        • {page.title} ({page.path})
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {sectionAction === 'disable' && (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Section Maintenance Reason <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={sectionReason}
+                      onChange={(e) => setSectionReason(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+                      placeholder="Explain why this entire section is being put under maintenance..."
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      This reason will be applied to all pages in this section.
+                    </p>
+                  </div>
+                )}
+                
+                {/* Buttons */}
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => setShowSectionModal(false)}
+                    className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={executeSectionAction}
+                    disabled={sectionAction === 'disable' && !sectionReason.trim()}
+                    className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl disabled:opacity-50 ${
+                      sectionAction === 'enable' 
+                        ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'
+                        : 'bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white'
+                    }`}
+                  >
+                    {sectionAction === 'enable' ? 'Enable Section' : 'Disable Section'}
                   </button>
                 </div>
               </div>
