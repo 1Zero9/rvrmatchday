@@ -32,6 +32,90 @@ interface ChangelogEntry {
 
 const changelogData: ChangelogEntry[] = [
   {
+    version: "11.0.2",
+    title: "Comprehensive Page Maintenance System Overhaul",
+    date: new Date().toISOString().split('T')[0], // Today's date
+    type: "major",
+    impact: "feature",
+    filesChanged: 19,
+    linesAdded: 1132,
+    linesRemoved: 100,
+    changes: [
+      {
+        category: "Page Maintenance Management",
+        icon: "🚧",
+        color: "text-orange-600",
+        items: [
+          "Enhanced PageMaintenanceManager with hierarchical section controls",
+          "Added one-click section disable/enable for entire navigation groups (About, Teams, Contact, etc.)",
+          "Fixed database permissions issues using secure API endpoints with service role authentication",
+          "Created comprehensive maintenance banner system with admin bypass functionality",
+          "Implemented path correction system to fix database/file path mismatches"
+        ]
+      },
+      {
+        category: "Role-Based Maintenance Notifications",
+        icon: "🔔",
+        color: "text-blue-600",
+        items: [
+          "Added role-based MaintenanceStatusBar visible only to admin/content editor users",
+          "Removed maintenance notifications completely for standard users",
+          "Created clean grayed-out navigation styling for disabled pages",
+          "Implemented MaintenanceWrapper component for page-level maintenance display",
+          "Admin users see maintenance banner but can still access page content"
+        ]
+      },
+      {
+        category: "Navigation & User Experience",
+        icon: "🧭",
+        color: "text-purple-600",
+        items: [
+          "Updated all dropdown menus to use NavItem components for maintenance awareness",
+          "Simplified maintenance styling to clean grayed-out approach without visual clutter",
+          "Fixed dropdown navigation components in StandardLayout for Teams, Contact, and More menus",
+          "Implemented MaintenanceAwareLink component for consistent disabled page styling",
+          "Removed maintenance icons and tooltips based on user feedback for cleaner interface"
+        ]
+      },
+      {
+        category: "API & Database Infrastructure",
+        icon: "🔧",
+        color: "text-green-600",
+        items: [
+          "Created secure maintenance API endpoints (/api/maintenance/update, /api/maintenance/list-all)",
+          "Fixed Row Level Security permissions by using service role key for database operations",
+          "Added cache prevention headers to maintenance APIs for real-time status updates",
+          "Implemented path correction API to resolve database/file path mismatches",
+          "Enhanced maintenance check API with proper error handling and validation"
+        ]
+      },
+      {
+        category: "Admin Dashboard Integration",
+        icon: "📊",
+        color: "text-indigo-600",
+        items: [
+          "Added maintenance statistics to admin dashboard stats grid",
+          "Created 'Disabled Pages' section showing real-time list of pages under maintenance",
+          "Integrated maintenance data with dashboard overview for immediate visibility",
+          "Added section-grouped maintenance display with bulk operation controls",
+          "Implemented real-time maintenance status monitoring in admin interface"
+        ]
+      },
+      {
+        category: "Performance & Technical Improvements",
+        icon: "⚡",
+        color: "text-yellow-600",
+        items: [
+          "Resolved caching issues preventing real-time maintenance status updates",
+          "Added proper TypeScript types for all maintenance-related components",
+          "Implemented efficient bulk operations for section-level maintenance control",
+          "Enhanced error handling and user feedback throughout maintenance system",
+          "Optimized database queries for maintenance status checking across navigation"
+        ]
+      }
+    ]
+  },
+  {
     version: "6.2.1",
     title: "Navigation & UX Improvements",
     date: "2025-09-21",
