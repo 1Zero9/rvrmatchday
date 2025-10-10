@@ -199,7 +199,6 @@ export default function StandardLayout({ children, title, currentPage }: Standar
                 className="px-4 py-3 text-white hover:bg-club-accent-dark rounded-lg transition-all duration-200 font-medium text-base whitespace-nowrap"
               />
 
-
               <div className="relative group">
                 <button className="px-4 py-3 text-white hover:bg-club-primary-dark rounded-lg transition-all duration-200 font-medium flex items-center text-base whitespace-nowrap">
                   🌟 More

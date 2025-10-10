@@ -137,9 +137,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadUserProfile = async (userId: string, currentUser?: User) => {
     // Loading user profile (removed user ID logging for security)
     try {
-      // Set a shorter timeout for the database query
+      // Set a reasonable timeout for the database query
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile load timeout')), 3000) // Reduced to 3 seconds
+        setTimeout(() => reject(new Error('Profile load timeout')), 8000) // Extended to 8 seconds
       );
 
       const queryPromise = supabase
@@ -154,14 +154,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn('Database profile lookup failed, using fallback:', error.message);
         // Create a basic fallback profile for authenticated users
         const currentUserData = currentUser || user;
+        
+        // Check user metadata for role (admin users might have it there)
+        const metadataRole = currentUserData?.user_metadata?.role || currentUserData?.app_metadata?.role;
+        const emailBasedRole = currentUserData?.email?.includes('admin') ? 'admin' : 'coach';
+        
         const fallbackProfile: UserProfile = {
           id: userId,
           email: currentUserData?.email || '',
           username: currentUserData?.email?.split('@')[0] || 'user',
           full_name: currentUserData?.user_metadata?.full_name || currentUserData?.email?.split('@')[0] || 'User',
-          role: 'coach', // Default role for fallback
+          role: metadataRole || emailBasedRole, // Try to preserve admin role
           teams: [],
-          permissions: ['match:view', 'match:record'],
+          permissions: metadataRole === 'admin' ? ['*'] : ['match:view', 'match:record'],
           is_active: true
         };
         setProfile(fallbackProfile);

@@ -19,6 +19,7 @@ import SpecialEventsManager from '../../components/admin/SpecialEventsManager';
 import VolunteerManager from '../../components/admin/VolunteerManager';
 import VolunteerSignupManager from '../../components/admin/VolunteerSignupManager';
 import PageMaintenanceManager from '../../components/admin/PageMaintenanceManager';
+import BookmarkPageManager from '../../components/admin/BookmarkPageManager';
 import SiteStatusReport from '../../components/admin/SiteStatusReport';
 import AdminTodoList from '../../components/AdminTodoList';
 import AdminSiteMap from '../../components/AdminSiteMap';
@@ -228,6 +229,10 @@ function WrappedVolunteerSignupManager() {
 
 function WrappedPageMaintenanceManager() {
   return <PageMaintenanceManager />;
+}
+
+function WrappedPageManager() {
+  return <BookmarkPageManager />;
 }
 
 function WrappedAdminTodoList() {
@@ -907,6 +912,16 @@ function UnifiedAdminDashboard() {
       requiredRoles: ['admin'],
       color: 'bg-gradient-to-r from-gray-600 to-slate-700',
       component: SystemHubComponent
+    },
+    {
+      id: 'page-manager',
+      title: 'Page Manager',
+      icon: '📄',
+      description: 'Create, organize, and manage website pages with drag-and-drop navigation',
+      requiredRoles: ['admin', 'editor'],
+      color: 'bg-gradient-to-r from-indigo-600 to-purple-700',
+      component: WrappedPageManager,
+      badge: 'NEW'
     },
     {
       id: 'development-hub',
