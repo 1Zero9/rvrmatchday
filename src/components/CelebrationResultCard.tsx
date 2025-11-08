@@ -13,6 +13,7 @@ import { Match, Team, MatchEvent } from '../types/match-tracker';
 import { generateMatchStory, getCelebrationColors, getMatchEmojis } from '../lib/match-celebration';
 import { getTeamColorClasses, getTeamIndicatorColor } from '../lib/team-colors';
 import { storageV2 } from '../lib/match-tracker-storage-v2';
+import { generateMatchResultPDF, generateShareText } from '../lib/match-pdf-export';
 
 interface CelebrationResultCardProps {
   match: Match;
@@ -239,19 +240,40 @@ export default function CelebrationResultCard({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-3">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={`${teamColors.lightBackground} backdrop-blur-sm border ${teamColors.border} border-opacity-50 ${teamColors.text} px-6 py-3 rounded-xl font-medium hover:opacity-80 transition-all flex items-center justify-center`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigator.clipboard.writeText(`${team.name} ${result === 'W' ? 'beat' : result === 'D' ? 'drew with' : 'played'} ${match.opponent} ${teamScore}-${opponentScore}`);
-                  alert('Match result copied to clipboard! 📋');
+                  const shareText = generateShareText({ match, team, teamScore, opponentScore, result });
+                  navigator.clipboard.writeText(shareText);
+                  alert('Match result copied to clipboard! 📋\nReady to share via text!');
                 }}
               >
                 <span className="mr-2">📋</span>
-                Copy Result
+                Copy for Text
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-3 rounded-xl font-medium hover:opacity-90 transition-all flex items-center justify-center shadow-lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  generateMatchResultPDF({
+                    match,
+                    team,
+                    teamScore,
+                    opponentScore,
+                    result,
+                    goalEvents
+                  });
+                }}
+              >
+                <span className="mr-2">📄</span>
+                Export PDF
               </motion.button>
             </div>
           </div>
