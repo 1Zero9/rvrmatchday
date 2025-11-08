@@ -24,6 +24,7 @@ import { VERSION_CONFIG } from "../config/version";
 import { MatchTypeBadge } from "./MatchTypeBadge";
 import { getMatchTypeCardColors } from "../lib/match-type-colors";
 import MatchStatusManager from "./MatchStatusManager";
+import { generateStatisticsPDF, SeasonStatisticsData } from "../lib/match-pdf-export";
 
 // Chart.js imports and setup
 import {
@@ -3065,9 +3066,9 @@ export default function MatchCentralContent() {
                       <p className="text-sm text-gray-600">Team performance analytics</p>
                     </div>
                   </div>
-                  
-                  {/* Filters for Stats */}
-                  <div className="flex gap-3">
+
+                  {/* Filters and Export for Stats */}
+                  <div className="flex gap-3 items-center">
                     <select 
                       value={selectedStatsTeam}
                       onChange={(e) => setSelectedStatsTeam(e.target.value)}
@@ -3102,6 +3103,34 @@ export default function MatchCentralContent() {
                         </button>
                       ))}
                     </div>
+
+                    {/* Export PDF Button */}
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="bg-gradient-to-r from-red-600 to-red-700 text-white px-5 py-3 rounded-xl font-medium hover:opacity-90 transition-all flex items-center gap-2 shadow-lg"
+                      onClick={() => {
+                        const teamName = selectedStatsTeam === 'all'
+                          ? 'All Teams'
+                          : teams.find(t => t.id === selectedStatsTeam)?.name || 'RVR';
+
+                        const matchTypes = selectedMatchTypes.size > 0
+                          ? Array.from(selectedMatchTypes)
+                          : ['All Competitions'];
+
+                        const statsData: SeasonStatisticsData = {
+                          teamName,
+                          season: '2024-25',
+                          matchTypes,
+                          ...currentStats
+                        };
+
+                        generateStatisticsPDF(statsData);
+                      }}
+                    >
+                      <span>📄</span>
+                      <span>Export PDF</span>
+                    </motion.button>
                   </div>
                 </div>
 

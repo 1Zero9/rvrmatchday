@@ -235,3 +235,294 @@ export function generateShareText(data: MatchResultData): string {
 
   return `${resultEmoji} ${resultText}!\n\n${team.name} ${teamScore} - ${opponentScore} ${match.opponent}\n\n${match.matchType} | ${date}\n${match.isHomeMatch ? '🏠 Home' : '✈️ Away'} at ${match.venue || 'our ground'}`;
 }
+
+/**
+ * Season Statistics Data Interface
+ */
+export interface SeasonStatisticsData {
+  teamName: string;
+  season?: string;
+  matchTypes: string[];
+
+  // Overall Stats
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  winPercentage: number;
+
+  // Goals
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  avgGoalsFor: number;
+  avgGoalsAgainst: number;
+  cleanSheets: number;
+
+  // Home/Away
+  homeMatches: number;
+  homeWins: number;
+  awayMatches: number;
+  awayWins: number;
+
+  // Form & Records
+  form: ('W' | 'D' | 'L')[];
+  biggestWin?: { score: string; margin: number };
+  biggestLoss?: { score: string; margin: number };
+}
+
+/**
+ * Generates a comprehensive PDF for season statistics
+ */
+export async function generateStatisticsPDF(data: SeasonStatisticsData): Promise<void> {
+  // Create PDF in portrait mode
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 20;
+  let yPosition = 20;
+
+  // Colors
+  const primaryColor: [number, number, number] = [163, 42, 76]; // RVR burgundy
+  const successColor: [number, number, number] = [34, 197, 94]; // Green
+  const warningColor: [number, number, number] = [245, 158, 11]; // Yellow
+  const dangerColor: [number, number, number] = [239, 68, 68]; // Red
+  const blueColor: [number, number, number] = [59, 130, 246]; // Blue
+
+  // Helper function to add text
+  const addText = (text: string, x: number, y: number, size: number, style: 'normal' | 'bold' = 'normal', color: [number, number, number] = [0, 0, 0], align: 'left' | 'center' | 'right' = 'left') => {
+    doc.setFontSize(size);
+    doc.setFont('helvetica', style);
+    doc.setTextColor(...color);
+
+    if (align === 'center') {
+      const textWidth = doc.getTextWidth(text);
+      doc.text(text, x - (textWidth / 2), y);
+    } else if (align === 'right') {
+      const textWidth = doc.getTextWidth(text);
+      doc.text(text, x - textWidth, y);
+    } else {
+      doc.text(text, x, y);
+    }
+  };
+
+  // Helper to draw a stat box
+  const drawStatBox = (x: number, y: number, width: number, height: number, value: string, label: string, color: [number, number, number]) => {
+    // Background
+    doc.setFillColor(color[0], color[1], color[2], 0.1);
+    doc.setDrawColor(...color);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(x, y, width, height, 2, 2, 'FD');
+
+    // Value
+    addText(value, x + (width / 2), y + (height / 2) - 2, 18, 'bold', color, 'center');
+
+    // Label
+    addText(label, x + (width / 2), y + (height / 2) + 5, 8, 'normal', [100, 100, 100], 'center');
+  };
+
+  // === HEADER ===
+  addText('RVR FOOTBALL CLUB', pageWidth / 2, yPosition, 24, 'bold', primaryColor, 'center');
+  yPosition += 8;
+  addText('Season Statistics Report', pageWidth / 2, yPosition, 14, 'normal', [100, 100, 100], 'center');
+  yPosition += 15;
+
+  // Header line
+  doc.setDrawColor(...primaryColor);
+  doc.setLineWidth(0.5);
+  doc.line(margin, yPosition, pageWidth - margin, yPosition);
+  yPosition += 10;
+
+  // Team and Season Info
+  addText(data.teamName, margin, yPosition, 16, 'bold', primaryColor);
+  yPosition += 6;
+  if (data.season) {
+    addText(`Season: ${data.season}`, margin, yPosition, 10, 'normal', [100, 100, 100]);
+    yPosition += 5;
+  }
+  if (data.matchTypes.length > 0) {
+    addText(`Competitions: ${data.matchTypes.join(', ')}`, margin, yPosition, 10, 'normal', [100, 100, 100]);
+  }
+  yPosition += 15;
+
+  // === OVERALL PERFORMANCE ===
+  addText('Overall Performance', margin, yPosition, 14, 'bold', primaryColor);
+  yPosition += 8;
+
+  const boxWidth = 40;
+  const boxHeight = 25;
+  const gap = 5;
+  const startX = margin;
+
+  // Row 1: Played, Won, Drawn, Lost
+  drawStatBox(startX, yPosition, boxWidth, boxHeight, data.played.toString(), 'Played', blueColor);
+  drawStatBox(startX + boxWidth + gap, yPosition, boxWidth, boxHeight, data.won.toString(), 'Wins', successColor);
+  drawStatBox(startX + (boxWidth + gap) * 2, yPosition, boxWidth, boxHeight, data.drawn.toString(), 'Draws', warningColor);
+  drawStatBox(startX + (boxWidth + gap) * 3, yPosition, boxWidth, boxHeight, data.lost.toString(), 'Losses', dangerColor);
+  yPosition += boxHeight + 10;
+
+  // Win Percentage Bar
+  addText('Win Rate:', margin, yPosition, 10, 'bold');
+  addText(`${data.winPercentage.toFixed(1)}%`, pageWidth - margin, yPosition, 10, 'bold', successColor, 'right');
+  yPosition += 5;
+
+  // Progress bar
+  const barWidth = pageWidth - (margin * 2);
+  const barHeight = 6;
+  doc.setFillColor(230, 230, 230);
+  doc.roundedRect(margin, yPosition, barWidth, barHeight, 2, 2, 'F');
+
+  doc.setFillColor(...successColor);
+  const fillWidth = (barWidth * data.winPercentage) / 100;
+  doc.roundedRect(margin, yPosition, fillWidth, barHeight, 2, 2, 'F');
+  yPosition += 15;
+
+  // === GOALS ANALYSIS ===
+  addText('Goals Analysis', margin, yPosition, 14, 'bold', primaryColor);
+  yPosition += 8;
+
+  // Goals boxes
+  drawStatBox(startX, yPosition, boxWidth, boxHeight, data.goalsFor.toString(), 'Goals For', successColor);
+  drawStatBox(startX + boxWidth + gap, yPosition, boxWidth, boxHeight, data.goalsAgainst.toString(), 'Goals Against', dangerColor);
+  drawStatBox(startX + (boxWidth + gap) * 2, yPosition, boxWidth, boxHeight, data.cleanSheets.toString(), 'Clean Sheets', blueColor);
+
+  const gdValue = data.goalDifference > 0 ? `+${data.goalDifference}` : data.goalDifference.toString();
+  const gdColor: [number, number, number] = data.goalDifference > 0 ? successColor : data.goalDifference < 0 ? dangerColor : [100, 100, 100];
+  drawStatBox(startX + (boxWidth + gap) * 3, yPosition, boxWidth, boxHeight, gdValue, 'Goal Diff', gdColor);
+  yPosition += boxHeight + 5;
+
+  // Averages
+  addText(`Avg Goals For: ${data.avgGoalsFor.toFixed(1)}`, margin, yPosition, 9, 'normal', [100, 100, 100]);
+  addText(`Avg Goals Against: ${data.avgGoalsAgainst.toFixed(1)}`, margin + 60, yPosition, 9, 'normal', [100, 100, 100]);
+
+  if (data.played > 0) {
+    const cleanSheetPercentage = ((data.cleanSheets / data.played) * 100).toFixed(1);
+    addText(`Clean Sheet Rate: ${cleanSheetPercentage}%`, margin + 120, yPosition, 9, 'normal', [100, 100, 100]);
+  }
+  yPosition += 15;
+
+  // === HOME vs AWAY ===
+  addText('Home & Away Performance', margin, yPosition, 14, 'bold', primaryColor);
+  yPosition += 8;
+
+  // Home performance
+  const homeWinRate = data.homeMatches > 0 ? ((data.homeWins / data.homeMatches) * 100).toFixed(1) : '0.0';
+  const homeLosses = data.homeMatches - data.homeWins;
+
+  addText('Home Record:', margin, yPosition, 11, 'bold');
+  addText(`${data.homeWins}W - ${homeLosses}L`, margin + 40, yPosition, 11, 'normal', successColor);
+  addText(`(${homeWinRate}%)`, margin + 70, yPosition, 9, 'normal', [100, 100, 100]);
+  yPosition += 8;
+
+  // Away performance
+  const awayWinRate = data.awayMatches > 0 ? ((data.awayWins / data.awayMatches) * 100).toFixed(1) : '0.0';
+  const awayLosses = data.awayMatches - data.awayWins;
+
+  addText('Away Record:', margin, yPosition, 11, 'bold');
+  addText(`${data.awayWins}W - ${awayLosses}L`, margin + 40, yPosition, 11, 'normal', blueColor);
+  addText(`(${awayWinRate}%)`, margin + 70, yPosition, 9, 'normal', [100, 100, 100]);
+  yPosition += 15;
+
+  // === RECENT FORM ===
+  addText('Recent Form', margin, yPosition, 14, 'bold', primaryColor);
+  yPosition += 8;
+
+  if (data.form.length > 0) {
+    addText(`Last ${data.form.length} matches:`, margin, yPosition, 10, 'normal', [100, 100, 100]);
+    yPosition += 7;
+
+    // Draw form circles
+    const circleSize = 8;
+    const circleGap = 3;
+    let xPos = margin;
+
+    data.form.forEach((result, index) => {
+      const color = result === 'W' ? successColor : result === 'D' ? warningColor : dangerColor;
+
+      doc.setFillColor(...color);
+      doc.circle(xPos + circleSize / 2, yPosition, circleSize / 2, 'F');
+
+      // Letter inside circle
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      const textWidth = doc.getTextWidth(result);
+      doc.text(result, xPos + (circleSize - textWidth) / 2, yPosition + 2);
+
+      xPos += circleSize + circleGap;
+    });
+  } else {
+    addText('No matches played yet', margin, yPosition, 10, 'normal', [150, 150, 150]);
+  }
+  yPosition += 15;
+
+  // === RECORDS & ACHIEVEMENTS ===
+  if (data.biggestWin || data.biggestLoss) {
+    addText('Notable Results', margin, yPosition, 14, 'bold', primaryColor);
+    yPosition += 8;
+
+    if (data.biggestWin && data.biggestWin.margin > 0) {
+      addText('Biggest Win:', margin, yPosition, 10, 'bold');
+      addText(data.biggestWin.score, margin + 35, yPosition, 10, 'bold', successColor);
+      addText(`(+${data.biggestWin.margin} goal margin)`, margin + 60, yPosition, 8, 'normal', [100, 100, 100]);
+      yPosition += 7;
+    }
+
+    if (data.biggestLoss && data.biggestLoss.margin > 0) {
+      addText('Biggest Loss:', margin, yPosition, 10, 'bold');
+      addText(data.biggestLoss.score, margin + 35, yPosition, 10, 'bold', dangerColor);
+      addText(`(-${data.biggestLoss.margin} goal margin)`, margin + 60, yPosition, 8, 'normal', [100, 100, 100]);
+      yPosition += 7;
+    }
+    yPosition += 8;
+  }
+
+  // === SUMMARY BOX ===
+  yPosition += 5;
+  const summaryBoxHeight = 35;
+
+  doc.setFillColor(250, 250, 250);
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(margin, yPosition, pageWidth - (margin * 2), summaryBoxHeight, 3, 3, 'FD');
+
+  yPosition += 8;
+  addText('Season Summary', margin + 5, yPosition, 12, 'bold', primaryColor);
+  yPosition += 7;
+
+  const summaryText = `${data.teamName} has played ${data.played} matches with a ${data.winPercentage.toFixed(1)}% win rate. ` +
+    `The team has scored ${data.goalsFor} goals (${data.avgGoalsFor.toFixed(1)} avg) and conceded ${data.goalsAgainst} ` +
+    `(${data.avgGoalsAgainst.toFixed(1)} avg), with ${data.cleanSheets} clean sheets. ` +
+    `Performance: ${data.homeWins} home wins from ${data.homeMatches} matches, ` +
+    `${data.awayWins} away wins from ${data.awayMatches} matches.`;
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  const splitSummary = doc.splitTextToSize(summaryText, pageWidth - (margin * 2) - 10);
+  doc.text(splitSummary, margin + 5, yPosition);
+
+  // === FOOTER ===
+  const footerY = pageHeight - 20;
+  doc.setDrawColor(...primaryColor);
+  doc.setLineWidth(0.3);
+  doc.line(margin, footerY, pageWidth - margin, footerY);
+
+  addText('RVR Football Club - Season Statistics', pageWidth / 2, footerY + 5, 8, 'normal', [150, 150, 150], 'center');
+
+  const timestamp = new Date().toLocaleString('en-GB');
+  addText(`Generated: ${timestamp}`, pageWidth / 2, footerY + 10, 7, 'normal', [180, 180, 180], 'center');
+
+  // Generate filename
+  const season = data.season || new Date().getFullYear().toString();
+  const teamSlug = data.teamName.replace(/\s/g, '_');
+  const filename = `RVR_Statistics_${teamSlug}_${season}.pdf`;
+
+  // Save the PDF
+  doc.save(filename);
+}
