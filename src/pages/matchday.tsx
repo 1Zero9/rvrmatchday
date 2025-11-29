@@ -28,6 +28,7 @@ export default function MatchDay() {
   const [selectedMatchTypes, setSelectedMatchTypes] = useState<Set<string>>(new Set(['League']));
   const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
   const [fullScreenMatch, setFullScreenMatch] = useState<Match | null>(null);
+  const [matchEvents, setMatchEvents] = useState<{[matchId: string]: any[]}>({});
 
   const loadData = async () => {
     try {
@@ -131,8 +132,32 @@ export default function MatchDay() {
           awayScore: match.away_score
         })) || [];
         setAllMatches(loadedMatches);
+
+        // Load match events for goal timing analysis
+        const finishedMatchIds = loadedMatches
+          .filter(m => m.status === 'Finished')
+          .map(m => m.id);
+
+        if (finishedMatchIds.length > 0) {
+          const { data: eventsData, error: eventsError } = await supabase
+            .from('match_events')
+            .select('*')
+            .in('match_id', finishedMatchIds)
+            .eq('event_type', 'Goal');
+
+          if (!eventsError && eventsData) {
+            const eventsByMatch: {[key: string]: any[]} = {};
+            eventsData.forEach(event => {
+              if (!eventsByMatch[event.match_id]) {
+                eventsByMatch[event.match_id] = [];
+              }
+              eventsByMatch[event.match_id].push(event);
+            });
+            setMatchEvents(eventsByMatch);
+          }
+        }
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -268,6 +293,62 @@ export default function MatchDay() {
     });
   };
 
+  // Get goals trend (goals per match over time)
+  const getGoalsTrend = () => {
+    const filteredMatches = allMatches
+      .filter(match =>
+        match.status === 'Finished' &&
+        match.homeScore !== undefined &&
+        match.awayScore !== undefined &&
+        (selectedTeamId === 'all' || match.teamId === selectedTeamId) &&
+        (selectedMatchTypes.size === 0 || selectedMatchTypes.has(match.matchType))
+      )
+      .sort((a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime());
+
+    return filteredMatches.map(match => {
+      const result = getMatchResult(match);
+      return {
+        date: match.scheduledDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+        goalsFor: result.teamScore,
+        goalsAgainst: result.opponentScore,
+        opponent: match.opponent
+      };
+    });
+  };
+
+  // Get goal timing distribution
+  const getGoalTiming = () => {
+    const timingBuckets = {
+      '0-15': 0,
+      '16-30': 0,
+      '31-45': 0,
+      '46-60': 0,
+      '61-75': 0,
+      '76-90+': 0
+    };
+
+    const filteredMatches = allMatches.filter(match =>
+      match.status === 'Finished' &&
+      (selectedTeamId === 'all' || match.teamId === selectedTeamId) &&
+      (selectedMatchTypes.size === 0 || selectedMatchTypes.has(match.matchType))
+    );
+
+    filteredMatches.forEach(match => {
+      const events = matchEvents[match.id] || [];
+      events.forEach(event => {
+        const minute = event.minute || 0;
+        if (minute <= 15) timingBuckets['0-15']++;
+        else if (minute <= 30) timingBuckets['16-30']++;
+        else if (minute <= 45) timingBuckets['31-45']++;
+        else if (minute <= 60) timingBuckets['46-60']++;
+        else if (minute <= 75) timingBuckets['61-75']++;
+        else timingBuckets['76-90+']++;
+      });
+    });
+
+    return timingBuckets;
+  };
+
   const getMatchResult = (match: Match) => {
     if (match.homeScore === undefined || match.awayScore === undefined) {
       return { result: 'TBD', teamScore: 0, opponentScore: 0 };
@@ -287,6 +368,8 @@ export default function MatchDay() {
   const upcomingFixtures = React.useMemo(() => getUpcomingFixtures(), [allMatches, selectedTeamId, selectedMatchTypes]);
   const seasonStats = React.useMemo(() => getSeasonStats(), [allMatches, selectedTeamId, selectedMatchTypes]);
   const recentForm = React.useMemo(() => getRecentForm(), [allMatches, selectedTeamId, selectedMatchTypes]);
+  const goalsTrend = React.useMemo(() => getGoalsTrend(), [allMatches, selectedTeamId, selectedMatchTypes]);
+  const goalTiming = React.useMemo(() => getGoalTiming(), [allMatches, selectedTeamId, selectedMatchTypes, matchEvents]);
 
   if (loading) {
     return (
@@ -903,6 +986,174 @@ export default function MatchDay() {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Goals Trend Over Time */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-2 mb-3">
+                  <span className="text-xl">📈</span>
+                  <h3 className="text-sm font-bold text-gray-900">Goals Trend</h3>
+                </div>
+
+                {goalsTrend.length > 0 ? (
+                  <div className="h-48">
+                    <Line
+                      data={{
+                        labels: goalsTrend.map(g => g.date),
+                        datasets: [
+                          {
+                            label: 'Goals Scored',
+                            data: goalsTrend.map(g => g.goalsFor),
+                            borderColor: 'rgb(34, 197, 94)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                          },
+                          {
+                            label: 'Goals Conceded',
+                            data: goalsTrend.map(g => g.goalsAgainst),
+                            borderColor: 'rgb(239, 68, 68)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                          }
+                        ]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            ticks: {
+                              stepSize: 1
+                            }
+                          },
+                          x: {
+                            ticks: {
+                              maxRotation: 45,
+                              minRotation: 45,
+                              font: { size: 9 }
+                            }
+                          }
+                        },
+                        plugins: {
+                          legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                              padding: 8,
+                              font: { size: 10 }
+                            }
+                          },
+                          tooltip: {
+                            callbacks: {
+                              title: (context) => {
+                                const idx = context[0].dataIndex;
+                                return `vs ${goalsTrend[idx].opponent}`;
+                              },
+                              label: (context) => {
+                                return `${context.dataset.label}: ${context.parsed.y}`;
+                              }
+                            }
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-48 flex items-center justify-center">
+                    <p className="text-sm text-gray-400">No match data yet</p>
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-500 mt-3 text-center">
+                  Track scoring improvement over time
+                </p>
+              </div>
+
+              {/* Goal Timing Distribution */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-2 mb-3">
+                  <span className="text-xl">⏱️</span>
+                  <h3 className="text-sm font-bold text-gray-900">When We Score</h3>
+                </div>
+
+                {Object.values(goalTiming).some(v => v > 0) ? (
+                  <div className="h-40">
+                    <Bar
+                      data={{
+                        labels: Object.keys(goalTiming).map(k => k + ' min'),
+                        datasets: [{
+                          label: 'Goals',
+                          data: Object.values(goalTiming),
+                          backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(168, 85, 247, 0.8)',
+                            'rgba(236, 72, 153, 0.8)'
+                          ],
+                          borderColor: [
+                            'rgb(37, 99, 235)',
+                            'rgb(5, 150, 105)',
+                            'rgb(217, 119, 6)',
+                            'rgb(220, 38, 38)',
+                            'rgb(147, 51, 234)',
+                            'rgb(219, 39, 119)'
+                          ],
+                          borderWidth: 2
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'x',
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            ticks: {
+                              stepSize: 1
+                            }
+                          },
+                          x: {
+                            ticks: {
+                              font: { size: 9 }
+                            }
+                          }
+                        },
+                        plugins: {
+                          legend: {
+                            display: false
+                          },
+                          tooltip: {
+                            callbacks: {
+                              label: (context) => {
+                                const total = Object.values(goalTiming).reduce((a, b) => a + b, 0);
+                                const value = context.parsed.y;
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : 0;
+                                return `${value} goals (${percentage}%)`;
+                              }
+                            }
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-40 flex items-center justify-center">
+                    <p className="text-sm text-gray-400">No goal timing data yet</p>
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-500 mt-3 text-center">
+                  Shows which periods we score most
+                </p>
               </div>
             </div>
 
