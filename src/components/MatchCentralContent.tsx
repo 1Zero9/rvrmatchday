@@ -24,6 +24,8 @@ import { VERSION_CONFIG } from "../config/version";
 import { MatchTypeBadge } from "./MatchTypeBadge";
 import { getMatchTypeCardColors } from "../lib/match-type-colors";
 import MatchStatusManager from "./MatchStatusManager";
+import { generateStatisticsPDF, SeasonStatisticsData } from "../lib/match-pdf-export";
+import { storageV2 } from "../lib/match-tracker-storage-v2";
 
 // Chart.js imports and setup
 import {
@@ -1267,6 +1269,7 @@ export default function MatchCentralContent() {
       lost: 0,
       goalsFor: 0,
       goalsAgainst: 0,
+      goalDifference: 0,
       homeWins: 0,
       awayWins: 0,
       homeMatches: teamMatches.filter(m => m.isHomeMatch).length,
@@ -1277,7 +1280,7 @@ export default function MatchCentralContent() {
       avgGoalsFor: 0,
       avgGoalsAgainst: 0,
       winPercentage: 0,
-      form: [] as string[]
+      form: [] as ('W' | 'D' | 'L')[]
     };
 
     // Sort matches by date (oldest first) so form is built in chronological order
@@ -1323,8 +1326,9 @@ export default function MatchCentralContent() {
 
     stats.avgGoalsFor = stats.played > 0 ? stats.goalsFor / stats.played : 0;
     stats.avgGoalsAgainst = stats.played > 0 ? stats.goalsAgainst / stats.played : 0;
+    stats.goalDifference = stats.goalsFor - stats.goalsAgainst;
     stats.winPercentage = stats.played > 0 ? (stats.won / stats.played) * 100 : 0;
-    stats.form = stats.form.slice(-5); // Last 5 matches chronologically
+    stats.form = stats.form.slice(-5) as ('W' | 'D' | 'L')[]; // Last 5 matches chronologically
 
     const endTime = performance.now();
     console.log(`✅ Stats calculation completed in ${(endTime - startTime).toFixed(2)}ms`);
@@ -2456,6 +2460,27 @@ export default function MatchCentralContent() {
                                 
                                 {/* Action Buttons */}
                                 <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    const { generateMatchResultPDF } = await import('../lib/match-pdf-export');
+                                    const events = await storageV2.getMatchEvents(match.id);
+                                    const goalEvents = events.filter(ev => ev.eventType === 'Goal');
+
+                                    generateMatchResultPDF({
+                                      match,
+                                      team: team!,
+                                      teamScore: result.teamScore,
+                                      opponentScore: result.opponentScore,
+                                      result: result.result,
+                                      goalEvents
+                                    });
+                                  }}
+                                  className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-medium transition-all transform hover:scale-105"
+                                  title="Export PDF"
+                                >
+                                  📄
+                                </button>
+                                <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     router.push(`/match-recorder?edit=${match.id}`);
@@ -3065,9 +3090,9 @@ export default function MatchCentralContent() {
                       <p className="text-sm text-gray-600">Team performance analytics</p>
                     </div>
                   </div>
-                  
-                  {/* Filters for Stats */}
-                  <div className="flex gap-3">
+
+                  {/* Filters and Export for Stats */}
+                  <div className="flex gap-3 items-center">
                     <select 
                       value={selectedStatsTeam}
                       onChange={(e) => setSelectedStatsTeam(e.target.value)}
@@ -3102,6 +3127,34 @@ export default function MatchCentralContent() {
                         </button>
                       ))}
                     </div>
+
+                    {/* Export PDF Button */}
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="bg-gradient-to-r from-red-600 to-red-700 text-white px-5 py-3 rounded-xl font-medium hover:opacity-90 transition-all flex items-center gap-2 shadow-lg"
+                      onClick={() => {
+                        const teamName = selectedStatsTeam === 'all'
+                          ? 'All Teams'
+                          : teams.find(t => t.id === selectedStatsTeam)?.name || 'RVR';
+
+                        const matchTypes = selectedMatchTypes.size > 0
+                          ? Array.from(selectedMatchTypes)
+                          : ['All Competitions'];
+
+                        const statsData: SeasonStatisticsData = {
+                          teamName,
+                          season: '2024-25',
+                          matchTypes,
+                          ...currentStats
+                        };
+
+                        generateStatisticsPDF(statsData);
+                      }}
+                    >
+                      <span>📄</span>
+                      <span>Export PDF</span>
+                    </motion.button>
                   </div>
                 </div>
 
