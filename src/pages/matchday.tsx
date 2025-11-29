@@ -11,6 +11,11 @@ import AdvancedTeamFilter from "../components/AdvancedTeamFilter";
 import { supabase } from "../lib/supabase";
 import { Team, Match } from "../types/match-tracker";
 import { MatchTypeBadge } from "../components/MatchTypeBadge";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement } from 'chart.js';
+import { Doughnut, Line, Bar } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement);
 
 type TabType = 'results' | 'fixtures' | 'quickrecord';
 
@@ -196,9 +201,9 @@ export default function MatchDay() {
   };
 
   const getSeasonStats = () => {
-    const filteredMatches = allMatches.filter(match => 
-      match.status === 'Finished' && 
-      match.homeScore !== undefined && 
+    const filteredMatches = allMatches.filter(match =>
+      match.status === 'Finished' &&
+      match.homeScore !== undefined &&
       match.awayScore !== undefined &&
       (selectedTeamId === 'all' || match.teamId === selectedTeamId) &&
       (selectedMatchTypes.size === 0 || selectedMatchTypes.has(match.matchType))
@@ -210,23 +215,57 @@ export default function MatchDay() {
       drawn: 0,
       lost: 0,
       goalsFor: 0,
-      goalsAgainst: 0
+      goalsAgainst: 0,
+      homeWins: 0,
+      awayWins: 0,
+      homeMatches: 0,
+      awayMatches: 0
     };
 
     filteredMatches.forEach(match => {
       const result = getMatchResult(match);
       const teamScore = result.teamScore;
       const opponentScore = result.opponentScore;
-      
+
       stats.goalsFor += teamScore;
       stats.goalsAgainst += opponentScore;
-      
-      if (result.result === 'W') stats.won++;
+
+      if (result.result === 'W') {
+        stats.won++;
+        if (match.isHomeMatch) stats.homeWins++;
+        else stats.awayWins++;
+      }
       else if (result.result === 'D') stats.drawn++;
       else if (result.result === 'L') stats.lost++;
+
+      if (match.isHomeMatch) stats.homeMatches++;
+      else stats.awayMatches++;
     });
 
     return stats;
+  };
+
+  // Get recent form (last 10 matches)
+  const getRecentForm = () => {
+    const filteredMatches = allMatches
+      .filter(match =>
+        match.status === 'Finished' &&
+        match.homeScore !== undefined &&
+        match.awayScore !== undefined &&
+        (selectedTeamId === 'all' || match.teamId === selectedTeamId) &&
+        (selectedMatchTypes.size === 0 || selectedMatchTypes.has(match.matchType))
+      )
+      .sort((a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime())
+      .slice(-10);
+
+    return filteredMatches.map(match => {
+      const result = getMatchResult(match);
+      return {
+        date: match.scheduledDate,
+        result: result.result,
+        opponent: match.opponent
+      };
+    });
   };
 
   const getMatchResult = (match: Match) => {
@@ -247,6 +286,7 @@ export default function MatchDay() {
   const recentResults = React.useMemo(() => getRecentResults(), [allMatches, selectedTeamId, selectedMatchTypes]);
   const upcomingFixtures = React.useMemo(() => getUpcomingFixtures(), [allMatches, selectedTeamId, selectedMatchTypes]);
   const seasonStats = React.useMemo(() => getSeasonStats(), [allMatches, selectedTeamId, selectedMatchTypes]);
+  const recentForm = React.useMemo(() => getRecentForm(), [allMatches, selectedTeamId, selectedMatchTypes]);
 
   if (loading) {
     return (
@@ -636,63 +676,230 @@ export default function MatchDay() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-            {/* Sidebar - Season Overview */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sticky top-6">
-                <div className="flex items-center space-x-2 mb-4">
-                  <span className="text-xl">📊</span>
-                  <h3 className="text-lg font-bold text-gray-900">Season Overview</h3>
-                </div>
-                
-                {selectedTeamId !== 'all' && (
-                  <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-100">
-                    <p className="text-sm font-medium text-blue-800">
+            {/* Sidebar - Season Overview with Visual Graphs */}
+            <div className="lg:col-span-1 space-y-4">
+              {/* Team Selection Badge */}
+              {selectedTeamId !== 'all' && (
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                  <div className="p-3 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-100">
+                    <p className="text-sm font-medium text-blue-800 text-center">
                       {teams.find(t => t.id === selectedTeamId)?.name}
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* Win/Draw/Loss Chart */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-2 mb-4">
+                  <span className="text-xl">📊</span>
+                  <h3 className="text-sm font-bold text-gray-900">Results Breakdown</h3>
+                </div>
+
+                {seasonStats.played > 0 ? (
+                  <div className="h-48">
+                    <Doughnut
+                      data={{
+                        labels: ['Wins', 'Draws', 'Losses'],
+                        datasets: [{
+                          data: [seasonStats.won, seasonStats.drawn, seasonStats.lost],
+                          backgroundColor: [
+                            'rgb(34, 197, 94)',  // Green
+                            'rgb(234, 179, 8)',  // Yellow
+                            'rgb(239, 68, 68)'   // Red
+                          ],
+                          borderColor: [
+                            'rgb(22, 163, 74)',
+                            'rgb(202, 138, 4)',
+                            'rgb(220, 38, 38)'
+                          ],
+                          borderWidth: 2
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: {
+                            position: 'bottom',
+                            labels: {
+                              padding: 10,
+                              font: { size: 11 }
+                            }
+                          },
+                          tooltip: {
+                            callbacks: {
+                              label: (context) => {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = seasonStats.played;
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value} (${percentage}%)`;
+                              }
+                            }
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-48 flex items-center justify-center">
+                    <p className="text-sm text-gray-400">No matches played yet</p>
+                  </div>
                 )}
 
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm font-medium text-gray-600">Played</span>
-                    <span className="text-lg font-bold text-gray-900">{seasonStats.played}</span>
+                {/* Quick Stats Summary */}
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  <div className="text-center p-2 bg-gray-50 rounded">
+                    <div className="text-lg font-bold text-gray-900">{seasonStats.played}</div>
+                    <div className="text-xs text-gray-600">Played</div>
                   </div>
-                  
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                    <span className="text-sm font-medium text-green-700">Won</span>
-                    <span className="text-lg font-bold text-green-600">{seasonStats.won}</span>
+                  <div className="text-center p-2 bg-green-50 rounded">
+                    <div className="text-lg font-bold text-green-600">
+                      {seasonStats.played > 0 ? ((seasonStats.won / seasonStats.played) * 100).toFixed(0) : 0}%
+                    </div>
+                    <div className="text-xs text-green-700">Win Rate</div>
                   </div>
-                  
-                  <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                    <span className="text-sm font-medium text-yellow-700">Drawn</span>
-                    <span className="text-lg font-bold text-yellow-600">{seasonStats.drawn}</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                    <span className="text-sm font-medium text-red-700">Lost</span>
-                    <span className="text-lg font-bold text-red-600">{seasonStats.lost}</span>
-                  </div>
-
-                  <hr className="my-3 border-gray-200" />
-
-                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                    <span className="text-sm font-medium text-blue-700">Goals For</span>
-                    <span className="text-lg font-bold text-blue-600">{seasonStats.goalsFor}</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                    <span className="text-sm font-medium text-purple-700">Goals Against</span>
-                    <span className="text-lg font-bold text-purple-600">{seasonStats.goalsAgainst}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-green-100 to-blue-100 rounded-lg border border-green-200">
-                    <span className="text-sm font-semibold text-gray-700">Goal Difference</span>
-                    <span className={`text-lg font-bold ${
-                      (seasonStats.goalsFor - seasonStats.goalsAgainst) >= 0 
-                        ? 'text-green-600' 
-                        : 'text-red-600'
+                  <div className="text-center p-2 bg-blue-50 rounded">
+                    <div className={`text-lg font-bold ${
+                      (seasonStats.goalsFor - seasonStats.goalsAgainst) >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}>
                       {seasonStats.goalsFor - seasonStats.goalsAgainst >= 0 ? '+' : ''}{seasonStats.goalsFor - seasonStats.goalsAgainst}
+                    </div>
+                    <div className="text-xs text-gray-600">Goal Diff</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Form */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-2 mb-3">
+                  <span className="text-xl">📈</span>
+                  <h3 className="text-sm font-bold text-gray-900">Recent Form</h3>
+                </div>
+
+                {recentForm.length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="flex justify-center space-x-1">
+                      {recentForm.map((match, idx) => (
+                        <div
+                          key={idx}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${
+                            match.result === 'W' ? 'bg-green-500' :
+                            match.result === 'D' ? 'bg-yellow-500' :
+                            'bg-red-500'
+                          }`}
+                          title={`vs ${match.opponent} - ${match.date.toLocaleDateString()}`}
+                        >
+                          {match.result}
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 text-center">Last {recentForm.length} matches</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400 text-center">No match history yet</p>
+                )}
+              </div>
+
+              {/* Home vs Away Performance */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-2 mb-3">
+                  <span className="text-xl">🏠</span>
+                  <h3 className="text-sm font-bold text-gray-900">Home vs Away</h3>
+                </div>
+
+                {(seasonStats.homeMatches > 0 || seasonStats.awayMatches > 0) ? (
+                  <div className="h-40">
+                    <Bar
+                      data={{
+                        labels: ['Home', 'Away'],
+                        datasets: [{
+                          label: 'Wins',
+                          data: [seasonStats.homeWins, seasonStats.awayWins],
+                          backgroundColor: [
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(59, 130, 246, 0.8)'
+                          ],
+                          borderColor: [
+                            'rgb(22, 163, 74)',
+                            'rgb(37, 99, 235)'
+                          ],
+                          borderWidth: 2
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            ticks: {
+                              stepSize: 1
+                            }
+                          }
+                        },
+                        plugins: {
+                          legend: {
+                            display: false
+                          },
+                          tooltip: {
+                            callbacks: {
+                              label: (context) => {
+                                const wins = context.parsed.y;
+                                const total = context.dataIndex === 0 ? seasonStats.homeMatches : seasonStats.awayMatches;
+                                const percentage = total > 0 ? ((wins / total) * 100).toFixed(0) : 0;
+                                return `${wins} wins from ${total} matches (${percentage}%)`;
+                              }
+                            }
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-40 flex items-center justify-center">
+                    <p className="text-sm text-gray-400">No match data yet</p>
+                  </div>
+                )}
+
+                {/* Home vs Away Stats */}
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2 bg-green-50 rounded text-center">
+                    <div className="font-bold text-green-700">
+                      {seasonStats.homeMatches > 0 ? ((seasonStats.homeWins / seasonStats.homeMatches) * 100).toFixed(0) : 0}%
+                    </div>
+                    <div className="text-green-600">Home Win Rate</div>
+                  </div>
+                  <div className="p-2 bg-blue-50 rounded text-center">
+                    <div className="font-bold text-blue-700">
+                      {seasonStats.awayMatches > 0 ? ((seasonStats.awayWins / seasonStats.awayMatches) * 100).toFixed(0) : 0}%
+                    </div>
+                    <div className="text-blue-600">Away Win Rate</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Goals Summary */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-2 mb-3">
+                  <span className="text-xl">⚽</span>
+                  <h3 className="text-sm font-bold text-gray-900">Goals</h3>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
+                    <span className="text-xs font-medium text-blue-700">Scored</span>
+                    <span className="text-sm font-bold text-blue-600">{seasonStats.goalsFor}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 bg-purple-50 rounded">
+                    <span className="text-xs font-medium text-purple-700">Conceded</span>
+                    <span className="text-sm font-bold text-purple-600">{seasonStats.goalsAgainst}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <span className="text-xs font-medium text-gray-700">Avg Per Game</span>
+                    <span className="text-sm font-bold text-gray-900">
+                      {seasonStats.played > 0 ? (seasonStats.goalsFor / seasonStats.played).toFixed(1) : '0.0'}
                     </span>
                   </div>
                 </div>
