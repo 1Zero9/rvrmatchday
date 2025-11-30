@@ -29,6 +29,7 @@ export default function MatchDay() {
   const [expandedResults, setExpandedResults] = useState<{[key: string]: boolean}>({});
   const [fullScreenMatch, setFullScreenMatch] = useState<Match | null>(null);
   const [matchEvents, setMatchEvents] = useState<{[matchId: string]: any[]}>({});
+  const [fullScreenChart, setFullScreenChart] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
@@ -183,19 +184,31 @@ export default function MatchDay() {
     document.body.style.overflow = 'unset';
   };
 
+  // Full-screen chart modal functions
+  const openFullScreenChart = (chartType: string) => {
+    setFullScreenChart(chartType);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeFullScreenChart = () => {
+    setFullScreenChart(null);
+    document.body.style.overflow = 'unset';
+  };
+
   // Keyboard escape functionality
   React.useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && fullScreenMatch) {
-        closeFullScreenMatch();
+      if (event.key === 'Escape') {
+        if (fullScreenMatch) closeFullScreenMatch();
+        if (fullScreenChart) closeFullScreenChart();
       }
     };
 
-    if (fullScreenMatch) {
+    if (fullScreenMatch || fullScreenChart) {
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
-  }, [fullScreenMatch]);
+  }, [fullScreenMatch, fullScreenChart]);
 
   useEffect(() => {
     loadData();
@@ -773,10 +786,17 @@ export default function MatchDay() {
               )}
 
               {/* Win/Draw/Loss Chart */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
-                <div className="flex items-center space-x-2 mb-4">
-                  <span className="text-xl">📊</span>
-                  <h3 className="text-sm font-bold text-gray-900">Results Breakdown</h3>
+              <div
+                className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                onClick={() => openFullScreenChart('results')}
+                title="Click to expand"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl">📊</span>
+                    <h3 className="text-sm font-bold text-gray-900">Results Breakdown</h3>
+                  </div>
+                  <span className="text-xs text-gray-400">🔍 Click to expand</span>
                 </div>
 
                 {seasonStats.played > 0 ? (
@@ -855,10 +875,17 @@ export default function MatchDay() {
               </div>
 
               {/* Recent Form */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
-                <div className="flex items-center space-x-2 mb-3">
-                  <span className="text-xl">📈</span>
-                  <h3 className="text-sm font-bold text-gray-900">Recent Form</h3>
+              <div
+                className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                onClick={() => openFullScreenChart('form')}
+                title="Click to expand"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl">📈</span>
+                    <h3 className="text-sm font-bold text-gray-900">Recent Form</h3>
+                  </div>
+                  <span className="text-xs text-gray-400">🔍</span>
                 </div>
 
                 {recentForm.length > 0 ? (
@@ -886,10 +913,17 @@ export default function MatchDay() {
               </div>
 
               {/* Home vs Away Performance */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
-                <div className="flex items-center space-x-2 mb-3">
-                  <span className="text-xl">🏠</span>
-                  <h3 className="text-sm font-bold text-gray-900">Home vs Away</h3>
+              <div
+                className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                onClick={() => openFullScreenChart('homeaway')}
+                title="Click to expand"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl">🏠</span>
+                    <h3 className="text-sm font-bold text-gray-900">Home vs Away</h3>
+                  </div>
+                  <span className="text-xs text-gray-400">🔍</span>
                 </div>
 
                 {(seasonStats.homeMatches > 0 || seasonStats.awayMatches > 0) ? (
@@ -989,10 +1023,17 @@ export default function MatchDay() {
               </div>
 
               {/* Goals Trend Over Time */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
-                <div className="flex items-center space-x-2 mb-3">
-                  <span className="text-xl">📈</span>
-                  <h3 className="text-sm font-bold text-gray-900">Goals Trend</h3>
+              <div
+                className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                onClick={() => openFullScreenChart('goalstrend')}
+                title="Click to expand"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl">📈</span>
+                    <h3 className="text-sm font-bold text-gray-900">Goals Trend</h3>
+                  </div>
+                  <span className="text-xs text-gray-400">🔍</span>
                 </div>
 
                 {goalsTrend.length > 0 ? (
@@ -1077,10 +1118,17 @@ export default function MatchDay() {
               </div>
 
               {/* Goal Timing Distribution */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
-                <div className="flex items-center space-x-2 mb-3">
-                  <span className="text-xl">⏱️</span>
-                  <h3 className="text-sm font-bold text-gray-900">When We Score</h3>
+              <div
+                className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                onClick={() => openFullScreenChart('goaltiming')}
+                title="Click to expand"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl">⏱️</span>
+                    <h3 className="text-sm font-bold text-gray-900">When We Score</h3>
+                  </div>
+                  <span className="text-xs text-gray-400">🔍</span>
                 </div>
 
                 {Object.values(goalTiming).some(v => v > 0) ? (
@@ -1677,6 +1725,399 @@ export default function MatchDay() {
                     </div>
                   </div>
                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Epic Full-Screen Chart Modal */}
+      <AnimatePresence>
+        {fullScreenChart && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          >
+            {/* Cinematic Backdrop with Blur */}
+            <motion.div
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/90 to-black/95"
+              style={{
+                backdropFilter: 'blur(25px) saturate(1.3)',
+                WebkitBackdropFilter: 'blur(25px) saturate(1.3)',
+              }}
+              onClick={closeFullScreenChart}
+            >
+              {/* Animated Particles */}
+              <div className="absolute inset-0 overflow-hidden">
+                {[...Array(15)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-1 h-1 bg-white/20 rounded-full"
+                    initial={{
+                      x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+                      y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1000),
+                      scale: 0,
+                    }}
+                    animate={{
+                      scale: [0, 1, 0],
+                      opacity: [0, 0.4, 0],
+                    }}
+                    transition={{
+                      duration: 4 + Math.random() * 2,
+                      repeat: Infinity,
+                      delay: Math.random() * 3,
+                    }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Chart Container */}
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0, rotateY: -60 }}
+              animate={{ scale: 1, opacity: 1, rotateY: 0 }}
+              exit={{ scale: 0.5, opacity: 0, rotateY: 60 }}
+              transition={{
+                type: "spring",
+                damping: 25,
+                stiffness: 300,
+                duration: 0.8
+              }}
+              className="relative max-w-5xl w-full max-h-[85vh] overflow-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <motion.button
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ delay: 0.3 }}
+                onClick={closeFullScreenChart}
+                className="absolute top-4 right-4 z-10 w-14 h-14 bg-black/60 hover:bg-red-500/90 text-white rounded-full flex items-center justify-center backdrop-blur-md border-2 border-white/30 shadow-2xl"
+              >
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </motion.button>
+
+              {/* Chart Card */}
+              <div className="bg-gradient-to-br from-white via-gray-50 to-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white/20">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-club-primary to-club-secondary p-8 text-white">
+                  <div className="text-center">
+                    <div className="text-6xl mb-4">
+                      {fullScreenChart === 'results' && '📊'}
+                      {fullScreenChart === 'form' && '📈'}
+                      {fullScreenChart === 'homeaway' && '🏠'}
+                      {fullScreenChart === 'goalstrend' && '📈'}
+                      {fullScreenChart === 'goaltiming' && '⏱️'}
+                    </div>
+                    <h2 className="text-3xl font-bold mb-2">
+                      {fullScreenChart === 'results' && 'Results Breakdown'}
+                      {fullScreenChart === 'form' && 'Recent Form'}
+                      {fullScreenChart === 'homeaway' && 'Home vs Away Performance'}
+                      {fullScreenChart === 'goalstrend' && 'Goals Trend Over Time'}
+                      {fullScreenChart === 'goaltiming' && 'When We Score'}
+                    </h2>
+                    {selectedTeamId !== 'all' && (
+                      <p className="text-white/90">
+                        {teams.find(t => t.id === selectedTeamId)?.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Chart Content */}
+                <div className="p-8">
+                  {/* Results Breakdown Chart */}
+                  {fullScreenChart === 'results' && seasonStats.played > 0 && (
+                    <div className="h-96">
+                      <Doughnut
+                        data={{
+                          labels: ['Wins', 'Draws', 'Losses'],
+                          datasets: [{
+                            data: [seasonStats.won, seasonStats.drawn, seasonStats.lost],
+                            backgroundColor: [
+                              'rgb(34, 197, 94)',
+                              'rgb(234, 179, 8)',
+                              'rgb(239, 68, 68)'
+                            ],
+                            borderColor: [
+                              'rgb(22, 163, 74)',
+                              'rgb(202, 138, 4)',
+                              'rgb(220, 38, 38)'
+                            ],
+                            borderWidth: 3
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
+                              position: 'bottom',
+                              labels: {
+                                padding: 20,
+                                font: { size: 16 }
+                              }
+                            },
+                            tooltip: {
+                              callbacks: {
+                                label: (context) => {
+                                  const label = context.label || '';
+                                  const value = context.parsed || 0;
+                                  const total = seasonStats.played;
+                                  const percentage = ((value / total) * 100).toFixed(1);
+                                  return `${label}: ${value} (${percentage}%)`;
+                                }
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Recent Form Chart */}
+                  {fullScreenChart === 'form' && recentForm.length > 0 && (
+                    <div className="space-y-6">
+                      <div className="flex justify-center space-x-3">
+                        {recentForm.map((match, idx) => (
+                          <motion.div
+                            key={idx}
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            className={`w-20 h-20 rounded-full flex flex-col items-center justify-center text-white font-bold shadow-lg ${
+                              match.result === 'W' ? 'bg-green-500' :
+                              match.result === 'D' ? 'bg-yellow-500' :
+                              'bg-red-500'
+                            }`}
+                          >
+                            <div className="text-2xl">{match.result}</div>
+                            <div className="text-xs mt-1">{match.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
+                          </motion.div>
+                        ))}
+                      </div>
+                      <div className="text-center space-y-2">
+                        {recentForm.map((match, idx) => (
+                          <div key={idx} className="text-sm text-gray-600">
+                            <span className="font-medium">{match.date.toLocaleDateString('en-GB')}</span> - vs {match.opponent} ({match.result})
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Home vs Away Chart */}
+                  {fullScreenChart === 'homeaway' && (seasonStats.homeMatches > 0 || seasonStats.awayMatches > 0) && (
+                    <div className="h-96">
+                      <Bar
+                        data={{
+                          labels: ['Home', 'Away'],
+                          datasets: [{
+                            label: 'Wins',
+                            data: [seasonStats.homeWins, seasonStats.awayWins],
+                            backgroundColor: [
+                              'rgba(34, 197, 94, 0.8)',
+                              'rgba(59, 130, 246, 0.8)'
+                            ],
+                            borderColor: [
+                              'rgb(22, 163, 74)',
+                              'rgb(37, 99, 235)'
+                            ],
+                            borderWidth: 3
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              ticks: {
+                                stepSize: 1,
+                                font: { size: 14 }
+                              }
+                            },
+                            x: {
+                              ticks: {
+                                font: { size: 16 }
+                              }
+                            }
+                          },
+                          plugins: {
+                            legend: {
+                              display: true,
+                              labels: {
+                                font: { size: 16 }
+                              }
+                            },
+                            tooltip: {
+                              callbacks: {
+                                label: (context) => {
+                                  const wins = context.parsed.y;
+                                  const total = context.dataIndex === 0 ? seasonStats.homeMatches : seasonStats.awayMatches;
+                                  const percentage = total > 0 ? ((wins / total) * 100).toFixed(0) : 0;
+                                  return `${wins} wins from ${total} matches (${percentage}%)`;
+                                }
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Goals Trend Chart */}
+                  {fullScreenChart === 'goalstrend' && goalsTrend.length > 0 && (
+                    <div className="h-96">
+                      <Line
+                        data={{
+                          labels: goalsTrend.map(g => g.date),
+                          datasets: [
+                            {
+                              label: 'Goals Scored',
+                              data: goalsTrend.map(g => g.goalsFor),
+                              borderColor: 'rgb(34, 197, 94)',
+                              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                              tension: 0.4,
+                              fill: true,
+                              pointRadius: 6,
+                              pointHoverRadius: 8,
+                              borderWidth: 3
+                            },
+                            {
+                              label: 'Goals Conceded',
+                              data: goalsTrend.map(g => g.goalsAgainst),
+                              borderColor: 'rgb(239, 68, 68)',
+                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                              tension: 0.4,
+                              fill: true,
+                              pointRadius: 6,
+                              pointHoverRadius: 8,
+                              borderWidth: 3
+                            }
+                          ]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              ticks: {
+                                stepSize: 1,
+                                font: { size: 14 }
+                              }
+                            },
+                            x: {
+                              ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: { size: 12 }
+                              }
+                            }
+                          },
+                          plugins: {
+                            legend: {
+                              display: true,
+                              position: 'bottom',
+                              labels: {
+                                padding: 15,
+                                font: { size: 16 }
+                              }
+                            },
+                            tooltip: {
+                              callbacks: {
+                                title: (context) => {
+                                  const idx = context[0].dataIndex;
+                                  return `vs ${goalsTrend[idx].opponent}`;
+                                },
+                                label: (context) => {
+                                  return `${context.dataset.label}: ${context.parsed.y}`;
+                                }
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Goal Timing Chart */}
+                  {fullScreenChart === 'goaltiming' && Object.values(goalTiming).some(v => v > 0) && (
+                    <div className="h-96">
+                      <Bar
+                        data={{
+                          labels: Object.keys(goalTiming).map(k => k + ' min'),
+                          datasets: [{
+                            label: 'Goals',
+                            data: Object.values(goalTiming),
+                            backgroundColor: [
+                              'rgba(59, 130, 246, 0.8)',
+                              'rgba(16, 185, 129, 0.8)',
+                              'rgba(245, 158, 11, 0.8)',
+                              'rgba(239, 68, 68, 0.8)',
+                              'rgba(168, 85, 247, 0.8)',
+                              'rgba(236, 72, 153, 0.8)'
+                            ],
+                            borderColor: [
+                              'rgb(37, 99, 235)',
+                              'rgb(5, 150, 105)',
+                              'rgb(217, 119, 6)',
+                              'rgb(220, 38, 38)',
+                              'rgb(147, 51, 234)',
+                              'rgb(219, 39, 119)'
+                            ],
+                            borderWidth: 3
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          indexAxis: 'x',
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              ticks: {
+                                stepSize: 1,
+                                font: { size: 14 }
+                              }
+                            },
+                            x: {
+                              ticks: {
+                                font: { size: 14 }
+                              }
+                            }
+                          },
+                          plugins: {
+                            legend: {
+                              display: false
+                            },
+                            tooltip: {
+                              callbacks: {
+                                label: (context) => {
+                                  const total = Object.values(goalTiming).reduce((a, b) => a + b, 0);
+                                  const value = context.parsed.y;
+                                  const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : 0;
+                                  return `${value} goals (${percentage}%)`;
+                                }
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </motion.div>
           </motion.div>
